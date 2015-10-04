@@ -1,0 +1,7 @@
+
+message Test {
+    optional int32 i = 1;
+    required int32 j = 2;
+    optional int32 k = 3;
+}
+

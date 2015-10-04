@@ -1,0 +1,4 @@
+
+message Test {
+    required int32 j = 2;
+}

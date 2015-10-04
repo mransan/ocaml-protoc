@@ -1,0 +1,19 @@
+
+
+message AllBasicsTypes {
+  required double    o01 =  1;
+  required float     o02 =  2;
+  required int32     o03 =  3;
+  required int64     o04 =  4;
+  required uint32    o05 =  5;
+  required uint64    o06 =  6;
+  required sint32    o07 =  7;
+  required sint64    o08 =  8;
+  required fixed32   o09 =  9;
+  required fixed64   o10 = 10;
+  // required sfixed32  o11 = 11;
+  // required sfixed64  o12 = 12;
+  required bool      o13 = 13;
+  required string    o14 = 14;
+  required bytes     o15 = 15;
+}

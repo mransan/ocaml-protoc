@@ -1,0 +1,8 @@
+
+message TestM { 
+  enum TestE {
+    TestE_Value1 = 1; 
+    TestE_Value2 = 2; 
+  }
+  required TestE teste_field = 1; 
+}
