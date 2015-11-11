@@ -11,3 +11,13 @@ val rev_split_by_char : char -> string -> string list
 val concat : string list -> string 
 (** [concat l] concatenate a string list without delimited between the given string
  *)
+
+
+val pop_last : 'a list -> 'a list 
+(** [pop_last l] removes the last element from the list *)
+
+val apply_until : ('a -> 'b option) -> 'a list -> 'b option 
+(** [apply_until f l] applies [f ei] until it returns [Some x] 
+    
+    If [f] returns [None] then [None] is returned. 
+ *)

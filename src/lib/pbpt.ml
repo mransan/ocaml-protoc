@@ -26,6 +26,8 @@ type field_label = [
   | `Repeated 
 ]
 
+type oneof_label = [ `Oneof ] 
+
 (** message field. 
     
    Note this field is parametrized with the label type 
@@ -34,14 +36,12 @@ type field_label = [
    the label.
  *)
 type 'a field = {
-  field_name  : string; 
-  field_number: int; 
+  field_name : string; 
+  field_number : int; 
   field_label : 'a ; 
   field_type : string; 
   field_options : field_options; 
 }
-
-type oneof_label = [ `Oneof ] 
 
 (** oneof entity *)
 type oneof = {

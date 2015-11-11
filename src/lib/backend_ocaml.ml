@@ -380,8 +380,8 @@ module Codegen = struct
       | Regular_field {Encoding_util.field_number; _ } -> max max_so_far field_number 
       | One_of {constructors; _ } -> 
           List.fold_left (fun max_so_far {encoding_type = {Encoding_util.field_number; _ } ; _ } -> 
-          max field_number max_so_far 
-      ) max_so_far constructors 
+            max field_number max_so_far 
+          ) max_so_far constructors 
     ) (- 1) fields
 
   let gen_decode_record ?and_ ({record_name; fields } as record) = 

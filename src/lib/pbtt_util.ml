@@ -14,25 +14,28 @@ let field_type {Pbtt.field_type; _ } =
 let field_label {Pbtt.field_parsed = {Pbpt.field_label; _ }; _ } = 
   field_label 
 
-let empty_scope  = { Pbtt.namespaces = []; Pbtt.message_names = [] } 
+let empty_scope  = { 
+  Pbtt.namespaces = []; 
+  message_names = [] 
+} 
 
 let rev_split_by_char = Util.rev_split_by_char 
 
 let string_of_string_list l = 
   Printf.sprintf "[%s]" (String.concat "," l)
 
-let string_of_unresolved { Pbtt.scope; Pbtt.type_name; Pbtt.from_root }  =
+let string_of_unresolved { Pbtt.scope; type_name; from_root }  =
   Printf.sprintf "unresolved:{scope %s, type_name: %s, from_root: %b}"
     (string_of_string_list scope) 
     type_name 
     from_root  
 
-let string_of_message_scope {Pbtt.namespaces; Pbtt.message_names}  = 
+let string_of_message_scope {Pbtt.namespaces; message_names}  = 
   Printf.sprintf "scope:{namespaces:%s, message_names:%s}" 
     (string_of_string_list namespaces)
     (string_of_string_list message_names) 
 
-let string_of_message {Pbtt.id; Pbtt.message_scope; Pbtt.message_name; Pbtt.message_body} = 
+let string_of_message {Pbtt.id; message_scope; message_name; message_body} = 
   Printf.sprintf "message: {id:%i, message_scope:%s, name:%s, field nb:%i}" 
     id 
     (string_of_message_scope message_scope) 
@@ -168,12 +171,12 @@ let get_default field_name field_options field_type =
   | exception Not_found -> None 
 
 let compile_field_p1 ({
-  Pbpt.field_name;
-  Pbpt.field_number = _ ;
-  Pbpt.field_label  = _ ;
-  Pbpt.field_type;
-  Pbpt.field_options;
-} as field_parsed) = 
+    Pbpt.field_name;
+    Pbpt.field_number = _ ;
+    Pbpt.field_label  = _ ;
+    Pbpt.field_type;
+    Pbpt.field_options;
+  } as field_parsed) = 
   
   let field_type    = field_type_of_string field_type in 
   let field_default = get_default field_name field_options field_type in 
@@ -184,12 +187,14 @@ let compile_field_p1 ({
   }
 
 let compile_oneof_p1 ({
-  Pbpt.oneof_name; 
-  Pbpt.oneof_fields;
-}) = {
-  Pbtt.oneof_name; 
-  Pbtt.oneof_fields = List.map compile_field_p1 oneof_fields; 
-}
+    Pbpt.oneof_name; 
+    Pbpt.oneof_fields;
+  }) = 
+  
+  {
+    Pbtt.oneof_name; 
+    Pbtt.oneof_fields = List.map compile_field_p1 oneof_fields; 
+  }
   
 let not_found f : bool = 
   try f () ; false 
@@ -207,7 +212,7 @@ let rec compile_message_p1 message_scope ({
   
   let {Pbtt.message_names; _ } = message_scope in  
   let sub_scope = {message_scope with 
-    Pbtt.message_names = message_names @ [ message_name] 
+    Pbtt.message_names = message_names @ [message_name] 
   } in 
   
   let message_body, all_sub = List.fold_left (fun (message_body, all_types) -> function  
@@ -220,14 +225,14 @@ let rec compile_message_p1 message_scope ({
     | Pbpt.Message_sub m -> 
         let all_sub_types = compile_message_p1 sub_scope m in 
         (message_body,  all_types @ all_sub_types)
-    | Pbpt.Message_enum {Pbpt.enum_id; Pbpt.enum_name; Pbpt.enum_values } -> 
+    | Pbpt.Message_enum {Pbpt.enum_id; enum_name; enum_values } -> 
         let enum_values = List.map (fun enum_value -> {
           Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
           Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
         }) enum_values in 
         (
           message_body,  
-          all_types @ [Pbtt.Enum {
+          all_types @ [ Pbtt.Enum {
             Pbtt.enum_scope = sub_scope; 
             Pbtt.enum_id; 
             Pbtt.enum_name;
@@ -257,6 +262,7 @@ let rec compile_message_p1 message_scope ({
       raise @@ E.duplicated_field_number 
         ~field_name:name ~previous_field_name:"" ~message_name ()
   in
+
   ignore @@ List.fold_left (fun number_index -> function 
     | Pbtt.Message_field f -> validate_duplicate number_index f
     | Pbtt.Message_oneof_field {Pbtt.oneof_fields; _ } ->
@@ -285,12 +291,12 @@ let type_id_of_type = function
 let type_of_id all_types id  = 
   List.find (fun t -> type_id_of_type t = id) all_types 
 
-let find_all_types_in_field_scope types scope = 
+let find_all_types_in_field_scope all_types (scope:Pbtt.field_scope) = 
   List.filter (fun t -> 
     let {Pbtt.namespaces; Pbtt.message_names; } = type_scope_of_type t in 
     let dec_scope = namespaces @ message_names in 
     dec_scope = scope
-  ) types
+  ) all_types
 
 let compile_message_p2 types ({
   Pbtt.id = _ ; 
@@ -322,9 +328,8 @@ let compile_message_p2 types ({
      the following scopes will be returned:
      [
        ['Msg1'; 'Msg2'; 'Msg3'];  // This would be the scope of the current msg
-       ['Msg1'; 'Msg2'; ];        // Outer message scope
-       ['Msg1'; ]                 // Outer message scope 
-       [ ]                        // Top level scope
+       ['Msg1'; 'Msg3'; ];        // Outer message scope
+       ['Msg3'; ]                 // Top level scope
      ]
   *)
   let search_scopes (field_scope:string list) from_root : (string list) list = 
@@ -333,17 +338,18 @@ let compile_message_p2 types ({
     else 
       let rec loop scopes = function
         | [] -> field_scope::scopes 
-        | (_::tl as l) -> 
-          loop ((List.rev l @ field_scope)::scopes) tl 
+        | l  -> 
+          loop ((l @ field_scope)::scopes) (Util.pop_last l)
       in 
-      List.rev @@ loop [] (List.rev message_scope) 
+      List.rev @@ loop [] message_scope 
   in 
     
   let process_field_type message_name field = 
     let field_name = field_name field in 
     L.log "[pbtt] field_name: %s\n" field_name; 
     match field.Pbtt.field_type with 
-    | Pbtt.Field_type_type ({Pbtt.scope; Pbtt.type_name; Pbtt.from_root} as unresolved) -> ( 
+    | Pbtt.Field_type_type ({Pbtt.scope; type_name; from_root} as unresolved) -> ( 
+
       L.endline @@ "[pbtt] " ^ string_of_unresolved unresolved ; 
       
       let search_scopes = search_scopes scope from_root in 
@@ -353,14 +359,12 @@ let compile_message_p2 types ({
         L.log "[pbtt] search_scope[%2i] : %s\n" i @@ string_of_string_list scope 
       ) search_scopes;
 
-      let id  = List.fold_left (fun id scope -> 
-        match id with 
-        | Some _ -> id 
-        | None   -> process_field_in_scope types scope type_name
-        (* TODO this is where we are resolving and potentially where we 
-           could keep track of the whether it's a message or enum 
-         *)
-      ) None search_scopes in 
+      let id = Util.apply_until (fun scope -> 
+        process_field_in_scope types scope type_name
+      ) search_scopes in 
+      (* TODO this is where we are resolving and potentially where we 
+         could keep track of the whether it's a message or enum 
+       *)
       
       match id with 
       | Some id -> (Pbtt.Field_type_type id:Pbtt.resolved Pbtt.field_type) 
