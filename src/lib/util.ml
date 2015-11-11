@@ -11,3 +11,15 @@ let rev_split_by_char c s =
   
 (** [concat l] concatenate a string list *)
 let concat = String.concat ""
+
+let rec pop_last = function 
+  | [] -> failwith "Invalid argument [] for pop_last"
+  | hd::[] -> []
+  | hd::tl -> hd :: (pop_last tl)
+
+let rec apply_until f = function 
+  | []  -> None 
+  | hd::tl -> (match f hd with 
+    | None -> apply_until f tl 
+    | x    -> x
+  )  

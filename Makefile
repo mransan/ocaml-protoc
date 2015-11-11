@@ -44,9 +44,10 @@ unit-tests:
 # Location of Google protobuffer installation. 
 # -- To modify -- 
 #
-PB_HINC=../install/build/include/
-PB_LINC=../install/build/lib/
-PROTOC=../install/build/bin/protoc 
+PB_HINC =../install.git/build/include/
+PB_LINC =../install.git/build/lib/
+PROTOC  =../install.git/build/bin/protoc 
+export LD_LIBRARY_PATH=../install.git/build/lib
 
 ML_PROTOC=./ocaml-protoc.native
 
@@ -66,7 +67,6 @@ ML_PROTOC=./ocaml-protoc.native
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -I src/integration-tests -pkg unix $@ 
 
-export LD_LIBRARY_PATH=../install/build/lib
 
 test%: src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
 	./src/integration-tests/test$*_cpp.tsk encode

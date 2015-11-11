@@ -150,7 +150,6 @@ constant :
   }
   | STRING     { Pbpt.Constant_string $1 }; 
 
-
 enum:
   | ENUM IDENT LBRACE enum_values RBRACE {Pbpt_util.enum ~enum_values:$4 $2 } 
 
