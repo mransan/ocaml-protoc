@@ -44,10 +44,10 @@ unit-tests:
 # Location of Google protobuffer installation. 
 # -- To modify -- 
 #
-PB_HINC =../install.git/build/include/
-PB_LINC =../install.git/build/lib/
-PROTOC  =../install.git/build/bin/protoc 
-export LD_LIBRARY_PATH=../install.git/build/lib
+PB_HINC =../../install/build/include/
+PB_LINC =../../install/build/lib/
+PROTOC  =../../install/build/bin/protoc 
+export LD_LIBRARY_PATH=../../install/build/lib
 
 ML_PROTOC=./ocaml-protoc.native
 
