@@ -1,7 +1,7 @@
 
 module L = Logger 
   
-let caml_file_name_of_proto_file_name = Backend_ocaml.Codegen.caml_file_name_of_proto_file_name 
+let caml_file_name_of_proto_file_name = Ocaml_codegen.caml_file_name_of_proto_file_name 
 
 (** [parse_args ()] parses the command line argument 
     and returns [(in_channel, out_channel)] where 
@@ -70,7 +70,7 @@ let () =
 
   (* -- `.ml` file -- *)
 
-  let gen types (f:(?and_:unit -> BO.type_ -> string))  = 
+  let gen types (f:(?and_:unit -> Ocaml_types.type_ -> string))  = 
     List.flatten @@ List.rev @@ fst (List.fold_left (fun (sl, first) type_ -> 
     (if first 
     then wrap @@ f type_ 
@@ -78,7 +78,7 @@ let () =
   ) ([], true) types) 
   in 
 
-  let gen_opt types (f:(?and_:unit -> BO.type_ -> string option))  = 
+  let gen_opt types (f:(?and_:unit -> Ocaml_types.type_ -> string option))  = 
     List.flatten @@ List.rev @@ fst (List.fold_left (fun (sl, first) type_ -> 
       let s = 
         if first 
@@ -98,10 +98,10 @@ let () =
     "\n";
     concat @@ List.map (fun types_ -> 
       concat @@ List.flatten [
-      gen     types_ BO.Codegen.gen_type ;
-      gen_opt types_ BO.Codegen.gen_decode;
-      gen_opt types_ BO.Codegen.gen_encode;
-      gen_opt types_ BO.Codegen.gen_string_of;
+      gen     types_ Ocaml_codegen.gen_type ;
+      gen_opt types_ Ocaml_codegen.gen_decode;
+      gen_opt types_ Ocaml_codegen.gen_encode;
+      gen_opt types_ Ocaml_codegen.gen_string_of;
       ]
     ) otypes;
   ];
@@ -112,9 +112,9 @@ let () =
 
   output_string sig_oc @@ concat @@ List.map (fun types_ -> 
     concat @@ List.flatten [
-      gen      types_ BO.Codegen.gen_type;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ BO.Codegen.gen_decode_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ BO.Codegen.gen_encode_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ BO.Codegen.gen_string_of_sig t) types_ ;
+      gen      types_ Ocaml_codegen.gen_type;
+      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_decode_sig t) types_ ;
+      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_encode_sig t) types_ ;
+      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_string_of_sig t) types_ ;
     ]
   ) (otypes)

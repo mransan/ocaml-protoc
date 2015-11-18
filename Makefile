@@ -32,8 +32,24 @@ debug:
 			$(OCB) -tag debug ocaml-protoc.byte
 
 unit-tests: 		
-			$(OCB) ./src/unit-tests/unit-tests.native 
-			./unit-tests.native
+			$(OCB) ./src/unit-tests/parse_field_options.native 
+			$(OCB) ./src/unit-tests/parse_fields.native 
+			$(OCB) ./src/unit-tests/parse_enum.native
+			$(OCB) ./src/unit-tests/parse_message.native 
+			$(OCB) ./src/unit-tests/pbtt_compile_p1.native 
+			$(OCB) ./src/unit-tests/pbtt_compile_p2.native 
+			$(OCB) ./src/unit-tests/backend_ocaml_test.native
+			$(OCB) ./src/unit-tests/ocaml_codegen_test.native
+			$(OCB) ./src/unit-tests/graph_test.native
+			./parse_field_options.native
+			./parse_fields.native
+			./parse_enum.native
+			./parse_message.native
+			./pbtt_compile_p1.native
+			./pbtt_compile_p2.native
+			./backend_ocaml_test.native
+			./ocaml_codegen_test.native
+			./graph_test.native
 			
 .PHONY: 	all clean byte native profile debug test
 
