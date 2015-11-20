@@ -15,7 +15,7 @@ let field_label {Pbtt.field_parsed = {Pbpt.field_label; _ }; _ } =
   field_label 
 
 let empty_scope  = { 
-  Pbtt.namespaces = []; 
+  Pbtt.packages = []; 
   message_names = [] 
 } 
 
@@ -25,26 +25,26 @@ let string_of_string_list l =
   Printf.sprintf "[%s]" (String.concat "," l)
 
 let string_of_unresolved { Pbtt.scope; type_name; from_root }  =
-  Printf.sprintf "unresolved:{scope %s, type_name: %s, from_root: %b}"
+    Printf.sprintf "unresolved:{scope %s, type_name: %s, from_root: %b}"
     (string_of_string_list scope) 
     type_name 
     from_root  
 
-let string_of_message_scope {Pbtt.namespaces; message_names}  = 
-  Printf.sprintf "scope:{namespaces:%s, message_names:%s}" 
-    (string_of_string_list namespaces)
+let string_of_type_scope {Pbtt.packages; message_names}  = 
+  Printf.sprintf "scope:{packages:%s, message_names:%s}" 
+    (string_of_string_list packages)
     (string_of_string_list message_names) 
 
-let string_of_message {Pbtt.id; message_scope; message_name; message_body} = 
+let string_of_message id scope {Pbtt.message_name; message_body} = 
   Printf.sprintf "message: {id:%i, message_scope:%s, name:%s, field nb:%i}" 
     id 
-    (string_of_message_scope message_scope) 
+    (string_of_type_scope scope) 
     message_name
     (List.length message_body)
 
 let scope_of_package = function
   | Some s -> {empty_scope with 
-    Pbtt.namespaces = List.rev @@ rev_split_by_char '.' s
+    Pbtt.packages = List.rev @@ rev_split_by_char '.' s
   }
   | None -> empty_scope 
 
@@ -91,7 +91,7 @@ let map_field_type : 'a Pbtt.field_type  -> 'b Pbtt.field_type = function
  | Pbtt.Field_type_bool       -> Pbtt.Field_type_bool 
  | Pbtt.Field_type_string     -> Pbtt.Field_type_string 
  | Pbtt.Field_type_bytes      -> Pbtt.Field_type_bytes 
- | Pbtt.Field_type_type _ -> raise @@ E.programmatic_error E.Unexpect_field_type 
+ | Pbtt.Field_type_type _ -> raise @@ E.programmatic_error E.Unexpected_field_type 
 
 let compile_default field_name constant = function  
   | Pbtt.Field_type_double 
@@ -204,7 +204,14 @@ let rec list_assoc2 x = function
     [] -> raise Not_found
   | (a,b)::l -> if compare b x = 0 then a else list_assoc2 x l
 
-let rec compile_message_p1 message_scope ({
+let type_of_spec file_name id scope spec = { 
+  Pbtt.id; 
+  Pbtt.scope;
+  Pbtt.file_name;
+  Pbtt.spec; 
+}
+
+let rec compile_message_p1 message_file_name message_scope ({
   Pbpt.id;
   Pbpt.message_name; 
   Pbpt.message_body; 
@@ -223,7 +230,7 @@ let rec compile_message_p1 message_scope ({
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
         (field :: message_body, all_types)
     | Pbpt.Message_sub m -> 
-        let all_sub_types = compile_message_p1 sub_scope m in 
+        let all_sub_types = compile_message_p1 message_file_name sub_scope m in 
         (message_body,  all_types @ all_sub_types)
     | Pbpt.Message_enum {Pbpt.enum_id; enum_name; enum_values } -> 
         let enum_values = List.map (fun enum_value -> {
@@ -232,12 +239,10 @@ let rec compile_message_p1 message_scope ({
         }) enum_values in 
         (
           message_body,  
-          all_types @ [ Pbtt.Enum {
-            Pbtt.enum_scope = sub_scope; 
-            Pbtt.enum_id; 
+          all_types @ [type_of_spec message_file_name enum_id sub_scope (Pbtt.Enum {
             Pbtt.enum_name;
             Pbtt.enum_values
-          }]
+          })]
         )
   ) ([], []) message_body in
   
@@ -269,39 +274,31 @@ let rec compile_message_p1 message_scope ({
        List.fold_left validate_duplicate number_index oneof_fields
   ) [] message_body ;  
 
-  all_sub @ [ Pbtt.Message {
-    Pbtt.id; 
-    Pbtt.message_scope;
+  all_sub @ [type_of_spec message_file_name id message_scope (Pbtt.Message {
     Pbtt.message_name; 
     Pbtt.message_body;
-  }] 
+  })] 
 
-let type_scope_of_type = function
-  | Pbtt.Enum {Pbtt.enum_scope; _ } -> enum_scope 
-  | Pbtt.Message {Pbtt.message_scope; _ } -> message_scope
+let type_scope_of_type {Pbtt.scope; _ } = scope 
 
 let type_name_of_type = function
-  | Pbtt.Enum {Pbtt.enum_name; _ } -> enum_name 
-  | Pbtt.Message {Pbtt.message_name; _ } -> message_name
+  | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ } } -> enum_name 
+  | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ } } -> message_name
 
-let type_id_of_type = function
-  | Pbtt.Enum {Pbtt.enum_id; _ } -> enum_id 
-  | Pbtt.Message {Pbtt.id; _ } -> id
+let type_id_of_type {Pbtt.id; _ } = id 
 
 let type_of_id all_types id  = 
   List.find (fun t -> type_id_of_type t = id) all_types 
 
 let find_all_types_in_field_scope all_types (scope:Pbtt.field_scope) = 
   List.filter (fun t -> 
-    let {Pbtt.namespaces; Pbtt.message_names; } = type_scope_of_type t in 
-    let dec_scope = namespaces @ message_names in 
+    let {Pbtt.packages; Pbtt.message_names; } = type_scope_of_type t in 
+    let dec_scope = packages @ message_names in 
     dec_scope = scope
   ) all_types
 
-let compile_message_p2 types ({
-  Pbtt.id = _ ; 
+let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
   Pbtt.message_name; 
-  Pbtt.message_scope = {Pbtt.namespaces ; Pbtt.message_names; }; 
   Pbtt.message_body} as message)  = 
 
   (* stringify the message scope so that it can 
@@ -309,7 +306,7 @@ let compile_message_p2 types ({
      
      see `Note on scoping` in the README.md file
    *)
-  let message_scope = namespaces @ message_names @ [message_name] in 
+  let message_scope = packages @ message_names @ [message_name] in 
 
   let process_field_in_scope types scope type_name = 
     let types = find_all_types_in_field_scope types scope in 
@@ -389,13 +386,24 @@ let compile_message_p2 types ({
   let message_body = List.rev message_body in 
   {message with Pbtt.message_body; }
 
-let compile_type_p2 all_types = function 
-  | Pbtt.Message  m     -> Pbtt.Message (compile_message_p2 all_types m) 
-  | (Pbtt.Enum _ ) as e -> e
+let compile_type_p2 all_types t = 
+  match t with 
+  | {Pbtt.file_name; id; scope; spec = Pbtt.Message  m } -> {
+    Pbtt.file_name; 
+    Pbtt.scope;
+    Pbtt.id; 
+    Pbtt.spec = Pbtt.Message (compile_message_p2 all_types scope m) 
+  }
+  | {Pbtt.file_name; id; scope; spec = (Pbtt.Enum _ ) as spec ; } ->  { 
+    Pbtt.file_name; 
+    Pbtt.id;
+    Pbtt.scope;
+    Pbtt.spec; 
+  } 
 
 let node_of_proto_type = function 
-  | Pbtt.Enum {Pbtt.enum_id ; _ } -> Graph.create_node enum_id [] 
-  | Pbtt.Message {Pbtt.id; Pbtt.message_body; _ } -> 
+  | {Pbtt.id; Pbtt.spec = Pbtt.Enum _ ; _ }  -> Graph.create_node id [] 
+  | {Pbtt.id; Pbtt.spec = Pbtt.Message {Pbtt.message_body; _ }; _ } -> 
     let sub = List.flatten @@ List.map (function
       | Pbtt.Message_field {Pbtt.field_type; _ } -> (
         match field_type with
@@ -412,9 +420,7 @@ let node_of_proto_type = function
     ) message_body in 
     Graph.create_node id sub
 
-let is_id input_id = function 
-  | Pbtt.Enum {Pbtt.enum_id ; _ } -> input_id = enum_id 
-  | Pbtt.Message {Pbtt.id; _ }    -> input_id = id 
+let is_id input_id {Pbtt.id; _ } = (input_id = id) 
 
 let group proto = 
   let g    = List.map node_of_proto_type proto  in 

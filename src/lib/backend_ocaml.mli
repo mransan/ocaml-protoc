@@ -28,6 +28,3 @@ end
 val type_name : string list -> string -> string 
 
 val constructor_name : string -> string 
-
-val type_name_of_message : Pbtt.type_scope -> Pbtt.type_scope -> string -> string
-

@@ -94,7 +94,7 @@ type 'a oneof = {
     message definition can be nested
  *)
 type type_scope = {
-  namespaces : string list; 
+  packages : string list; 
   message_names : string list; 
 }
 
@@ -105,8 +105,6 @@ type 'a message_body_content =
   | Message_oneof_field of 'a oneof 
 
 and 'a message = {
-  id : int ; 
-  message_scope : type_scope;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
@@ -117,14 +115,19 @@ type enum_value = {
 }
 
 type enum = {
-  enum_scope : type_scope;
-  enum_id   : int; 
   enum_name : string; 
   enum_values: enum_value list; 
 }
 
-type 'a proto_type = 
+type 'a proto_type_spec = 
   | Enum    of enum 
   | Message of 'a message
+
+type 'a proto_type  = {
+  scope : type_scope;
+  id :  int; 
+  file_name : string; 
+  spec : 'a proto_type_spec;
+}
 
 type 'a proto = 'a proto_type list 

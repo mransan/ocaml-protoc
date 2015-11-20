@@ -89,9 +89,9 @@ let gen_type_const_variant ?and_ {OCaml_types.variant_name; constructors } =
   ]
 
 let gen_type ?and_ = function 
-  | OCaml_types.Record r        -> gen_type_record ?and_ r 
-  | OCaml_types.Variant v       -> gen_type_variant  ?and_ v 
-  | OCaml_types.Const_variant v -> gen_type_const_variant ?and_ v 
+  | {Ocaml_types.spec = Record r; _ } -> gen_type_record ?and_ r 
+  | {Ocaml_types.spec = Variant v; _ } -> gen_type_variant  ?and_ v 
+  | {Ocaml_types.spec = Const_variant v; _ } -> gen_type_const_variant ?and_ v 
 
 (** [gen_mappings_record r] generates a per record variable to hold the 
     mapping between a field number and the associated decoding routine. 
@@ -208,7 +208,6 @@ let gen_decode_record ?and_ ({OCaml_types.record_name; fields } as record) =
     sp "  )";
   ]
 
-
 let gen_decode_const_variant ?and_ {OCaml_types.variant_name; constructors; } = 
   concat [
     P.sprintf "%s decode_%s d = " (let_decl_of_and and_) variant_name; 
@@ -220,9 +219,9 @@ let gen_decode_const_variant ?and_ {OCaml_types.variant_name; constructors; } =
   ] 
 
 let gen_decode ?and_ = function 
-  | OCaml_types.Record r        -> Some (gen_decode_record ?and_ r)
-  | OCaml_types.Variant _       -> None
-  | OCaml_types.Const_variant v -> Some (gen_decode_const_variant ?and_ v)
+  | {OCaml_types.spec = Record r; _ } -> Some (gen_decode_record ?and_ r)
+  | {OCaml_types.spec = Variant _; _ } -> None
+  | {OCaml_types.spec = Const_variant v; _ } -> Some (gen_decode_const_variant ?and_ v)
 
 let gen_decode_sig t = 
   let f type_name = 
@@ -235,9 +234,9 @@ let gen_decode_sig t =
   in 
 
   match t with 
-    | OCaml_types.Record {OCaml_types.record_name ; _ } ->  Some (f record_name)
-    | OCaml_types.Variant _ -> None
-    | OCaml_types.Const_variant {OCaml_types.variant_name; _ } -> Some (f variant_name)
+  | {OCaml_types.spec = Record {OCaml_types.record_name ; _ } } ->  Some (f record_name)
+  | {OCaml_types.spec = Variant _ } -> None
+  | {OCaml_types.spec = Const_variant {OCaml_types.variant_name; _ } } -> Some (f variant_name)
 
 let gen_encode_record ?and_ {OCaml_types.record_name; fields } = 
   L.log "gen_encode_record record_name: %s\n" record_name; 
@@ -317,9 +316,9 @@ let gen_encode_const_variant ?and_ {OCaml_types.variant_name; constructors; } =
   ] 
 
 let gen_encode ?and_ = function 
-  | OCaml_types.Record r        -> Some (gen_encode_record  ?and_ r)
-  | OCaml_types.Variant _       -> None 
-  | OCaml_types.Const_variant v -> Some (gen_encode_const_variant ?and_ v)
+  | {OCaml_types.spec = Record r }        -> Some (gen_encode_record  ?and_ r)
+  | {OCaml_types.spec = Variant _ }       -> None 
+  | {OCaml_types.spec = Const_variant v } -> Some (gen_encode_const_variant ?and_ v)
 
 let gen_encode_sig t = 
   let f type_name = 
@@ -332,9 +331,9 @@ let gen_encode_sig t =
   ]
   in 
   match t with 
-  | OCaml_types.Record {OCaml_types.record_name ; _ } -> Some (f record_name)
-  | OCaml_types.Variant _ -> None
-  | OCaml_types.Const_variant {OCaml_types.variant_name; _ } -> Some (f variant_name) 
+  | {OCaml_types.spec = Record {OCaml_types.record_name ; _ } }-> Some (f record_name)
+  | {OCaml_types.spec = Variant _ } -> None
+  | {OCaml_types.spec = Const_variant {OCaml_types.variant_name; _ } } -> Some (f variant_name) 
 
 let gen_string_of_record  ?and_ {OCaml_types.record_name; fields } = 
   L.log "gen_string_of, record_name: %s\n" record_name; 
@@ -400,9 +399,9 @@ let gen_string_of_const_variant ?and_ {OCaml_types.variant_name; constructors; }
   ] 
 
 let gen_string_of ?and_ = function 
-  | OCaml_types.Record r   -> Some (gen_string_of_record ?and_ r) 
-  | OCaml_types.Variant _  -> None
-  | OCaml_types.Const_variant v -> Some (gen_string_of_const_variant ?and_ v)
+  | {OCaml_types.spec = Record r  } -> Some (gen_string_of_record ?and_ r) 
+  | {OCaml_types.spec = Variant _ } -> None
+  | {OCaml_types.spec = Const_variant v } -> Some (gen_string_of_const_variant ?and_ v)
 
 let gen_string_of_sig t = 
   let f type_name =  
@@ -412,6 +411,6 @@ let gen_string_of_sig t =
      ]
   in 
   match t with 
-  | OCaml_types.Record {OCaml_types.record_name ; _ } -> Some (f record_name)
-  | OCaml_types.Variant _ -> None
-  | OCaml_types.Const_variant {OCaml_types.variant_name; _ ; } -> Some (f variant_name) 
+  | {OCaml_types.spec = Record {OCaml_types.record_name ; _ } }-> Some (f record_name)
+  | {OCaml_types.spec = Variant _ } -> None
+  | {OCaml_types.spec = Const_variant {OCaml_types.variant_name; _ ; } } -> Some (f variant_name) 

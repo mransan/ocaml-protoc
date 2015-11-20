@@ -80,6 +80,24 @@ let () =
   " in 
   let proto = parse Parser.proto_ s in 
   assert(Some "my.proto" = proto.Pbpt.package);
+  assert(0= List.length proto.Pbpt.imports);
+  assert(2= List.length proto.Pbpt.messages);
+  assert("M1" = (List.nth proto.Pbpt.messages 0).Pbpt.message_name);
+  assert("M2" = (List.nth proto.Pbpt.messages 1).Pbpt.message_name);
+  ()
+
+let () = 
+  let s =" 
+  import \"blah.proto\";
+  import public \"boom.proto\";
+  package my.proto;
+  message M1 {} 
+  message M2 {}
+  " in 
+  let proto = parse Parser.proto_ s in 
+  assert(Some "my.proto" = proto.Pbpt.package);
+  assert(2= List.length proto.Pbpt.imports);
+  assert((Pbpt_util.import "blah.proto") = (List.nth proto.Pbpt.imports 0)); 
   assert(2= List.length proto.Pbpt.messages);
   assert("M1" = (List.nth proto.Pbpt.messages 0).Pbpt.message_name);
   assert("M2" = (List.nth proto.Pbpt.messages 1).Pbpt.message_name);

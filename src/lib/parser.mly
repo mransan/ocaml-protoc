@@ -11,6 +11,8 @@
 
 %token PACKAGE
 
+%token IMPORT
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -52,6 +54,12 @@
 %start proto_ 
 %type <Pbpt.proto> proto_
 
+%start import_ 
+%type <Pbpt.import> import_
+
+%start import_list_ 
+%type <Pbpt.import list> import_list_
+
 %%
 
 field_options_ : field_options EOF {$1}  
@@ -62,6 +70,8 @@ oneof_         : oneof         EOF {$1}
 message_       : message       EOF {$1} 
 message_list_  : message_list  EOF {$1} 
 proto_         : proto         EOF {$1} 
+import_        : import        EOF {$1} 
+import_list_   : import_list   EOF {$1} 
 
 
 /*
@@ -71,8 +81,22 @@ option | oneof | mapField | reserved | emptyStatement } "}"
 */
 
 proto:
+  | import_list package_declaration message_list {Pbpt_util.proto ~imports:$1 ~package:$2 $3}
   | package_declaration message_list {Pbpt_util.proto ~package:$1 $2}
+  | import_list message_list {Pbpt_util.proto ~imports:$1 $2}
   | message_list {Pbpt_util.proto $1}
+
+import_list: 
+  | import             {[$1]}
+  | import import_list {$1::$2}
+
+import:
+  | IMPORT STRING SEMICOLON       { Pbpt_util.import $2} 
+  | IMPORT IDENT STRING SEMICOLON { 
+    if $2 <> "public" 
+    then raise @@ Exception.invalid_import_qualifier () 
+    else Pbpt_util.import ~public:() $3
+  } 
 
 package_declaration :
   | PACKAGE IDENT SEMICOLON  {$2}  

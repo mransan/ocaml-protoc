@@ -8,7 +8,6 @@
 OCB_FLAGS = -use-ocamlfind -I src/lib -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
-all: 		native byte # profile debug
 
 clean:
 			$(OCB) -clean
@@ -31,11 +30,17 @@ profile:
 debug:
 			$(OCB) -tag debug ocaml-protoc.byte
 
+it:
+			$(OCB) ./src/unit-tests/backend_ocaml_test.native 
+			./backend_ocaml_test.native
+
+
 unit-tests: 		
 			$(OCB) ./src/unit-tests/parse_field_options.native 
 			$(OCB) ./src/unit-tests/parse_fields.native 
 			$(OCB) ./src/unit-tests/parse_enum.native
 			$(OCB) ./src/unit-tests/parse_message.native 
+			$(OCB) ./src/unit-tests/parse_import.native 
 			$(OCB) ./src/unit-tests/pbtt_compile_p1.native 
 			$(OCB) ./src/unit-tests/pbtt_compile_p2.native 
 			$(OCB) ./src/unit-tests/backend_ocaml_test.native
@@ -45,6 +50,7 @@ unit-tests:
 			./parse_fields.native
 			./parse_enum.native
 			./parse_message.native
+			./parse_import.native
 			./pbtt_compile_p1.native
 			./pbtt_compile_p2.native
 			./backend_ocaml_test.native
@@ -67,7 +73,6 @@ export LD_LIBRARY_PATH=../../install/build/lib
 
 ML_PROTOC=./ocaml-protoc.native
 
-
 %_cpp.tsk: %_cpp.cpp %.pb.cc 
 	g++ -I ./ -I ./src/integration-tests/  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
 
@@ -78,11 +83,9 @@ ML_PROTOC=./ocaml-protoc.native
 
 %_pb.ml %_pb.mli : %.proto native 
 	$(ML_PROTOC) -debug $<
-
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -I src/integration-tests -pkg unix $@ 
-
 
 test%: src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
 	./src/integration-tests/test$*_cpp.tsk encode
@@ -97,3 +100,5 @@ testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test0
 	./src/integration-tests/test03_cpp.tsk decode
 
 integration: test01 test02 testCompat test05 test06 test07 test08 
+
+all: 		native byte unit-tests integration

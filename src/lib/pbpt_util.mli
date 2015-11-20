@@ -55,7 +55,9 @@ val message :
   string -> 
   Pbpt.message
 
-val proto : ?package:string -> Pbpt.message list -> Pbpt.proto
+val import : ?public:unit -> string -> Pbpt.import 
+
+val proto : ?package:string -> ?imports:Pbpt.import list -> Pbpt.message list -> Pbpt.proto
 
 (** {2 Miscellaneous functionality } *)
 
