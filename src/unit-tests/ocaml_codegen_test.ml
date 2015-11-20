@@ -24,7 +24,7 @@ let () =
   v2 : string option;
   v3 : other;
 }|} in 
-  assert(s = Ocaml_codegen.gen_type (Ocaml_types.Record r));
+  assert(s = Ocaml_codegen.gen_type (Ocaml_types.{module_ = "A"; spec = Record r}));
   
   let s = {|let test_mappings = [
   (1, (fun d -> `Int (decode_varint_as_int d)));

@@ -29,11 +29,11 @@ let parse_args () =
   let sig_oc = match out_file_name with 
     | "" -> stdout 
     | _  -> open_out (out_file_name ^ ".mli") in 
-  (open_in !proto_file_name, sig_oc, struct_oc, !debug)  
+  (!proto_file_name, open_in !proto_file_name, sig_oc, struct_oc, !debug)  
 
 let () = 
 
-  let ic, sig_oc, struct_oc, enable_debugging = parse_args () in 
+  let proto_file_name, ic, sig_oc, struct_oc, enable_debugging = parse_args () in 
 
   if enable_debugging
   then L.setup_from_out_channel stdout;
@@ -44,12 +44,12 @@ let () =
   in 
   let scope     = Pbtt_util.scope_of_package proto.Pbpt.package in 
   let astc_msgs = List.fold_left (fun astc_msgs ast_msg -> 
-    astc_msgs @ Pbtt_util.compile_message_p1 scope ast_msg
+    astc_msgs @ Pbtt_util.compile_message_p1 proto_file_name scope ast_msg
   ) [] proto.Pbpt.messages in 
   L.log "-- Phase 1 --\n"; 
   List.iter (function 
-    | Pbtt.Message  msg -> L.endline @@ Pbtt_util.string_of_message msg
-    | Pbtt.Enum {Pbtt.enum_name; _ } -> L.endline @@ enum_name 
+    | {Pbtt.spec = Pbtt.Message  msg; id; scope; _  } -> L.endline @@ Pbtt_util.string_of_message id scope msg
+    | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ }; _  } -> L.endline @@ enum_name 
   ) astc_msgs; 
   let astc_msgs = List.map (Pbtt_util.compile_type_p2 astc_msgs) astc_msgs in 
 

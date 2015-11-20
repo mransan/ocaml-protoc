@@ -5,11 +5,14 @@ module P = Printf
 
 type programmatic_error =
   | Invalid_string_split 
-  | Unexpect_field_type 
+  | Unexpected_field_type 
+  | No_type_found_for_id 
 
-let string_of_programmatic_error = function 
+let string_of_programmatic_error e =  
+  "Programatic_error" ^ match e with
   | Invalid_string_split -> "string split error"
-  | Unexpect_field_type  -> "unexpected field type"
+  | Unexpected_field_type -> "unexpected field type"
+  | No_type_found_for_id  -> "no type was found for type id" 
 
 type unresolved_type = {
   field_name: string; 
@@ -43,6 +46,8 @@ type error =
    (** When a default value type type does not match the field type *)
   | Unsupported_field_type of unsupported_field_type 
   | Programatic_error of programmatic_error 
+  | Invalid_import_qualifier
+  | Invalid_file_name of string 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -71,6 +76,14 @@ let () =
       )
     | Compilation_error (Programatic_error e) -> 
       Some (P.sprintf "programmatic error: %s" (string_of_programmatic_error e)) 
+    | Compilation_error Invalid_import_qualifier ->
+      Some "Invalid import qualified, only 'public' supported"
+    | Compilation_error (Invalid_file_name file_name) -> 
+      let s = Printf.sprintf 
+        ("Invalid file name: %s, " ^^ 
+         "format must <name>.proto") file_name  
+      in
+      Some s
     | _         -> None
     )
 
@@ -99,3 +112,9 @@ let unsupported_field_type ~field_name ~field_type ~backend_name () =
   })
 
 let programmatic_error e = Compilation_error (Programatic_error e) 
+
+let invalid_import_qualifier () = 
+  Compilation_error Invalid_import_qualifier
+
+let invalid_file_name file_name = 
+  Compilation_error (Invalid_file_name file_name) 

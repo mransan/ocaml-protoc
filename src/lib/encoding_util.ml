@@ -20,7 +20,7 @@ let string_of_payload_kind = function
   | Bits64   -> "bits64"
   | Bytes    -> "bytes"
 
-let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a)Pbtt.field) = 
+let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) = 
   let pk, nested = match Pbtt_util.field_type field with 
     | Pbtt.Field_type_double  -> (Bits64,false)
     | Pbtt.Field_type_float  -> (Bits32 ,false)
@@ -39,8 +39,8 @@ let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a)Pbtt.field) =
     | Pbtt.Field_type_bytes  -> (Bytes,false)
     | Pbtt.Field_type_type id -> 
       match Pbtt_util.type_of_id all_types id with 
-      | Pbtt.Enum    _ -> (Varint false, false)  
-      | Pbtt.Message _ -> (Bytes, true) 
+      | {Pbtt.spec = Pbtt.Enum    _ ; _ } -> (Varint false, false)  
+      | {Pbtt.spec = Pbtt.Message _ ; _ } -> (Bytes, true) 
   in {
     payload_kind = pk;
     nested; 

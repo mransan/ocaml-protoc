@@ -1,3 +1,4 @@
+let file_name = "a.proto" 
 
 let parse f s  = 
   f Lexer.lexer (Lexing.from_string s)
@@ -13,16 +14,15 @@ let () =
   }"
   in 
   let m = parse Parser.message_ s in 
-  let all_types = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope m in 
+  let all_types = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope m in 
   assert (2 =List.length all_types); 
-  let (Pbtt.Enum {
-    Pbtt.enum_scope;
-    Pbtt.enum_name; 
+  let ({Pbtt.file_name; scope; spec = Pbtt.Enum {
+    Pbtt.enum_name;
     Pbtt.enum_values
-  }) = List.nth all_types 0 in 
+  }}) = List.nth all_types 0 in 
   assert ("TestE" = enum_name); 
   assert (2 = List.length enum_values); 
-  assert ({Pbtt.namespaces = []; Pbtt.message_names = ["TestM"]} = enum_scope);
+  assert ({Pbtt.packages = []; Pbtt.message_names = ["TestM"]} = scope);
   ()
 
 let () = 
@@ -33,14 +33,13 @@ let () =
   }"
   in 
   let ast  = parse Parser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope ast in  
+  let all_messages = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 1);
-  let (Pbtt.Message {
-    Pbtt.message_scope; 
+  let ({Pbtt.file_name; scope; spec = Pbtt.Message {
     Pbtt.message_name;
     Pbtt.message_body; 
-  }) = List.hd all_messages in 
-  assert (Pbtt_util.empty_scope = message_scope);
+  }}) = List.hd all_messages in 
+  assert (Pbtt_util.empty_scope = scope);
   assert ("Test" = message_name); 
   assert (2 = List.length message_body); 
   
@@ -77,28 +76,26 @@ let () =
   }"
   in 
   let ast  = parse Parser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope ast in  
+  let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 2);
-  let (Pbtt.Message {
-    Pbtt.message_scope; 
+  let ({Pbtt.file_name; scope; spec = Pbtt.Message {
     Pbtt.message_name;
     Pbtt.message_body; 
-  }) = List.hd all_messages in 
-  assert (1 = List.length message_scope.Pbtt.message_names);
+  }}) = List.hd all_messages in 
+  assert (1 = List.length scope.Pbtt.message_names);
   assert ("Inner" = message_name); 
   assert (2 = List.length message_body); 
   test_fields message_body; 
   let expected_scope = {
-    Pbtt.namespaces = []; 
+    Pbtt.packages = []; 
     Pbtt.message_names = [ "Test" ] 
   } in 
-  assert(expected_scope = message_scope);
-  let (Pbtt.Message {
-    Pbtt.message_scope; 
+  assert(expected_scope = scope);
+  let ({Pbtt.file_name; scope; spec = Pbtt.Message {
     Pbtt.message_name;
     Pbtt.message_body; 
-  }) = List.nth all_messages 1 in 
-  assert (Pbtt_util.empty_scope = message_scope);
+  }}) = List.nth all_messages 1 in 
+  assert (Pbtt_util.empty_scope = scope);
   assert ("Test" = message_name); 
   assert (0 = List.length message_body); 
   ()
@@ -110,14 +107,13 @@ let () =
   }"
   in 
   let ast  = parse Parser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope ast in  
+  let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 1);
-  let (Pbtt.Message {
-    Pbtt.message_scope; 
+  let ({Pbtt.file_name; scope; spec = Pbtt.Message {
     Pbtt.message_name;
     Pbtt.message_body; 
-  }) = List.hd all_messages in 
-  assert (Pbtt_util.empty_scope  = message_scope);
+  }}) = List.hd all_messages in 
+  assert (Pbtt_util.empty_scope  = scope);
   assert ("Test" = message_name); 
   assert (1 = List.length message_body); 
   let f1 = List.nth message_body 0 in 
@@ -140,7 +136,7 @@ let () =
   }
   " in 
   let ast = parse Parser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope  ast in 
+  let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope  ast in 
   assert (6 = List.length all_messages); 
   let filtered = Pbtt_util.find_all_types_in_field_scope all_messages [] in 
   assert (1 = List.length filtered);

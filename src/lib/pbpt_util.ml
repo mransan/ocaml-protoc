@@ -49,9 +49,15 @@ let message ~content name =
     message_body = content;
   } 
 
-let proto ?package messages = {
+let proto ?package ?imports:(imports = []) messages = {
+  Pbpt.imports; 
   Pbpt.package; 
   Pbpt.messages; 
+}
+
+let import ?public file_name = {
+  Pbpt.public = (match public with | Some _ -> true | None -> false); 
+  Pbpt.file_name; 
 }
 
 let rec message_printer ?level:(level = 0) {

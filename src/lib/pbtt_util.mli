@@ -18,7 +18,7 @@ val type_of_id : 'a Pbtt.proto -> int -> 'a Pbtt.proto_type
     @raise [Not_found] if the type is not in the all_types. 
   *)
 
-val string_of_message : 'a Pbtt.message -> string 
+val string_of_message : int -> Pbtt.type_scope -> 'a Pbtt.message -> string 
 
 (** {2 Accessor for Pbtt.type *) 
 
@@ -51,12 +51,14 @@ val scope_of_package : string option -> Pbtt.type_scope
  *)
 
 val compile_message_p1 : 
+  string -> 
   Pbtt.type_scope -> 
   Pbpt.message ->
   Pbtt.unresolved Pbtt.proto
 
 val compile_message_p2: 
   Pbtt.unresolved Pbtt.proto -> 
+  Pbtt.type_scope -> 
   Pbtt.unresolved Pbtt.message -> 
   Pbtt.resolved Pbtt.message 
 (** [compile_message_p2] resolved all the fields in the given message. 

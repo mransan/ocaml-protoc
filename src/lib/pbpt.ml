@@ -81,9 +81,15 @@ and message = {
   message_body : message_body_content list; 
 }
 
+type import = {
+  file_name : string; 
+  public : bool; 
+}
+
 (** Definition of a protobuffer message file. 
  *)
 type proto = {
+  imports : import list; 
   package : string option; 
   messages : message list; 
 }

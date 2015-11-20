@@ -21,3 +21,6 @@ val apply_until : ('a -> 'b option) -> 'a list -> 'b option
     
     If [f] returns [None] then [None] is returned. 
  *)
+
+val is_list_empty : 'a list -> bool
+(** [is_list_empty l] returns true is the list is empty, false otherwise *)

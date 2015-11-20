@@ -35,9 +35,9 @@ let () =
   }
   " in 
   let ast = parse Parser.message_ s in 
-  let all_types = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope ast in 
+  let all_types = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in 
   ignore @@ List.map (function 
-    | Pbtt.Message m  -> Pbtt_util.compile_message_p2 all_types m) all_types; 
+    | {Pbtt.spec = Pbtt.Message m ; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m) all_types; 
   ()
 
 let assert_unresolved f = 
@@ -47,9 +47,9 @@ let assert_unresolved f =
 
 let test_unresolved_msg s = 
   let ast = parse Parser.message_ s in 
-  let all_types = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope ast in 
+  let all_types = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in 
   assert_unresolved (fun () -> 
-    ignore @@ List.map (function | Pbtt.Message m -> Pbtt_util.compile_message_p2 all_types m) all_types
+    ignore @@ List.map (function | {Pbtt.spec = Message m; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m) all_types
   )
 
 let () = 
@@ -100,8 +100,8 @@ let assert_duplicate f =
 let test_duplicate s = 
   let ast = parse Parser.message_ s in 
   assert_duplicate (fun () -> 
-    let all_types = Pbtt_util.compile_message_p1 Pbtt_util.empty_scope ast in 
-    ignore @@ List.map (function |Pbtt.Message m -> Pbtt_util.compile_message_p2 all_types m) all_types
+    let all_types = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in 
+    ignore @@ List.map (function | {Pbtt.spec = Message m; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m) all_types
   )
 
 let () = 

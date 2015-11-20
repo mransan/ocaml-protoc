@@ -46,7 +46,12 @@ type record = {
   fields : record_encoding_type afield list; 
 }
 
-type type_ = 
+type type_spec = 
   | Record of record 
   | Variant of variant
   | Const_variant  of const_variant 
+
+type type_ = {
+  module_ : string; (* For now limit to a single module *)  
+  spec : type_spec; 
+}

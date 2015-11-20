@@ -1,7 +1,8 @@
 
 type programmatic_error =
   | Invalid_string_split 
-  | Unexpect_field_type 
+  | Unexpected_field_type 
+  | No_type_found_for_id 
 
 type unresolved_type = {
   field_name: string; 
@@ -35,6 +36,8 @@ type error =
    (** When a default value type type does not match the field type *)
   | Unsupported_field_type of unsupported_field_type 
   | Programatic_error of programmatic_error 
+  | Invalid_import_qualifier 
+  | Invalid_file_name of string  
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -63,3 +66,7 @@ val unsupported_field_type :
   unit -> exn
 
 val programmatic_error : programmatic_error -> exn
+
+val invalid_import_qualifier : unit -> exn
+
+val invalid_file_name : string -> exn 

@@ -23,3 +23,5 @@ let rec apply_until f = function
     | None -> apply_until f tl 
     | x    -> x
   )  
+
+let is_list_empty = function | [] -> true | _ -> false 
