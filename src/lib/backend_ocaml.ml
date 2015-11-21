@@ -12,9 +12,10 @@ let record_field_name s =
   String.lowercase s 
 
 let module_of_file_name file_name = 
+  let file_name = Filename.basename file_name in 
   match String.rindex file_name '.' with 
   | dot_index -> 
-    module_name @@ String.sub file_name 0 dot_index 
+    module_name @@ (String.sub file_name 0 dot_index ^ "_pb") 
   | exception Not_found -> raise @@ E.invalid_file_name file_name  
 
 let type_name message_scope name = 
@@ -36,7 +37,8 @@ let type_name message_scope name =
     with the module name. (This is essentially expecting (rightly) a sub module 
     with the same name. 
  *)
-let field_type_name_of_id all_types module_ i = 
+let field_type_name_of_id all_types file_name i = 
+  let module_ = module_of_file_name file_name in 
   match Pbtt_util.type_of_id all_types i with
   | exception Not_found -> 
     raise @@ E.programmatic_error E.No_type_found_for_id 
@@ -48,7 +50,7 @@ let field_type_name_of_id all_types module_ i =
       then type_name
       else (field_type_module ^ "." ^ type_name) 
 
-let compile_field ?as_constructor all_types f type_qualifier module_ field = 
+let compile_field ?as_constructor all_types f type_qualifier file_name field = 
   let field_name = Pbtt_util.field_name field in 
   let encoding_type = Pbtt_util.field_type field in 
 
@@ -57,7 +59,7 @@ let compile_field ?as_constructor all_types f type_qualifier module_ field =
     | None   -> record_field_name field_name 
   in 
 
-  let field_encoding = Encoding_util.encoding_of_field_type all_types field in 
+  let field_encoding = Encoding_util.encoding_of_field_type all_types file_name field in 
   let field_type = match encoding_type with
     | Pbtt.Field_type_double  -> OCaml_types.Float
     | Pbtt.Field_type_float  ->  OCaml_types.Float
@@ -77,7 +79,7 @@ let compile_field ?as_constructor all_types f type_qualifier module_ field =
     | Pbtt.Field_type_string  -> OCaml_types.String
     | Pbtt.Field_type_bytes  -> OCaml_types.Bytes
     | Pbtt.Field_type_type id -> 
-      let name = field_type_name_of_id all_types module_ id in 
+      let name = field_type_name_of_id all_types file_name id in 
       OCaml_types.User_defined_type name 
   in {
     OCaml_types.field_type; 
@@ -86,11 +88,11 @@ let compile_field ?as_constructor all_types f type_qualifier module_ field =
     OCaml_types.encoding_type = f field_encoding ; 
   }
 
-let compile_oneof all_types module_ message_scope outer_message_name {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
+let compile_oneof all_types file_name message_scope outer_message_name {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
   let {Pbtt.message_names; _ } = message_scope in 
   let variant_name = type_name (message_names @ [outer_message_name]) oneof_name in 
   let constructors = List.map (fun field -> 
-    compile_field ~as_constructor:() all_types (fun x -> x)  OCaml_types.No_qualifier module_ field 
+    compile_field ~as_constructor:() all_types (fun x -> x) OCaml_types.No_qualifier file_name field 
   ) oneof_fields in 
   OCaml_types.({variant_name; constructors; })
 
@@ -116,10 +118,10 @@ let compile_message
         | `Required -> OCaml_types.No_qualifier
         | `Repeated -> OCaml_types.List
       in 
-      (variants, (compile_field all_types (fun x -> OCaml_types.Regular_field x) type_qualifier module_ f)::fields)
+      (variants, (compile_field all_types (fun x -> OCaml_types.Regular_field x) type_qualifier file_name f)::fields)
     )
     | Pbtt.Message_oneof_field f -> (
-      let variant = compile_oneof all_types module_ scope message_name f in 
+      let variant = compile_oneof all_types file_name scope message_name f in 
       let field   = OCaml_types.({
         field_type =  User_defined_type (variant.variant_name); 
         field_name =  record_field_name f.Pbtt.oneof_name;

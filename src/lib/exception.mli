@@ -38,6 +38,7 @@ type error =
   | Programatic_error of programmatic_error 
   | Invalid_import_qualifier 
   | Invalid_file_name of string  
+  | Import_file_not_found of string 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -64,6 +65,8 @@ val unsupported_field_type :
   field_type:string -> 
   backend_name:string ->
   unit -> exn
+
+val import_file_not_found : string -> exn 
 
 val programmatic_error : programmatic_error -> exn
 

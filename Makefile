@@ -76,13 +76,19 @@ ML_PROTOC=./ocaml-protoc.native
 %_cpp.tsk: %_cpp.cpp %.pb.cc 
 	g++ -I ./ -I ./src/integration-tests/  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
 
+src/integration-tests/test10_cpp.tsk: \
+	src/integration-tests/test10_cpp.cpp \
+	src/integration-tests/test10.pb.cc \
+	src/integration-tests/test09.pb.cc 
+	g++ -I ./ -I ./src/integration-tests/  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
+
 .SECONDARY: 
 
 %.pb.cc: %.proto
-	$(PROTOC) --cpp_out ./ $<
+	$(PROTOC) --cpp_out src/integration-tests/ -I src/integration-tests/ $<
 
 %_pb.ml %_pb.mli : %.proto native 
-	$(ML_PROTOC) -debug $<
+	$(ML_PROTOC) -I src/integration-tests/ -ml_out ./src/integration-tests/ $<
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -I src/integration-tests -pkg unix $@ 
@@ -99,6 +105,6 @@ testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test0
 	./_build/src/integration-tests/test04_ml.native encode
 	./src/integration-tests/test03_cpp.tsk decode
 
-integration: test01 test02 testCompat test05 test06 test07 test08 
+integration: test01 test02 testCompat test05 test06 test07 test08 test09 
 
 all: 		native byte unit-tests integration

@@ -1,0 +1,4 @@
+import "test09.proto"; 
+message M10 {
+    required M09 m10_f1 = 1;
+}

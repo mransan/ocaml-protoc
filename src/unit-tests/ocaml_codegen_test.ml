@@ -5,17 +5,17 @@ let () =
       field_type = Int; 
       field_name = "v1"; 
       type_qualifier = No_qualifier;
-      encoding_type = Regular_field {field_number = 1; nested = false; payload_kind = Encoding_util.Varint false}
+      encoding_type = Regular_field {location=Standard_type; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false}
     }; {
       field_type = String; 
       field_name = "v2"; 
       type_qualifier = Option;
-      encoding_type = Regular_field {field_number = 2; nested = false; payload_kind = Encoding_util.Bytes}
+      encoding_type = Regular_field {location=Standard_type; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes}
     };{
       field_type = User_defined_type "other"; 
       field_name = "v3"; 
       type_qualifier = No_qualifier;
-      encoding_type = Regular_field {field_number = 3; nested = true ; payload_kind = Encoding_util.Bytes}
+      encoding_type = Regular_field {location=Within_same_module; field_number = 3; nested = true ; payload_kind = Encoding_util.Bytes}
     };];
   }) in
 

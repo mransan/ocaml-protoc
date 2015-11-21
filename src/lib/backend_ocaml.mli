@@ -16,12 +16,7 @@ val compile :
   Pbtt.resolved Pbtt.proto_type -> 
   Ocaml_types.type_ list 
 
-(** {2 Code Generation} *)
-
-module Codegen : sig
-  
-
-end
+val module_of_file_name : string -> string 
 
 (* --- Testing purpose only --- *)
 
