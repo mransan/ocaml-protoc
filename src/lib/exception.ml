@@ -48,6 +48,8 @@ type error =
   | Programatic_error of programmatic_error 
   | Invalid_import_qualifier
   | Invalid_file_name of string 
+  | Import_file_not_found of string 
+
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -84,6 +86,12 @@ let () =
          "format must <name>.proto") file_name  
       in
       Some s
+    | Compilation_error (Import_file_not_found file_name) -> 
+      let s = Printf.sprintf 
+        ("File: %s, " ^^ 
+         "could not be found.") file_name  
+      in
+      Some s
     | _         -> None
     )
 
@@ -110,6 +118,9 @@ let unsupported_field_type ~field_name ~field_type ~backend_name () =
     field_type;
     backend_name;
   })
+
+let import_file_not_found file_name = 
+  Compilation_error (Import_file_not_found file_name) 
 
 let programmatic_error e = Compilation_error (Programatic_error e) 
 

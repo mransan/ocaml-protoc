@@ -13,6 +13,9 @@ let printf_char_of_field_type = function
 
 let constructor_name s =
   String.capitalize @@ String.lowercase s 
+
+let tag_name s =
+  String.capitalize @@ String.lowercase (String.map (function | '.' -> '_' | c -> c ) s) 
   
 (** utility function used to generate decode/encode function names 
       which are implemented in [Backend_ocaml_static].
@@ -110,18 +113,26 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
       | OCaml_types.Regular_field {
         Encoding_util.field_number; 
         Encoding_util.payload_kind;
+        Encoding_util.location;
         Encoding_util.nested } -> (
         let decoding = match field_type with 
           | OCaml_types.User_defined_type t -> 
+            let f_name = match location with 
+              | Encoding_util.Other_file {file_name; type_name} -> 
+                let module_ = Backend_ocaml.module_of_file_name file_name in 
+                P.sprintf "%s.decode_%s" module_ (String.lowercase type_name) 
+              | _ -> 
+                P.sprintf "decode_%s" t 
+            in 
             if nested 
             then  
-             P.sprintf "(fun d -> `%s (decode_%s (Pc.Decoder.nested d)))" (constructor_name t) t  
+             P.sprintf "(fun d -> `%s (%s (Pc.Decoder.nested d)))" (tag_name t) f_name
             else 
-             P.sprintf "(fun d -> `%s (decode_%s d))" (constructor_name t) t  
+             P.sprintf "(fun d -> `%s (%s d))" (tag_name t) f_name 
           | _ -> 
              let field_type = string_of_field_type OCaml_types.No_qualifier field_type in 
              P.sprintf "(fun d -> `%s (decode_%s_as_%s d))" 
-               (constructor_name field_type)
+               (tag_name field_type)
                (fname_of_payload_kind payload_kind)
                field_type 
         in 
@@ -132,20 +143,29 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
           let {
             Encoding_util.field_number; 
             Encoding_util.payload_kind;
-            Encoding_util.nested} = encoding_type in 
+            Encoding_util.nested; 
+            Encoding_util.location; } = encoding_type in 
           let decoding  =  match field_type with 
             | OCaml_types.User_defined_type t -> 
+              let f_name = match location with 
+                | Encoding_util.Other_file {file_name; type_name} -> 
+                  let module_ = Backend_ocaml.module_of_file_name file_name in 
+                  P.sprintf "%s.decode_%s" module_ (String.lowercase type_name) 
+                | _ -> 
+                  P.sprintf "decode_%s" t 
+              in 
+
               if nested 
               then 
-                P.sprintf "(fun d -> `%s (%s (decode_%s (Pc.Decoder.nested d))))" 
-                  (constructor_name variant_name) field_name t  
+                P.sprintf "(fun d -> `%s (%s (%s (Pc.Decoder.nested d))))" 
+                  (tag_name variant_name) field_name f_name
               else 
-                P.sprintf "(fun d -> `%s (%s (decode_%s d))" 
-                  (constructor_name variant_name) field_name t  
+                P.sprintf "(fun d -> `%s (%s (%s d))" 
+                  (tag_name variant_name) field_name f_name 
             | _ -> 
               let field_type = string_of_field_type OCaml_types.No_qualifier field_type in 
               P.sprintf "(fun d -> `%s (%s (decode_%s_as_%s d)))" 
-                (constructor_name variant_name)
+                (tag_name variant_name)
                 field_name
                 (fname_of_payload_kind payload_kind)
                 field_type 
@@ -183,8 +203,7 @@ let gen_decode_record ?and_ ({OCaml_types.record_name; fields } as record) =
       } = field in 
       match encoding_type with 
       | OCaml_types.Regular_field {Encoding_util.field_number; _ } -> ( 
-          let constructor = constructor_name (string_of_field_type
-          OCaml_types.No_qualifier field_type) in  
+          let constructor = tag_name (string_of_field_type OCaml_types.No_qualifier field_type) in  
           match type_qualifier with
           | OCaml_types.No_qualifier -> 
             sp "%s = required %i a (function | `%s __v -> __v | _ -> e());"
@@ -202,7 +221,7 @@ let gen_decode_record ?and_ ({OCaml_types.record_name; fields } as record) =
           ) constructors in 
           let all_numbers = concat ["["; all_numbers; "]"] in 
           sp "%s = (match oneof %s a with | `%s __v -> __v | _ -> e());"
-            field_name all_numbers (constructor_name variant_name)
+            field_name all_numbers (tag_name variant_name)
     ) fields;
     sp "    }";
     sp "  )";
@@ -245,17 +264,25 @@ let gen_encode_record ?and_ {OCaml_types.record_name; fields } =
     let {
       Encoding_util.field_number; 
       Encoding_util.payload_kind; 
+      Encoding_util.location; 
       Encoding_util.nested} = encoding_type in 
     let s = concat [
       sp "Pc.Encoder.key (%i, Pc.%s) encoder; " 
         field_number (constructor_name @@ Encoding_util.string_of_payload_kind payload_kind);
       match field_type with 
       | OCaml_types.User_defined_type t -> 
+        let f_name = match location with 
+          | Encoding_util.Other_file {file_name; type_name} -> 
+            let module_ = Backend_ocaml.module_of_file_name file_name in 
+            P.sprintf "%s.encode_%s" module_ (String.lowercase type_name) 
+          | _ -> 
+            P.sprintf "encode_%s" t 
+        in 
         if nested
         then 
-          sp "Pc.Encoder.nested (encode_%s %s) encoder;" t v_name 
+          sp "Pc.Encoder.nested (%s %s) encoder;" f_name v_name 
         else 
-          sp "encode_%s %s encoder;" t v_name 
+          sp "%s %s encoder;" f_name v_name 
       | _ ->  
         sp "encode_%s_as_%s %s encoder;"
           (string_of_field_type OCaml_types.No_qualifier field_type) 
@@ -338,10 +365,17 @@ let gen_encode_sig t =
 let gen_string_of_record  ?and_ {OCaml_types.record_name; fields } = 
   L.log "gen_string_of, record_name: %s\n" record_name; 
 
-  let gen_field field_name field_type = 
+  let gen_field field_name field_type encoding_type = 
     match field_type with 
-    | OCaml_types.User_defined_type t -> 
-      P.sprintf "P.sprintf \"\\n%s: %%s\" @@ string_of_%s x" field_name t  
+    | OCaml_types.User_defined_type t -> (
+      match encoding_type with
+      | {Encoding_util.location = Other_file {file_name;type_name} ; _ } -> 
+        let module_   = Backend_ocaml.module_of_file_name file_name in 
+        let type_name = String.lowercase type_name in  
+        P.sprintf "P.sprintf \"\\n%s: %%s\" @@ %s.string_of_%s x" field_name module_ type_name 
+      | _ -> 
+        P.sprintf "P.sprintf \"\\n%s: %%s\" @@ string_of_%s x" field_name t  
+    )
     | _ ->  
       P.sprintf "P.sprintf \"\\n%s: %%%c\" x"  
         field_name 
@@ -356,30 +390,30 @@ let gen_string_of_record  ?and_ {OCaml_types.record_name; fields } =
      
       let { OCaml_types.field_type; field_name; type_qualifier ; encoding_type} = field in 
       match encoding_type with 
-      | OCaml_types.Regular_field _ -> ( 
+      | OCaml_types.Regular_field encoding_type -> ( 
         match type_qualifier with
         | OCaml_types.No_qualifier -> 
-          let field_string_of = gen_field field_name field_type in 
+          let field_string_of = gen_field field_name field_type encoding_type in 
           sp "(let x = v.%s in %s);" field_name field_string_of 
         | OCaml_types.Option -> 
           concat [
             sp "(match v.%s with " field_name;
-            sp "| Some x -> (%s)"  (gen_field field_name field_type);
+            sp "| Some x -> (%s)"  (gen_field field_name field_type encoding_type);
             sp "| None -> \"\\n%s: None\");" field_name;
           ]
         | OCaml_types.List -> 
           concat [
             sp "String.concat \"\" @@ List.map (fun x ->";
-            nl @@ gen_field field_name field_type; 
+            nl @@ gen_field field_name field_type encoding_type; 
             sp ") v.%s;" field_name
           ]
       )
       | OCaml_types.One_of {OCaml_types.constructors; variant_name = _} -> (
         concat [
           sp "(match v.%s with" field_name;
-          concat @@ List.map (fun {OCaml_types.encoding_type=_; field_type; field_name;
+          concat @@ List.map (fun {OCaml_types.encoding_type; field_type; field_name;
           type_qualifier= _ } ->
-            let field_string_of = gen_field field_name field_type in 
+            let field_string_of = gen_field field_name field_type encoding_type in 
             sp "| %s x -> (%s)" field_name (add_indentation 1 field_string_of)
           ) constructors ;
           "\n);"       (* one of fields *) 

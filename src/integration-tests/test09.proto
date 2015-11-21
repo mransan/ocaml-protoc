@@ -1,0 +1,3 @@
+message M09 {
+    required int32 int32_f1 = 1;
+}
