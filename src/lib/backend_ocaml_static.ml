@@ -69,10 +69,6 @@ let encode_bytes_as_bytes  = Pc.Encoder.bytes
 let prefix_decode_f = {|
 
 let decode decoder mappings values = 
-  let insert number v = 
-    let v' = Array.unsafe_get values number in 
-    Array.unsafe_set values number (v::v')
-  in 
 
   let continue = ref true in 
   while !continue do 
@@ -80,7 +76,9 @@ let decode decoder mappings values =
     | None -> continue := false
     | Some (number, payload_kind) -> (
       try 
-        insert number (mappings decoder number)
+        let v' = Array.unsafe_get values number in 
+        let v = mappings decoder (number, v') in 
+        Array.unsafe_set values number v
       with 
       | Not_found ->  (
         Pc.Decoder.skip decoder payload_kind; 
@@ -90,33 +88,35 @@ let decode decoder mappings values =
   values
 
 let required number a f = 
-  match Array.unsafe_get a number with 
+  match f @@ Array.unsafe_get a number with 
   | []     -> failwith (P.sprintf "field %i missing" number)
-  | hd::_  -> f hd
+  | hd::_  -> hd
   (* TODO Improve *) 
+
+let e i = failwith @@ Printf.sprintf "programmatic error for field %i" i 
 
 let optional number a f = 
   match Array.unsafe_get a number with 
-  | []     -> None
-  | hd::_ -> Some (f hd)
+  | `Default  -> None
+  | v         -> (match f v with
+    | hd::_ -> Some hd
+    | _     -> e number   
+  )
   (* TODO Improve *) 
 
 let list_ number a f = 
-  List.rev_map f @@ Array.unsafe_get a number
+  List.rev @@ f @@ Array.unsafe_get a number
 
 external identity: 'a -> 'a = "%identity"
 
-let oneof numbers a = 
+let oneof numbers a f = 
   let ret = List.fold_left (fun x number -> 
     match x with 
     | Some _ -> x 
-    | None   -> optional number a identity  
- ) None numbers in 
- match ret with 
- | Some x -> x 
- | None -> failwith "None of oneof value could be found." 
+    | None   -> optional number a f
+  ) None numbers in 
+  match ret with 
+  | Some x -> x 
+  | None -> failwith "None of oneof value could be found." 
 
-
-
-let e () = failwith "programmatic error" 
 |}

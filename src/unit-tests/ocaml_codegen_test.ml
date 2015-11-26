@@ -26,11 +26,17 @@ let () =
 }|} in 
   assert(s = Ocaml_codegen.gen_type (Ocaml_types.{module_ = "A"; spec = Record r}));
   
-  let s = {|let test_mappings = [
-  (1, (fun d -> `Int (decode_varint_as_int d)));
-  (2, (fun d -> `String (decode_bytes_as_string d)));
-  (3, (fun d -> `Other (decode_other (Pc.Decoder.nested d))));
-]|} in
+
+  Printf.printf "---\n%s\n---" (Ocaml_codegen.gen_mappings_record r); 
+  let s = {|let test_mappings d = function   
+| 1, `Int l -> `Int ( (decode_varint_as_int d)::l)
+| 1, `Default -> `Int ( (decode_varint_as_int d)::[])  
+| 2, `String l -> `String ( (decode_bytes_as_string d)::l)
+| 2, `Default -> `String ( (decode_bytes_as_string d)::[])  
+| 3, `Other l -> `Other ( (decode_other (Pc.Decoder.nested d))::l)
+| 3, `Default -> `Other ( (decode_other (Pc.Decoder.nested d))::[])
+  | _ -> raise Not_found 
+|} in 
 
   assert (s = Ocaml_codegen.gen_mappings_record r);
   ()
