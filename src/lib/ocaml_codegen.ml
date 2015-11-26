@@ -107,7 +107,7 @@ let gen_type ?and_ = function
 let gen_mappings_record {OCaml_types.record_name; fields} =
 
   concat [
-    P.sprintf "let %s_mappings = [" record_name;
+    P.sprintf "let %s_mappings d = function " record_name;
     concat @@ List.map (fun {OCaml_types.encoding_type;field_type;_ } -> 
       match encoding_type with 
       | OCaml_types.Regular_field {
@@ -126,17 +126,17 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
             in 
             if nested 
             then  
-             P.sprintf "(fun d -> `%s (%s (Pc.Decoder.nested d)))" (tag_name t) f_name
+             P.sprintf "`%s (%s (Pc.Decoder.nested d))" (tag_name t) f_name
             else 
-             P.sprintf "(fun d -> `%s (%s d))" (tag_name t) f_name 
+             P.sprintf "`%s (%s d)" (tag_name t) f_name 
           | _ -> 
              let field_type = string_of_field_type OCaml_types.No_qualifier field_type in 
-             P.sprintf "(fun d -> `%s (decode_%s_as_%s d))" 
+             P.sprintf "`%s (decode_%s_as_%s d)" 
                (tag_name field_type)
                (fname_of_payload_kind payload_kind)
                field_type 
         in 
-        sp "  (%i, %s);" field_number decoding 
+        sp "  | %i -> %s " field_number decoding 
       )
       | OCaml_types.One_of {OCaml_types.variant_name ; constructors; } -> (
         concat @@ List.map (fun {OCaml_types.encoding_type; field_type; field_name; type_qualifier = _ } -> 
@@ -157,24 +157,25 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
 
               if nested 
               then 
-                P.sprintf "(fun d -> `%s (%s (%s (Pc.Decoder.nested d))))" 
+                P.sprintf "`%s (%s (%s (Pc.Decoder.nested d)))" 
                   (tag_name variant_name) field_name f_name
               else 
-                P.sprintf "(fun d -> `%s (%s (%s d))" 
+                P.sprintf "`%s (%s (%s d)" 
                   (tag_name variant_name) field_name f_name 
             | _ -> 
               let field_type = string_of_field_type OCaml_types.No_qualifier field_type in 
-              P.sprintf "(fun d -> `%s (%s (decode_%s_as_%s d)))" 
+              P.sprintf "`%s (%s (decode_%s_as_%s d))" 
                 (tag_name variant_name)
                 field_name
                 (fname_of_payload_kind payload_kind)
                 field_type 
           in 
-          sp "  (%i, %s);" field_number decoding 
+          sp "  | %i -> %s" field_number decoding 
         ) constructors (* All variant constructors *) 
       )                (* One_of record field *)    
     ) fields ;
-    "\n]";
+    sp "  | _ -> raise Not_found ";
+    "\n";
   ]
 
 let max_field_number fields = 

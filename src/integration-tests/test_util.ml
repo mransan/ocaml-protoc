@@ -7,10 +7,17 @@ let time_f f =
   (t2 -. t1), x 
 
 let get_binary_file_content file_name = 
-  let ic     = open_in_bin file_name in 
-  let s      = in_channel_length ic in 
-  Printf.printf "binary file size: %i \n%!" s ;
-  let b      = Bytes.create s in 
+  let t, (ic, s) = time_f (fun () -> 
+    let ic     = open_in_bin file_name in 
+    let s      = in_channel_length ic in 
+    ic, s
+  ) in 
+
+  let t', b = time_f (fun () -> 
+    Bytes.create s 
+  ) in 
+
+  Printf.printf "binary file size: %i in %f, %f \n%!" s t t'  ;
   let t1     = Unix.gettimeofday () in 
 
   let offset = ref 0 in 
@@ -48,7 +55,9 @@ let decode ?noprint file_name f_decode f_to_string ref_data  =
   let buffer, size = get_binary_file_content file_name in 
   Printf.printf "Done reading data, size=%i\n%!" size ;
 
+  (*
   let buffer = Bytes.sub buffer 0 size in 
+  *)
   let decoder = Pc.Decoder.of_bytes buffer in 
   
   let t, x = time_f (fun () -> 

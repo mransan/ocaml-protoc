@@ -95,9 +95,9 @@ src/integration-tests/test10_cpp.tsk: \
 
 test%: src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
 	./src/integration-tests/test$*_cpp.tsk encode
-	./_build/src/integration-tests/test$*_ml.native decode
+	time ./_build/src/integration-tests/test$*_ml.native decode
 	./_build/src/integration-tests/test$*_ml.native encode
-	./src/integration-tests/test$*_cpp.tsk decode
+	time ./src/integration-tests/test$*_cpp.tsk decode
 
 testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test04_ml.native 
 	./src/integration-tests/test03_cpp.tsk encode

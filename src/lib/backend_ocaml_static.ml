@@ -80,8 +80,7 @@ let decode decoder mappings values =
     | None -> continue := false
     | Some (number, payload_kind) -> (
       try 
-        let mapping = List.assoc number mappings in 
-        insert number (mapping decoder);
+        insert number (mappings decoder number)
       with 
       | Not_found ->  (
         Pc.Decoder.skip decoder payload_kind; 

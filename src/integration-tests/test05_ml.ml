@@ -3,7 +3,7 @@ module T  = Test05_pb
 
 let  max_int = 107374182
 let  min_int = -107374182
-let  inc     = 2500
+let  inc     = 250
 
 let decode_ref_data () = 
   let rec loop l = function

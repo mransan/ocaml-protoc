@@ -9,7 +9,7 @@
 namespace { 
 int max_int = 107374182;
 int min_int = -107374182;
-int inc     = 2500;
+int inc     = 250;
 }
 
 IntList create_test() {
