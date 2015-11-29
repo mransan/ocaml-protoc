@@ -111,11 +111,8 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
       | Some x -> P.sprintf "(%s " x, ")" 
       | None   -> "", ""
     in 
-    
     concat [
       sp "| %i, `%s l -> `%s (%s (%s)%s::l)"
-      (* `Left (Empty (decode d))::l   *)
-      (* `Left        (decode d) ::l   *)
         field_number 
         tag_name
         tag_name

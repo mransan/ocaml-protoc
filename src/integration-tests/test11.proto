@@ -1,0 +1,33 @@
+package foo.bar;  
+
+message Person {
+    message TelNumber {
+        required int32 area_code = 1;
+        required int32 number    = 2;
+    }
+    required string     first_name    = 1; 
+    required string     last_name     = 2; 
+    required int32      date_of_birth = 3;
+    optional TelNumber  tel_number    = 4;  
+
+    oneof Employment {
+        int32  self_employed = 5; // value is unused  
+        string employed_by   = 6; // value is company name
+    }
+    enum MaritalStatus {
+        Single = 1; 
+        Married = 2; 
+    }
+    optional MaritalStatus marital_status = 7 [default=Single];
+}
+
+message Couple {
+    required Person p1 = 1;
+    required Person p2 = 2; 
+    repeated Person.TelNumber contact_numbers = 3;
+    optional uint32 number_of_children = 4 [default = 0];
+}
+
+message Couples {
+    repeated Couple all = 1; 
+}

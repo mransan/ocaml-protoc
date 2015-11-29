@@ -51,7 +51,28 @@ let parse_args () =
   Arg.parse cmd_line_args anon_fun usage;
   mode_of_string !mode 
 
-let decode ?noprint file_name f_decode f_to_string ref_data  = 
+let check_decoded ?noprint x f_to_string ref_data = 
+  if  x = ref_data 
+  then (
+    print_endline "ML: -- Good --"; 
+    match noprint with 
+    | None -> (
+      print_endline "-- [ML Debug Start] :\n";
+      print_endline @@ f_to_string x; 
+      print_endline "-- [ML Debug End] :\n"
+    )
+    | Some () -> () ;
+    exit 0
+  )
+  else (
+    print_endline "ML: -- Test Failed --";  
+    match noprint with
+    | None -> print_endline @@ f_to_string x
+    | Some () -> (); 
+    exit 1
+  )
+
+let decode ?noprint ?notest file_name f_decode f_to_string ref_data  = 
   let buffer, size = get_binary_file_content file_name in 
   Printf.printf "Done reading data, size=%i\n%!" size ;
 
@@ -64,25 +85,11 @@ let decode ?noprint file_name f_decode f_to_string ref_data  =
     f_decode decoder 
   ) in 
   Printf.printf "Decode : %f \n%!" t; 
-  if  x = ref_data 
-  then (
-    print_endline "ML: -- Good --"; 
-    match noprint with 
-    | None -> (
-      print_endline "-- [ML Debug Start] :\n";
-      print_endline @@ f_to_string x; 
-      print_endline "-- [ML Debug End] :\n"
-    )
-    | Some _ -> () ;
-    exit 0
-  )
-  else (
-    print_endline "ML: -- Test Failed --";  
-    match noprint with
-    | None -> print_endline @@ f_to_string x
-    | Some _ -> (); 
-    exit 1
-  )
+  begin 
+    match notest with
+    | None    -> check_decoded x f_to_string ref_data 
+    | Some () -> ()
+  end 
 
 let encode file_name f_encode ref_data = 
   let encoder = Pc.Encoder.create () in 
