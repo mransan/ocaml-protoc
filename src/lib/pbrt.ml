@@ -21,10 +21,10 @@ THE SOFTWARE.
 *)
 
 type payload_kind =
-| Varint
-| Bits32
-| Bits64
-| Bytes
+  | Varint
+  | Bits32
+  | Bits64
+  | Bytes
 
 let min_int_as_int32, max_int_as_int32 = Int32.of_int min_int, Int32.of_int max_int
 let min_int_as_int64, max_int_as_int64 = Int64.of_int min_int, Int64.of_int max_int
@@ -35,14 +35,15 @@ let min_int32_as_int, max_int32_as_int =
   else 0, 0
 
 module Decoder = struct
+
   type error =
-  | Incomplete
-  | Overlong_varint
-  | Malformed_field
-  | Overflow            of string
-  | Unexpected_payload  of string * payload_kind
-  | Missing_field       of string
-  | Malformed_variant   of string
+    | Incomplete
+    | Overlong_varint
+    | Malformed_field
+    | Overflow            of string
+    | Unexpected_payload  of string * payload_kind
+    | Missing_field       of string
+    | Malformed_variant   of string
 
   let error_to_string e =
     match e with
@@ -129,6 +130,18 @@ module Decoder = struct
     let rec read s =
       let b = byte d in
       if b land 0x80 <> 0 then
+        ((b land 0x7f) lsl s) lor (read (s + 7))
+      else if s < 56 || (b land 0x7f) <= 1 then
+        b lsl  s
+      else
+        raise (Failure Overlong_varint)
+    in
+    read 0
+
+  let varint_64 d =
+    let rec read s =
+      let b = byte d in
+      if b land 0x80 <> 0 then
         Int64.(logor (shift_left (logand (of_int b) 0x7fL) s) (read (s + 7)))
       else if s < 56 || (b land 0x7f) <= 1 then
         Int64.(shift_left (of_int b) s)
@@ -136,10 +149,29 @@ module Decoder = struct
         raise (Failure Overlong_varint)
     in
     read 0
+  
+  let varint_32 d =
+    let rec read s =
+      let b = byte d in
+      if b land 0x80 <> 0 then
+        Int32.(logor (shift_left (logand (of_int b) 0x7fl) s) (read (s + 7)))
+      else if s < 24 || (b land 0x7f) <= 1 then
+        Int32.(shift_left (of_int b) s)
+      else
+        raise (Failure Overlong_varint)
+    in
+    read 0
 
-  let zigzag d =
-    let v = varint d in
+  let zigzag_64 d =
+    let v = varint_64 d in
     Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
+  
+  let zigzag d =
+    Int64.to_int (zigzag_64 d) 
+
+  let zigzag_32  d =
+    let v = varint_32 d in
+    Int32.(logxor (shift_right v 1) (neg (logand v Int32.one)))
 
   let bits32 d =
     let b1 = byte d in
@@ -168,10 +200,8 @@ module Decoder = struct
                (add (shift_left (of_int b3) 16)
                 (add (shift_left (of_int b2) 8)
                  (of_int b1))))))))
-
   let bytes d =
-    (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = Int32.to_int (varint_32 d) in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let str = Bytes.sub d.source d.offset len in
@@ -179,8 +209,7 @@ module Decoder = struct
     str
 
   let nested d =
-    (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = Int32.to_int (varint_32 d) in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let d' = { d with limit = d.offset + len; } in
@@ -192,13 +221,14 @@ module Decoder = struct
     then None
     else
       (* keys are always in the range of int, but prefix might only fit into int32 *)
+      (* TODO : we should use the in version here *) 
       let prefix  = varint d in
-      let key, ty = Int64.(to_int (shift_right prefix 3)), Int64.logand 0x7L prefix in
+      let key, ty = (prefix lsr 3), 0x7 land prefix in
       match ty with
-      | 0L -> Some (key, Varint)
-      | 1L -> Some (key, Bits64)
-      | 2L -> Some (key, Bytes)
-      | 5L -> Some (key, Bits32)
+      | 0 -> Some (key, Varint)
+      | 1 -> Some (key, Bits64)
+      | 2 -> Some (key, Bytes)
+      | 5 -> Some (key, Bits32)
       | _  -> raise (Failure Malformed_field)
 
   let skip d kind =
@@ -214,8 +244,7 @@ module Decoder = struct
     match kind with
     | Bits32 -> skip_len 4
     | Bits64 -> skip_len 8
-    (* strings are always shorter than range of int *)
-    | Bytes  -> skip_len (Int64.to_int (varint d))
+    | Bytes  -> skip_len (varint d)
     | Varint -> skip_varint ()
 end
 
@@ -252,6 +281,17 @@ module Encoder = struct
 
   let varint i e =
     let rec write i =
+      if (i land (lnot 0x7f)) = 0 then
+        Buffer.add_char e (char_of_int (0x7f land i))
+      else begin
+        Buffer.add_char e (char_of_int (0x80 lor (0x7f land i)));
+        write (i lsr 7)
+      end
+    in
+    write i
+  
+  let varint_64 i e =
+    let rec write i =
       if Int64.(logand i (lognot 0x7fL)) = Int64.zero then
         Buffer.add_char e (char_of_int Int64.(to_int (logand 0x7fL i)))
       else begin
@@ -260,12 +300,29 @@ module Encoder = struct
       end
     in
     write i
+  
+  let varint_32 i e =
+    let rec write i =
+      if Int32.(logand i (lognot 0x7fl)) = Int32.zero then
+        Buffer.add_char e (char_of_int Int32.(to_int (logand 0x7fl i)))
+      else begin
+        Buffer.add_char e (char_of_int Int32.(to_int (logor 0x80l (logand 0x7fl i))));
+        write (Int32.shift_right_logical i 7)
+      end
+    in
+    write i
 
   let smallint i e =
-    varint (Int64.of_int i) e
-
+    varint i e
+  
   let zigzag i e =
-    varint Int64.(logxor (shift_left i 1) (shift_right i 63)) e
+    varint_64 (Int64.of_int i) e 
+
+  let zigzag_64 i e =
+    varint_64 Int64.(logxor (shift_left i 1) (shift_right i 63)) e
+  
+  let zigzag_32 i e =
+    varint_32 Int32.(logxor (shift_left i 1) (shift_right i 31)) e
 
   let bits32 i e =
     Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl i)));

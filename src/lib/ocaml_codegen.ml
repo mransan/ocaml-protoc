@@ -3,13 +3,15 @@ module E  = Exception
 module L  = Logger 
 module OCaml_types = Ocaml_types
 
-let printf_char_of_field_type = function
-  | OCaml_types.String    -> 's' 
-  | OCaml_types.Float     -> 'f'
-  | OCaml_types.Int       -> 'i'
-  | OCaml_types.Bytes     -> 's'
-  | OCaml_types.Bool      -> 'b'
-  | OCaml_types.User_defined_type _ -> 's'
+let printf_string_of_field_type = function
+  | OCaml_types.String    -> "s" 
+  | OCaml_types.Float     -> "f"
+  | OCaml_types.Int       -> "i"
+  | OCaml_types.Int32     -> "ld"
+  | OCaml_types.Int64     -> "Ld"
+  | OCaml_types.Bytes     -> "s"
+  | OCaml_types.Bool      -> "b"
+  | OCaml_types.User_defined_type _ -> "s"
 
 let constructor_name s =
   String.capitalize @@ String.lowercase s 
@@ -31,6 +33,8 @@ let string_of_field_type type_qualifier field_type =
     | OCaml_types.String -> "string"
     | OCaml_types.Float  -> "float"
     | OCaml_types.Int    -> "int"
+    | OCaml_types.Int32  -> "int32"
+    | OCaml_types.Int64  -> "int64"
     | OCaml_types.Bytes  -> "bytes"
     | OCaml_types.Bool   -> "bool"
     | OCaml_types.User_defined_type t -> t
@@ -153,7 +157,7 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
             let f_name = decode_function_name_of_user_defined t location in
             if nested 
             then  
-              match_cases field_number (tag_name t) (f_name ^ " (Pc.Decoder.nested d)")
+              match_cases field_number (tag_name t) (f_name ^ " (Pbrt.Decoder.nested d)")
             else 
               match_cases field_number (tag_name t) (f_name ^ " d") 
           | _ -> 
@@ -178,7 +182,7 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
                 match_cases ~constructor:field_name 
                   field_number 
                   (tag_name variant_name) 
-                  (f_name ^ " (Pc.Decoder.nested d)")
+                  (f_name ^ " (Pbrt.Decoder.nested d)")
               else 
                 match_cases ~constructor:field_name
                   field_number 
@@ -195,7 +199,7 @@ let gen_mappings_record {OCaml_types.record_name; fields} =
         ) constructors (* All variant constructors *) 
       )                (* One_of record field *)    
     ) fields ;
-    sp "  | _ -> raise Not_found ";
+    sp "| _ -> raise Not_found ";
     "\n";
   ]
 
@@ -267,7 +271,7 @@ let gen_decode ?and_ = function
 let gen_decode_sig t = 
   let f type_name = 
     concat [
-      P.sprintf "val decode_%s : Protobuf_codec.Decoder.t -> %s" 
+      P.sprintf "val decode_%s : Pbrt.Decoder.t -> %s" 
         type_name type_name ;
       sp "(** [decode_%s decoder] decodes a [%s] value from [decoder] *)"
         type_name type_name; 
@@ -289,7 +293,7 @@ let gen_encode_record ?and_ {OCaml_types.record_name; fields } =
       Encoding_util.location; 
       Encoding_util.nested} = encoding_type in 
     let s = concat [
-      sp "Pc.Encoder.key (%i, Pc.%s) encoder; " 
+      sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
         field_number (constructor_name @@ Encoding_util.string_of_payload_kind payload_kind);
       match field_type with 
       | OCaml_types.User_defined_type t -> 
@@ -302,7 +306,7 @@ let gen_encode_record ?and_ {OCaml_types.record_name; fields } =
         in 
         if nested
         then 
-          sp "Pc.Encoder.nested (%s %s) encoder;" f_name v_name 
+          sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
         else 
           sp "%s %s encoder;" f_name v_name 
       | _ ->  
@@ -372,7 +376,7 @@ let gen_encode ?and_ = function
 let gen_encode_sig t = 
   let f type_name = 
   concat [
-    P.sprintf "val encode_%s : %s -> Protobuf_codec.Encoder.t -> unit"
+    P.sprintf "val encode_%s : %s -> Pbrt.Encoder.t -> unit"
       type_name
       type_name;
     sp "(** [encode_%s v encoder] encodes [v] with the given [encoder] *)" 
@@ -399,9 +403,9 @@ let gen_string_of_record  ?and_ {OCaml_types.record_name; fields } =
         P.sprintf "P.sprintf \"\\n%s: %%s\" @@ string_of_%s x" field_name t  
     )
     | _ ->  
-      P.sprintf "P.sprintf \"\\n%s: %%%c\" x"  
+      P.sprintf "P.sprintf \"\\n%s: %%%s\" x"  
         field_name 
-        (printf_char_of_field_type field_type)
+        (printf_string_of_field_type field_type)
   in
 
   concat [

@@ -24,21 +24,21 @@ THE SOFTWARE.
 
 (** Type of wire format payload kinds. *)
 type payload_kind =
-| Varint
-| Bits32
-| Bits64
-| Bytes
+  | Varint
+  | Bits32
+  | Bits64
+  | Bytes
 
 module Decoder : sig
   (** Type of failures possible while decoding. *)
   type error =
-  | Incomplete
-  | Overlong_varint
-  | Malformed_field
-  | Overflow            of string
-  | Unexpected_payload  of string * payload_kind
-  | Missing_field       of string
-  | Malformed_variant   of string
+    | Incomplete
+    | Overlong_varint
+    | Malformed_field
+    | Overflow            of string
+    | Unexpected_payload  of string * payload_kind
+    | Missing_field       of string
+    | Malformed_variant   of string
 
   (** [error_to_string e] converts error [e] to its string representation. *)
   val error_to_string : error -> string
@@ -58,18 +58,36 @@ module Decoder : sig
       otherwise. *)
   val at_end    : t -> bool
 
+
+
   (** [skip d pk] skips the next value of kind [pk] in [d].
       If skipping the value would exhaust input of [d], raises
       [Encoding_error Incomplete]. *)
   val skip      : t -> payload_kind -> unit
-
-  (** [varint d] reads a varint from [d].
+  
+  (** [varint d] reads a varint to a int from [d].
       If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val varint    : t -> int64
+  val varint : t -> int 
 
-  (** [zigzag d] reads a varint from [d] and zigzag-decodes it.
+  (** [varint d] reads a varint to an int64 from [d].
       If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val zigzag    : t -> int64
+  val varint_64 : t -> int64
+  
+  (** [varint d] reads a varint to an int32 from [d].
+      If [d] has exhausted its input, raises [Failure Incomplete]. *)
+  val varint_32 : t -> int32
+  
+  (** [zigzag d] reads a varint from [d] to an int and zigzag-decodes it.
+      If [d] has exhausted its input, raises [Failure Incomplete]. *)
+  val zigzag : t -> int
+
+  (** [zigzag d] reads a varint from [d] to an int64 and zigzag-decodes it.
+      If [d] has exhausted its input, raises [Failure Incomplete]. *)
+  val zigzag_64 : t -> int64
+  
+  (** [zigzag d] reads a varint from [d] to an int32 and zigzag-decodes it.
+      If [d] has exhausted its input, raises [Failure Incomplete]. *)
+  val zigzag_32 : t -> int32
 
   (** [bits32 d] reads four bytes from [d].
       If [d] has exhausted its input, raises [Failure Incomplete]. *)
@@ -83,12 +101,12 @@ module Decoder : sig
       bytes from [d].
       If [d] has exhausted its input, raises [Failure Incomplete]. *)
   val bytes     : t -> bytes
-
+  
   (** [nested d] returns a decoder for a message nested in [d].
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
   val nested    : t -> t
-
+  
   (** [key d] reads a key and a payload kind from [d].
       If [d] has exhausted its input when the function is called, returns [None].
       If [d] has exhausted its input while reading, raises
@@ -124,9 +142,10 @@ module Decoder : sig
 end
 
 module Encoder : sig
+
   (** Type of failures possible while encoding. *)
   type error =
-  | Overflow of string
+    | Overflow of string
 
   (** [error_to_string e] converts error [e] to its string representation. *)
   val error_to_string : error -> string
@@ -144,12 +163,24 @@ module Encoder : sig
 
   (** [to_bytes e] converts the message assembled in [e] to bytes. *)
   val to_bytes  : t -> bytes
+  
+  (** [varint i e] encodes an [int] [i] as a varint to [e]. *)
+  val varint : int -> t -> unit
 
-  (** [varint i e] writes a varint [i] to [e]. *)
-  val varint    : int64 -> t -> unit
+  (** [varint i e] encodes an [int64] [i] as a varint to [e] *)
+  val varint_64 : int64 -> t -> unit
 
-  (** [zigzag i e] zigzag-encodes a varint [i] and writes it to [e]. *)
-  val zigzag    : int64 -> t -> unit
+  (** [varint i e] encodes an [int32] [i] as a varint to [e] *)
+  val varint_32 : int32 -> t -> unit
+  
+  (** [zigzag i e] zigzag-encodes an [int] [i] to [e]. *)
+  val zigzag : int -> t -> unit
+
+  (** [zigzag i e] zigzag-encodes an [int64] [i] to [e]. *)
+  val zigzag_64 : int64 -> t -> unit
+  
+  (** [zigzag i e] zigzag-encodes an [int32] [i] to [e] *)
+  val zigzag_32 : int32 -> t -> unit
 
   (** [bits32 i e] writes four bytes of [i] to [e]. *)
   val bits32    : int32 -> t -> unit

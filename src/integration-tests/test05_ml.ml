@@ -1,4 +1,3 @@
-module Pc = Protobuf_codec 
 module T  = Test05_pb 
 
 let  max_int = 107374182

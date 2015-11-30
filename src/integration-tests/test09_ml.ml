@@ -1,4 +1,3 @@
-module Pc = Protobuf_codec 
 module T  = Test09_pb
 
 let decode_ref_data () = {

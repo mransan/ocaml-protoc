@@ -1,4 +1,3 @@
-module Pc = Protobuf_codec
 module E  = Exception 
 module L  = Logger 
 module OCaml_types = Ocaml_types 
