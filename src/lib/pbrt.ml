@@ -21,10 +21,10 @@ THE SOFTWARE.
 *)
 
 type payload_kind =
-| Varint
-| Bits32
-| Bits64
-| Bytes
+  | Varint
+  | Bits32
+  | Bits64
+  | Bytes
 
 let min_int_as_int32, max_int_as_int32 = Int32.of_int min_int, Int32.of_int max_int
 let min_int_as_int64, max_int_as_int64 = Int64.of_int min_int, Int64.of_int max_int
@@ -35,14 +35,15 @@ let min_int32_as_int, max_int32_as_int =
   else 0, 0
 
 module Decoder = struct
+
   type error =
-  | Incomplete
-  | Overlong_varint
-  | Malformed_field
-  | Overflow            of string
-  | Unexpected_payload  of string * payload_kind
-  | Missing_field       of string
-  | Malformed_variant   of string
+    | Incomplete
+    | Overlong_varint
+    | Malformed_field
+    | Overflow            of string
+    | Unexpected_payload  of string * payload_kind
+    | Missing_field       of string
+    | Malformed_variant   of string
 
   let error_to_string e =
     match e with
@@ -109,12 +110,6 @@ module Decoder = struct
       offset = 0;
       limit  = String.length source; }
 
-  let decode_exn f source =
-    f (of_bytes source)
-
-  let decode f source =
-    try Some (decode_exn f source) with Failure _ -> None
-
   let at_end d =
     d.limit = d.offset
 
@@ -125,7 +120,19 @@ module Decoder = struct
     d.offset <- d.offset + 1;
     byte
 
-  let varint d =
+  let int_as_varint d =
+    let rec read s =
+      let b = byte d in
+      if b land 0x80 <> 0 then
+        ((b land 0x7f) lsl s) lor (read (s + 7))
+      else if s < 56 || (b land 0x7f) <= 1 then
+        b lsl  s
+      else
+        raise (Failure Overlong_varint)
+    in
+    read 0
+
+  let int64_as_varint d =
     let rec read s =
       let b = byte d in
       if b land 0x80 <> 0 then
@@ -136,12 +143,31 @@ module Decoder = struct
         raise (Failure Overlong_varint)
     in
     read 0
+  
+  let int32_as_varint d =
+    let rec read s =
+      let b = byte d in
+      if b land 0x80 <> 0 then
+        Int32.(logor (shift_left (logand (of_int b) 0x7fl) s) (read (s + 7)))
+      else if s < 24 || (b land 0x7f) <= 1 then
+        Int32.(shift_left (of_int b) s)
+      else
+        raise (Failure Overlong_varint)
+    in
+    read 0
 
-  let zigzag d =
-    let v = varint d in
+  let int64_as_zigzag d =
+    let v = int64_as_varint d in
     Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
+  
+  let int_as_zigzag d =
+    Int64.to_int (int64_as_zigzag d) 
 
-  let bits32 d =
+  let int32_as_zigzag d =
+    let v = int32_as_varint d in
+    Int32.(logxor (shift_right v 1) (neg (logand v Int32.one)))
+
+  let int32_as_bits32 d =
     let b1 = byte d in
     let b2 = byte d in
     let b3 = byte d in
@@ -151,7 +177,7 @@ module Decoder = struct
             (add (shift_left (of_int b2) 8)
              (of_int b1))))
 
-  let bits64 d =
+  let int64_as_bits64 d =
     let b1 = byte d in
     let b2 = byte d in
     let b3 = byte d in
@@ -168,10 +194,8 @@ module Decoder = struct
                (add (shift_left (of_int b3) 16)
                 (add (shift_left (of_int b2) 8)
                  (of_int b1))))))))
-
   let bytes d =
-    (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = int_as_varint d in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let str = Bytes.sub d.source d.offset len in
@@ -179,26 +203,47 @@ module Decoder = struct
     str
 
   let nested d =
-    (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = int_as_varint d in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let d' = { d with limit = d.offset + len; } in
     d.offset <- d.offset + len;
     d'
+  
+  let bool d = 
+    if int_as_varint d = 0 then false else true
 
+  let float_as_bits32 d = 
+    Int32.float_of_bits @@ int32_as_bits32 d
+  
+  let float_as_bits64 d = 
+    Int64.float_of_bits @@ int64_as_bits64 d
+  
+  let string d = 
+    Bytes.to_string @@ bytes d
+    (* TODO this could be faster by implemeting it directly *)
+  
+  let int_as_bits32 d = 
+    Int32.to_int @@ int32_as_bits32 d 
+    (* TODO this could be faster by implementing it directly *)
+  
+  let int_as_bits64 d = 
+    Int64.to_int @@ int64_as_bits64 d 
+    (* TODO this could be faster by implementing it directly *)
+  
   let key d =
     if d.offset = d.limit
     then None
     else
       (* keys are always in the range of int, but prefix might only fit into int32 *)
-      let prefix  = varint d in
-      let key, ty = Int64.(to_int (shift_right prefix 3)), Int64.logand 0x7L prefix in
+      (* TODO : we should use the in version here *) 
+      let prefix  = int_as_varint d in
+      let key, ty = (prefix lsr 3), 0x7 land prefix in
       match ty with
-      | 0L -> Some (key, Varint)
-      | 1L -> Some (key, Bits64)
-      | 2L -> Some (key, Bytes)
-      | 5L -> Some (key, Bits32)
+      | 0 -> Some (key, Varint)
+      | 1 -> Some (key, Bits64)
+      | 2 -> Some (key, Bytes)
+      | 5 -> Some (key, Bits32)
       | _  -> raise (Failure Malformed_field)
 
   let skip d kind =
@@ -214,10 +259,63 @@ module Decoder = struct
     match kind with
     | Bits32 -> skip_len 4
     | Bits64 -> skip_len 8
-    (* strings are always shorter than range of int *)
-    | Bytes  -> skip_len (Int64.to_int (varint d))
+    | Bytes  -> skip_len (int_as_varint d)
     | Varint -> skip_varint ()
+  
+  
 end
+
+module Codegen = struct 
+
+  type 'a state = ([> `Default] as 'a) array 
+
+  let decode decoder mappings values = 
+  
+    let continue = ref true in 
+    while !continue do 
+      match Decoder.key decoder with 
+      | None -> continue := false
+      | Some (number, payload_kind) -> (
+        try 
+          let v' = Array.get values number in 
+          let v = mappings decoder (number, v') in 
+          Array.unsafe_set values number v
+        with 
+        | Not_found | Invalid_argument _ -> Decoder.skip decoder payload_kind; 
+      )
+    done
+
+  let required number a f = 
+    match f @@ Array.unsafe_get a number with 
+    | []     -> failwith (Printf.sprintf "field %i missing" number)
+    | hd::_  -> hd
+    (* TODO Improve *) 
+
+  let programatic_error i = failwith @@ Printf.sprintf "Protobuf Runtime, programmatic error for field %i" i 
+
+  let optional number a f = 
+    match Array.unsafe_get a number with 
+    | `Default  -> None
+    | v         -> (match f v with
+      | hd::_ -> Some hd
+      | _     -> programatic_error number   
+    )
+    (* TODO Improve *) 
+  
+  let list_ number a f = 
+    List.rev @@ f @@ Array.unsafe_get a number
+
+  let oneof numbers a f = 
+    let ret = List.fold_left (fun x number -> 
+      match x with 
+      | Some _ -> x 
+      | None   -> optional number a f
+    ) None numbers in 
+    match ret with 
+    | Some x -> x 
+    | None -> failwith "None of oneof value could be found." 
+
+end (* module Codegen *)
 
 module Encoder = struct
   type error =
@@ -244,13 +342,18 @@ module Encoder = struct
 
   let to_bytes = Buffer.to_bytes
 
-  let encode_exn f x =
-    let e = create () in f x e; to_bytes e
-
-  let encode f x =
-    try Some (encode_exn f x) with Failure _ -> None
-
-  let varint i e =
+  let int_as_varint i e =
+    let rec write i =
+      if (i land (lnot 0x7f)) = 0 then
+        Buffer.add_char e (char_of_int (0x7f land i))
+      else begin
+        Buffer.add_char e (char_of_int (0x80 lor (0x7f land i)));
+        write (i lsr 7)
+      end
+    in
+    write i
+  
+  let int64_as_varint i e =
     let rec write i =
       if Int64.(logand i (lognot 0x7fL)) = Int64.zero then
         Buffer.add_char e (char_of_int Int64.(to_int (logand 0x7fL i)))
@@ -260,20 +363,37 @@ module Encoder = struct
       end
     in
     write i
+  
+  let int32_as_varint i e =
+    let rec write i =
+      if Int32.(logand i (lognot 0x7fl)) = Int32.zero then
+        Buffer.add_char e (char_of_int Int32.(to_int (logand 0x7fl i)))
+      else begin
+        Buffer.add_char e (char_of_int Int32.(to_int (logor 0x80l (logand 0x7fl i))));
+        write (Int32.shift_right_logical i 7)
+      end
+    in
+    write i
 
   let smallint i e =
-    varint (Int64.of_int i) e
+    int_as_varint i e
+  
+  let int64_as_zigzag i e =
+    int64_as_varint Int64.(logxor (shift_left i 1) (shift_right i 63)) e
+  
+  let int_as_zigzag i e =
+    int64_as_zigzag  (Int64.of_int i) e 
+  
+  let int32_as_zigzag i e =
+    int32_as_varint Int32.(logxor (shift_left i 1) (shift_right i 31)) e
 
-  let zigzag i e =
-    varint Int64.(logxor (shift_left i 1) (shift_right i 63)) e
-
-  let bits32 i e =
+  let int32_as_bits32 i e =
     Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
     Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 8))));
     Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 16))));
     Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 24))))
 
-  let bits64 i e =
+  let int64_as_bits64 i e =
     Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL i)));
     Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 8))));
     Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 16))));
@@ -282,10 +402,31 @@ module Encoder = struct
     Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 40))));
     Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 48))));
     Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 56))))
+  
+  let int_as_bits32 i e =  
+    (* TODO do safe mode *) 
+    int32_as_bits32 (Int32.of_int i) e
+
+  let int_as_bits64 i e = 
+    int64_as_bits64 (Int64.of_int i) e 
+
+  let float_as_bits32 v e = 
+    int32_as_bits32 (Int32.bits_of_float v) e 
+  
+  let float_as_bits64 v e = 
+    int64_as_bits64 (Int64.bits_of_float v) e 
 
   let bytes b e =
     smallint (Bytes.length b) e;
     Buffer.add_bytes e b
+  
+  let string s e =
+    let b = Bytes.of_string s in 
+    bytes b e 
+    (* TODO this could be implemented natively *)
+
+  let bool b e = 
+    smallint (if b then 1 else 0) e 
 
   let nested f e =
     let e' = Buffer.create 16 in

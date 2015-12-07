@@ -1,4 +1,3 @@
-module Pc = Protobuf_codec
 module E  = Exception 
 module L  = Logger 
 module OCaml_types = Ocaml_types 
@@ -157,6 +156,3 @@ let compile all_types = function
   | {Pbtt.spec = Pbtt.Message m ; file_name; scope; _ } -> compile_message all_types file_name scope m 
   | {Pbtt.spec = Pbtt.Enum    e ; file_name; scope; _ } -> [compile_enum file_name scope e] 
 
-module Codegen = struct 
-
-end  

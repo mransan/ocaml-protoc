@@ -2,6 +2,8 @@ type field_type =
   | String 
   | Float 
   | Int 
+  | Int32 
+  | Int64
   | Bytes
   | Bool
   | User_defined_type of string 

@@ -150,7 +150,6 @@ let () =
   
   output_string struct_oc @@ concat [
     Backend_ocaml_static.prefix_payload_to_ocaml_t;
-    Backend_ocaml_static.prefix_decode_f;
     "\n";
     concat @@ List.map (fun types_ -> 
       concat @@ List.flatten [

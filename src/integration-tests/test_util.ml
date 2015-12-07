@@ -1,5 +1,4 @@
 
-module Pc = Protobuf_codec 
 let time_f f = 
   let t1 = Unix.gettimeofday () in 
   let x  = f () in 
@@ -79,7 +78,7 @@ let decode ?noprint ?notest file_name f_decode f_to_string ref_data  =
   (*
   let buffer = Bytes.sub buffer 0 size in 
   *)
-  let decoder = Pc.Decoder.of_bytes buffer in 
+  let decoder = Pbrt.Decoder.of_bytes buffer in 
   
   let t, x = time_f (fun () -> 
     f_decode decoder 
@@ -87,12 +86,12 @@ let decode ?noprint ?notest file_name f_decode f_to_string ref_data  =
   Printf.printf "Decode : %f \n%!" t; 
   begin 
     match notest with
-    | None    -> check_decoded x f_to_string ref_data 
+    | None    -> check_decoded ?noprint x f_to_string ref_data 
     | Some () -> ()
   end 
 
 let encode file_name f_encode ref_data = 
-  let encoder = Pc.Encoder.create () in 
+  let encoder = Pbrt.Encoder.create () in 
   f_encode ref_data encoder; 
   let oc = open_out_bin file_name in 
-  output_bytes oc @@ Pc.Encoder.to_bytes encoder 
+  output_bytes oc @@ Pbrt.Encoder.to_bytes encoder 

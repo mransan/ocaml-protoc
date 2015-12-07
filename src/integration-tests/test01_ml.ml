@@ -1,5 +1,4 @@
 
-module Pc = Protobuf_codec 
 module T  = Test01_pb
 
 
