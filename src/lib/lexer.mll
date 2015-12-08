@@ -19,6 +19,7 @@ let keywords = create_hashtable 50 [
   "enum"    , ENUM;
   "package" , PACKAGE;
   "import" , IMPORT;
+  "option" , OPTION;
 ]
 
 let resolve_identifier ident = 

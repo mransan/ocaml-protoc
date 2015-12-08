@@ -18,6 +18,8 @@ type field_option  = string * constant
 
 type field_options = field_option list 
 
+type file_options  = field_options 
+
 (** A field property defining its occurence
  *)
 type field_label = [ 

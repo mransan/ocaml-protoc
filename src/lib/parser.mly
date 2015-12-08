@@ -13,6 +13,8 @@
 
 %token IMPORT
 
+%token OPTION
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -60,19 +62,22 @@
 %start import_list_ 
 %type <Pbpt.import list> import_list_
 
+%start file_option_list_ 
+%type <Pbpt.file_options> file_option_list_
+
 %%
 
-field_options_ : field_options EOF {$1}  
-normal_field_  : normal_field  EOF {$1}
-enum_value_    : enum_value    EOF {$1}
-enum_          : enum          EOF {$1}
-oneof_         : oneof         EOF {$1} 
-message_       : message       EOF {$1} 
-message_list_  : message_list  EOF {$1} 
-proto_         : proto         EOF {$1} 
-import_        : import        EOF {$1} 
-import_list_   : import_list   EOF {$1} 
-
+field_options_   : field_options EOF {$1}  
+normal_field_    : normal_field  EOF {$1}
+enum_value_      : enum_value    EOF {$1}
+enum_            : enum          EOF {$1}
+oneof_           : oneof         EOF {$1} 
+message_         : message       EOF {$1} 
+message_list_    : message_list  EOF {$1} 
+proto_           : proto         EOF {$1} 
+import_          : import        EOF {$1} 
+import_list_     : import_list   EOF {$1} 
+file_option_list_: file_option_list EOF {$1} 
 
 /*
 message = "message" messageName messageBody
@@ -163,6 +168,21 @@ field_option_list :
 
 field_option :
   IDENT EQUAL constant { ($1, $3) } 
+
+file_option_identifier_item :
+  | IDENT                   {$1}
+  | LBRACE IDENT RBRACE     {$2}
+
+file_option_identifier : 
+  | file_option_identifier_item    {$1}
+  | file_option_identifier IDENT   {$1 ^ $2}
+
+file_option :
+  | OPTION file_option_identifier EQUAL constant SEMICOLON { ($2, $4) }
+
+file_option_list :
+  | file_option                  { [$1]  }
+  | file_option file_option_list { $1::$2}
 
 constant : 
   | INT        { Pbpt.Constant_int $1 }
