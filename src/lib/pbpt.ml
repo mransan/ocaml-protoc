@@ -18,6 +18,8 @@ type field_option  = string * constant
 
 type field_options = field_option list 
 
+type file_option  = field_option 
+
 (** A field property defining its occurence
  *)
 type field_label = [ 
@@ -90,6 +92,8 @@ type import = {
  *)
 type proto = {
   imports : import list; 
+  file_options : file_option list; 
   package : string option; 
   messages : message list; 
+  enums : enum list; 
 }

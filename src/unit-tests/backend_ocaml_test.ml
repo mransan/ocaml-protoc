@@ -69,7 +69,7 @@ let compile_to_ocaml ?all_pbtt_types:(all_pbtt_types = []) ?file_name:(file_name
   let all_pbtt_types' = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope ast in 
   let all_pbtt_types' = all_pbtt_types' @ all_pbtt_types in 
   let all_pbtt_types'' = List.map (fun t -> 
-    Pbtt_util.compile_type_p2 all_pbtt_types' t
+    Pbtt_util.compile_proto_p2 all_pbtt_types' t
   ) all_pbtt_types' in 
 
   let all_caml_types = List.flatten @@ List.map (fun t ->

@@ -57,7 +57,15 @@ val message :
 
 val import : ?public:unit -> string -> Pbpt.import 
 
-val proto : ?package:string -> ?imports:Pbpt.import list -> Pbpt.message list -> Pbpt.proto
+val proto: 
+  ?file_option:Pbpt.file_option -> 
+  ?package:string -> 
+  ?import:Pbpt.import -> 
+  ?message:Pbpt.message ->
+  ?enum:Pbpt.enum ->
+  ?proto:Pbpt.proto -> 
+  unit -> 
+  Pbpt.proto
 
 (** {2 Miscellaneous functionality } *)
 

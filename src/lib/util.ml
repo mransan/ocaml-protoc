@@ -25,3 +25,6 @@ let rec apply_until f = function
   )  
 
 let is_list_empty = function | [] -> true | _ -> false 
+
+let string_of_string_list l = 
+  Printf.sprintf "[%s]" (String.concat "," l)

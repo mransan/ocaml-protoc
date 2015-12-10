@@ -14,6 +14,7 @@ Couple create_test_couple() {
         p.set_last_name("Doe"); 
         p.set_date_of_birth(19820429);
         p.set_employed_by("Google");
+        p.set_gender(Male);
     }
     {
         Person& p = *cp.mutable_p2();
@@ -25,6 +26,7 @@ Couple create_test_couple() {
         Person_TelNumber& t = *p.mutable_tel_number();
         t.set_area_code(917);
         t.set_number(1111111);
+        p.set_gender(Female);
     }
 
     for(std::size_t i=0; i<2; ++i) {

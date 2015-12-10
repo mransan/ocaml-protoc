@@ -27,13 +27,15 @@ let () =
   assert(x)
 
 let () = 
-  let x = parse Parser.import_list_ "import \"blah.proto\";" in
-  assert ((Pbpt_util.import "blah.proto")::[]= x)
+  let proto  = parse Parser.proto_ "import \"blah.proto\";" in
+  let imports = proto.Pbpt.imports in  
+  assert ((Pbpt_util.import "blah.proto")::[]= imports)
 
 let () = 
-  let x = parse Parser.import_list_ "import \"blah.proto\";import public \"boom.proto\";" in
+  let proto = parse Parser.proto_ "import \"blah.proto\";import public \"boom.proto\";" in
+  let imports = proto.Pbpt.imports in 
   assert ((Pbpt_util.import "blah.proto")::
-          (Pbpt_util.import ~public:() "boom.proto")::[] = x)
+          (Pbpt_util.import ~public:() "boom.proto")::[] = imports)
 
 
 let () = 

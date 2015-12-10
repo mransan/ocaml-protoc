@@ -57,7 +57,8 @@ let () =
   let s =" 
   message Test {
   }" in 
-  let messages  = parse Parser.message_list_ s in 
+  let proto = parse Parser.proto_ s in 
+  let messages = proto.Pbpt.messages in 
   assert(1 = List.length messages);
   ()
 
@@ -66,7 +67,8 @@ let () =
   message M1 {} 
   message M2 {}
   " in 
-  let messages  = parse Parser.message_list_ s in 
+  let proto = parse Parser.proto_ s in 
+  let messages = proto.Pbpt.messages in 
   assert(2= List.length messages);
   assert("M1" = (List.nth messages 0).Pbpt.message_name);
   assert("M2" = (List.nth messages 1).Pbpt.message_name);
