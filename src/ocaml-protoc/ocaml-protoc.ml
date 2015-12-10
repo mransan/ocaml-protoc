@@ -63,6 +63,9 @@ let parse_args () =
     | _  -> open_out (out_file_name ^ ".mli") in 
   (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug)  
 
+
+(* -- main -- *)
+
 let () = 
 
   let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging = parse_args () in 
@@ -84,11 +87,7 @@ let () =
       let ic    = open_in file_name in 
       let proto = Parser.proto_ Lexer.lexer (Lexing.from_channel ic) in 
       close_in ic; 
-      let scope = Pbtt_util.scope_of_package proto.Pbpt.package in 
-      let pbtt_msgs = List.fold_left (fun pbtt_msgs pbpt_msg -> 
-        pbtt_msgs @ Pbtt_util.compile_message_p1 file_name scope pbpt_msg
-      ) acc proto.Pbpt.messages in 
-
+      let pbtt_msgs = acc @ Pbtt_util.compile_proto_p1 file_name proto in 
       let pbtt_msgs = List.fold_left (fun pbtt_msgs {Pbpt.file_name; _ } -> 
         loop pbtt_msgs (Some file_name) 
       ) pbtt_msgs proto.Pbpt.imports in 
@@ -102,7 +101,7 @@ let () =
     | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ }; _  } -> L.endline @@ enum_name 
   ) pbtt_msgs; 
 
-  let pbtt_msgs = List.map (Pbtt_util.compile_type_p2 pbtt_msgs) pbtt_msgs in 
+  let pbtt_msgs = List.map (Pbtt_util.compile_proto_p2 pbtt_msgs) pbtt_msgs in 
 
 
   (* -- OCaml Backend -- *)

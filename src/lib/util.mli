@@ -12,7 +12,6 @@ val concat : string list -> string
 (** [concat l] concatenate a string list without delimited between the given string
  *)
 
-
 val pop_last : 'a list -> 'a list 
 (** [pop_last l] removes the last element from the list *)
 
@@ -24,3 +23,6 @@ val apply_until : ('a -> 'b option) -> 'a list -> 'b option
 
 val is_list_empty : 'a list -> bool
 (** [is_list_empty l] returns true is the list is empty, false otherwise *)
+
+val string_of_string_list : string list -> string 
+(** [string_of_string_list l] returns a debug string of [l] *)

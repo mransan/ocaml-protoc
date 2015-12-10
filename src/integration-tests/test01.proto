@@ -1,5 +1,10 @@
 package foo.bar;  
 
+enum Gender {
+    Male = 1; 
+    Female = 2; 
+}
+
 message Person {
     message TelNumber {
         required int32 area_code = 1;
@@ -19,6 +24,7 @@ message Person {
         Married = 2; 
     }
     optional MaritalStatus marital_status = 7 [default=Single];
+    optional Gender gender = 8;  
 }
 
 message Couple {

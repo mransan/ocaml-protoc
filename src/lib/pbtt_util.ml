@@ -19,21 +19,16 @@ let empty_scope  = {
   message_names = [] 
 } 
 
-let rev_split_by_char = Util.rev_split_by_char 
-
-let string_of_string_list l = 
-  Printf.sprintf "[%s]" (String.concat "," l)
-
 let string_of_unresolved { Pbtt.scope; type_name; from_root }  =
     Printf.sprintf "unresolved:{scope %s, type_name: %s, from_root: %b}"
-    (string_of_string_list scope) 
+    (Util.string_of_string_list scope) 
     type_name 
     from_root  
 
 let string_of_type_scope {Pbtt.packages; message_names}  = 
   Printf.sprintf "scope:{packages:%s, message_names:%s}" 
-    (string_of_string_list packages)
-    (string_of_string_list message_names) 
+    (Util.string_of_string_list packages)
+    (Util.string_of_string_list message_names) 
 
 let string_of_message id scope {Pbtt.message_name; message_body} = 
   Printf.sprintf "message: {id:%i, message_scope:%s, name:%s, field nb:%i}" 
@@ -44,12 +39,12 @@ let string_of_message id scope {Pbtt.message_name; message_body} =
 
 let scope_of_package = function
   | Some s -> {empty_scope with 
-    Pbtt.packages = List.rev @@ rev_split_by_char '.' s
+    Pbtt.packages = List.rev @@ Util.rev_split_by_char '.' s
   }
   | None -> empty_scope 
 
 let unresolved_of_string s = 
-  match rev_split_by_char '.' s with 
+  match Util.rev_split_by_char '.' s with 
   | [] -> raise @@ E.programmatic_error E.Invalid_string_split
   | hd :: tl -> {
     Pbtt.scope = (List.rev tl); 
@@ -204,6 +199,7 @@ let rec list_assoc2 x = function
     [] -> raise Not_found
   | (a,b)::l -> if compare b x = 0 then a else list_assoc2 x l
 
+(** type creation function *)
 let type_of_spec file_name id scope spec = { 
   Pbtt.id; 
   Pbtt.scope;
@@ -211,7 +207,22 @@ let type_of_spec file_name id scope spec = {
   Pbtt.spec; 
 }
 
-let rec compile_message_p1 message_file_name message_scope ({
+(** compile a [Pbpt] enum to a [Pbtt] type *) 
+let compile_enum_p1 file_name scope {Pbpt.enum_id; enum_name; enum_values } : 'a Pbtt.proto_type =  
+  let enum_values = List.map (fun enum_value -> {
+    Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
+    Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
+  }) enum_values in 
+
+  type_of_spec file_name enum_id scope (Pbtt.Enum {
+    Pbtt.enum_name;
+    Pbtt.enum_values
+  })
+
+(** compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
+    defined more than one type). 
+  *)
+let rec compile_message_p1 file_name message_scope ({
   Pbpt.id;
   Pbpt.message_name; 
   Pbpt.message_body; 
@@ -230,19 +241,12 @@ let rec compile_message_p1 message_file_name message_scope ({
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
         (field :: message_body, all_types)
     | Pbpt.Message_sub m -> 
-        let all_sub_types = compile_message_p1 message_file_name sub_scope m in 
+        let all_sub_types = compile_message_p1 file_name sub_scope m in 
         (message_body,  all_types @ all_sub_types)
-    | Pbpt.Message_enum {Pbpt.enum_id; enum_name; enum_values } -> 
-        let enum_values = List.map (fun enum_value -> {
-          Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
-          Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
-        }) enum_values in 
+    | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
         (
           message_body,  
-          all_types @ [type_of_spec message_file_name enum_id sub_scope (Pbtt.Enum {
-            Pbtt.enum_name;
-            Pbtt.enum_values
-          })]
+          all_types @ [compile_enum_p1 file_name sub_scope enum]
         )
   ) ([], []) message_body in
   
@@ -274,10 +278,19 @@ let rec compile_message_p1 message_file_name message_scope ({
        List.fold_left validate_duplicate number_index oneof_fields
   ) [] message_body ;  
 
-  all_sub @ [type_of_spec message_file_name id message_scope (Pbtt.Message {
+  all_sub @ [type_of_spec file_name id message_scope (Pbtt.Message {
     Pbtt.message_name; 
     Pbtt.message_body;
   })] 
+
+let compile_proto_p1 file_name {Pbpt.package; messages; enums; _ } =  
+  let scope = scope_of_package package in 
+  let pbtt_msgs = List.fold_right (fun e pbtt_msgs -> 
+    (compile_enum_p1 file_name scope e) :: pbtt_msgs 
+  ) enums [] in
+  List.fold_left (fun pbtt_msgs pbpt_msg -> 
+    pbtt_msgs @ compile_message_p1 file_name scope pbpt_msg
+  ) pbtt_msgs messages 
 
 let type_scope_of_type {Pbtt.scope; _ } = scope 
 
@@ -351,9 +364,9 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
       
       let search_scopes = search_scopes scope from_root in 
 
-      L.log "[pbtt] message scope: %s\n" @@ string_of_string_list message_scope;
+      L.log "[pbtt] message scope: %s\n" @@ Util.string_of_string_list message_scope;
       List.iteri (fun i scope -> 
-        L.log "[pbtt] search_scope[%2i] : %s\n" i @@ string_of_string_list scope 
+        L.log "[pbtt] search_scope[%2i] : %s\n" i @@ Util.string_of_string_list scope 
       ) search_scopes;
 
       let id = Util.apply_until (fun scope -> 
@@ -386,7 +399,7 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
   let message_body = List.rev message_body in 
   {message with Pbtt.message_body; }
 
-let compile_type_p2 all_types t = 
+let compile_proto_p2 all_types t = 
   match t with 
   | {Pbtt.file_name; id; scope; spec = Pbtt.Message  m } -> {
     Pbtt.file_name; 

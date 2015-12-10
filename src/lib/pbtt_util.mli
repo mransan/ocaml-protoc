@@ -1,3 +1,11 @@
+(** Type compilation. 
+ 
+    This module is responsible for the typing of the parsed tree. 
+    All field types are eventually resolved. 
+
+    Additionally this module provide convenient function
+    to manipulate the typed tree. 
+  *)
 
 (** {2 Accessors for Pbtt.field type} *)
 
@@ -23,8 +31,15 @@ val string_of_message : int -> Pbtt.type_scope -> 'a Pbtt.message -> string
 (** {2 Accessor for Pbtt.type *) 
 
 val type_id_of_type : 'a Pbtt.proto_type -> int 
+(** [type_id_of_type t] returns the type unique identifier. *)
+
 val type_name_of_type : 'a Pbtt.proto_type -> string
+(** [type_name_of_type t] returns the type name (as defined in the message file) 
+    of [t].
+ *)
+
 val type_scope_of_type : 'a Pbtt.proto_type -> Pbtt.type_scope
+(** [type_scope_of_type t] returns the scope of type [t]. *)
 
 (** {2 Creator} *) 
 
@@ -48,30 +63,38 @@ val scope_of_package : string option -> Pbtt.type_scope
     numbers and field names are unique within a message but this logic should be
     moved to Phase 1}
     }
+    (** TODO add the grouping phase *)
  *)
 
-val compile_message_p1 : 
+val compile_proto_p1  : 
   string -> 
-  Pbtt.type_scope -> 
-  Pbpt.message ->
+  Pbpt.proto ->
   Pbtt.unresolved Pbtt.proto
+(** [compile_proto_p1 file_name proto] makes a first phase compilation of the 
+    parsed tree. 
+ *)
+
+val compile_proto_p2: 
+  Pbtt.unresolved Pbtt.proto -> 
+  Pbtt.unresolved Pbtt.proto_type -> 
+  Pbtt.resolved Pbtt.proto_type
+
+val group: Pbtt.resolved Pbtt.proto -> Pbtt.resolved Pbtt.proto list 
+(** TODO *)
+
+(** {2 For testing only} *) 
 
 val compile_message_p2: 
   Pbtt.unresolved Pbtt.proto -> 
   Pbtt.type_scope -> 
   Pbtt.unresolved Pbtt.message -> 
   Pbtt.resolved Pbtt.message 
-(** [compile_message_p2] resolved all the fields in the given message. 
-  *)  
 
-val compile_type_p2: 
-  Pbtt.unresolved Pbtt.proto -> 
-  Pbtt.unresolved Pbtt.proto_type -> 
-  Pbtt.resolved Pbtt.proto_type
-
-val group: Pbtt.resolved Pbtt.proto -> Pbtt.resolved Pbtt.proto list 
-
-(** {2 For testing only} *) 
+val compile_message_p1 : 
+  string -> 
+  Pbtt.type_scope -> 
+  Pbpt.message ->
+  Pbtt.unresolved Pbtt.proto
 
 val compile_oneof_p1: Pbpt.oneof -> Pbtt.unresolved Pbtt.oneof
 

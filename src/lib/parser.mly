@@ -50,20 +50,14 @@
 %start message_
 %type <Pbpt.message> message_
 
-%start message_list_
-%type <Pbpt.message list> message_list_
-
 %start proto_ 
 %type <Pbpt.proto> proto_
 
 %start import_ 
 %type <Pbpt.import> import_
 
-%start import_list_ 
-%type <Pbpt.import list> import_list_
-
-%start file_option_list_ 
-%type <Pbpt.file_options> file_option_list_
+%start file_option_
+%type <Pbpt.file_option> file_option_
 
 %%
 
@@ -73,11 +67,9 @@ enum_value_      : enum_value    EOF {$1}
 enum_            : enum          EOF {$1}
 oneof_           : oneof         EOF {$1} 
 message_         : message       EOF {$1} 
-message_list_    : message_list  EOF {$1} 
 proto_           : proto         EOF {$1} 
 import_          : import        EOF {$1} 
-import_list_     : import_list   EOF {$1} 
-file_option_list_: file_option_list EOF {$1} 
+file_option_     : file_option EOF {$1} 
 
 /*
 message = "message" messageName messageBody
@@ -85,15 +77,19 @@ messageBody = "{" { field | enum | message | extend | extensions | group |
 option | oneof | mapField | reserved | emptyStatement } "}"
 */
 
-proto:
-  | import_list package_declaration message_list {Pbpt_util.proto ~imports:$1 ~package:$2 $3}
-  | package_declaration message_list {Pbpt_util.proto ~package:$1 $2}
-  | import_list message_list {Pbpt_util.proto ~imports:$1 $2}
-  | message_list {Pbpt_util.proto $1}
 
-import_list: 
-  | import             {[$1]}
-  | import import_list {$1::$2}
+proto:
+  | import              {Pbpt_util.proto ~import:$1  ()}
+  | file_option         {Pbpt_util.proto ~file_option:$1  ()}
+  | package_declaration {Pbpt_util.proto ~package:$1 ()}
+  | message             {Pbpt_util.proto ~message:$1 ()}
+  | enum                {Pbpt_util.proto ~enum:$1 ()}
+
+  | import              proto {Pbpt_util.proto ~import:$1  ~proto:$2 ()}
+  | file_option         proto {Pbpt_util.proto ~file_option:$1  ~proto:$2 ()}
+  | package_declaration proto {Pbpt_util.proto ~package:$1 ~proto:$2 ()}
+  | message             proto {Pbpt_util.proto ~message:$1 ~proto:$2 ()}
+  | enum                proto {Pbpt_util.proto ~enum:$1 ~proto:$2 ()}
 
 import:
   | IMPORT STRING SEMICOLON       { Pbpt_util.import $2} 
@@ -105,10 +101,6 @@ import:
 
 package_declaration :
   | PACKAGE IDENT SEMICOLON  {$2}  
-
-message_list:  
-  | message  {[$1]}
-  | message message_list {$1::$2}
 
 message : 
   | MESSAGE IDENT LBRACE message_body_content_list RBRACE { 
@@ -179,10 +171,6 @@ file_option_identifier :
 
 file_option :
   | OPTION file_option_identifier EQUAL constant SEMICOLON { ($2, $4) }
-
-file_option_list :
-  | file_option                  { [$1]  }
-  | file_option file_option_list { $1::$2}
 
 constant : 
   | INT        { Pbpt.Constant_int $1 }

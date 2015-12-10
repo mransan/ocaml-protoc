@@ -49,12 +49,6 @@ let message ~content name =
     message_body = content;
   } 
 
-let proto ?package ?imports:(imports = []) messages = {
-  Pbpt.imports; 
-  Pbpt.package; 
-  Pbpt.messages; 
-}
-
 let import ?public file_name = {
   Pbpt.public = (match public with | Some _ -> true | None -> false); 
   Pbpt.file_name; 
@@ -79,3 +73,43 @@ let rec message_printer ?level:(level = 0) {
         prefix (); Printf.printf "- enum type [%s]\n" enum_name 
     | Pbpt.Message_sub m -> message_printer ~level:(level + 2) m
   ) message_body 
+
+let proto ?file_option ?package ?import ?message ?enum ?proto () = 
+
+  let {Pbpt.messages; imports; file_options; enums; _ } as proto = match proto with 
+    | None -> Pbpt.({
+      imports = [];
+      package = None; 
+      messages = []; 
+      file_options = []; 
+      enums = []; 
+    }) 
+    | Some proto -> proto
+  in 
+
+  let proto = match package with 
+    | None   -> proto
+    | Some _ -> Pbpt.({proto with package; })  
+  in 
+
+  let proto = match message with 
+    | None   -> proto 
+    | Some m -> Pbpt.({proto with messages = m :: messages})
+  in 
+  
+  let proto = match enum with 
+    | None   -> proto 
+    | Some m -> Pbpt.({proto with enums = m :: enums})
+  in 
+  
+  let proto = match import with 
+    | None   -> proto 
+    | Some i -> Pbpt.({proto with imports = i :: imports})
+  in 
+
+  let proto = match file_option with 
+    | None   -> proto 
+    | Some i -> Pbpt.({proto with file_options = i :: file_options})
+  in 
+  proto 
+   
