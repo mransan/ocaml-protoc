@@ -45,12 +45,16 @@ let () =
   } = parse Parser.message_ s in 
   assert (message_name  = "TestM");
   assert (List.length message_body= 2);
-  let (Pbpt.Message_enum {
-    Pbpt.enum_name;
-    Pbpt.enum_values; 
-  }) = List.hd message_body in 
-  assert ("TestE" = enum_name); 
-  assert (2 = List.length enum_values);
+  match List.hd message_body with 
+  | Pbpt.Message_enum {
+      Pbpt.enum_name;
+      Pbpt.enum_values; 
+      Pbpt.enum_id = _; 
+    } -> ( 
+    assert ("TestE" = enum_name); 
+    assert (2 = List.length enum_values);
+    ()) 
+  | _ -> (assert false : unit) ; 
   ()
 
 let () = 

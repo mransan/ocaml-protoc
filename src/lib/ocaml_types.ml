@@ -1,3 +1,9 @@
+
+type user_defined_type = {
+  module_ : string option; 
+  type_name : string; 
+}
+
 type field_type = 
   | String 
   | Float 
@@ -6,7 +12,7 @@ type field_type =
   | Int64
   | Bytes
   | Bool
-  | User_defined_type of string 
+  | User_defined_type of user_defined_type
 
 type field_name = string 
 

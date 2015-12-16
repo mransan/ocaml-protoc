@@ -25,7 +25,7 @@ let type_name message_scope name =
   | hd::[] -> S.lowercase hd 
   | _      -> S.concat "_" @@ List.map S.lowercase all_names
 
-(** [field_type_name_of_id module_ all_types i] returns the field type name 
+(** [user_defined_type_of_id module_ all_types i] returns the field type name 
     for the type identied by [i] and which is expected to be in [all_types]. 
 
     [module_] is the module of the type that this field belong to. If [module_]
@@ -36,7 +36,7 @@ let type_name message_scope name =
     with the module name. (This is essentially expecting (rightly) a sub module 
     with the same name. 
  *)
-let field_type_name_of_id all_types file_name i = 
+let user_defined_type_of_id all_types file_name i = 
   let module_ = module_of_file_name file_name in 
   match Pbtt_util.type_of_id all_types i with
   | exception Not_found -> 
@@ -46,8 +46,8 @@ let field_type_name_of_id all_types file_name i =
       let {Pbtt.message_names; _ } = Pbtt_util.type_scope_of_type t in 
       let type_name = type_name message_names (Pbtt_util.type_name_of_type t) in 
       if field_type_module = module_ 
-      then type_name
-      else (field_type_module ^ "." ^ type_name) 
+      then OCaml_types.({module_ = None; type_name}) 
+      else OCaml_types.({module_ = Some field_type_module; type_name}) 
 
 let compile_field ?as_constructor all_types f type_qualifier file_name field = 
   let field_name = Pbtt_util.field_name field in 
@@ -58,7 +58,7 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     | None   -> record_field_name field_name 
   in 
 
-  let field_encoding = Encoding_util.encoding_of_field_type all_types file_name field in 
+  let field_encoding = Encoding_util.encoding_of_field_type all_types field in 
   let field_type = match encoding_type with
     | Pbtt.Field_type_double  -> OCaml_types.Float
     | Pbtt.Field_type_float  ->  OCaml_types.Float
@@ -78,8 +78,8 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     | Pbtt.Field_type_string  -> OCaml_types.String
     | Pbtt.Field_type_bytes  -> OCaml_types.Bytes
     | Pbtt.Field_type_type id -> 
-      let name = field_type_name_of_id all_types file_name id in 
-      OCaml_types.User_defined_type name 
+      let user_defined_type = user_defined_type_of_id all_types file_name id in 
+      OCaml_types.User_defined_type user_defined_type
   in {
     OCaml_types.field_type; 
     OCaml_types.field_name; 
@@ -122,7 +122,7 @@ let compile_message
     | Pbtt.Message_oneof_field f -> (
       let variant = compile_oneof all_types file_name scope message_name f in 
       let field   = OCaml_types.({
-        field_type =  User_defined_type (variant.variant_name); 
+        field_type =  User_defined_type {type_name = variant.variant_name; module_ = None}; 
         field_name =  record_field_name f.Pbtt.oneof_name;
         type_qualifier = No_qualifier;
         encoding_type = One_of variant; 
