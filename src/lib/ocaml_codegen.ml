@@ -38,7 +38,8 @@ let string_of_field_type ?type_qualifier:(type_qualifier = T.No_qualifier) field
     | T.Int64  -> "int64"
     | T.Bytes  -> "bytes"
     | T.Bool   -> "bool"
-    | T.User_defined_type t -> t
+    | T.User_defined_type {T.module_ = None; T.type_name} -> type_name
+    | T.User_defined_type {T.module_ = Some module_; T.type_name} -> module_ ^ "." ^ type_name
   in
   match type_qualifier with 
   | T.No_qualifier -> s 
@@ -100,6 +101,19 @@ let gen_type ?and_ = function
   | {T.spec = T.Record r; _ } -> gen_type_record ?and_ r 
   | {T.spec = T.Variant v; _ } -> gen_type_variant  ?and_ v 
   | {T.spec = T.Const_variant v; _ } -> gen_type_const_variant ?and_ v 
+  
+(** [function_name_of_user_defined prefix user_defined] returns the function
+    name of the form `(module'.'?)prefix_(type_name)`. 
+
+    This pattern is common since a generated function for a type
+    (encode/decode/to_string) will call the same generated function for each 
+    user defined field type. 
+ *)
+let function_name_of_user_defined prefix = function 
+  | {T.module_ = Some module_; T.type_name} -> 
+    P.sprintf "%s.%s_%s" module_ prefix type_name
+  | {T.module_ = None; T.type_name} -> 
+    P.sprintf "%s_%s" prefix type_name 
 
 (** [gen_mappings_record r] generates a per record variable to hold the 
     mapping between a field number and the associated decoding routine. 
@@ -133,15 +147,11 @@ let gen_mappings_record {T.record_name; fields} =
     ] 
   in  
 
-  (* When a user defined type belongs to another OCaml module, the corresponding 
-     call to its encode function must be preceeded with its OCaml module. 
-   *)
-  let decode_function_name_of_user_defined t = function 
-    | Enc.Other_file {Enc.file_name; type_name} -> 
-      let module_ = Backend_ocaml.module_of_file_name file_name in 
-      P.sprintf "%s.decode_%s" module_ (String.lowercase type_name) 
-    | _ -> 
-      P.sprintf "decode_%s" t 
+  let tag_name_of_user_defined = function  
+    | {T.module_ = Some module_; T.type_name} -> 
+      P.sprintf "%s_%s" module_ type_name
+    | {T.module_ = None; T.type_name} -> 
+      P.sprintf "%s" (tag_name type_name) 
   in 
 
   concat [
@@ -151,16 +161,15 @@ let gen_mappings_record {T.record_name; fields} =
       | T.Regular_field {
         Enc.field_number; 
         Enc.payload_kind;
-        Enc.location;
         Enc.nested } -> (
         let decoding = match field_type with 
           | T.User_defined_type t -> 
-            let f_name = decode_function_name_of_user_defined t location in
+            let f_name = function_name_of_user_defined "decode" t in
             if nested 
             then  
-              match_cases field_number (tag_name t) (f_name ^ " (Pbrt.Decoder.nested d)")
+              match_cases field_number (tag_name_of_user_defined t) (f_name ^ " (Pbrt.Decoder.nested d)")
             else 
-              match_cases field_number (tag_name t) (f_name ^ " d") 
+              match_cases field_number (tag_name_of_user_defined t) (f_name ^ " d") 
           | _ -> 
              match_cases field_number (tag_name (string_of_field_type field_type)) 
                (Backend_ocaml_static.runtime_function (`Decode, payload_kind, field_type) ^ " d")
@@ -172,11 +181,10 @@ let gen_mappings_record {T.record_name; fields} =
           let {
             Enc.field_number; 
             Enc.payload_kind;
-            Enc.nested; 
-            Enc.location; } = encoding_type in 
+            Enc.nested;} = encoding_type in 
           let decoding  =  match field_type with 
             | T.User_defined_type t -> 
-              let f_name = decode_function_name_of_user_defined t location in
+              let f_name = function_name_of_user_defined "decode" t in
               if nested 
               then 
                 match_cases ~constructor:field_name 
@@ -287,24 +295,18 @@ let gen_decode_sig t =
 let gen_encode_record ?and_ {T.record_name; fields } = 
   L.log "gen_encode_record record_name: %s\n" record_name; 
 
+
   let gen_field ?indent v_name encoding_type field_type = 
     let {
       Enc.field_number; 
       Enc.payload_kind; 
-      Enc.location; 
       Enc.nested} = encoding_type in 
     let s = concat [
       sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
         field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind);
       match field_type with 
       | T.User_defined_type t -> 
-        let f_name = match location with 
-          | Enc.Other_file {Enc.file_name; type_name} -> 
-            let module_ = Backend_ocaml.module_of_file_name file_name in 
-            P.sprintf "%s.encode_%s" module_ (String.lowercase type_name) 
-          | _ -> 
-            P.sprintf "encode_%s" t 
-        in 
+        let f_name = function_name_of_user_defined "encode" t in 
         if nested
         then 
           sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
@@ -392,15 +394,8 @@ let gen_string_of_record  ?and_ {T.record_name; fields } =
 
   let gen_field field_name field_type encoding_type = 
     match field_type with 
-    | T.User_defined_type t -> (
-      match encoding_type with
-      | {Enc.location = Enc.Other_file {Enc.file_name;type_name} ; _ } -> 
-        let module_   = Backend_ocaml.module_of_file_name file_name in 
-        let type_name = String.lowercase type_name in  
-        P.sprintf "P.sprintf \"\\n%s: %%s\" @@ %s.string_of_%s x" field_name module_ type_name 
-      | _ -> 
-        P.sprintf "P.sprintf \"\\n%s: %%s\" @@ string_of_%s x" field_name t  
-    )
+    | T.User_defined_type t -> 
+      P.sprintf "P.sprintf \"\\n%s: %%s\" @@ %s x" field_name (function_name_of_user_defined "string_of" t) 
     | _ ->  
       P.sprintf "P.sprintf \"\\n%s: %%%s\" x"  
         field_name 
