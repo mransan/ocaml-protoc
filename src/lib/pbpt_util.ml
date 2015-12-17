@@ -35,19 +35,29 @@ let enum ?enum_values:(enum_values = []) enum_name =
     Pbpt.enum_values; 
   } 
 
+let extension_range_single_number number = 
+  Pbpt.Extension_single_number number 
+
+let extension_range_range from to_ = 
+  let to_ = match to_ with
+    | `Max      -> Pbpt.To_max 
+    | `Number i -> Pbpt.To_number i  
+  in 
+  Pbpt.Extension_range (from, to_)
+
 let message_body_field field =  Pbpt.Message_field field  
 let message_body_oneof_field field =  Pbpt.Message_oneof_field   field  
 let message_body_sub message  =  Pbpt.Message_sub message 
 let message_body_enum enum = Pbpt.Message_enum enum
+let message_body_extension extension_ranges = Pbpt.Message_extension extension_ranges 
 
-
-let message ~content name = 
+let message ~content message_name = 
   incr message_counter;
-  {
-    Pbpt.id = !message_counter;
-    Pbpt.message_name = name; 
+  Pbpt.({
+    id = !message_counter;
+    message_name;
     message_body = content;
-  } 
+  }) 
 
 let import ?public file_name = {
   Pbpt.public = (match public with | Some _ -> true | None -> false); 

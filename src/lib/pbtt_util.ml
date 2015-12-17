@@ -232,23 +232,26 @@ let rec compile_message_p1 file_name message_scope ({
   let sub_scope = {message_scope with 
     Pbtt.message_names = message_names @ [message_name] 
   } in 
-  
-  let message_body, all_sub = List.fold_left (fun (message_body, all_types) -> function  
+
+  let message_body, extensions, all_sub = List.fold_left (fun (message_body, extensions, all_types) -> function  
     | Pbpt.Message_field f -> 
         let field = Pbtt.Message_field (compile_field_p1 f) in 
-        (field  :: message_body, all_types)
+        (field  :: message_body, extensions, all_types)
     | Pbpt.Message_oneof_field o -> 
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
-        (field :: message_body, all_types)
+        (field :: message_body, extensions, all_types)
     | Pbpt.Message_sub m -> 
         let all_sub_types = compile_message_p1 file_name sub_scope m in 
-        (message_body,  all_types @ all_sub_types)
+        (message_body,  extensions, all_types @ all_sub_types)
     | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
         (
           message_body,  
+          extensions, 
           all_types @ [compile_enum_p1 file_name sub_scope enum]
         )
-  ) ([], []) message_body in
+    | Pbpt.Message_extension extension_ranges -> 
+        (message_body,  extensions @ extension_ranges , all_types)
+  ) ([], [], []) message_body in
   
   let message_body = List.rev message_body in 
   
@@ -278,9 +281,10 @@ let rec compile_message_p1 file_name message_scope ({
        List.fold_left validate_duplicate number_index oneof_fields
   ) [] message_body ;  
 
-  all_sub @ [type_of_spec file_name id message_scope (Pbtt.Message {
-    Pbtt.message_name; 
-    Pbtt.message_body;
+  all_sub @ [type_of_spec file_name id message_scope Pbtt.(Message {
+    extensions; 
+    message_name; 
+    message_body;
   })] 
 
 let compile_proto_p1 file_name {Pbpt.package; messages; enums; _ } =  

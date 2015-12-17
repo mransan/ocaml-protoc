@@ -15,6 +15,8 @@
 
 %token OPTION
 
+%token EXTENSIONS
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -59,6 +61,12 @@
 %start file_option_
 %type <Pbpt.file_option> file_option_
 
+%start extension_range_list_
+%type <Pbpt.extension_range list> extension_range_list_
+
+%start extension_
+%type <Pbpt.extension_range list> extension_
+
 %%
 
 field_options_   : field_options EOF {$1}  
@@ -69,7 +77,9 @@ oneof_           : oneof         EOF {$1}
 message_         : message       EOF {$1} 
 proto_           : proto         EOF {$1} 
 import_          : import        EOF {$1} 
-file_option_     : file_option EOF {$1} 
+file_option_     : file_option   EOF {$1} 
+extension_range_list_ : extension_range_list EOF {$1}
+extension_       : extension    EOF {$1}
 
 /*
 message = "message" messageName messageBody
@@ -119,6 +129,26 @@ message_body_content :
   | oneof        { Pbpt_util.message_body_oneof_field $1 }
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
+  | extension    { Pbpt_util.message_body_extension $1 }
+
+extension : 
+  | EXTENSIONS extension_range_list SEMICOLON {$2}  
+
+extension_range_list : 
+  | extension_range                            {$1 :: []}
+  | extension_range COMMA extension_range_list {$1 :: $3} 
+
+extension_range :
+  | INT            { Pbpt_util.extension_range_single_number $1} 
+  | INT IDENT INT  { 
+    if $2 = "to"
+    then Pbpt_util.extension_range_range $1 (`Number $3) 
+    else failwith "Invalid exension range"}
+  | INT IDENT IDENT{ 
+    if $2 = "to" && $3 = "max" 
+    then Pbpt_util.extension_range_range $1 `Max 
+    else failwith "Invalid extension range"
+  }
 
 oneof :
   ONE_OF IDENT LBRACE oneof_field_list RBRACE { 

@@ -62,6 +62,16 @@ type enum = {
   enum_values: enum_value list; 
 } 
 
+type extension_range_to = 
+  | To_max 
+  | To_number of int
+
+type extension_range_from = int
+
+type extension_range = 
+  | Extension_single_number of int 
+  | Extension_range of extension_range_from * extension_range_to
+
 (** Body content defines all the possible consituant 
     of a message. 
   *)
@@ -70,6 +80,7 @@ type message_body_content =
   | Message_oneof_field of oneof 
   | Message_sub of message 
   | Message_enum of enum 
+  | Message_extension of extension_range list 
 
 (** Message entity. 
  

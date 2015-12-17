@@ -105,6 +105,7 @@ type 'a message_body_content =
   | Message_oneof_field of 'a oneof 
 
 and 'a message = {
+  extensions : Pbpt.extension_range list;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
