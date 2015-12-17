@@ -64,6 +64,14 @@ let import ?public file_name = {
   Pbpt.file_name; 
 }
 
+let extend extend_name extend_body = 
+  incr message_counter; 
+  Pbpt.({
+    id = !message_counter; 
+    extend_name; 
+    extend_body;
+  }) 
+
 let rec message_printer ?level:(level = 0) {
   Pbpt.message_name; 
   Pbpt.message_body; _ } = 
@@ -84,15 +92,16 @@ let rec message_printer ?level:(level = 0) {
     | Pbpt.Message_sub m -> message_printer ~level:(level + 2) m
   ) message_body 
 
-let proto ?file_option ?package ?import ?message ?enum ?proto () = 
+let proto ?file_option ?package ?import ?message ?enum ?proto ?extend () = 
 
-  let {Pbpt.messages; imports; file_options; enums; _ } as proto = match proto with 
+  let {Pbpt.messages; imports; file_options; enums; extends; _ } as proto = match proto with 
     | None -> Pbpt.({
       imports = [];
       package = None; 
       messages = []; 
       file_options = []; 
       enums = []; 
+      extends = []; 
     }) 
     | Some proto -> proto
   in 
@@ -120,6 +129,11 @@ let proto ?file_option ?package ?import ?message ?enum ?proto () =
   let proto = match file_option with 
     | None   -> proto 
     | Some i -> Pbpt.({proto with file_options = i :: file_options})
+  in 
+  
+  let proto = match extend with 
+    | None   -> proto 
+    | Some e -> Pbpt.({proto with extends = e :: extends })
   in 
   proto 
    

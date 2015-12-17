@@ -31,8 +31,8 @@ debug:
 			$(OCB) -tag debug ocaml-protoc.byte
 
 it: native
-			$(OCB) ./src/unit-tests/parse_extension_range.native
-			./parse_extension_range.native
+			$(OCB) ./src/unit-tests/parse_extend.native
+			./parse_extend.native
 
 
 unit-tests: 		

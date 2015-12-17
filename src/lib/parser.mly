@@ -17,6 +17,8 @@
 
 %token EXTENSIONS
 
+%token EXTEND
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -67,6 +69,9 @@
 %start extension_
 %type <Pbpt.extension_range list> extension_
 
+%start extend_
+%type <Pbpt.extend> extend_
+
 %%
 
 field_options_   : field_options EOF {$1}  
@@ -80,6 +85,7 @@ import_          : import        EOF {$1}
 file_option_     : file_option   EOF {$1} 
 extension_range_list_ : extension_range_list EOF {$1}
 extension_       : extension    EOF {$1}
+extend_          : extend       EOF {$1}
 
 /*
 message = "message" messageName messageBody
@@ -94,12 +100,14 @@ proto:
   | package_declaration {Pbpt_util.proto ~package:$1 ()}
   | message             {Pbpt_util.proto ~message:$1 ()}
   | enum                {Pbpt_util.proto ~enum:$1 ()}
+  | extend              {Pbpt_util.proto ~extend:$1 ()}
 
   | import              proto {Pbpt_util.proto ~import:$1  ~proto:$2 ()}
   | file_option         proto {Pbpt_util.proto ~file_option:$1  ~proto:$2 ()}
   | package_declaration proto {Pbpt_util.proto ~package:$1 ~proto:$2 ()}
   | message             proto {Pbpt_util.proto ~message:$1 ~proto:$2 ()}
   | enum                proto {Pbpt_util.proto ~enum:$1 ~proto:$2 ()}
+  | extend              proto {Pbpt_util.proto ~extend:$1 ~proto:$2 ()}
 
 import:
   | IMPORT STRING SEMICOLON       { Pbpt_util.import $2} 
@@ -130,6 +138,19 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
+
+
+extend : 
+  | EXTEND IDENT LBRACE normal_field_list RBRACE {
+    Pbpt_util.extend $2 $4 
+  }
+  | EXTEND IDENT LBRACE RBRACE {
+    Pbpt_util.extend $2 [] 
+  }
+
+normal_field_list :
+  | normal_field                   {$1 :: []}
+  | normal_field normal_field_list {$1 :: $2}
 
 extension : 
   | EXTENSIONS extension_range_list SEMICOLON {$2}  

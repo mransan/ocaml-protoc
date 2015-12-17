@@ -21,6 +21,7 @@ let keywords = create_hashtable 50 [
   "import" , IMPORT;
   "option" , OPTION;
   "extensions" , EXTENSIONS;
+  "extend" , EXTEND;
 ]
 
 let resolve_identifier ident = 

@@ -65,6 +65,8 @@ val message :
 
 val import : ?public:unit -> string -> Pbpt.import 
 
+val extend : string -> Pbpt.field_label Pbpt.field list -> Pbpt.extend  
+
 val proto: 
   ?file_option:Pbpt.file_option -> 
   ?package:string -> 
@@ -72,6 +74,7 @@ val proto:
   ?message:Pbpt.message ->
   ?enum:Pbpt.enum ->
   ?proto:Pbpt.proto -> 
+  ?extend:Pbpt.extend -> 
   unit -> 
   Pbpt.proto
 

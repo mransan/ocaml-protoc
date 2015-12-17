@@ -99,6 +99,7 @@ let () =
   package my.proto;
   message M1 {} 
   message M2 {}
+  extend  M2 {} 
   " in 
   let proto = parse Parser.proto_ s in 
   assert(Some "my.proto" = proto.Pbpt.package);
@@ -107,6 +108,8 @@ let () =
   assert(2= List.length proto.Pbpt.messages);
   assert("M1" = (List.nth proto.Pbpt.messages 0).Pbpt.message_name);
   assert("M2" = (List.nth proto.Pbpt.messages 1).Pbpt.message_name);
+  assert(1= List.length proto.Pbpt.extends);
+  assert("M2" = (List.nth proto.Pbpt.extends 0).Pbpt.extend_name);
   ()
 
 let () = 
