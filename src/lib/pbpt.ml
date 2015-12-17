@@ -94,6 +94,12 @@ and message = {
   message_body : message_body_content list; 
 }
 
+type extend  = {
+  id : int; 
+  extend_name : string; 
+  extend_body : field_label field list;
+}
+
 type import = {
   file_name : string; 
   public : bool; 
@@ -107,4 +113,5 @@ type proto = {
   package : string option; 
   messages : message list; 
   enums : enum list; 
+  extends : extend list;
 }
