@@ -42,12 +42,20 @@ val enum :
   string -> 
   Pbpt.enum 
 
+val extension_range_single_number : int -> Pbpt.extension_range
+
+val extension_range_range : int -> [ `Max | `Number of int ] -> Pbpt.extension_range 
+
 val message_body_sub : 
   Pbpt.message -> 
   Pbpt.message_body_content
 
 val message_body_enum: 
   Pbpt.enum -> 
+  Pbpt.message_body_content
+
+val message_body_extension: 
+  Pbpt.extension_range list  -> 
   Pbpt.message_body_content
 
 val message : 

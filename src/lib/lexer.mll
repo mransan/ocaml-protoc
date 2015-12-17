@@ -20,6 +20,7 @@ let keywords = create_hashtable 50 [
   "package" , PACKAGE;
   "import" , IMPORT;
   "option" , OPTION;
+  "extensions" , EXTENSIONS;
 ]
 
 let resolve_identifier ident = 
