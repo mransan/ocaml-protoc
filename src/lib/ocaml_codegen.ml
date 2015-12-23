@@ -468,3 +468,63 @@ let gen_string_of_sig t =
   | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
   | {T.spec = T.Variant _ } -> None
   | {T.spec = T.Const_variant {T.variant_name; _ ; } } -> Some (f variant_name) 
+
+let gen_default_record  ?and_ {T.record_name; fields } = 
+  L.log "gen_string_of, record_name: %s\n" record_name; 
+
+  let gen_field field_type = 
+    match field_type with 
+    | T.User_defined_type t -> 
+      function_name_of_user_defined "default" t
+    | T.String -> "\"\""
+    | T.Float  -> "0." 
+    | T.Int    -> "0"
+    | T.Int32  -> "0l"
+    | T.Int64  -> "0L"
+    | T.Bytes  -> "Bytes.create 64"  
+    | T.Bool   -> "false"
+  in
+
+  concat [
+    P.sprintf "%s default_%s = {" (let_decl_of_and and_) record_name;
+    add_indentation 1 @@ concat @@ List.map (fun field -> 
+      L.log "gen_string_of field_name: %s\n" field.T.field_name;
+     
+      let { T.field_type; field_name; type_qualifier ; encoding_type } = field in 
+      match encoding_type with 
+      | T.Regular_field encoding_type -> ( 
+        match type_qualifier with
+        | T.No_qualifier -> 
+          let field_default_of = gen_field field_type in 
+          sp "%s = %s;" field_name field_default_of; 
+        | T.Option -> 
+          sp "%s = None;" field_name; 
+        | T.List -> 
+          sp "%s = [];" field_name; 
+      )
+      | T.One_of {T.constructors; variant_name = _} -> (
+        match constructors with
+        | []     -> failwith "programmatic TODO error" 
+        | {T.field_type; field_name = constructor_name ; _ } :: _ ->
+          sp "%s = %s %s;" field_name constructor_name (gen_field field_type)  
+      )                (* one of        *)
+    ) fields;          (* record fields *) 
+    "\n}";
+  ]
+
+let gen_default ?and_ = function 
+  | {T.spec = T.Record r  } -> Some (gen_default_record ?and_ r) 
+  | {T.spec = T.Variant _ } -> None
+  | {T.spec = T.Const_variant _ } -> None
+
+let gen_default_sig t = 
+  let f type_name =  
+     concat [
+       P.sprintf "val default_%s : %s" type_name type_name;
+       sp "(** [default_%s] is the default value for type [%s] *)" type_name type_name;
+     ]
+  in 
+  match t with 
+  | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
+  | {T.spec = T.Variant _ } -> None
+  | {T.spec = T.Const_variant {T.variant_name = _ ; _ ; } } -> None

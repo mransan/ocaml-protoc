@@ -42,5 +42,14 @@ val gen_string_of_sig : Ocaml_types.type_ -> string option
     computing a debug string of the given record
  *)
 
+val gen_default : ?and_:unit -> Ocaml_types.type_ -> string option
+(** [gen_default record] generates a default value for the given [record]
+  *)
+
+val gen_default_sig : Ocaml_types.type_ -> string option
+(** [gen_default_sig record] generates the signature of the default value for 
+    the given [record].
+  *)
+
 (* --- Testing purpose onlye --- *)
 val gen_mappings_record : Ocaml_types.record -> string

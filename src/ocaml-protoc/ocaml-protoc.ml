@@ -156,6 +156,7 @@ let () =
       gen_opt types_ Ocaml_codegen.gen_decode;
       gen_opt types_ Ocaml_codegen.gen_encode;
       gen_opt types_ Ocaml_codegen.gen_string_of;
+      gen_opt types_ Ocaml_codegen.gen_default;
       ]
     ) otypes;
   ];
@@ -170,5 +171,6 @@ let () =
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_decode_sig t) types_ ;
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_encode_sig t) types_ ;
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_string_of_sig t) types_ ;
+      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_default_sig t) types_ ;
     ]
   ) (otypes)
