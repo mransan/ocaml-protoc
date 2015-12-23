@@ -14,6 +14,7 @@ type field_encoding = {
   field_number : int; 
   payload_kind : payload_kind; 
   nested : bool;
+  default: Pbpt.constant option;
 }
 
 val string_of_payload_kind : payload_kind -> string 

@@ -14,6 +14,7 @@ type field_encoding = {
   field_number: int; 
   payload_kind: payload_kind; 
   nested: bool;
+  default: Pbpt.constant option;
 }
 
 let string_of_payload_kind = function 
@@ -48,4 +49,5 @@ let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) =
     payload_kind = pk;
     nested; 
     field_number = Pbtt_util.field_number field;
+    default = Pbtt_util.field_default field;
   }

@@ -14,6 +14,8 @@ let field_type {Pbtt.field_type; _ } =
 let field_label {Pbtt.field_parsed = {Pbpt.field_label; _ }; _ } = 
   field_label 
 
+let field_default {Pbtt.field_default; _ } = field_default 
+
 let empty_scope  = { 
   Pbtt.packages = []; 
   message_names = [] 
