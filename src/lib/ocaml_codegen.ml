@@ -512,10 +512,17 @@ let gen_default_record  ?and_ {T.record_name; fields } =
     "\n}";
   ]
 
+let gen_default_const_variant ?and_ {T.variant_name; constructors; } = 
+  let first_constructor_name = match constructors with
+    | []            -> failwith "programmatic TODO error"
+    | (name, _) ::_ -> name 
+  in  
+  P.sprintf "%s default_%s = %s" (let_decl_of_and and_) variant_name first_constructor_name
+
 let gen_default ?and_ = function 
   | {T.spec = T.Record r  } -> Some (gen_default_record ?and_ r) 
   | {T.spec = T.Variant _ } -> None
-  | {T.spec = T.Const_variant _ } -> None
+  | {T.spec = T.Const_variant v } -> Some (gen_default_const_variant v)
 
 let gen_default_sig t = 
   let f type_name =  
@@ -527,4 +534,4 @@ let gen_default_sig t =
   match t with 
   | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
   | {T.spec = T.Variant _ } -> None
-  | {T.spec = T.Const_variant {T.variant_name = _ ; _ ; } } -> None
+  | {T.spec = T.Const_variant {T.variant_name ; _ ; } } -> Some (f variant_name) 
