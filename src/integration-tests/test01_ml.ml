@@ -2,34 +2,34 @@
 module T  = Test01_pb
 
 
-let decode_ref_data () = {
-    T.p1 = {
-      T.first_name = "John";
-      T.last_name  = "Doe";
-      T.date_of_birth = 19820429; 
-      T.tel_number = None; 
-      T.employment = T.Employed_by "Google";
-      T.marital_status = None; 
-      T.gender = Some T.Male;
+let decode_ref_data () = T.({
+    p1 = {
+      first_name = "John";
+      last_name  = "Doe";
+      date_of_birth = 19820429; 
+      tel_number = None; 
+      employment = Employed_by "Google";
+      marital_status = None; 
+      gender = Some Male;
     }; 
-    T.p2 = {
-      T.first_name = "Marie";
-      T.last_name  = "Dupont";
-      T.date_of_birth = 19820306; 
-      T.tel_number = Some {T.area_code = 917; T.number = 1111111};
-      T.employment = T.Employed_by "INRIA";
-      T.marital_status = None;
-      T.gender = Some T.Female;
+    p2 = {
+      first_name = "Marie";
+      last_name  = "Dupont";
+      date_of_birth = 19820306; 
+      tel_number = Some {area_code = 917; number = 1111111};
+      employment = Employed_by "INRIA";
+      marital_status = None;
+      gender = Some Female;
     };
-    T.contact_numbers = {
-      T.area_code = 917;
-      T.number    = 123450;
+    contact_numbers = {
+      area_code = 917;
+      number    = 123450;
     } :: {
-      T.area_code = 917;
-      T.number    = 123451;
+      area_code = 917;
+      number    = 123451;
     } :: []; 
-    T.number_of_children = None; 
-  } 
+    number_of_children = None; 
+  }) 
 
    
 
@@ -42,4 +42,16 @@ let () =
       Test_util.decode "test01.c2ml.data" T.decode_couple T.string_of_couple (decode_ref_data  ()) 
   | Test_util.Encode -> 
       Test_util.encode "test01.ml2c.data" T.encode_couple (decode_ref_data ())
+let () = 
+
+  let expected_default_person = T.({
+    first_name = "Max";
+    last_name = "Ransan";
+    date_of_birth  = 19820429;
+    tel_number = None;
+    employment = Self_employed 0; 
+    marital_status = None; 
+    gender = None;
+  }) in
+  assert (expected_default_person = T.default_person)
 
