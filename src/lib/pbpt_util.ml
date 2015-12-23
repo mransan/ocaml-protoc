@@ -90,6 +90,7 @@ let rec message_printer ?level:(level = 0) {
     | Pbpt.Message_enum {Pbpt.enum_name; _ } ->
         prefix (); Printf.printf "- enum type [%s]\n" enum_name 
     | Pbpt.Message_sub m -> message_printer ~level:(level + 2) m
+    | Pbpt.Message_extension _ -> () 
   ) message_body 
 
 let proto ?file_option ?package ?import ?message ?enum ?proto ?extend () = 
