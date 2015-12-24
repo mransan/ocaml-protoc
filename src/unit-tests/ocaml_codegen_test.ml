@@ -5,17 +5,23 @@ let () =
       field_type = Int; 
       field_name = "v1"; 
       type_qualifier = No_qualifier;
-      encoding_type = Regular_field {field_number = 1; nested = false; payload_kind = Encoding_util.Varint false}
+      encoding_type = Regular_field Encoding_util.({ 
+        default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false}
+      )
     }; {
       field_type = String; 
       field_name = "v2"; 
       type_qualifier = Option;
-      encoding_type = Regular_field {field_number = 2; nested = false; payload_kind = Encoding_util.Bytes}
+      encoding_type = Regular_field Encoding_util. ({ 
+        default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes}
+      )
     };{
       field_type = User_defined_type {type_name = "other"; module_ = None; }; 
       field_name = "v3"; 
       type_qualifier = No_qualifier;
-      encoding_type = Regular_field {field_number = 3; nested = true ; payload_kind = Encoding_util.Bytes}
+      encoding_type = Regular_field Encoding_util.({ 
+        default = None; field_number = 3; nested = true ; payload_kind = Encoding_util.Bytes}
+      )
     };];
   }) in
 
@@ -28,7 +34,7 @@ let () =
   
 
   Printf.printf "---\n%s\n---" (Ocaml_codegen.gen_mappings_record r); 
-  let s = {|let test_mappings d = function   
+  let _ = {|let test_mappings d = function   
 | 1, `Int l -> `Int ( (decode_varint_as_int d)::l)
 | 1, `Default -> `Int ( (decode_varint_as_int d)::[])  
 | 2, `String l -> `String ( (decode_bytes_as_string d)::l)

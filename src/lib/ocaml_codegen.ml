@@ -472,7 +472,7 @@ let gen_string_of_sig t =
 let gen_default_record  ?and_ {T.record_name; fields } = 
   L.log "gen_string_of, record_name: %s\n" record_name; 
 
-  let gen_field field_type field_default = 
+  let gen_field field_name field_type field_default = 
     match field_type, field_default with 
     | T.User_defined_type t, _ -> 
       function_name_of_user_defined "default" t
@@ -490,6 +490,8 @@ let gen_default_record  ?and_ {T.record_name; fields } =
     | T.Bytes , Some (Pbpt.Constant_string s) -> P.sprintf "Bytes.of_string \"%s\"" s  
     | T.Bool  , None -> "false"
     | T.Bool  , Some (Pbpt.Constant_bool b) -> string_of_bool b
+    | _ -> raise @@ E.invalid_default_value 
+      ~field_name ~info:"invalid default type" ()
   in
 
   concat [
@@ -502,7 +504,7 @@ let gen_default_record  ?and_ {T.record_name; fields } =
       | T.Regular_field encoding_type -> ( 
         match type_qualifier with
         | T.No_qualifier -> 
-          let field_default_of = gen_field field_type encoding_type.Encoding_util.default in 
+          let field_default_of = gen_field field_name field_type encoding_type.Encoding_util.default in 
           sp "%s = %s;" field_name field_default_of; 
         | T.Option -> 
           sp "%s = None;" field_name; 
@@ -513,7 +515,7 @@ let gen_default_record  ?and_ {T.record_name; fields } =
         match constructors with
         | []     -> failwith "programmatic TODO error" 
         | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
-          sp "%s = %s %s;" field_name constructor_name (gen_field field_type encoding_type.Encoding_util.default)  
+          sp "%s = %s %s;" field_name constructor_name (gen_field field_name field_type encoding_type.Encoding_util.default)  
       )                (* one of        *)
     ) fields;          (* record fields *) 
     "\n}";
