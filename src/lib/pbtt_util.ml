@@ -21,6 +21,11 @@ let empty_scope  = {
   message_names = [] 
 } 
 
+let type_id_of_type {Pbtt.id; _ } = id 
+
+let type_of_id all_types id  = 
+  List.find (fun t -> type_id_of_type t = id) all_types 
+
 let string_of_unresolved { Pbtt.scope; type_name; from_root }  =
     Printf.sprintf "unresolved:{scope %s, type_name: %s, from_root: %b}"
     (Util.string_of_string_list scope) 
@@ -90,81 +95,86 @@ let map_field_type : 'a Pbtt.field_type  -> 'b Pbtt.field_type = function
  | Pbtt.Field_type_bytes      -> Pbtt.Field_type_bytes 
  | Pbtt.Field_type_type _ -> raise @@ E.programmatic_error E.Unexpected_field_type 
 
-let compile_default field_name constant = function  
-  | Pbtt.Field_type_double 
-  | Pbtt.Field_type_float -> (
-    match constant with 
-    | Pbpt.Constant_int i -> Pbpt.Constant_float (float_of_int i)
-    | Pbpt.Constant_float _  -> constant
-    | Pbpt.Constant_string _ 
-    | Pbpt.Constant_bool _
-    | Pbpt.Constant_litteral _  -> 
-      raise @@ E.invalid_default_value 
-        ~field_name ~info:"invalid default type (float/int expected)" ()
-  )
-  | Pbtt.Field_type_int32 
-  | Pbtt.Field_type_int64 
-  | Pbtt.Field_type_sint32 
-  | Pbtt.Field_type_sint64 
-  | Pbtt.Field_type_fixed32 
-  | Pbtt.Field_type_fixed64 
-  | Pbtt.Field_type_sfixed32 
-  | Pbtt.Field_type_sfixed64 -> (
-    match constant with 
-    | Pbpt.Constant_int _ -> constant  
-    | Pbpt.Constant_string _ 
-    | Pbpt.Constant_bool  _ 
-    | Pbpt.Constant_litteral  _
-    | Pbpt.Constant_float _ -> 
-      raise @@ E.invalid_default_value 
-        ~field_name ~info:"invalid default type (int expected)" ()
-  )
-  | Pbtt.Field_type_uint32 
-  | Pbtt.Field_type_uint64 -> (
-    match constant with 
-    | Pbpt.Constant_int i -> if i >=0 
-      then constant 
-      else raise @@ E.invalid_default_value 
-        ~field_name ~info:"negative default value for unsigned int" () 
-    | Pbpt.Constant_string _ 
-    | Pbpt.Constant_bool  _ 
-    | Pbpt.Constant_litteral _ 
-    | Pbpt.Constant_float _ -> raise @@ E.invalid_default_value
-        ~field_name ~info:"invalid default type (int expected)" ()
-  )
-  | Pbtt.Field_type_bool -> (
-    match constant with 
-    | Pbpt.Constant_bool _ -> constant
-    | Pbpt.Constant_string _ 
-    | Pbpt.Constant_float _ 
-    | Pbpt.Constant_litteral _
-    | Pbpt.Constant_int _  -> raise @@ E.invalid_default_value 
-      ~field_name ~info:"invalid default type (bool expected)" ()
-  ) 
-  | Pbtt.Field_type_string -> (
-   match constant with 
-   | Pbpt.Constant_string _ -> constant
-    | Pbpt.Constant_float _ 
-    | Pbpt.Constant_int _ 
-    | Pbpt.Constant_litteral _ 
-    | Pbpt.Constant_bool  _  -> raise @@ E.invalid_default_value 
-      ~field_name ~info:"invalid default type (string expected)" ()
-  ) 
-  | Pbtt.Field_type_bytes -> raise @@ E.invalid_default_value 
-    ~field_name ~info:"default value not supported for bytes" ()
-  | Pbtt.Field_type_type _ -> (
-    match constant with 
-    | Pbpt.Constant_litteral _ -> constant 
-    | Pbpt.Constant_string _
-    | Pbpt.Constant_bool _
-    | Pbpt.Constant_float _
-    | Pbpt.Constant_int _ -> raise @@ E.invalid_default_value 
-      ~field_name ~info:"default value not supported for message" ()
+let compile_default_p2 all_types field = 
+  let field_name = field_name field in 
+  let field_type = field_type field in 
+  let field_default = field_default field in  
+  match field_default with
+  | None -> None
+  | Some constant -> (
+    match field_type with  
+    | Pbtt.Field_type_double 
+    | Pbtt.Field_type_float -> (
+      match constant with 
+      | Pbpt.Constant_int i   -> Some (Pbpt.Constant_float (float_of_int i))
+      | Pbpt.Constant_float _ -> Some constant 
+      | _  -> 
+        raise @@ E.invalid_default_value 
+          ~field_name ~info:"invalid default type (float/int expected)" ()
+    )
+    | Pbtt.Field_type_int32 
+    | Pbtt.Field_type_int64 
+    | Pbtt.Field_type_sint32 
+    | Pbtt.Field_type_sint64 
+    | Pbtt.Field_type_fixed32 
+    | Pbtt.Field_type_fixed64 
+    | Pbtt.Field_type_sfixed32 
+    | Pbtt.Field_type_sfixed64 -> (
+      match constant with 
+      | Pbpt.Constant_int _ -> Some constant
+      | _ -> raise @@ E.invalid_default_value ~field_name ~info:"invalid default type (int expected)" ()
+    )
+    | Pbtt.Field_type_uint32 
+    | Pbtt.Field_type_uint64 -> (
+      match constant with 
+      | Pbpt.Constant_int i -> if i >=0 
+        then Some constant 
+        else raise @@ E.invalid_default_value 
+          ~field_name ~info:"negative default value for unsigned int" () 
+      | _ -> raise @@ E.invalid_default_value
+          ~field_name ~info:"invalid default type (int expected)" ()
+    )
+    | Pbtt.Field_type_bool -> (
+      match constant with 
+      | Pbpt.Constant_bool _ -> Some constant
+      | _  -> raise @@ E.invalid_default_value 
+        ~field_name ~info:"invalid default type (bool expected)" ()
+    ) 
+    | Pbtt.Field_type_string -> (
+      match constant with 
+      | Pbpt.Constant_string _ -> Some constant 
+      | _  -> raise @@ E.invalid_default_value ~field_name ~info:"invalid default type (string expected)" ()
+    ) 
+    | Pbtt.Field_type_bytes -> raise @@ E.invalid_default_value 
+      ~field_name ~info:"default value not supported for bytes" ()
+    | Pbtt.Field_type_type (id:Pbtt.resolved) -> (
+      match constant with 
+      | Pbpt.Constant_litteral default_enum_value -> (
+        let {Pbtt.spec; _ } = type_of_id all_types id in 
+        match spec with 
+        | Pbtt.Message _ -> raise @@ E.invalid_default_value 
+          ~field_name ~info:"field of type message cannot have a default litteral value" ()
+        | Pbtt.Enum {Pbtt.enum_values; _ } -> ( 
+          let default_enum_value = Util.apply_until (fun {Pbtt.enum_value_name; _ } -> 
+            if enum_value_name = default_enum_value 
+            then Some enum_value_name 
+            else None
+          ) enum_values 
+          in
+          match default_enum_value with
+          | Some _ -> Some constant
+          | None   -> raise @@ E.invalid_default_value 
+            ~field_name ~info:"Invalid default enum value" () 
+        )
+      ) 
+      | _ -> raise @@ E.invalid_default_value 
+        ~field_name ~info:"default value not supported for message" ()
+    )
   )
 
 let get_default field_name field_options field_type = 
   match List.assoc "default" field_options with
-  | constant -> Some (compile_default field_name constant field_type)
+  | constant -> Some constant (* (compile_default field_name constant field_type) *)
   | exception Not_found -> None 
 
 let compile_field_p1 ({
@@ -304,11 +314,6 @@ let type_name_of_type = function
   | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ } } -> enum_name 
   | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ } } -> message_name
 
-let type_id_of_type {Pbtt.id; _ } = id 
-
-let type_of_id all_types id  = 
-  List.find (fun t -> type_id_of_type t = id) all_types 
-
 let find_all_types_in_field_scope all_types (scope:Pbtt.field_scope) = 
   List.filter (fun t -> 
     let {Pbtt.packages; Pbtt.message_names; } = type_scope_of_type t in 
@@ -360,7 +365,7 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
       List.rev @@ loop [] message_scope 
   in 
     
-  let process_field_type message_name field = 
+  let compile_field_p2 message_name field = 
     let field_name = field_name field in 
     L.log "[pbtt] field_name: %s\n" field_name; 
     match field.Pbtt.field_type with 
@@ -392,11 +397,12 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
 
   let message_body = List.fold_left (fun message_body  -> function
     | Pbtt.Message_field field ->
-      let field_type = process_field_type message_name field in 
-      Pbtt.Message_field {field with Pbtt.field_type} :: message_body
+      let field      = {field with Pbtt.field_type = compile_field_p2 message_name field} in  
+      let field      = {field with Pbtt.field_default = compile_default_p2 types field} in  
+      Pbtt.Message_field field :: message_body
     | Pbtt.Message_oneof_field ({Pbtt.oneof_fields; _ } as oneof )  -> 
       let oneof_fields = List.fold_left (fun oneof_fields field -> 
-        let field_type = process_field_type message_name field in  
+        let field_type = compile_field_p2 message_name field in  
         {field with Pbtt.field_type }:: oneof_fields 
       ) [] oneof_fields in  
       let oneof_fields = List.rev oneof_fields in 
