@@ -73,6 +73,7 @@ type error =
   | Invalid_import_qualifier
   | Invalid_file_name of string 
   | Import_file_not_found of string 
+  | Invalid_message_declaration of string 
 
 
 exception Compilation_error of error  
@@ -116,6 +117,8 @@ let () =
          "could not be found.") file_name  
       in
       Some s
+    | Compilation_error (Invalid_message_declaration s) -> 
+      Some (Printf.sprintf "Invalid message declaration : %s" s)
     | _         -> None
     )
 
@@ -153,3 +156,6 @@ let invalid_import_qualifier () =
 
 let invalid_file_name file_name = 
   Compilation_error (Invalid_file_name file_name) 
+
+let invalid_message_declaration s = 
+  Compilation_error (Invalid_message_declaration s)

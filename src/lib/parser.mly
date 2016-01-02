@@ -145,11 +145,15 @@ package_declaration :
   | PACKAGE IDENT SEMICOLON  {$2}  
 
 message : 
-  | MESSAGE IDENT LBRACE message_body_content_list RBRACE { 
-    Pbpt_util.message ~content:$4 $2
+  | IDENT IDENT LBRACE message_body_content_list RBRACE { 
+    if $1 <> "message"
+    then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
+    else Pbpt_util.message ~content:$4 $2
   } 
-  | MESSAGE IDENT LBRACE RBRACE { 
-    Pbpt_util.message ~content:[]  $2
+  | IDENT IDENT LBRACE RBRACE { 
+    if $1 <> "message"
+    then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
+    else Pbpt_util.message ~content:[]  $2
   } 
 
 message_body_content_list:

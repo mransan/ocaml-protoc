@@ -38,7 +38,6 @@ let keywords = create_hashtable 50 [
   "optional", OPTIONAL; 
   "repeated", REPEATED;
   "oneof"   , ONE_OF;
-  "message" , MESSAGE;
   "enum"    , ENUM;
   "package" , PACKAGE;
   "import" , IMPORT;
@@ -99,11 +98,15 @@ rule lexer = parse
     | Comment_eof     -> EOF 
     | Comment_value _ -> lexer lexbuf  
   }
+  | "/*"        { match multi_line_comment [] lexbuf with 
+    | Comment_eof     -> EOF 
+    | Comment_value _ -> lexer lexbuf  
+  }
   | "\""          { match string [] lexbuf with 
     | String_eof     -> EOF
     | String_value s -> STRING s
   }
-    | int_litteral{ INT (int_of_string @@ Lexing.lexeme lexbuf) }
+  | int_litteral  { INT (int_of_string @@ Lexing.lexeme lexbuf) }
   | float_literal { FLOAT (float_of_string @@ Lexing.lexeme lexbuf) }
   | inf_litteral  { FLOAT nan }
   | newline       { lexer lexbuf }
@@ -117,6 +120,14 @@ and comment l = parse
   | newline {comment_value @@ String.concat "" (List.rev l)} 
   | _       {comment ((Lexing.lexeme lexbuf)::l) lexbuf }  
   | eof     {comment_eof } 
+
+and multi_line_comment l = parse  
+  | "*/" {
+      ignore @@ Lexing.lexeme lexbuf; 
+      comment_value @@ String.concat "" (List.rev l)
+  }
+  | _       {multi_line_comment ((Lexing.lexeme lexbuf)::l) lexbuf }  
+  | eof     { comment_eof } 
 
 and string l = parse 
   | '\\' ['\\' '\'' '"' 'n' 't' 'b' 'r' ' '] { 
