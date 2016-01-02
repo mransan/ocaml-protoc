@@ -51,6 +51,67 @@ let rev_split_by_naming_convention s =
   let len = String.length s in 
   add_sub_string start_i len l 
 
+
+let fix_ocaml_keyword_conflict s = 
+  match s with 
+  | "and"
+  | "as"
+  | "assert"
+  | "begin"
+  | "class"
+  | "constraint"
+  | "do"
+  | "done"
+  | "downto"
+  | "else"
+  | "end"
+  | "exception"
+  | "external"
+  | "false"
+  | "for"
+  | "fun"
+  | "function"
+  | "functor"
+  | "if"
+  | "in"
+  | "include"
+  | "inherit"
+  | "initializer"
+  | "lazy"
+  | "let"
+  | "match"
+  | "method"
+  | "module"
+  | "mutable"
+  | "new"
+  | "nonrec"
+  | "object"
+  | "of"
+  | "open"
+  | "or"
+  | "private"
+  | "rec"
+  | "sig"
+  | "struct"
+  | "then"
+  | "to"
+  | "true"
+  | "try"
+  | "type"
+  | "val"
+  | "virtual"
+  | "when"
+  | "while"
+  | "with"
+  | "mod"
+  | "land"
+  | "lor"
+  | "lxor"
+  | "lsl"
+  | "lsr"
+  | "asr" -> s ^ "_"
+  | _     -> s 
+
 let constructor_name s =
   rev_split_by_naming_convention s
   |> List.rev
@@ -65,6 +126,8 @@ let record_field_name s =
   |> List.rev
   |> String.concat "_"
   |> String.lowercase 
+  |> fix_ocaml_keyword_conflict 
+
 
 let module_of_file_name file_name = 
   let file_name = Filename.basename file_name in 
@@ -85,7 +148,7 @@ let type_name message_scope name =
 
   match all_names with 
   | []     -> failwith "Programmatic error"
-  | hd::[] -> S.lowercase hd 
+  | hd::[] -> fix_ocaml_keyword_conflict hd 
   | _      -> S.concat "_" all_names 
 
 (** [user_defined_type_of_id module_ all_types i] returns the field type name 

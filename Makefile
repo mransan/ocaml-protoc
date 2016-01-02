@@ -31,8 +31,8 @@ debug:
 			$(OCB) -tag debug ocaml-protoc.byte
 
 it: native
-			$(OCB) ./src/unit-tests/parse_extend.native
-			./parse_extend.native
+			$(OCB) ./src/unit-tests/lexer_comment.native
+			./lexer_comment.native
 
 
 unit-tests: 		
@@ -107,6 +107,6 @@ testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test0
 	./_build/src/integration-tests/test04_ml.native encode
 	./src/integration-tests/test03_cpp.tsk decode
 
-integration: test01 test02 testCompat test05 test06 test07 test08 test09 
+integration: test01 test02 testCompat test05 test06 test07 test08 test09 test12 
 
 all: 		native byte unit-tests integration

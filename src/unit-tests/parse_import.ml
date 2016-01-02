@@ -10,6 +10,10 @@ let () =
   let x = parse Parser.import_ "import public \"blah.proto\";" in
   assert ((Pbpt_util.import ~public:() "blah.proto") = x)
 
+let () = 
+  let x = parse Parser.import_ "import public \"foo/blah.proto\";" in
+  assert ((Pbpt_util.import ~public:() "foo/blah.proto") = x)
+
 let () =
   let x =
     match parse Parser.import_ "import ;" with 

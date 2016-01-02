@@ -1,0 +1,4 @@
+message M {
+  required int32 to = 1; 
+  required int32 type = 2; 
+}
