@@ -21,13 +21,13 @@ let () =
 let () = 
   let message_scope = [] in 
   let oneof_name = "tEST" in 
-  assert ("test" = Backend_ocaml.type_name message_scope oneof_name);
+  assert ("t_est" = Backend_ocaml.type_name message_scope oneof_name);
   ()
  
 let () = 
   let message_scope = [] in 
   let oneof_name = "tEST_Max" in 
-  assert ("test_max" = Backend_ocaml.type_name message_scope oneof_name);
+  assert ("t_est_max" = Backend_ocaml.type_name message_scope oneof_name);
   ()
  
 let () = 
@@ -56,7 +56,7 @@ let () =
  
 let () = 
   let s = "testBlah" in 
-  assert("Testblah" = Backend_ocaml.constructor_name s);
+  assert("Test_blah" = Backend_ocaml.constructor_name s);
   ()
   (* TODO this could really be improved to be Test_blah *)
  
@@ -238,6 +238,17 @@ let () =
     end;
   () 
 
+let () = 
+  assert (["blah"] = Backend_ocaml.rev_split_by_naming_convention "blah"); 
+  assert (["foo";"bar"] = Backend_ocaml.rev_split_by_naming_convention "bar_foo");
+  assert (["Foo";"bar"] = Backend_ocaml.rev_split_by_naming_convention "barFoo");
+  assert (["F"] = Backend_ocaml.rev_split_by_naming_convention "F");
+  assert (["BF"] = Backend_ocaml.rev_split_by_naming_convention "BF");
+  assert (["BAR"; "foo"] = Backend_ocaml.rev_split_by_naming_convention "fooBAR");
+  assert (["BAr"; "foo"] = Backend_ocaml.rev_split_by_naming_convention "fooBAr");
+  assert (["BAR"; "BAr"; "Bar"; "foo"] = Backend_ocaml.rev_split_by_naming_convention "fooBarBArBAR");
+  assert (["BAR"; "BAr"; "Bar"; "foo"] = Backend_ocaml.rev_split_by_naming_convention "fooBarBArBAR");
+  ()
 
 let () = 
   print_endline "Backend OCaml Tests ... Ok"

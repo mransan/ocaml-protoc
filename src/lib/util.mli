@@ -26,3 +26,6 @@ val is_list_empty : 'a list -> bool
 
 val string_of_string_list : string list -> string 
 (** [string_of_string_list l] returns a debug string of [l] *)
+
+val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a 
+(** [string_fold_lefti f e0 s] will fold over each string character *)

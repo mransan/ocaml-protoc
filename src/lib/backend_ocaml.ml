@@ -2,13 +2,44 @@ module E  = Exception
 module L  = Logger 
 module OCaml_types = Ocaml_types 
 
+let rev_split_by_naming_convention s =
+  let is_uppercase c = 
+    (64 < (Char.code c) && (Char.code c) < 91)
+  in 
+
+  let add_sub_string start_i end_i l  = 
+    if start_i = end_i 
+    then l 
+    else (String.sub s start_i (end_i - start_i)) :: l
+  in 
+  
+  let l, start_i, _ = Util.string_fold_lefti (fun (l, start_i, uppercase_run) i c ->
+    match c, uppercase_run with 
+    | '_', _ -> 
+      (add_sub_string start_i i l, i + 1, false)
+    | c , false  when (is_uppercase c) -> 
+      (add_sub_string start_i i l, i, true) 
+    | _ -> 
+      (l, start_i, is_uppercase c) 
+  ) ([], 0, false) s in 
+
+  let len = String.length s in 
+  add_sub_string start_i len l 
+
 let constructor_name s =
-  String.capitalize @@ String.lowercase s 
+  rev_split_by_naming_convention s
+  |> List.rev
+  |> String.concat "_"
+  |> String.lowercase 
+  |> String.capitalize
 
 let module_name = constructor_name 
 
 let record_field_name s =
-  String.lowercase s 
+  rev_split_by_naming_convention s
+  |> List.rev
+  |> String.concat "_"
+  |> String.lowercase 
 
 let module_of_file_name file_name = 
   let file_name = Filename.basename file_name in 
@@ -20,10 +51,17 @@ let module_of_file_name file_name =
 let type_name message_scope name = 
   let module S = String in  
   let all_names =  message_scope @ [name] in 
+  let all_names = List.map (fun s -> 
+    rev_split_by_naming_convention s
+    |> List.rev 
+    |> List.map String.lowercase 
+  ) all_names in 
+  let all_names = List.flatten all_names in 
+
   match all_names with 
   | []     -> failwith "Programmatic error"
   | hd::[] -> S.lowercase hd 
-  | _      -> S.concat "_" @@ List.map S.lowercase all_names
+  | _      -> S.concat "_" all_names 
 
 (** [user_defined_type_of_id module_ all_types i] returns the field type name 
     for the type identied by [i] and which is expected to be in [all_types]. 

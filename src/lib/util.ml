@@ -28,3 +28,12 @@ let is_list_empty = function | [] -> true | _ -> false
 
 let string_of_string_list l = 
   Printf.sprintf "[%s]" (String.concat "," l)
+
+let string_fold_lefti f e0 s =
+  let len = String.length s in 
+  let rec loop acc = function
+    | i when i = len -> acc 
+    | i -> loop (f acc i (String.unsafe_get s i))  (i + 1) 
+  in 
+  loop e0 0 
+
