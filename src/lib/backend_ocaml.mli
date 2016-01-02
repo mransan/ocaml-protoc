@@ -1,8 +1,8 @@
-(** Backend for compiling Protobuffer messages to OCaml 
+(** Backend for compiling Protobuf messages to OCaml 
  *)
 
 (** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuffer message into an OCaml representation. 
+    fully resolved Protobuf message into an OCaml representation. 
 
     After compilation this module also expose code generation 
     functionality. 

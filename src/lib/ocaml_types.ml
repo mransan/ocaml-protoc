@@ -1,3 +1,4 @@
+(** Generated OCaml type for protobuf messages *) 
 
 type user_defined_type = {
   module_ : string option; 
@@ -32,18 +33,32 @@ type 'a afield = {
   encoding_type : 'a;
 }
 
-type 'a avariant= {
+type variant_encoding = 
+  | Inlined_within_message 
+  | Standalone 
+(** protobuf type system does not explicitely support standalone variant type since
+    `one of` fields can only be within a `message` type. 
+
+   However we support an optimization so that protobuf message which only
+   contains a single `one of` field are mapped to an OCaml variant rather 
+   than a record with a single field of a variant type. This optimization allow
+   cleaner and more consice generated code. 
+
+   Therefore an OCaml variant can be encoded into 2 different way. Either it is 
+   a standalone variant or it is actually part of a record. This information
+   needs to be kept track of to generate the code accordingly. 
+ *)
+
+type variant = {
   variant_name : string; 
-  constructors : 'a list;
+  variant_constructors : Encoding_util.field_encoding afield list; 
+  variant_encoding : variant_encoding; 
 }
 
-type const_variant_constructor = string * int  
-
-type const_variant = const_variant_constructor avariant 
-
-type variant_constructor = Encoding_util.field_encoding afield 
-
-type variant = variant_constructor avariant 
+type const_variant = {
+  cvariant_name : string; 
+  cvariant_constructors : (string * int) list ;
+}
 
 type record_encoding_type = 
   | Regular_field of Encoding_util.field_encoding

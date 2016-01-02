@@ -125,13 +125,19 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     OCaml_types.encoding_type = f field_encoding ; 
   }
 
-let compile_oneof all_types file_name message_scope outer_message_name {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
+let compile_oneof all_types file_name message_scope outer_message_name variant_encoding {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
   let {Pbtt.message_names; _ } = message_scope in 
-  let variant_name = type_name (message_names @ [outer_message_name]) oneof_name in 
-  let constructors = List.map (fun field -> 
+  let variant_name = match variant_encoding with
+    | OCaml_types.Inlined_within_message -> type_name (message_names @ [outer_message_name]) oneof_name 
+    | OCaml_types.Standalone -> type_name (message_names @ [outer_message_name]) "" in 
+  let variant_constructors = List.map (fun field -> 
     compile_field ~as_constructor:() all_types (fun x -> x) OCaml_types.No_qualifier file_name field 
   ) oneof_fields in 
-  OCaml_types.({variant_name; constructors; })
+  OCaml_types.({
+    variant_name; 
+    variant_constructors; 
+    variant_encoding;
+  })
 
 let compile_message  
   (all_types: Pbtt.resolved Pbtt.proto) 
@@ -148,46 +154,58 @@ let compile_message
 
   let {Pbtt.message_names; _ } = scope in  
   let record_name = type_name message_names message_name in 
-  let variants, fields = List.fold_left (fun (variants, fields) -> function
-    | Pbtt.Message_field f -> (
-      let type_qualifier = match Pbtt_util.field_label f with 
-        | `Optional -> OCaml_types.Option 
-        | `Required -> OCaml_types.No_qualifier
-        | `Repeated -> OCaml_types.List
-      in 
-      (variants, (compile_field all_types (fun x -> OCaml_types.Regular_field x) type_qualifier file_name f)::fields)
-    )
-    | Pbtt.Message_oneof_field f -> (
-      let variant = compile_oneof all_types file_name scope message_name f in 
-      let field   = OCaml_types.({
-        field_type =  User_defined_type {type_name = variant.variant_name; module_ = None}; 
-        field_name =  record_field_name f.Pbtt.oneof_name;
-        type_qualifier = No_qualifier;
-        encoding_type = One_of variant; 
-      }) in 
-      ((OCaml_types.{module_; spec = Variant variant})::variants, field::fields) 
-    )
-  ) ([], []) message_body in 
 
-  List.rev (OCaml_types.({
-    module_;
-    spec    = Record {
-    record_name; 
-    fields = List.rev fields;
-  }}) :: variants)
+  (* In case a message is only made of a `one of` field then we 
+     generate a only a variant rather than both a variant and a message with 
+     a single field. This is an optimization which makes the generated
+     OCaml code much easier. 
+   *)
+  match message_body with 
+  | Pbtt.Message_oneof_field f :: [] -> (
+    [OCaml_types.({
+      module_; 
+      spec = Variant (compile_oneof all_types file_name scope message_name Standalone f);  
+    })]
+  ) 
+  | _ -> 
+    let variants, fields = List.fold_left (fun (variants, fields) -> function
+      | Pbtt.Message_field f -> (
+        let type_qualifier = match Pbtt_util.field_label f with 
+          | `Optional -> OCaml_types.Option 
+          | `Required -> OCaml_types.No_qualifier
+          | `Repeated -> OCaml_types.List
+        in 
+        (variants, (compile_field all_types (fun x -> OCaml_types.Regular_field x) type_qualifier file_name f)::fields)
+      )
+      | Pbtt.Message_oneof_field f -> (
+        let variant = compile_oneof all_types file_name scope message_name OCaml_types.Inlined_within_message f in 
+        let field   = OCaml_types.({
+          field_type =  User_defined_type {type_name = variant.variant_name; module_ = None}; 
+          field_name =  record_field_name f.Pbtt.oneof_name;
+          type_qualifier = No_qualifier;
+          encoding_type = One_of variant; 
+        }) in 
+        ((OCaml_types.{module_; spec = Variant variant})::variants, field::fields) 
+      )) ([], []) message_body in 
+    List.rev (OCaml_types.({
+        module_;
+        spec    = Record {
+        record_name; 
+        fields = List.rev fields;
+      }}) :: variants)
 
 let compile_enum file_name scope {Pbtt.enum_name; Pbtt.enum_values; } = 
   let module_ = module_of_file_name file_name in 
   let {Pbtt.message_names; Pbtt.packages = _ } = scope in 
-  let variant_name = type_name message_names enum_name in 
-  let constructors = List.map (fun {Pbtt.enum_value_name; Pbtt.enum_value_int} -> 
+  let cvariant_name = type_name message_names enum_name in 
+  let cvariant_constructors = List.map (fun {Pbtt.enum_value_name; Pbtt.enum_value_int} -> 
     (constructor_name enum_value_name,  enum_value_int)
   ) enum_values in 
   OCaml_types.({
     module_; 
     spec = Const_variant {
-    variant_name; 
-    constructors;  
+      cvariant_name; 
+      cvariant_constructors;  
   }})
 
 let compile all_types = function 

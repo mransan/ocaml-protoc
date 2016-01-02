@@ -166,12 +166,13 @@ let () =
   
   let variant = Ocaml_types.({
       variant_name  = "m1_o1"; 
-      constructors = [
+      variant_constructors = [
         {field_type = Int; field_name = "Intv"; type_qualifier = No_qualifier;
         encoding_type = Eu.({ default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
         {field_type = String; field_name = "Stringv"; type_qualifier = No_qualifier;
          encoding_type = Eu.({ default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes})};
       ];
+      variant_encoding = Inlined_within_message;
     }) in
   assert(Ocaml_types.({module_ = "A_pb"; spec = Variant variant}) = List.nth ocaml_types 0);
   assert(
