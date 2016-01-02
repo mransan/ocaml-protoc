@@ -1,3 +1,5 @@
+(** Code generation routine for the OCaml types. *) 
+
 val caml_file_name_of_proto_file_name : string -> string 
 (** [caml_file_name_of_proto_file_name f] returns the 
       ocaml base file name corresponding to the proto file name [f]. The

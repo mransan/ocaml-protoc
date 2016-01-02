@@ -3,8 +3,8 @@ module T  = Test07_pb
 
 let decode_ref_data () = {
   T.value = 1; 
-  T.left  = {T.t =  T.Node {T.value = 2; T.left = {T.t=T.Empty 0 }; T.right = {T.t = T.Empty 0}}}; 
-  T.right = {T.t =  T.Node {T.value = 3; T.left = {T.t=T.Empty 0 }; T.right = {T.t = T.Empty 0}}}; 
+  T.left  = T.Node {T.value = 2; T.left = T.Empty 0 ; T.right = T.Empty 0}; 
+  T.right = T.Node {T.value = 3; T.left = T.Empty 0 ; T.right = T.Empty 0}; 
 } 
 
 let () = 

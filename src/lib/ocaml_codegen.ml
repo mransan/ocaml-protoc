@@ -80,21 +80,21 @@ let gen_type_record ?and_ {T.record_name; fields } =
     "\n}"
   ]
 
-let gen_type_variant ?and_ {T.variant_name; constructors } = 
+let gen_type_variant ?and_ {T.variant_name; variant_constructors; variant_encoding = _ } = 
   concat [
     P.sprintf "%s %s =" (type_decl_of_and and_) variant_name; 
     concat @@ List.map (fun {T.field_name; field_type; type_qualifier; _ } -> 
       let type_name = string_of_field_type ~type_qualifier field_type in 
       sp "  | %s of %s" field_name type_name
-    ) constructors;
+    ) variant_constructors;
   ]
 
-let gen_type_const_variant ?and_ {T.variant_name; constructors } = 
+let gen_type_const_variant ?and_ {T.cvariant_name; cvariant_constructors } = 
   concat [
-    P.sprintf "%s %s =" (type_decl_of_and and_) variant_name; 
+    P.sprintf "%s %s =" (type_decl_of_and and_) cvariant_name; 
     concat @@ List.map (fun (name, _ ) -> 
       sp "  | %s " name
-    ) constructors;
+    ) cvariant_constructors;
   ]
 
 let gen_type ?and_ = function 
@@ -176,7 +176,7 @@ let gen_mappings_record {T.record_name; fields} =
         in 
         P.sprintf "  %s" decoding 
       )
-      | T.One_of {T.variant_name ; constructors; } -> (
+      | T.One_of {T.variant_name ; variant_constructors; T.variant_encoding = T.Inlined_within_message } -> (
         concat @@ List.map (fun {T.encoding_type; field_type; field_name; type_qualifier = _ } -> 
           let {
             Enc.field_number; 
@@ -203,8 +203,11 @@ let gen_mappings_record {T.record_name; fields} =
                 (Backend_ocaml_static.runtime_function (`Decode, payload_kind, field_type) ^ " d")
           in 
           P.sprintf "  %s" decoding 
-        ) constructors (* All variant constructors *) 
-      )                (* One_of record field *)    
+        ) variant_constructors (* All variant constructors *) 
+      )                        (* One_of record field *)    
+      | T.One_of {T.variant_name ; variant_constructors; T.variant_encoding = T.Standalone} -> (
+        failwith "Programmatic error -> violation of invariant (1)"
+      )
     ) fields ;
     sp "| _ -> raise Not_found ";
     "\n";
@@ -214,10 +217,10 @@ let max_field_number fields =
   List.fold_left (fun max_so_far {T.encoding_type; _ } -> 
     match encoding_type with
     | T.Regular_field {Enc.field_number; _ } -> max max_so_far field_number 
-    | T.One_of {T.constructors; _ } -> 
+    | T.One_of {T.variant_constructors; _ } -> 
         List.fold_left (fun max_so_far {T.encoding_type = {Enc.field_number; _ } ; _ } -> 
           max field_number max_so_far 
-        ) max_so_far constructors 
+        ) max_so_far variant_constructors
   ) (- 1) fields
 
 let gen_decode_record ?and_ ({T.record_name; fields } as record) = 
@@ -237,43 +240,78 @@ let gen_decode_record ?and_ ({T.record_name; fields } as record) =
       } = field in 
       match encoding_type with 
       | T.Regular_field {Enc.field_number; _ } -> ( 
-          let constructor = tag_name (string_of_field_type field_type) in  
-          match type_qualifier with
-          | T.No_qualifier -> 
-            sp "%s = Pbrt.Codegen.required %i a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error %i);"
-              field_name field_number constructor field_number 
-          | T.Option -> 
-            sp "%s = Pbrt.Codegen.optional %i a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error %i);"
-              field_name field_number constructor field_number 
-          | T.List -> 
-            sp "%s = Pbrt.Codegen.list_ %i a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error %i);"
-              field_name field_number constructor field_number
+        let constructor = tag_name (string_of_field_type field_type) in  
+        match type_qualifier with
+        | T.No_qualifier -> 
+          sp "%s = Pbrt.Codegen.required %i a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error %i);"
+            field_name field_number constructor field_number 
+        | T.Option -> 
+          sp "%s = Pbrt.Codegen.optional %i a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error %i);"
+            field_name field_number constructor field_number 
+        | T.List -> 
+          sp "%s = Pbrt.Codegen.list_ %i a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error %i);"
+            field_name field_number constructor field_number
       )
-      | T.One_of {T.constructors; variant_name} -> 
-          let all_numbers = concat @@ List.map (fun {T.encoding_type= {Enc.field_number; _ } ; _ } -> 
-            (P.sprintf "%i;" field_number)
-          ) constructors in 
-          let all_numbers = concat ["["; all_numbers; "]"] in 
-          sp "%s = Pbrt.Codegen.oneof %s a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error (- 1));"
-            field_name all_numbers (tag_name variant_name) 
+      | T.One_of {T.variant_constructors; T.variant_name; T.variant_encoding = T.Inlined_within_message } -> 
+        let all_numbers = concat @@ List.map (fun {T.encoding_type= {Enc.field_number; _ } ; _ } -> 
+          (P.sprintf "%i;" field_number)
+        ) variant_constructors in 
+        let all_numbers = concat ["["; all_numbers; "]"] in 
+        sp "%s = Pbrt.Codegen.oneof %s a (function | `%s __v -> __v | _ -> Pbrt.Codegen.programatic_error (- 1));"
+          field_name all_numbers (tag_name variant_name) 
+      | T.One_of {T.variant_constructors; T.variant_name; T.variant_encoding = T.Standalone } -> (
+        failwith "Programmatic error -> violation of invariant (2)"
+      )  
     ) fields;
     sp "    }";
     sp "  )";
   ]
 
-let gen_decode_const_variant ?and_ {T.variant_name; constructors; } = 
+let gen_decode_variant ?and_ {T.variant_name; variant_constructors; variant_encoding = _ } = 
   concat [
-    P.sprintf "%s decode_%s d = " (let_decl_of_and and_) variant_name; 
+    sp "%s decode_%s d = " (let_decl_of_and and_) variant_name;
+    sp "  let rec loop () = "; 
+    sp "    match Pbrt.Decoder.key d with";
+    sp "    | None -> failwith \"None of the known key is found\"";
+    concat @@ List.map (fun {T.encoding_type = {Enc.field_number; Enc.nested; Enc.payload_kind; _  }; field_type; field_name; type_qualifier = _ } -> 
+      let decoding  =  match field_type with 
+        | T.User_defined_type t -> 
+          let f_name = function_name_of_user_defined "decode" t in
+          if nested 
+          then 
+            (f_name ^ " (Pbrt.Decoder.nested d)")
+          else 
+            (f_name ^ " d")
+        | _ -> 
+            (Backend_ocaml_static.runtime_function (`Decode, payload_kind, field_type) ^ " d")
+      in 
+      sp "    | Some (%i, _) -> %s (%s)" field_number field_name decoding; 
+    ) variant_constructors; 
+
+    sp "    | Some (n, payload_kind) -> (";
+    sp "      Pbrt.Decoder.skip d payload_kind; ";
+    sp "      loop () ";
+    sp "    ) ";
+    sp "  in";
+    sp "  loop () ";
+  ]
+
+let gen_decode_const_variant ?and_ {T.cvariant_name; cvariant_constructors; } = 
+  concat [
+    P.sprintf "%s decode_%s d = " (let_decl_of_and and_) cvariant_name; 
     sp "  match Pbrt.Decoder.int_as_varint d with";
     concat @@ List.map (fun (name, value) -> 
       sp "  | %i -> %s" value name
-    ) constructors; 
-    sp "  | _ -> failwith \"Unknown value for enum %s\"" variant_name; 
+    ) cvariant_constructors; 
+    sp "  | _ -> failwith \"Unknown value for enum %s\"" cvariant_name; 
   ] 
 
 let gen_decode ?and_ = function 
   | {T.spec = T.Record r; _ } -> Some (gen_decode_record ?and_ r)
-  | {T.spec = T.Variant _; _ } -> None
+  | {T.spec = T.Variant v; _ } -> (match v.T.variant_encoding with 
+    | T.Standalone -> Some (gen_decode_variant ?and_ v) 
+    | _          -> None 
+  )
   | {T.spec = T.Const_variant v; _ } -> Some (gen_decode_const_variant ?and_ v)
 
 let gen_decode_sig t = 
@@ -289,37 +327,38 @@ let gen_decode_sig t =
 
   match t with 
   | {T.spec = T.Record {T.record_name ; _ } } ->  Some (f record_name)
-  | {T.spec = T.Variant _ } -> None
-  | {T.spec = T.Const_variant {T.variant_name; _ } } -> Some (f variant_name)
+  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
+    | T.Standalone -> Some (f v.T.variant_name)
+    | T.Inlined_within_message -> None
+  ) 
+  | {T.spec = T.Const_variant {T.cvariant_name; _ } } -> Some (f cvariant_name)
+
+let gen_encode_field ?indent v_name encoding_type field_type = 
+  let {
+    Enc.field_number; 
+    Enc.payload_kind; 
+    Enc.nested} = encoding_type in 
+  let s = concat [
+    sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
+      field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind);
+    match field_type with 
+    | T.User_defined_type t -> 
+      let f_name = function_name_of_user_defined "encode" t in 
+      if nested
+      then 
+        sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
+      else 
+        sp "%s %s encoder;" f_name v_name 
+    | _ ->  
+      let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
+      sp "%s %s encoder;" rt v_name ;
+  ] in 
+  match indent with 
+  | Some _ -> add_indentation 1 @@ s 
+  | None   -> s 
 
 let gen_encode_record ?and_ {T.record_name; fields } = 
   L.log "gen_encode_record record_name: %s\n" record_name; 
-
-
-  let gen_field ?indent v_name encoding_type field_type = 
-    let {
-      Enc.field_number; 
-      Enc.payload_kind; 
-      Enc.nested} = encoding_type in 
-    let s = concat [
-      sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
-        field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind);
-      match field_type with 
-      | T.User_defined_type t -> 
-        let f_name = function_name_of_user_defined "encode" t in 
-        if nested
-        then 
-          sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
-        else 
-          sp "%s %s encoder;" f_name v_name 
-      | _ ->  
-        let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
-        sp "%s %s encoder;" rt v_name ;
-    ] in 
-    match indent with 
-    | Some _ -> add_indentation 1 @@ s 
-    | None   -> s 
-  in
 
   concat [
     P.sprintf "%s encode_%s v encoder = " (let_decl_of_and and_) record_name;
@@ -332,46 +371,62 @@ let gen_encode_record ?and_ {T.record_name; fields } =
         match type_qualifier with 
         | T.No_qualifier -> (
           let v_name = P.sprintf "v.%s" field_name in 
-          gen_field v_name encoding_type field_type
+          gen_encode_field v_name encoding_type field_type
         )
         | T.Option -> concat [
           sp "(match v.%s with " field_name;
           sp "| Some x -> (%s)"
-          (gen_field ~indent:() "x" encoding_type field_type) ;
+          (gen_encode_field ~indent:() "x" encoding_type field_type) ;
           sp "| None -> ());" ;
         ]
         | T.List -> concat [ 
           sp "List.iter (fun x -> ";
-          gen_field ~indent:() "x" encoding_type field_type;
+          gen_encode_field ~indent:() "x" encoding_type field_type;
           sp ") v.%s;" field_name; 
         ]
       )
-      | T.One_of {T.constructors; variant_name = _} -> (  
+      | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (  
         concat [
           sp "(match v.%s with" field_name;
           concat @@ List.map (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
-              let encode_field  = gen_field ~indent:() "x" encoding_type field_type in 
+              let encode_field  = gen_encode_field ~indent:() "x" encoding_type field_type in 
               sp "| %s x -> (%s\n)" field_name encode_field
-          ) constructors;
+          ) variant_constructors;
           ");";
         ]
       )           (* one of        *)
+      | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Standalone} -> (  
+        failwith "Programmatic error -> violation of invariant (3)"
+      )
     ) fields;  (* record fields *) 
   "\n  ()"
   ]
 
-let gen_encode_const_variant ?and_ {T.variant_name; constructors; } = 
+let gen_encode_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_encoding = _ } = 
   concat [
-    P.sprintf "%s encode_%s v encoder =" (let_decl_of_and and_) variant_name; 
+    P.sprintf "%s encode_%s v encoder = " (let_decl_of_and and_) variant_name;
+    sp "match v with" ;
+    concat @@ List.map (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
+        let encode_field  = gen_encode_field ~indent:() "x" encoding_type field_type in 
+        sp "| %s x -> (%s\n)" field_name encode_field
+    ) variant_constructors;
+  ]
+
+let gen_encode_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } = 
+  concat [
+    P.sprintf "%s encode_%s v encoder =" (let_decl_of_and and_) cvariant_name; 
     sp "  match v with";
     concat @@ List.map (fun (name, value) -> 
       sp "  | %s -> Pbrt.Encoder.int_as_varint %i encoder" name value
-    ) constructors; 
+    ) cvariant_constructors; 
   ] 
 
 let gen_encode ?and_ = function 
   | {T.spec = T.Record r }        -> Some (gen_encode_record  ?and_ r)
-  | {T.spec = T.Variant _ }       -> None 
+  | {T.spec = T.Variant v }       -> (match v.T.variant_encoding with 
+    | T.Standalone -> Some (gen_encode_variant ?and_ v)
+    | _ -> None 
+  )
   | {T.spec = T.Const_variant v } -> Some (gen_encode_const_variant ?and_ v)
 
 let gen_encode_sig t = 
@@ -386,21 +441,23 @@ let gen_encode_sig t =
   in 
   match t with 
   | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
-  | {T.spec = T.Variant _ } -> None
-  | {T.spec = T.Const_variant {T.variant_name; _ } } -> Some (f variant_name) 
+  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
+    | T.Standalone -> Some (f v.T.variant_name) 
+    | T.Inlined_within_message -> None
+  ) 
+  | {T.spec = T.Const_variant {T.cvariant_name; _ } } -> Some (f cvariant_name) 
+
+let gen_string_of_field field_name field_type encoding_type = 
+  match field_type with 
+  | T.User_defined_type t -> 
+    P.sprintf "P.sprintf \"\\n%s: %%s\" @@ %s x" field_name (function_name_of_user_defined "string_of" t) 
+  | _ ->  
+    P.sprintf "P.sprintf \"\\n%s: %%%s\" x"  
+      field_name 
+      (printf_string_of_field_type field_type)
 
 let gen_string_of_record  ?and_ {T.record_name; fields } = 
   L.log "gen_string_of, record_name: %s\n" record_name; 
-
-  let gen_field field_name field_type encoding_type = 
-    match field_type with 
-    | T.User_defined_type t -> 
-      P.sprintf "P.sprintf \"\\n%s: %%s\" @@ %s x" field_name (function_name_of_user_defined "string_of" t) 
-    | _ ->  
-      P.sprintf "P.sprintf \"\\n%s: %%%s\" x"  
-        field_name 
-        (printf_string_of_field_type field_type)
-  in
 
   concat [
     P.sprintf "%s string_of_%s v = " (let_decl_of_and and_) record_name;
@@ -413,48 +470,64 @@ let gen_string_of_record  ?and_ {T.record_name; fields } =
       | T.Regular_field encoding_type -> ( 
         match type_qualifier with
         | T.No_qualifier -> 
-          let field_string_of = gen_field field_name field_type encoding_type in 
+          let field_string_of = gen_string_of_field field_name field_type encoding_type in 
           sp "(let x = v.%s in %s);" field_name field_string_of 
         | T.Option -> 
           concat [
             sp "(match v.%s with " field_name;
-            sp "| Some x -> (%s)"  (gen_field field_name field_type encoding_type);
+            sp "| Some x -> (%s)"  (gen_string_of_field field_name field_type encoding_type);
             sp "| None -> \"\\n%s: None\");" field_name;
           ]
         | T.List -> 
           concat [
             sp "String.concat \"\" @@ List.map (fun x ->";
-            nl @@ gen_field field_name field_type encoding_type; 
+            nl @@ gen_string_of_field field_name field_type encoding_type; 
             sp ") v.%s;" field_name
           ]
       )
-      | T.One_of {T.constructors; variant_name = _} -> (
+      | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (
         concat [
           sp "(match v.%s with" field_name;
           concat @@ List.map (fun {T.encoding_type; field_type; field_name;
           type_qualifier= _ } ->
-            let field_string_of = gen_field field_name field_type encoding_type in 
+            let field_string_of = gen_string_of_field field_name field_type encoding_type in 
             sp "| %s x -> (%s)" field_name (add_indentation 1 field_string_of)
-          ) constructors ;
+          ) variant_constructors ;
           "\n);"       (* one of fields *) 
         ]
       )                (* one of        *)
+      | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone } -> (
+        failwith "Programmatic error -> violation of invariant (4)"
+      )
     ) fields;          (* record fields *) 
     "\n  ]";
   ]
 
-let gen_string_of_const_variant ?and_ {T.variant_name; constructors; } = 
+let gen_string_of_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_encoding = _ } = 
   concat [
-    P.sprintf "%s string_of_%s v =" (let_decl_of_and and_) variant_name; 
+    P.sprintf "%s string_of_%s v = " (let_decl_of_and and_) variant_name;
+    sp "  match v with" ;
+    concat @@ List.map (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
+      let field_string_of = gen_string_of_field field_name field_type encoding_type in 
+      sp "| %s x -> (%s)" field_name (add_indentation 1 field_string_of)
+    ) variant_constructors ;
+  ]
+
+let gen_string_of_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } = 
+  concat [
+    P.sprintf "%s string_of_%s v =" (let_decl_of_and and_) cvariant_name; 
     sp "  match v with";
     concat @@ List.map (fun (name, _ ) -> 
       sp "  | %s -> \"%s\"" name name
-    ) constructors; 
+    ) cvariant_constructors; 
   ] 
 
 let gen_string_of ?and_ = function 
   | {T.spec = T.Record r  } -> Some (gen_string_of_record ?and_ r) 
-  | {T.spec = T.Variant _ } -> None
+  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with 
+    | T.Standalone  -> Some (gen_string_of_variant ?and_ v) 
+    | T.Inlined_within_message -> None
+  ) 
   | {T.spec = T.Const_variant v } -> Some (gen_string_of_const_variant ?and_ v)
 
 let gen_string_of_sig t = 
@@ -466,33 +539,36 @@ let gen_string_of_sig t =
   in 
   match t with 
   | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
-  | {T.spec = T.Variant _ } -> None
-  | {T.spec = T.Const_variant {T.variant_name; _ ; } } -> Some (f variant_name) 
+  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
+    | T.Standalone -> Some (f v.T.variant_name)
+    | T.Inlined_within_message -> None
+  ) 
+  | {T.spec = T.Const_variant {T.cvariant_name; _ ; } } -> Some (f cvariant_name) 
+
+let gen_default_field field_name field_type field_default = 
+  match field_type, field_default with 
+  | T.User_defined_type t, _ -> 
+    function_name_of_user_defined "default" t
+  | T.String, None -> "\"\""
+  | T.String, Some (Pbpt.Constant_string s) -> P.sprintf "\"%s\"" s 
+  | T.Float , None -> "0." 
+  | T.Float , Some (Pbpt.Constant_float f) -> string_of_float f
+  | T.Int   , None -> "0"
+  | T.Int   , Some (Pbpt.Constant_int i) -> string_of_int i
+  | T.Int32 , None -> "0l"
+  | T.Int32 , Some (Pbpt.Constant_int i) -> P.sprintf "%il" i
+  | T.Int64 , None -> "0L"
+  | T.Int64 , Some (Pbpt.Constant_int i) -> P.sprintf "%iL" i
+  | T.Bytes , None -> "Bytes.create 64"  
+  | T.Bytes , Some (Pbpt.Constant_string s) -> P.sprintf "Bytes.of_string \"%s\"" s  
+  | T.Bool  , None -> "false"
+  | T.Bool  , Some (Pbpt.Constant_bool b) -> string_of_bool b
+  | _ -> raise @@ E.invalid_default_value 
+    ~field_name ~info:"invalid default type" ()
 
 let gen_default_record  ?and_ {T.record_name; fields } = 
   L.log "gen_string_of, record_name: %s\n" record_name; 
 
-  let gen_field field_name field_type field_default = 
-    match field_type, field_default with 
-    | T.User_defined_type t, _ -> 
-      function_name_of_user_defined "default" t
-    | T.String, None -> "\"\""
-    | T.String, Some (Pbpt.Constant_string s) -> P.sprintf "\"%s\"" s 
-    | T.Float , None -> "0." 
-    | T.Float , Some (Pbpt.Constant_float f) -> string_of_float f
-    | T.Int   , None -> "0"
-    | T.Int   , Some (Pbpt.Constant_int i) -> string_of_int i
-    | T.Int32 , None -> "0l"
-    | T.Int32 , Some (Pbpt.Constant_int i) -> P.sprintf "%il" i
-    | T.Int64 , None -> "0L"
-    | T.Int64 , Some (Pbpt.Constant_int i) -> P.sprintf "%iL" i
-    | T.Bytes , None -> "Bytes.create 64"  
-    | T.Bytes , Some (Pbpt.Constant_string s) -> P.sprintf "Bytes.of_string \"%s\"" s  
-    | T.Bool  , None -> "false"
-    | T.Bool  , Some (Pbpt.Constant_bool b) -> string_of_bool b
-    | _ -> raise @@ E.invalid_default_value 
-      ~field_name ~info:"invalid default type" ()
-  in
 
   concat [
     P.sprintf "%s default_%s = {" (let_decl_of_and and_) record_name;
@@ -504,33 +580,49 @@ let gen_default_record  ?and_ {T.record_name; fields } =
       | T.Regular_field encoding_type -> ( 
         match type_qualifier with
         | T.No_qualifier -> 
-          let field_default_of = gen_field field_name field_type encoding_type.Encoding_util.default in 
+          let field_default_of = gen_default_field field_name field_type encoding_type.Encoding_util.default in 
           sp "%s = %s;" field_name field_default_of; 
         | T.Option -> 
           sp "%s = None;" field_name; 
         | T.List -> 
           sp "%s = [];" field_name; 
       )
-      | T.One_of {T.constructors; variant_name = _} -> (
-        match constructors with
+      | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (
+        match variant_constructors with
         | []     -> failwith "programmatic TODO error" 
         | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
-          sp "%s = %s %s;" field_name constructor_name (gen_field field_name field_type encoding_type.Encoding_util.default)  
+          sp "%s = %s %s;" field_name constructor_name (gen_default_field field_name field_type encoding_type.Encoding_util.default)  
       )                (* one of        *)
+      | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone} -> (
+        failwith "Programmatic error -> violation of invariant (5)"
+      )
     ) fields;          (* record fields *) 
     "\n}";
   ]
 
-let gen_default_const_variant ?and_ {T.variant_name; constructors; } = 
-  let first_constructor_name = match constructors with
+let gen_default_variant ?and_ {T.variant_name; T.variant_constructors ; T.variant_encoding = _ } = 
+  match variant_constructors with
+  | []     -> failwith "programmatic TODO error" 
+  | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
+    sp "%s default_%s = %s %s" 
+       (let_decl_of_and and_) 
+       variant_name 
+       constructor_name 
+       (gen_default_field variant_name field_type encoding_type.Encoding_util.default)  
+
+let gen_default_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } = 
+  let first_constructor_name = match cvariant_constructors with
     | []            -> failwith "programmatic TODO error"
     | (name, _) ::_ -> name 
   in  
-  P.sprintf "%s default_%s = %s" (let_decl_of_and and_) variant_name first_constructor_name
+  P.sprintf "%s default_%s = %s" (let_decl_of_and and_) cvariant_name first_constructor_name
 
 let gen_default ?and_ = function 
   | {T.spec = T.Record r  } -> Some (gen_default_record ?and_ r) 
-  | {T.spec = T.Variant _ } -> None
+  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
+    | T.Standalone -> Some (gen_default_variant ?and_ v)
+    | T.Inlined_within_message -> None
+  )
   | {T.spec = T.Const_variant v } -> Some (gen_default_const_variant v)
 
 let gen_default_sig t = 
@@ -542,5 +634,8 @@ let gen_default_sig t =
   in 
   match t with 
   | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
-  | {T.spec = T.Variant _ } -> None
-  | {T.spec = T.Const_variant {T.variant_name ; _ ; } } -> Some (f variant_name) 
+  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
+    | T.Standalone -> Some (f v.T.variant_name)
+    | T.Inlined_within_message -> None
+  ) 
+  | {T.spec = T.Const_variant {T.cvariant_name ; _ ; } } -> Some (f cvariant_name) 

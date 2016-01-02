@@ -1,3 +1,4 @@
+(** Compiler exception *) 
 
 type programmatic_error =
   | Invalid_string_split 
