@@ -85,6 +85,7 @@ let () =
   message M2 {}
   " in 
   let proto = parse Parser.proto_ s in 
+  assert(None = proto.Pbpt.syntax);
   assert(Some "my.proto" = proto.Pbpt.package);
   assert(0= List.length proto.Pbpt.imports);
   assert(2= List.length proto.Pbpt.messages);
@@ -94,6 +95,7 @@ let () =
 
 let () = 
   let s =" 
+  syntax = \"proto2\";
   import \"blah.proto\";
   import public \"boom.proto\";
   package my.proto;
@@ -102,6 +104,7 @@ let () =
   extend  M2 {} 
   " in 
   let proto = parse Parser.proto_ s in 
+  assert(Some "proto2"  = proto.Pbpt.syntax);
   assert(Some "my.proto" = proto.Pbpt.package);
   assert(2= List.length proto.Pbpt.imports);
   assert((Pbpt_util.import "blah.proto") = (List.nth proto.Pbpt.imports 0)); 

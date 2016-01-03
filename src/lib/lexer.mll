@@ -44,6 +44,7 @@ let keywords = create_hashtable 50 [
   "option" , OPTION;
   "extensions" , EXTENSIONS;
   "extend" , EXTEND;
+  "syntax" , SYNTAX;
 ]
 
 let resolve_identifier ident = 

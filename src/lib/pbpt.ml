@@ -132,6 +132,7 @@ type import = {
 (** Definition of a protobuffer message file. 
  *)
 type proto = {
+  syntax : string option;
   imports : import list; 
   file_options : file_option list; 
   package : string option; 

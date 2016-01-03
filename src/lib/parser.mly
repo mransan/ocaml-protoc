@@ -43,6 +43,8 @@
 
 %token EXTEND
 
+%token SYNTAX 
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -117,8 +119,11 @@ messageBody = "{" { field | enum | message | extend | extensions | group |
 option | oneof | mapField | reserved | emptyStatement } "}"
 */
 
-
 proto:
+  | syntax proto_content {Pbpt_util.proto ~syntax:$1 ~proto:$2 ()}
+  | proto_content        {$1}
+
+proto_content:
   | import              {Pbpt_util.proto ~import:$1  ()}
   | file_option         {Pbpt_util.proto ~file_option:$1  ()}
   | package_declaration {Pbpt_util.proto ~package:$1 ()}
@@ -132,6 +137,9 @@ proto:
   | message             proto {Pbpt_util.proto ~message:$1 ~proto:$2 ()}
   | enum                proto {Pbpt_util.proto ~enum:$1 ~proto:$2 ()}
   | extend              proto {Pbpt_util.proto ~extend:$1 ~proto:$2 ()}
+
+syntax:
+  | SYNTAX EQUAL STRING SEMICOLON { $3 }
 
 import:
   | IMPORT STRING SEMICOLON       { Pbpt_util.import $2} 

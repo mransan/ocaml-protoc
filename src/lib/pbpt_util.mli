@@ -93,6 +93,7 @@ val import : ?public:unit -> string -> Pbpt.import
 val extend : string -> Pbpt.field_label Pbpt.field list -> Pbpt.extend  
 
 val proto: 
+  ?syntax:string ->
   ?file_option:Pbpt.file_option -> 
   ?package:string -> 
   ?import:Pbpt.import -> 

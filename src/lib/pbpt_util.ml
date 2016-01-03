@@ -117,10 +117,11 @@ let rec message_printer ?level:(level = 0) {
     | Pbpt.Message_extension _ -> () 
   ) message_body 
 
-let proto ?file_option ?package ?import ?message ?enum ?proto ?extend () = 
+let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend () = 
 
   let {Pbpt.messages; imports; file_options; enums; extends; _ } as proto = match proto with 
     | None -> Pbpt.({
+      syntax;
       imports = [];
       package = None; 
       messages = []; 
@@ -129,6 +130,11 @@ let proto ?file_option ?package ?import ?message ?enum ?proto ?extend () =
       extends = []; 
     }) 
     | Some proto -> proto
+  in 
+  
+  let proto = match syntax with 
+    | None   -> proto
+    | Some _ -> Pbpt.({proto with syntax; })  
   in 
 
   let proto = match package with 
