@@ -1,13 +1,5 @@
-#
-# Pure OCaml, no packages, no _tags, code in serveral directories
-#
-
-# bin-annot is required for Merlin and other IDE-like tools
-# The -I flag introduces sub-directories to search for code
-
-OCB_FLAGS = -use-ocamlfind -I src/lib -I src/ocaml-protoc
+OCB_FLAGS = -use-ocamlfind -I src/lib -I src/pbrt -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
-
 
 clean:
 			$(OCB) -clean
@@ -18,6 +10,10 @@ clean:
 			rm -f src/integration-tests/*_pb.ml
 			rm -f src/integration-tests/*_pb.mli
 
+pbrt:
+			$(OCB) pbrt.cmxa
+			$(OCB) pbrt.cma
+			$(OCB) pbrt.cmxs
 native: 
 			$(OCB) ocaml-protoc.native
 
@@ -33,7 +29,6 @@ debug:
 it: native
 			$(OCB) ./src/unit-tests/lexer_comment.native
 			./lexer_comment.native
-
 
 unit-tests: 		
 			$(OCB) ./src/unit-tests/parse_field_options.native 
@@ -59,7 +54,7 @@ unit-tests:
 			./ocaml_codegen_test.native
 			./graph_test.native
 			
-.PHONY: 	all clean byte native profile debug test
+.PHONY: 	all clean byte native profile debug test pbrt
 
 # Integration testing 
 #
