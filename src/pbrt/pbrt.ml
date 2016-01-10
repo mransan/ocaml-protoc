@@ -262,61 +262,7 @@ module Decoder = struct
     | Bits64 -> skip_len 8
     | Bytes  -> skip_len (int_as_varint d)
     | Varint -> skip_varint ()
-  
-  
 end
-
-module Codegen = struct 
-
-  type 'a state = ([> `Default] as 'a) array 
-
-  let decode decoder mappings values = 
-  
-    let continue = ref true in 
-    while !continue do 
-      match Decoder.key decoder with 
-      | None -> continue := false
-      | Some (number, payload_kind) -> (
-        try 
-          let v' = Array.get values number in 
-          let v = mappings decoder (number, v') in 
-          Array.unsafe_set values number v
-        with 
-        | Not_found | Invalid_argument _ -> Decoder.skip decoder payload_kind; 
-      )
-    done
-
-  let required number a f = 
-    match f @@ Array.unsafe_get a number with 
-    | []     -> failwith (Printf.sprintf "field %i missing" number)
-    | hd::_  -> hd
-    (* TODO Improve *) 
-
-  let programatic_error i = failwith @@ Printf.sprintf "Protobuf Runtime, programmatic error for field %i" i 
-
-  let optional number a f = 
-    match Array.unsafe_get a number with 
-    | `Default  -> None
-    | v         -> (match f v with
-      | hd::_ -> Some hd
-      | _     -> programatic_error number   
-    )
-    (* TODO Improve *) 
-  
-  let list_ number a f = 
-    List.rev @@ f @@ Array.unsafe_get a number
-
-  let oneof numbers a f = 
-    let ret = List.fold_left (fun x number -> 
-      match x with 
-      | Some _ -> x 
-      | None   -> optional number a f
-    ) None numbers in 
-    match ret with 
-    | Some x -> x 
-    | None -> failwith "None of oneof value could be found." 
-
-end (* module Codegen *)
 
 module Encoder = struct
   type error =

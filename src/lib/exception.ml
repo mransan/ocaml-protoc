@@ -31,12 +31,14 @@ type programmatic_error =
   | Invalid_string_split 
   | Unexpected_field_type 
   | No_type_found_for_id 
+  | One_of_should_be_inlined_in_message
 
 let string_of_programmatic_error e =  
   "Programatic_error" ^ match e with
   | Invalid_string_split -> "string split error"
   | Unexpected_field_type -> "unexpected field type"
   | No_type_found_for_id  -> "no type was found for type id" 
+  | One_of_should_be_inlined_in_message -> "one of variant encoding must be inlined in message"
 
 type unresolved_type = {
   field_name: string; 

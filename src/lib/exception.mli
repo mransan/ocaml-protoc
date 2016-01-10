@@ -29,6 +29,7 @@ type programmatic_error =
   | Invalid_string_split 
   | Unexpected_field_type 
   | No_type_found_for_id 
+  | One_of_should_be_inlined_in_message
 
 type unresolved_type = {
   field_name: string; 

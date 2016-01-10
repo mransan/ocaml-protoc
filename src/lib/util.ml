@@ -61,3 +61,7 @@ let string_fold_lefti f e0 s =
   in 
   loop e0 0 
 
+let option_default x = function
+  | Some y -> y 
+  | None -> x 
+
