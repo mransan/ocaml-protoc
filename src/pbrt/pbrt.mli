@@ -153,26 +153,6 @@ module Decoder : sig
 
 end
 
-(** This module are provide helper routines for the generated code 
-    There should not be used by other client application.
- *) 
-module Codegen : sig 
-  
-  type 'a state = ([> `Default] as 'a) array 
-
-  val programatic_error : int -> 'a 
-
-  val decode : Decoder.t -> (Decoder.t -> (int * 'a) -> 'a) -> 'a state -> unit 
-
-  val required : int -> 'a state -> ('a -> 'b list) -> 'b 
-
-  val optional : int -> 'a state -> ('a -> 'b list) -> 'b option 
-  
-  val list_ : int -> 'a state -> ('a -> 'b list) -> 'b list 
-
-  val oneof : int list -> 'a state -> ('a -> 'b list) -> 'b 
-end 
-
 module Encoder : sig
 
   (** Type of failures possible while encoding. *)

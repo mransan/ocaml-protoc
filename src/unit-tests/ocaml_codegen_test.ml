@@ -26,26 +26,11 @@ let () =
   }) in
 
   let s = {|type test = {
-  v1 : int;
-  v2 : string option;
-  v3 : other;
+  mutable v1 : int;
+  mutable v2 : string option;
+  mutable v3 : other;
 }|} in 
   assert(s = Ocaml_codegen.gen_type (Ocaml_types.{module_ = "A"; spec = Record r}));
-  
-
-  Printf.printf "---\n%s\n---" (Ocaml_codegen.gen_mappings_record r); 
-  let _ = {|let test_mappings d = function   
-| 1, `Int l -> `Int ( (decode_varint_as_int d)::l)
-| 1, `Default -> `Int ( (decode_varint_as_int d)::[])  
-| 2, `String l -> `String ( (decode_bytes_as_string d)::l)
-| 2, `Default -> `String ( (decode_bytes_as_string d)::[])  
-| 3, `Other l -> `Other ( (decode_other (Pc.Decoder.nested d))::l)
-| 3, `Default -> `Other ( (decode_other (Pc.Decoder.nested d))::[])
-  | _ -> raise Not_found 
-|} in 
-
-  (* assert (s = Ocaml_codegen.gen_mappings_record r);
-   *)
   ()
 
 let () = 

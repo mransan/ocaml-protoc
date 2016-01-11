@@ -11,7 +11,7 @@ let create_ref_data n =
         T.p1 = {
           T.first_name = "John";
           T.last_name  = "Doe";
-          T.date_of_birth = 19820429; 
+          T.date_of_birth = n; 
           T.tel_number = None; 
           T.employment = T.Employed_by "Google";
           T.marital_status = None; 
@@ -46,5 +46,5 @@ let () =
       Test_util.decode "test11.c2ml.data" ~notest:() T.decode_couples
       T.string_of_couples (create_ref_data 100000)
   | Test_util.Encode -> 
-      Test_util.encode "test11.ml2c.data" T.encode_couples (create_ref_data 1)
+      Test_util.encode "test11.ml2c.data" T.encode_couples (create_ref_data 100000)
 

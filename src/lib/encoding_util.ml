@@ -42,11 +42,16 @@ type field_encoding = {
   default: Pbpt.constant option;
 }
 
-let string_of_payload_kind = function 
-  | Varint _ -> "varint"
-  | Bits32   -> "bits32"
-  | Bits64   -> "bits64"
-  | Bytes    -> "bytes"
+let string_of_payload_kind ?capitalize payload_kind = 
+  match payload_kind, capitalize with
+  | Varint _ , None-> "varint"
+  | Bits32   , None-> "bits32"
+  | Bits64   , None-> "bits64"
+  | Bytes    , None-> "bytes"
+  | Varint _ , Some _ -> "Varint"
+  | Bits32   , Some _ -> "Bits32"
+  | Bits64   , Some _ -> "Bits64"
+  | Bytes    , Some _ -> "Bytes"
 
 let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) = 
 

@@ -53,5 +53,5 @@ let () =
     marital_status = None; 
     gender = None;
   }) in
-  assert (expected_default_person = T.default_person)
+  assert (expected_default_person = T.default_person ())
 

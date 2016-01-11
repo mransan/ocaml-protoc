@@ -177,10 +177,10 @@ let () =
     concat @@ List.map (fun types_ -> 
       concat @@ List.flatten [
       gen     types_ Ocaml_codegen.gen_type ;
+      gen_opt types_ Ocaml_codegen.gen_default;
       gen_opt types_ Ocaml_codegen.gen_decode;
       gen_opt types_ Ocaml_codegen.gen_encode;
       gen_opt types_ Ocaml_codegen.gen_string_of;
-      gen_opt types_ Ocaml_codegen.gen_default;
       ]
     ) otypes;
   ];

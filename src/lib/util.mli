@@ -54,3 +54,8 @@ val string_of_string_list : string list -> string
 
 val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a 
 (** [string_fold_lefti f e0 s] will fold over each string character *)
+
+val option_default : 'a -> 'a option -> 'a 
+(** [option_default x o] returns [x] is [o] is [None] otherwise [y] when [o] is
+    [Some y]. 
+ *)

@@ -23,7 +23,7 @@
 
 *)
 
-(** Code generation routine for the OCaml types. *) 
+(** Code generation functionality for the OCaml types. *) 
 
 val caml_file_name_of_proto_file_name : string -> string 
 (** [caml_file_name_of_proto_file_name f] returns the 
@@ -77,6 +77,3 @@ val gen_default_sig : Ocaml_types.type_ -> string option
 (** [gen_default_sig record] generates the signature of the default value for 
     the given [record].
   *)
-
-(* --- Testing purpose onlye --- *)
-val gen_mappings_record : Ocaml_types.record -> string

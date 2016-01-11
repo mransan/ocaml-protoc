@@ -41,6 +41,6 @@ type field_encoding = {
   default: Pbpt.constant option;
 }
 
-val string_of_payload_kind : payload_kind -> string 
+val string_of_payload_kind : ?capitalize:unit -> payload_kind -> string 
 
 val encoding_of_field_type : Pbtt.resolved Pbtt.proto -> (Pbtt.resolved, 'a) Pbtt.field -> field_encoding 
