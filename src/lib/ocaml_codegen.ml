@@ -163,6 +163,9 @@ let gen_decode_record ?and_ {T.record_name; fields} =
     | _ -> acc  
   ) [] fields in  
 
+  (* let all_lists = [] in
+   *)
+  
   concat [
     sp "%s decode_%s d =" (let_decl_of_and and_) record_name; 
     sp "  let v = default_%s () in" record_name; 
@@ -189,11 +192,11 @@ let gen_decode_record ?and_ {T.record_name; fields} =
         let f = decode_field field_type payload_kind nested in 
         let rhs = match type_qualifier with
           | T.No_qualifier -> P.sprintf "(%s)" f  
-          | T.Option       -> P.sprintf "Some (%s)" f  
+          | T.Option       -> P.sprintf "Some (%s)" f
           | T.List         -> P.sprintf "(%s) :: v.%s" f field_name 
         in
-        sp "| Some (%i, %s) -> v.%s <- %s; loop ()"
-          field_number (Enc.string_of_payload_kind payload_kind) field_name rhs
+        sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; loop ()"
+          field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind) field_name rhs
       )
       | T.One_of {T.variant_name;variant_constructors;variant_encoding = T.Inlined_within_message} -> (
         concat @@ List.map (fun field ->
@@ -204,8 +207,8 @@ let gen_decode_record ?and_ {T.record_name; fields} =
             T.type_qualifier = _ ;
           } = field in 
           let f = decode_field field_type payload_kind nested in 
-          sp "| Some (%i, %s) -> v.%s <- %s (%s) ; loop ()"
-            field_number (Enc.string_of_payload_kind payload_kind) field_name constructor_name f  
+          sp "| Some (%i, Pbrt.%s) -> v.%s <- %s (%s) ; loop ()"
+            field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind) field_name constructor_name f  
         ) variant_constructors;  
       ) 
       | T.One_of {T.variant_name;variant_constructors;variant_encoding = T.Standalone } -> 

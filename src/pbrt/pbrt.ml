@@ -120,18 +120,17 @@ module Decoder = struct
     let byte = int_of_char (Bytes.get d.source d.offset) in
     d.offset <- d.offset + 1;
     byte
+  
+  let rec read_int s d =
+    let b = byte d in
+    if b land 0x80 <> 0 
+    then ((b land 0x7f) lsl s) lor (read_int (s + 7) d)
+    else if s < 56 || (b land 0x7f) <= 1 
+    then b lsl s
+    else raise (Failure Overlong_varint)
 
   let int_as_varint d =
-    let rec read s =
-      let b = byte d in
-      if b land 0x80 <> 0 then
-        ((b land 0x7f) lsl s) lor (read (s + 7))
-      else if s < 56 || (b land 0x7f) <= 1 then
-        b lsl  s
-      else
-        raise (Failure Overlong_varint)
-    in
-    read 0
+    read_int 0 d
 
   let int64_as_varint d =
     let rec read s =
@@ -221,8 +220,12 @@ module Decoder = struct
     Int64.float_of_bits @@ int64_as_bits64 d
   
   let string d = 
-    Bytes.to_string @@ bytes d
-    (* TODO this could be faster by implemeting it directly *)
+    let len = int_as_varint d in
+    if d.offset + len > d.limit then
+      raise (Failure Incomplete);
+    let str = Bytes.sub_string d.source d.offset len in
+    d.offset <- d.offset + len;
+    str
   
   let int_as_bits32 d = 
     Int32.to_int @@ int32_as_bits32 d 
@@ -237,7 +240,6 @@ module Decoder = struct
     then None
     else
       (* keys are always in the range of int, but prefix might only fit into int32 *)
-      (* TODO : we should use the in version here *) 
       let prefix  = int_as_varint d in
       let key, ty = (prefix lsr 3), 0x7 land prefix in
       match ty with
@@ -247,21 +249,21 @@ module Decoder = struct
       | 5 -> Some (key, Bits32)
       | _  -> raise (Failure Malformed_field)
 
+  let skip_len n d =
+    if d.offset + n > d.limit then
+      raise (Failure Incomplete);
+    d.offset <- d.offset + n
+  
+  let rec skip_varint d =
+    let b = byte d in
+    if b land 0x80 <> 0 then skip_varint d else ()
+  
   let skip d kind =
-    let skip_len n =
-      if d.offset + n > d.limit then
-        raise (Failure Incomplete);
-      d.offset <- d.offset + n
-    in
-    let rec skip_varint () =
-      let b = byte d in
-      if b land 0x80 <> 0 then skip_varint () else ()
-    in
     match kind with
-    | Bits32 -> skip_len 4
-    | Bits64 -> skip_len 8
-    | Bytes  -> skip_len (int_as_varint d)
-    | Varint -> skip_varint ()
+    | Bits32 -> skip_len 4 d 
+    | Bits64 -> skip_len 8 d
+    | Bytes  -> skip_len (int_as_varint d) d
+    | Varint -> skip_varint d 
 end
 
 module Encoder = struct
