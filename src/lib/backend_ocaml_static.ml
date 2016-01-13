@@ -27,9 +27,19 @@ let prefix_payload_to_ocaml_t  = {|
 
 module P  = Printf
   
-let add_indentation n s = 
-  Str.global_replace (Str.regexp "^" ) (String.make (n * 2) ' ') s  
-
+let indent n s = 
+  match n with
+  | 0 -> s 
+  | 1 -> " " ^ s 
+  | 2 -> "  " ^ s 
+  | 3 -> "   " ^ s 
+  | 4 -> "    " ^ s 
+  | 5 -> "     " ^ s 
+  | 6 -> "      " ^ s 
+  | 7 -> "       " ^ s 
+  | 8 -> "        " ^ s 
+  | n when n > 0 -> (String.make n ' ')  ^ s 
+  | n when n < 0 -> s 
 |}
 
 let runtime_function = function 
