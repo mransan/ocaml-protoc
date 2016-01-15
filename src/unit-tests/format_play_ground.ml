@@ -81,3 +81,87 @@ let () =
       ({r = {x = 2; y = "2"; z = "two"  } ; i = Some 20;l = [1.2 ; 2.2; 3.2] }) :: 
       ({r = {x = 3; y = "3"; z = "three"} ; i = None   ;l = [1.3 ; 2.3; 3.3] }) :: [] 
     ))
+
+(*
+let rec decode_person_tel_number d =
+  let v = default_person_tel_number () in
+  let rec loop () = 
+    (match Pbrt.Decoder.key d with
+    | None -> ()    
+    | Some (1, Pbrt.Varint) -> v.area_code <- (Pbrt.Decoder.int_as_varint d); loop ()
+    | Some (2, Pbrt.Varint) -> v.number <- (Pbrt.Decoder.int_as_varint d); loop ()
+    | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ())
+  in
+  loop ();
+  v
+*)
+
+type scope = {
+  mutable items : item list; 
+} 
+
+and item = 
+  | Line of string 
+  | Scope of scope 
+
+let add_line scope x =
+  scope.items <- (Line (Printf.sprintf x))::scope.items  
+
+let add_scope scope f = 
+  let sub_scope = {
+    items = [];
+  } in 
+  f sub_scope; 
+  scope.items <- (Scope sub_scope)::scope.items  
+
+let indentation_prefix = function 
+  | 0 -> "\n"
+  | 1 -> "\n  "
+  | 2 -> "\n    "
+  | 3 -> "\n      "
+  | 4 -> "\n        "
+  | 5 -> "\n          "
+  | 6 -> "\n            "
+  | 7 -> "\n              "
+  | 8 -> "\n                "
+  | n -> "\n" ^ (String.make n ' ')
+
+let print scope = 
+
+  let rec loop acc i = function
+    | (Line s)::tl -> 
+      loop ((indentation_prefix i )::s::acc) i tl  
+    | (Scope {items})::tl -> 
+      let sub = loop [] (i + 1) items in  
+      loop (sub @ acc) i tl  
+    | [] -> acc
+  in 
+  String.concat "" @@ loop [] 0 scope.items 
+
+let f sc = 
+  add_line sc "let rec decode_person_tel_number d = "; 
+  add_scope sc (fun sc -> 
+    add_line sc "let v default_person_tel_number () in"; 
+    add_line sc "let rec loop () ="; 
+    add_scope sc (fun sc-> 
+      add_line sc "(";
+      add_scope sc (fun sc ->
+        add_line sc "match Pbrt.Decoder.key d with";
+        add_line sc "| None -> ()";
+        add_line sc "| Some (1, Pbrt.Varint) -> v.area_code <- (Pbrt.Decoder.int_as_varint d); loop ()";
+        add_line sc "| Some (2, Pbrt.Varint) -> v.number <- (Pbrt.Decoder.int_as_varint d); loop ()";
+        add_line sc "| Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()";
+      ); 
+      add_line sc ")";
+    );
+    add_line sc "in"; 
+    add_line sc "loop ();";
+    add_line sc "v";
+  );  
+  ()
+
+let () = 
+  let scope = {items = []} in 
+  f scope;
+  Printf.printf "number of item: %i \n%!" (List.length scope.items);
+  print_endline @@ print scope 
