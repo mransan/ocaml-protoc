@@ -400,127 +400,78 @@ let gen_encode_sig t =
   ) 
   | {T.spec = T.Const_variant {T.cvariant_name; _ } } -> Some (f cvariant_name) 
 
-let gen_string_of_field ?no_equal field_name field_type encoding_type (x:string)  = 
-  match no_equal with
-  | None -> (
-    match field_type with 
-    | T.User_defined_type t -> 
-      P.sprintf "indent indentation @@ P.sprintf \"%s = %%s;\" @@ %s ~indentation:(indentation + 1) %s" 
-        field_name 
-        (function_name_of_user_defined "string_of" t) 
-        x
-    | _ ->  
-      P.sprintf "indent indentation @@ P.sprintf \"%s = %s;\"  %s"  
-        field_name 
-        (printf_string_of_field_type field_type)
-        x
-  )
-  | Some _ -> (
-    match field_type with 
-    | T.User_defined_type t -> 
-      P.sprintf "indent indentation @@ P.sprintf \"%%s\" @@ %s ~indentation:(indentation + 1) %s" 
-        (function_name_of_user_defined "string_of" t) 
-        x
-    | _ ->  
-      P.sprintf "indent indentation @@ P.sprintf \"%s\" %s"
-        (printf_string_of_field_type field_type)
-        x
-  )
+let gen_pp_field field_type = 
+  match field_type with 
+  | T.User_defined_type t -> function_name_of_user_defined "pp" t 
+  | _ ->  P.sprintf "pp_%s" (string_of_field_type field_type) 
 
-let gen_string_of_record  ?and_ {T.record_name; fields } = 
-  L.log "gen_string_of, record_name: %s\n" record_name; 
+let gen_pp_record  ?and_ {T.record_name; fields } = 
+  L.log "gen_pp, record_name: %s\n" record_name; 
 
   concat [
-    P.sprintf "%s string_of_%s ?indentation:(indentation = 1) v = " (let_decl_of_and and_) record_name;
-    sp "  String.concat \"\\n\" [";
-    sp "    \"{\";";
+    P.sprintf "%s pp_%s fmt v = " (let_decl_of_and and_) record_name;
+    sp "  let pp_i fmt () ="; 
+    sp "    F.pp_open_vbox fmt 1;";
     add_indentation 2 @@ concat @@ List.map (fun field -> 
-      L.log "gen_string_of field_name: %s\n" field.T.field_name;
+      L.log "gen_pp field_name: %s\n" field.T.field_name;
      
       let { T.field_type; field_name; type_qualifier ; encoding_type} = field in 
+      let x:string = P.sprintf "v.%s" field_name in 
       match encoding_type with 
       | T.Regular_field encoding_type -> ( 
+        let field_string_of = gen_pp_field field_type in 
         match type_qualifier with
         | T.No_qualifier -> 
-          let x:string = P.sprintf "v.%s" field_name in 
-          let field_string_of = gen_string_of_field field_name field_type encoding_type x in 
-          sp "(%s);" field_string_of 
+          sp "pp_equal \"%s\" %s fmt %s;" field_name field_string_of x
         | T.Option -> 
-          concat [
-            sp "(match v.%s with " field_name;
-            sp "| Some x -> (%s)"  (gen_string_of_field field_name field_type encoding_type "x");
-            sp "| None -> indent indentation @@ \"%s = None;\");" field_name;
-          ]
+          sp "pp_equal \"%s\" (pp_option %s) fmt %s;" field_name field_string_of x
         | T.List -> 
-          concat [
-            sp "indent indentation \"%s = [\";" field_name;
-            sp "(let indentation = indentation + 1 in ";
-            sp "  String.concat \"\\n\" @@ List.map (fun x ->";
-            sp "    (%s) ^ \";\"" @@ gen_string_of_field ~no_equal:() field_name field_type encoding_type "x"; 
-            sp "  ) v.%s;" field_name;
-            sp ");";
-            sp "indent indentation \"]\";";
-          ]
+          sp "pp_equal \"%s\" (pp_list %s) fmt %s;" field_name field_string_of x
       )
-      | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (
-        concat [
-          sp "(match v.%s with" field_name;
-          concat @@ List.map (fun {T.encoding_type; field_type; field_name;
-          type_qualifier= _ } ->
-            let field_string_of = gen_string_of_field field_name field_type encoding_type "x" in 
-            sp "| %s x -> (%s)" field_name (add_indentation 1 field_string_of)
-          ) variant_constructors ;
-          "\n);"       (* one of fields *) 
-        ]
+      | T.One_of {T.variant_constructors = _ ; variant_name; T.variant_encoding = T.Inlined_within_message} -> (
+        sp "pp_equal \"%s\" %s fmt %s;" field_name ("pp_" ^ variant_name) x
       )                (* one of        *)
       | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone } -> (
         raise @@ E.programmatic_error E.One_of_should_be_inlined_in_message
       )
     ) fields;          (* record fields *) 
-    sp "    indent (indentation - 1) @@ \"}\";";
-    sp "  ]";
+    sp "    F.pp_close_box fmt ()";
+    sp "  in";
+    sp "  pp_brk pp_i fmt ()";
   ]
 
-let gen_string_of_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_encoding = _ } = 
+let gen_pp_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_encoding = _ } = 
   concat [
-    P.sprintf "%s string_of_%s ?indentation:(indentation = 1) v = " (let_decl_of_and and_) variant_name;
-    sp "  match v with" ;
+    P.sprintf "%s pp_%s fmt = function " (let_decl_of_and and_) variant_name;
     concat @@ List.map (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
-      let field_string_of = gen_string_of_field ~no_equal:() field_name field_type encoding_type "x" in 
-      sp "  | %s x -> P.sprintf \"%s (%%s)\" (%s)" field_name field_name field_string_of 
+      let field_string_of = gen_pp_field field_type in 
+      sp "  | %s x -> F.fprintf fmt \"@[%s(%%a)@]\" %s x" field_name field_name field_string_of 
     ) variant_constructors ;
   ]
 
-let gen_string_of_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } = 
+let gen_pp_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } = 
   concat [
-    P.sprintf "%s string_of_%s ?indentation:(indentation = 1) v =" (let_decl_of_and and_) cvariant_name; 
-    sp "  match v with";
+    P.sprintf "%s pp_%s fmt = function" (let_decl_of_and and_) cvariant_name; 
     concat @@ List.map (fun (name, _ ) -> 
-      sp "  | %s -> \"%s\"" name name
+      sp "  | %s -> F.fprintf fmt \"%s\"" name name
     ) cvariant_constructors; 
   ] 
 
-let gen_string_of ?and_ = function 
-  | {T.spec = T.Record r  } -> Some (gen_string_of_record ?and_ r) 
-  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with 
-    | T.Standalone  -> Some (gen_string_of_variant ?and_ v) 
-    | T.Inlined_within_message -> None
-  ) 
-  | {T.spec = T.Const_variant v } -> Some (gen_string_of_const_variant ?and_ v)
+let gen_pp ?and_ = function 
+  | {T.spec = T.Record r  } -> Some (gen_pp_record ?and_ r) 
+  | {T.spec = T.Variant v } -> Some (gen_pp_variant ?and_ v) 
+  | {T.spec = T.Const_variant v } -> Some (gen_pp_const_variant ?and_ v)
 
-let gen_string_of_sig t = 
+let gen_pp_sig t = 
   let f type_name =  
      concat [
-       P.sprintf "val string_of_%s : ?indentation:int -> %s -> string " type_name type_name;
-       sp "(** [string_of_%s v] returns a debugging string for [v] *)" type_name;
+       P.sprintf "val pp_%s : Format.formatter -> %s -> unit " type_name type_name;
+       sp "(** [pp_%s v] formats v] *)" type_name;
      ]
   in 
   match t with 
-  | {T.spec = T.Record {T.record_name ; _ } }-> Some (f record_name)
-  | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
-    | T.Standalone -> Some (f v.T.variant_name)
-    | T.Inlined_within_message -> None
-  ) 
+  | {T.spec = T.Record {T.record_name ; _ } } -> Some (f record_name) 
+  | {T.spec = T.Variant v } -> Some (f v.Ocaml_types.variant_name) 
   | {T.spec = T.Const_variant {T.cvariant_name; _ ; } } -> Some (f cvariant_name) 
 
 let gen_default_field field_name field_type field_default = 
@@ -545,13 +496,13 @@ let gen_default_field field_name field_type field_default =
     ~field_name ~info:"invalid default type" ()
 
 let gen_default_record  ?and_ {T.record_name; fields } = 
-  L.log "gen_string_of, record_name: %s\n" record_name; 
+  L.log "gen_pp, record_name: %s\n" record_name; 
 
 
   concat [
     P.sprintf "%s default_%s () = {" (let_decl_of_and and_) record_name;
     add_indentation 1 @@ concat @@ List.map (fun field -> 
-      L.log "gen_string_of field_name: %s\n" field.T.field_name;
+      L.log "gen_pp field_name: %s\n" field.T.field_name;
      
       let { T.field_type; field_name; type_qualifier ; encoding_type } = field in 
       match encoding_type with 

@@ -25,21 +25,47 @@
 
 let prefix_payload_to_ocaml_t  = {|
 
-module P  = Printf
-  
-let indent n s = 
-  match n with
-  | 0 -> s 
-  | 1 -> " " ^ s 
-  | 2 -> "  " ^ s 
-  | 3 -> "   " ^ s 
-  | 4 -> "    " ^ s 
-  | 5 -> "     " ^ s 
-  | 6 -> "      " ^ s 
-  | 7 -> "       " ^ s 
-  | 8 -> "        " ^ s 
-  | n when n > 0 -> (String.make n ' ')  ^ s 
-  | n when n < 0 -> s 
+module F = Format 
+
+let pp_int = 
+  F.pp_print_int 
+
+let pp_float = 
+  F.pp_print_float 
+
+let pp_bool = 
+  F.pp_print_bool 
+
+let pp_int32 fmt i = 
+  F.pp_print_string fmt (Int32.to_string i)  
+
+let pp_int64 fmt i = 
+  F.pp_print_string fmt (Int32.to_string i)  
+
+let pp_string fmt s = 
+  F.fprintf fmt "\"%a\"" F.pp_print_string s
+
+let pp_bytes fmt b = 
+  pp_string fmt (Bytes.to_string b) 
+
+let pp_option pp_f fmt = function
+  | None   -> F.fprintf fmt "@[None@]"
+  | Some x -> F.fprintf fmt "@[Some(%a)@]" pp_f x 
+
+let pp_list pp_element fmt l = 
+  let rec pp_i fmt = function
+    | [h]  -> Format.fprintf fmt "%a" pp_element h
+    | h::t ->
+      Format.fprintf fmt "%a;@,%a" pp_element h pp_i t
+    | []   -> ()
+  in
+  F.fprintf fmt "@[<v 1>[%a@,@]]" pp_i l 
+
+let pp_equal field_name pp_val fmt val_ = 
+  F.fprintf fmt "@,@[<h>%s = %a;@]" field_name pp_val val_ 
+
+let pp_brk pp_record (fmt:F.formatter) r : unit = 
+  F.fprintf fmt "@[<v>{%a@,@]}" pp_record r  
 |}
 
 let runtime_function = function 

@@ -27,8 +27,8 @@ debug:
 			$(OCB) -tag debug ocaml-protoc.byte
 
 it: native
-			$(OCB) ./src/unit-tests/lexer_comment.native
-			./lexer_comment.native
+			$(OCB) ./src/unit-tests/format_play_ground.native
+			./format_play_ground.native
 
 unit-tests: 		
 			$(OCB) ./src/unit-tests/parse_field_options.native 
