@@ -28,7 +28,7 @@ let () =
   | Test_util.Decode -> ( 
       let ref_data = decode_ref_data () in 
       Printf.printf "List size : %i\n%!" (List.length @@ ref_data.T.l);
-      Test_util.decode ~noprint:() "test05.c2ml.data" T.decode_int_list T.string_of_int_list ref_data
+      Test_util.decode ~noprint:() "test05.c2ml.data" T.decode_int_list T.pp_int_list ref_data
   )
   | Test_util.Encode -> 
       Test_util.encode "test05.ml2c.data" T.encode_int_list (decode_ref_data ())

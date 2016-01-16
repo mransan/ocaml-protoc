@@ -10,7 +10,7 @@ let () =
 
   match mode with 
   | Test_util.Decode -> ( 
-      Test_util.decode "test06.c2ml.data" T.decode_test_m T.string_of_test_m (decode_ref_data ()) 
+      Test_util.decode "test06.c2ml.data" T.decode_test_m T.pp_test_m (decode_ref_data ()) 
   )
   | Test_util.Encode -> 
       Test_util.encode "test06.ml2c.data" T.encode_test_m (decode_ref_data ())

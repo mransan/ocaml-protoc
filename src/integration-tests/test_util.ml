@@ -50,14 +50,18 @@ let parse_args () =
   Arg.parse cmd_line_args anon_fun usage;
   mode_of_string !mode 
 
-let check_decoded ?noprint x f_to_string ref_data = 
+let string_of_pp f_pp v =
+  Format.fprintf Format.str_formatter "@[%a@]" f_pp v;
+  Format.flush_str_formatter () 
+
+let check_decoded ?noprint x f_pp ref_data = 
   if  x = ref_data 
   then (
     print_endline "ML: -- Good --"; 
     match noprint with 
     | None -> (
       print_endline "-- [ML Debug Start] :\n";
-      print_endline @@ f_to_string x; 
+      print_endline @@ string_of_pp f_pp x; 
       print_endline "-- [ML Debug End] :\n"
     )
     | Some () -> () ;
@@ -66,12 +70,12 @@ let check_decoded ?noprint x f_to_string ref_data =
   else (
     print_endline "ML: -- Test Failed --";  
     match noprint with
-    | None -> print_endline @@ f_to_string x
+    | None -> print_endline @@ string_of_pp f_pp x
     | Some () -> (); 
     exit 1
   )
 
-let decode ?noprint ?notest file_name f_decode f_to_string ref_data  = 
+let decode ?noprint ?notest file_name f_decode f_pp ref_data  = 
   let buffer, size = get_binary_file_content file_name in 
   Printf.printf "Done reading data, size=%i\n%!" size ;
 
@@ -86,7 +90,7 @@ let decode ?noprint ?notest file_name f_decode f_to_string ref_data  =
   Printf.printf "Decode : %f \n%!" t; 
   begin 
     match notest with
-    | None    -> check_decoded ?noprint x f_to_string ref_data 
+    | None    -> check_decoded ?noprint x f_pp ref_data 
     | Some () -> ()
   end 
 

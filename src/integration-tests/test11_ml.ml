@@ -44,7 +44,7 @@ let () =
   match mode with 
   | Test_util.Decode -> 
       Test_util.decode "test11.c2ml.data" ~notest:() T.decode_couples
-      T.string_of_couples (create_ref_data 100000)
+      T.pp_couples (create_ref_data 100000)
   | Test_util.Encode -> 
       Test_util.encode "test11.ml2c.data" T.encode_couples (create_ref_data 100000)
 

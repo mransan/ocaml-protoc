@@ -27,7 +27,7 @@ let () =
 
   match mode with 
   | Test_util.Decode -> 
-      Test_util.decode "test02.c2ml.data" T.decode_all_basics_types T.string_of_all_basics_types (decode_ref_data ()) 
+      Test_util.decode "test02.c2ml.data" T.decode_all_basics_types T.pp_all_basics_types (decode_ref_data ()) 
   | Test_util.Encode -> 
       Test_util.encode "test02.ml2c.data" T.encode_all_basics_types (decode_ref_data ())
 

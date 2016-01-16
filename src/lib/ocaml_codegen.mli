@@ -59,13 +59,13 @@ val gen_encode_sig : Ocaml_types.type_ -> string option
     encoding the given [record] type into a protobuffer. 
   *)
 
-val gen_string_of : ?and_:unit -> Ocaml_types.type_ -> string option
-(** [gen_string_of record] generates the function implementation for 
+val gen_pp : ?and_:unit -> Ocaml_types.type_ -> string option
+(** [gen_pp record] generates the function implementation for 
     computing a debug string of the given record
   *)
 
-val gen_string_of_sig : Ocaml_types.type_ -> string option 
-(** [gen_string_of_sig record] generates the function signature for 
+val gen_pp_sig : Ocaml_types.type_ -> string option 
+(** [gen_pp_sig record] generates the function signature for 
     computing a debug string of the given record
  *)
 

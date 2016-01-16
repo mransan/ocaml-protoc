@@ -39,7 +39,7 @@ let () =
 
   match mode with 
   | Test_util.Decode -> 
-      Test_util.decode "test01.c2ml.data" T.decode_couple T.string_of_couple (decode_ref_data  ()) 
+      Test_util.decode "test01.c2ml.data" T.decode_couple T.pp_couple (decode_ref_data  ()) 
   | Test_util.Encode -> 
       Test_util.encode "test01.ml2c.data" T.encode_couple (decode_ref_data ())
 let () = 
