@@ -104,6 +104,7 @@ type ('a, 'b) field = {
   field_parsed : 'b Pbpt.field; 
   field_type : 'a field_type; 
   field_default : Pbpt.constant option; 
+  field_options : Pbpt.field_options; 
 }
 
 (** oneof definition *)

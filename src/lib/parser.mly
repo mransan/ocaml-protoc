@@ -217,20 +217,34 @@ oneof_field_list :
   | oneof_field oneof_field_list { $1::$2 } 
 
 oneof_field : 
-  | IDENT IDENT EQUAL INT field_options SEMICOLON { 
+  | IDENT field_name EQUAL INT field_options SEMICOLON { 
     Pbpt_util.oneof_field ~type_:$1 ~number:$4 ~options:$5 $2  
   } 
-  | IDENT IDENT EQUAL INT SEMICOLON               { 
+  | IDENT field_name EQUAL INT SEMICOLON               { 
     Pbpt_util.oneof_field ~type_:$1 ~number:$4 $2  
   } 
 
 normal_field : 
-  | label IDENT IDENT EQUAL INT field_options SEMICOLON { 
+  | label IDENT field_name EQUAL INT field_options SEMICOLON { 
     Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 ~options:$6 $3
   } 
-  | label IDENT IDENT EQUAL INT SEMICOLON { 
+  | label IDENT field_name EQUAL INT SEMICOLON { 
     Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 $3 
   } 
+
+field_name :
+  | IDENT     {$1}
+  | REQUIRED  {"required"}
+  | OPTIONAL  {"optional"}
+  | REPEATED  {"repeated"}
+  | ONE_OF    {"oneof"}
+  | ENUM      {"enum"}
+  | PACKAGE   {"package"}
+  | IMPORT    {"import"}
+  | OPTION    {"option"}
+  | EXTENSIONS{"extensions"}
+  | EXTEND    {"extend"}
+  | SYNTAX    {"syntax"}
 
 label :
   | REQUIRED { `Required }  
@@ -246,7 +260,9 @@ field_option_list :
   | field_option COMMA field_option_list  { $1::$3 }
 
 field_option :
-  IDENT EQUAL constant { ($1, $3) } 
+  | IDENT EQUAL constant { ($1, $3) } 
+  | LPAREN IDENT RPAREN EQUAL constant { ($2, $5)} 
+
 
 file_option_identifier_item :
   | IDENT                   {$1}
@@ -271,6 +287,7 @@ constant :
 
 enum:
   | ENUM IDENT LBRACE enum_values RBRACE {Pbpt_util.enum ~enum_values:$4 $2 } 
+  | ENUM IDENT LBRACE enum_values RBRACE SEMICOLON {Pbpt_util.enum ~enum_values:$4 $2 } 
 
 enum_values:
   | enum_value               { $1::[] }
