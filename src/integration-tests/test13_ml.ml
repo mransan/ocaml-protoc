@@ -6,7 +6,7 @@ let decode_ref_data () = T.({
     sub = Sub_empty;
   };
   p1 = {
-    l  = [Empty; Int 1; Empty; Int 2];
+    l  = [Empty; Int 1l; Empty; Int 2l];
   }; 
 }) 
   

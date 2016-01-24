@@ -11,7 +11,7 @@ let create_ref_data n =
         T.p1 = {
           T.first_name = "John";
           T.last_name  = "Doe";
-          T.date_of_birth = n; 
+          T.date_of_birth = (Int32.of_int n); 
           T.tel_number = None; 
           T.employment = T.Employed_by "Google";
           T.marital_status = None; 
@@ -19,17 +19,17 @@ let create_ref_data n =
         T.p2 = {
           T.first_name = "Marie";
           T.last_name  = "Dupont";
-          T.date_of_birth = 19820306; 
-          T.tel_number = Some {T.area_code = 917; T.number = 1111111};
+          T.date_of_birth = 19820306l; 
+          T.tel_number = Some {T.area_code = 917l; T.number = 1111111l};
           T.employment = T.Employed_by "INRIA";
           T.marital_status = None;
         };
         T.contact_numbers = {
-          T.area_code = 917;
-          T.number    = 123450;
+          T.area_code = 917l;
+          T.number    = 123450l;
         } :: {
-          T.area_code = 917;
-          T.number    = 123451;
+          T.area_code = 917l;
+          T.number    = 123451l;
         } :: [];
         T.number_of_children = None; 
     } in

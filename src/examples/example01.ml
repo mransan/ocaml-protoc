@@ -3,7 +3,7 @@ let () =
 
   let person = Example01_pb.({ 
     name = "John Doe"; 
-    id = 1234;
+    id = 1234l;
     email = Some "jdoe@example.com"; 
     phone = ["123-456-7890"];
   }) in 

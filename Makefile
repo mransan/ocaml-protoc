@@ -136,13 +136,13 @@ src/integration-tests/test10_cpp.tsk: \
 %.pb.cc: %.proto
 	$(PROTOC) --cpp_out src/integration-tests/ -I src/integration-tests/ $<
 
-%_pb.ml %_pb.mli : %.proto bin.byte
+%_pb.ml %_pb.mli : %.proto bin.byte bin.native
 	$(ML_PROTOC) -I src/integration-tests/ -ml_out ./src/integration-tests/ $<
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -I src/integration-tests -pkg unix $@ 
 
-test%: src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
+test%: bin.native bin.byte src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
 	./src/integration-tests/test$*_cpp.tsk encode
 	time ./_build/src/integration-tests/test$*_ml.native decode
 	./_build/src/integration-tests/test$*_ml.native encode

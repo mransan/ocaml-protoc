@@ -6,7 +6,7 @@ let decode_ref_data () = T.({
     p1 = {
       first_name = "John";
       last_name  = "Doe";
-      date_of_birth = 19820429; 
+      date_of_birth = 19820429l; 
       tel_number = None; 
       employment = Employed_by "Google";
       marital_status = None; 
@@ -15,18 +15,18 @@ let decode_ref_data () = T.({
     p2 = {
       first_name = "Marie";
       last_name  = "Dupont";
-      date_of_birth = 19820306; 
-      tel_number = Some {area_code = 917; number = 1111111};
+      date_of_birth = 19820306l; 
+      tel_number = Some {area_code = 917l; number = 1111111l};
       employment = Employed_by "INRIA";
       marital_status = None;
       gender = Some Female;
     };
     contact_numbers = {
-      area_code = 917;
-      number    = 123450;
+      area_code = 917l;
+      number    = 123450l;
     } :: {
-      area_code = 917;
-      number    = 123451;
+      area_code = 917l;
+      number    = 123451l;
     } :: []; 
     number_of_children = None; 
   }) 
@@ -47,9 +47,9 @@ let () =
   let expected_default_person = T.({
     first_name = "Max";
     last_name = "Ransan";
-    date_of_birth  = 19820429;
+    date_of_birth  = 19820429l;
     tel_number = None;
-    employment = Self_employed 0; 
+    employment = Self_employed 0l; 
     marital_status = None; 
     gender = None;
   }) in

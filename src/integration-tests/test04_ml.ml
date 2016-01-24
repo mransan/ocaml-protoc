@@ -1,7 +1,7 @@
 module T  = Test04_pb 
 
 let decode_ref_data () = {
-  T.j = 456;
+  T.j = 456l;
 }
 
 let () = 

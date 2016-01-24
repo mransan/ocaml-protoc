@@ -97,7 +97,7 @@ let () =
     spec    = Record {
     record_name = "m"; 
     fields = [
-      {field_type = Int; field_name = "v1"; type_qualifier = No_qualifier;
+      {field_type = Int32; field_name = "v1"; type_qualifier = No_qualifier;
       encoding_type = Regular_field Eu.({ default = None; field_number = 1; nested = false;  payload_kind = Encoding_util.Varint false})};
       {field_type = String; field_name = "v2"; type_qualifier = No_qualifier;
       encoding_type = Regular_field Eu.({ default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes})};
@@ -132,7 +132,7 @@ let () =
       spec    = Record {
       record_name = "m1_m2"; 
       fields = [
-        {field_type = Int; field_name = "m21"; type_qualifier = No_qualifier;
+        {field_type = Int32; field_name = "m21"; type_qualifier = No_qualifier;
          encoding_type = Regular_field Eu.({ default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
       ];
     }}) = List.nth ocaml_types 0);
@@ -142,7 +142,7 @@ let () =
       spec    = Record {
       record_name = "m1"; 
       fields = [
-        {field_type = Int; field_name = "m11"; type_qualifier = No_qualifier;
+        {field_type = Int32; field_name = "m11"; type_qualifier = No_qualifier;
          encoding_type = Regular_field Eu.({ default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
          {field_type = User_defined_type {type_name = "m1_m2"; module_ = None; } ; field_name = "sub"; type_qualifier = No_qualifier;
         encoding_type = Regular_field Eu.({ default = None; field_number = 2; nested = true; payload_kind = Encoding_util.Bytes})};
@@ -167,7 +167,7 @@ let () =
   let variant = Ocaml_types.({
       variant_name  = "m1_o1"; 
       variant_constructors = [
-        {field_type = Int; field_name = "Intv"; type_qualifier = No_qualifier;
+        {field_type = Int32; field_name = "Intv"; type_qualifier = No_qualifier;
         encoding_type = Eu.({ default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
         {field_type = String; field_name = "Stringv"; type_qualifier = No_qualifier;
          encoding_type = Eu.({ default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes})};
@@ -183,7 +183,7 @@ let () =
       fields = [
         {field_type = User_defined_type {type_name = "m1_o1"; module_ = None; } ; field_name = "o1"; type_qualifier = No_qualifier;
         encoding_type = One_of variant};
-        {field_type = Int; field_name = "v1"; type_qualifier = No_qualifier;
+        {field_type = Int32; field_name = "v1"; type_qualifier = No_qualifier;
          encoding_type = Regular_field Eu.({ default = None; Encoding_util.field_number = 3; nested = false; payload_kind = Encoding_util.Varint false})};
       ];
   }}) = List.nth ocaml_types 1);
