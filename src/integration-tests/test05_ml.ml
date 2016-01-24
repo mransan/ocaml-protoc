@@ -1,12 +1,16 @@
 module T  = Test05_pb 
 
-let  max_int = 107374182
-let  min_int = -107374182
-let  inc     = 250
+let  max_int = 107374182l
+let  min_int = -107374182l
+let  inc     = 250l
+
+let (+) = Int32.add
+let (-) = Int32.sub
+let ( * ) = Int32.mul
 
 let decode_ref_data () = 
   let rec loop l = function
-    | i when i < max_int - (2 * inc) -> (
+    | i when i < max_int - (2l* inc) -> (
       loop (i::l) (i + inc)
     )
     | i -> (
@@ -19,7 +23,7 @@ let () =
 
   let mode   = Test_util.parse_args () in 
 
-  Printf.printf "min int: %i, max_int : %i, word size: %i\n" 
+  Printf.printf "min int: %li, max_int : %li, word size: %i\n" 
     (min_int)
     (max_int)
     (Sys.word_size);

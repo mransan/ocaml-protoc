@@ -33,7 +33,7 @@ The following OCaml code will get generated after running `ocaml-protoc -ml_out 
 ```OCaml
 type person = {
   mutable name : string;
-  mutable id : int;
+  mutable id : int32;
   mutable email : string option;
   mutable phone : string list;
 }
@@ -60,7 +60,7 @@ let () =
   (* Create OCaml value of generated type *) 
   let person = Example_pb.({ 
     name = "John Doe"; 
-    id = 1234;
+    id = 1234l;
     email = Some "jdoe@example.com"; 
     phone = ["123-456-7890"];
   }) in 

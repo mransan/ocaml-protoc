@@ -189,17 +189,17 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
 
   let field_encoding = Encoding_util.encoding_of_field_type all_types field in 
   let field_type = match encoding_type with
-    | Pbtt.Field_type_double  -> OCaml_types.Float
-    | Pbtt.Field_type_float  ->  OCaml_types.Float
-    | Pbtt.Field_type_int32  ->  OCaml_types.Int
-    | Pbtt.Field_type_int64  ->  OCaml_types.Int
-    | Pbtt.Field_type_uint32  -> OCaml_types.Int
-    | Pbtt.Field_type_uint64 -> OCaml_types.Int
-    | Pbtt.Field_type_sint32  -> OCaml_types.Int
-    | Pbtt.Field_type_sint64  -> OCaml_types.Int
-    | Pbtt.Field_type_fixed32  -> OCaml_types.Int
-    | Pbtt.Field_type_fixed64  -> OCaml_types.Int
-    | Pbtt.Field_type_sfixed32  -> 
+    | Pbtt.Field_type_double -> OCaml_types.Float
+    | Pbtt.Field_type_float ->  OCaml_types.Float
+    | Pbtt.Field_type_int32 ->  OCaml_types.Int32
+    | Pbtt.Field_type_int64 ->  OCaml_types.Int64
+    | Pbtt.Field_type_uint32 -> OCaml_types.Int32
+    | Pbtt.Field_type_uint64 -> OCaml_types.Int64
+    | Pbtt.Field_type_sint32 -> OCaml_types.Int32
+    | Pbtt.Field_type_sint64 -> OCaml_types.Int64
+    | Pbtt.Field_type_fixed32 -> OCaml_types.Int32
+    | Pbtt.Field_type_fixed64 -> OCaml_types.Int64
+    | Pbtt.Field_type_sfixed32 -> 
         raise @@ E.unsupported_field_type ~field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
     | Pbtt.Field_type_sfixed64 -> 
         raise @@ E.unsupported_field_type ~field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 

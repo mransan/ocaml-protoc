@@ -1,8 +1,8 @@
 module T  = Test12_pb
 
 let decode_ref_data () = T.({
-  to_ = 1; 
-  type_ = 1;
+  to_ = 1l; 
+  type_ = 1l;
 }) 
 
 let () = 

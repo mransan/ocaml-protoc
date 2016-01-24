@@ -2,9 +2,9 @@ module T  = Test07_pb
 
 
 let decode_ref_data () = {
-  T.value = 1; 
-  T.left  = T.Node {T.value = 2; T.left = T.Empty 0 ; T.right = T.Empty 0}; 
-  T.right = T.Node {T.value = 3; T.left = T.Empty 0 ; T.right = T.Empty 0}; 
+  T.value = 1l; 
+  T.left  = T.Node {T.value = 2l; T.left = T.Empty 0l ; T.right = T.Empty 0l}; 
+  T.right = T.Node {T.value = 3l; T.left = T.Empty 0l ; T.right = T.Empty 0l}; 
 } 
 
 let () = 

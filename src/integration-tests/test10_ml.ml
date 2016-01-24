@@ -2,7 +2,7 @@ module T  = Test10_pb
 
 let decode_ref_data () = {
     T.m10_f1 = {
-      Test09_pb.int32_f1 = 1; 
+      Test09_pb.int32_f1 = 1l; 
     }; 
   } 
 

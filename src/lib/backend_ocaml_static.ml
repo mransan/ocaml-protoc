@@ -41,7 +41,7 @@ let pp_int32 fmt i =
   F.pp_print_string fmt (Int32.to_string i)  
 
 let pp_int64 fmt i = 
-  F.pp_print_string fmt (Int32.to_string i)  
+  F.pp_print_string fmt (Int64.to_string i)  
 
 let pp_string fmt s = 
   F.fprintf fmt "\"%a\"" F.pp_print_string s
@@ -76,8 +76,8 @@ let runtime_function = function
   | `Decode , Encoding_util.Varint true , Ocaml_types.Int32 -> "Pbrt.Decoder.int32_as_zigzag" 
   | `Decode , Encoding_util.Varint false, Ocaml_types.Int64 -> "Pbrt.Decoder.int64_as_varint" 
   | `Decode , Encoding_util.Varint true , Ocaml_types.Int64 -> "Pbrt.Decoder.int64_as_zigzag" 
-  | `Decode , Encoding_util.Bits32, Ocaml_types.Int32 -> "Pbrt.Decoder.bits32" 
-  | `Decode , Encoding_util.Bits64, Ocaml_types.Int64 -> "Pbrt.Decoder.bits64" 
+  | `Decode , Encoding_util.Bits32, Ocaml_types.Int32 -> "Pbrt.Decoder.int32_as_bits32" 
+  | `Decode , Encoding_util.Bits64, Ocaml_types.Int64 -> "Pbrt.Decoder.int64_as_bits64" 
   | `Decode , Encoding_util.Varint false, Ocaml_types.Bool -> "Pbrt.Decoder.bool" 
   | `Decode , Encoding_util.Bits32, Ocaml_types.Float -> "Pbrt.Decoder.float_as_bits32" 
   | `Decode , Encoding_util.Bits64, Ocaml_types.Float -> "Pbrt.Decoder.float_as_bits64" 
@@ -91,8 +91,8 @@ let runtime_function = function
   | `Encode , Encoding_util.Varint true , Ocaml_types.Int32 -> "Pbrt.Encoder.int32_as_zigzag" 
   | `Encode , Encoding_util.Varint false, Ocaml_types.Int64 -> "Pbrt.Encoder.int64_as_varint" 
   | `Encode , Encoding_util.Varint true , Ocaml_types.Int64 -> "Pbrt.Encoder.int64_as_zigzag" 
-  | `Encode , Encoding_util.Bits32, Ocaml_types.Int32 -> "Pbrt.Encoder.bits32" 
-  | `Encode , Encoding_util.Bits64, Ocaml_types.Int64 -> "Pbrt.Encoder.bits64" 
+  | `Encode , Encoding_util.Bits32, Ocaml_types.Int32 -> "Pbrt.Encoder.int32_as_bits32" 
+  | `Encode , Encoding_util.Bits64, Ocaml_types.Int64 -> "Pbrt.Encoder.int64_as_bits64" 
   | `Encode , Encoding_util.Varint false, Ocaml_types.Bool -> "Pbrt.Encoder.bool" 
   | `Encode , Encoding_util.Bits32, Ocaml_types.Float -> "Pbrt.Encoder.float_as_bits32" 
   | `Encode , Encoding_util.Bits64, Ocaml_types.Float -> "Pbrt.Encoder.float_as_bits64" 
