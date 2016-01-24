@@ -1,0 +1,9 @@
+import "google/protobuf/descriptor.proto";
+
+enum OCamlType {
+    int = 1;
+}
+
+extend google.protobuf.FieldOptions {
+    optional OCamlType ocaml_type = 100002;
+}

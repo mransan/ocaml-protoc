@@ -31,5 +31,9 @@ let () =
   let field_options = parse Parser.field_options_ "[a=1,b=true]" in 
   assert (List.length field_options = 2)
 
+let () = 
+  let field_options = parse Parser.field_options_ "[(ocaml_type) = int]" in 
+  assert ([("ocaml_type", Pbpt.Constant_litteral "int")] = field_options)
+
 let () =
   print_endline "Parse Field Options ... Ok"

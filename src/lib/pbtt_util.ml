@@ -41,6 +41,11 @@ let field_label {Pbtt.field_parsed = {Pbpt.field_label; _ }; _ } =
 
 let field_default {Pbtt.field_default; _ } = field_default 
 
+let field_option {Pbtt.field_options; _ } option_name = 
+  match List.assoc option_name field_options with
+  | x -> Some x 
+  | exception Not_found -> None  
+  
 let empty_scope  = { 
   Pbtt.packages = []; 
   message_names = [] 
@@ -216,6 +221,7 @@ let compile_field_p1 ({
     Pbtt.field_parsed;
     Pbtt.field_type;
     Pbtt.field_default;
+    Pbtt.field_options;
   }
 
 let compile_oneof_p1 ({

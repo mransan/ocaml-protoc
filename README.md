@@ -92,6 +92,9 @@ let () =
   let person = Test14_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in 
   Format.fprintf Format.std_formatter "%a" Test14_pb.pp_person person
 ```
+
+*OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice. One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
+
 ### Build-Install
 
 **Prerequesite**
@@ -109,8 +112,9 @@ make install
 
 You should now see the following:
 ```bash
-tmp//bin/ocaml-protoc            #symbolic link to the native executable
+tmp//bin/ocaml-protoc                           #symbolic link to the native executable
 tmp//bin/ocaml-protoc.native     
+tmp//include/ocaml-protoc/ocamloptions.proto    #protobuf extensions for OCaml code 
 tmp//lib/pbrt.a
 tmp//lib/pbrt.cma
 tmp//lib/pbrt.cmi

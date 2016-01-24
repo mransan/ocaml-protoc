@@ -38,6 +38,7 @@ bin.byte:
 
 PREFIX_BIN=$(PREFIX)/bin
 PREFIX_LIB=$(PREFIX)/lib
+PREFIX_INC=$(PREFIX)/include/ocaml-protoc
 
 # -- Install -- 
 
@@ -49,6 +50,7 @@ ifndef PREFIX
 endif
 	mkdir -p $(PREFIX_BIN)
 	mkdir -p $(PREFIX_LIB)
+	mkdir -p $(PREFIX_INC)
 
 install.byte: check_prefix lib.byte bin.byte 
 	cp ./ocaml-protoc.byte $(PREFIX_BIN)
@@ -57,6 +59,7 @@ install.byte: check_prefix lib.byte bin.byte
 	cp _build/src/pbrt/pbrt.cmt  $(PREFIX_LIB)
 	cp _build/src/pbrt/pbrt.cmti $(PREFIX_LIB)
 	cp _build/src/pbrt/pbrt.mli  $(PREFIX_LIB) 
+	cp lib/ocamloptions.proto $(PREFIX_INC) 
 	ln -s $(PREFIX_BIN)/ocaml-protoc.byte $(PREFIX_BIN)/ocaml-protoc
 
 install.native: check_prefix lib.byte lib.native bin.native
@@ -69,6 +72,7 @@ install.native: check_prefix lib.byte lib.native bin.native
 	cp _build/src/pbrt/pbrt.cmt  $(PREFIX_LIB)
 	cp _build/src/pbrt/pbrt.cmti $(PREFIX_LIB)
 	cp _build/src/pbrt/pbrt.mli  $(PREFIX_LIB) 
+	cp src/lib/ocamloptions.proto $(PREFIX_INC) 
 	ln -s $(PREFIX_BIN)/ocaml-protoc.native $(PREFIX_BIN)/ocaml-protoc
 
 install: install.native
@@ -176,11 +180,11 @@ all-tests: bin.native bin.byte unit-tests integration google_unittest testCompat
 
 .PHONY: all-examples
 
-example%.native: bin.byte  
-	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
+example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte bin.native 
+	$(ML_PROTOC) -I $(PB_HINC) -I ./src/include -ml_out src/examples/ ./src/examples/example$*.proto 
 	$(OCB) -I src/examples src/examples/example$*.native
 
-all-examples: example01.native
+all-examples: example01.native example02.native
 
 it: bin.native
 			$(OCB) ./src/unit-tests/format_play_ground.native

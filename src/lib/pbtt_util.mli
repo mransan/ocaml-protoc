@@ -49,6 +49,12 @@ val field_label  : ('a, 'b)  Pbtt.field -> 'b
 val field_default : ('a, 'b)  Pbtt.field -> Pbpt.constant option
 (** [field_default field] returns the default value of [field] *)
 
+val field_option : ('a, 'b) Pbtt.field -> string -> Pbpt.constant option
+(** [field_option field option_name] returns the constant associated with 
+    [option_name]. If the fields options does not contain [option_name] [None]
+    is returned.
+  *)
+
 val type_of_id : 'a Pbtt.proto -> int -> 'a Pbtt.proto_type 
 (** [type_of_id all_types id] returns the type associated with the given id, 
     @raise [Not_found] if the type is not in the all_types. 

@@ -187,26 +187,37 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     | None   -> record_field_name field_name 
   in 
 
+  let ocaml_type = Pbtt_util.field_option field "ocaml_type" in 
+
   let field_encoding = Encoding_util.encoding_of_field_type all_types field in 
-  let field_type = match encoding_type with
-    | Pbtt.Field_type_double -> OCaml_types.Float
-    | Pbtt.Field_type_float ->  OCaml_types.Float
-    | Pbtt.Field_type_int32 ->  OCaml_types.Int32
-    | Pbtt.Field_type_int64 ->  OCaml_types.Int64
-    | Pbtt.Field_type_uint32 -> OCaml_types.Int32
-    | Pbtt.Field_type_uint64 -> OCaml_types.Int64
-    | Pbtt.Field_type_sint32 -> OCaml_types.Int32
-    | Pbtt.Field_type_sint64 -> OCaml_types.Int64
-    | Pbtt.Field_type_fixed32 -> OCaml_types.Int32
-    | Pbtt.Field_type_fixed64 -> OCaml_types.Int64
-    | Pbtt.Field_type_sfixed32 -> 
+
+  let field_type = match encoding_type, ocaml_type with
+    | Pbtt.Field_type_double, _ -> OCaml_types.Float
+    | Pbtt.Field_type_float, _ ->  OCaml_types.Float
+    | Pbtt.Field_type_int32, Some (Pbpt.Constant_litteral "int") ->  OCaml_types.Int
+    | Pbtt.Field_type_int64, Some (Pbpt.Constant_litteral "int") ->  OCaml_types.Int
+    | Pbtt.Field_type_uint32, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_uint64, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_sint32, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_sint64, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_fixed32, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_fixed64, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_int32, _ ->  OCaml_types.Int32
+    | Pbtt.Field_type_int64, _ ->  OCaml_types.Int64
+    | Pbtt.Field_type_uint32, _ -> OCaml_types.Int32
+    | Pbtt.Field_type_uint64, _ -> OCaml_types.Int64
+    | Pbtt.Field_type_sint32, _ -> OCaml_types.Int32
+    | Pbtt.Field_type_sint64, _ -> OCaml_types.Int64
+    | Pbtt.Field_type_fixed32, _ -> OCaml_types.Int32
+    | Pbtt.Field_type_fixed64, _ -> OCaml_types.Int64
+    | Pbtt.Field_type_sfixed32, _ -> 
         raise @@ E.unsupported_field_type ~field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
-    | Pbtt.Field_type_sfixed64 -> 
+    | Pbtt.Field_type_sfixed64, _ -> 
         raise @@ E.unsupported_field_type ~field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
-    | Pbtt.Field_type_bool  -> OCaml_types.Bool
-    | Pbtt.Field_type_string  -> OCaml_types.String
-    | Pbtt.Field_type_bytes  -> OCaml_types.Bytes
-    | Pbtt.Field_type_type id -> 
+    | Pbtt.Field_type_bool, _ -> OCaml_types.Bool
+    | Pbtt.Field_type_string, _-> OCaml_types.String
+    | Pbtt.Field_type_bytes, _ -> OCaml_types.Bytes
+    | Pbtt.Field_type_type id, _ -> 
       user_defined_type_of_id all_types file_name id
   in {
     OCaml_types.field_type; 
