@@ -9,6 +9,8 @@ clean:
 			rm -f src/integration-tests/*.pb.h
 			rm -f src/integration-tests/*_pb.ml
 			rm -f src/integration-tests/*_pb.mli
+			rm -f src/google_unittest/*_pb.ml
+			rm -f src/google_unittest/*_pb.mli
 
 pbrt:
 			$(OCB) pbrt.cmxa
@@ -102,6 +104,14 @@ testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test0
 	./_build/src/integration-tests/test04_ml.native encode
 	./src/integration-tests/test03_cpp.tsk decode
 
-integration: test01 test02 testCompat test05 test06 test07 test08 test09 test12 
+integration: test01 test02 testCompat test05 test06 test07 test08 test09 test10 test11 test12 test13 
 
-all: 		native byte unit-tests integration
+.PHONY:google_unittest
+
+google_unittest: native 
+	$(ML_PROTOC) -I ./src/google_unittest/ -ml_out ./src/google_unittest/ src/google_unittest/unittest_import.proto 
+	$(ML_PROTOC) -I ./src/google_unittest/ -ml_out ./src/google_unittest/ src/google_unittest/unittest.proto 
+	$(OCB) -I src/google_unittest google_unittest.native
+	./google_unittest.native
+
+all: 		native byte unit-tests integration google_unittest 

@@ -69,6 +69,11 @@ val type_name_of_type : 'a Pbtt.proto_type -> string
 val type_scope_of_type : 'a Pbtt.proto_type -> Pbtt.type_scope
 (** [type_scope_of_type t] returns the scope of type [t]. *)
 
+val is_empty_message : 'a Pbtt.proto_type -> bool 
+(** [is_empty_message t] returns true if [t] is a message type and 
+    has no fields defined. 
+ *)
+
 (** {2 Creator} *) 
 
 val empty_scope : Pbtt.type_scope 

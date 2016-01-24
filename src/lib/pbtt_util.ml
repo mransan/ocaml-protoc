@@ -335,6 +335,11 @@ let compile_proto_p1 file_name {Pbpt.package; messages; enums; _ } =
 
 let type_scope_of_type {Pbtt.scope; _ } = scope 
 
+let is_empty_message = function 
+  | {Pbtt.spec = Pbtt.Message {Pbtt.message_body;_} } -> 
+    0 = List.length message_body 
+  | _ -> false
+
 let type_name_of_type = function
   | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ } } -> enum_name 
   | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ } } -> message_name

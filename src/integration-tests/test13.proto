@@ -1,0 +1,28 @@
+
+message Empty {
+}
+
+message ContainsEmpty {
+ required Empty empty = 1; 
+
+ oneof Sub {
+     Empty sub_empty = 2; 
+     int32 sub_int   = 3;
+ }
+}
+
+message EmptyOrInt {
+    oneof t {
+        Empty empty = 1; 
+        int32 int   = 2;
+    }
+}
+
+message EmptyOrIntList {
+  repeated EmptyOrInt l = 1;
+}
+
+message T {
+    required EmptyOrIntList p1 = 1;
+    required ContainsEmpty  p2 = 2;
+}
