@@ -23,7 +23,7 @@ message Person {
         Single = 1; 
         Married = 2; 
     }
-    optional MaritalStatus marital_status = 7 [default=Single];
+    optional MaritalStatus marital_status = 7;
     optional Gender gender = 8;  
 }
 

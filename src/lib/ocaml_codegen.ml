@@ -44,6 +44,7 @@ let fname_of_payload_kind = function
 
 let string_of_field_type ?type_qualifier:(type_qualifier = T.No_qualifier) field_type = 
   let s = match field_type with 
+    | T.Unit -> "unit"
     | T.String -> "string"
     | T.Float  -> "float"
     | T.Int    -> "int"
@@ -96,8 +97,12 @@ let gen_type_variant ?and_ variant =
   F.line sc @@ sp "%s %s =" (type_decl_of_and and_) variant_name; 
   F.scope sc (fun sc -> 
     List.iter (fun {T.field_name; field_type; type_qualifier; _ } -> 
-      let type_name = string_of_field_type ~type_qualifier field_type in 
-      F.line sc @@ sp "| %s of %s" field_name type_name
+      match field_type with
+      | T.Unit -> F.line sc @@ sp "| %s" field_name 
+      | _ -> (
+        let type_name = string_of_field_type ~type_qualifier field_type in 
+         F.line sc @@ sp "| %s of %s" field_name type_name
+      )
     ) variant_constructors;
   ); 
   F.print sc 
@@ -139,6 +144,8 @@ let gen_decode_record ?and_ {T.record_name; fields} =
         if nested 
         then (f_name ^ " (Pbrt.Decoder.nested d)")
         else (f_name ^ " d") 
+    | T.Unit -> 
+        "Pbrt.Decoder.empty_nested d"
     | _ -> (Backend_ocaml_static.runtime_function (`Decode, payload_kind, field_type) ^ " d") 
   in
 
@@ -180,12 +187,24 @@ let gen_decode_record ?and_ {T.record_name; fields} =
         T.type_qualifier = _ ;
       } = field in 
       let f = decode_field_f field_type payload_kind nested in 
-      F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s (%s) ; loop ()"
-        field_number 
-        (Enc.string_of_payload_kind ~capitalize:() payload_kind) 
-        field_name 
-        constructor_name 
-        f  
+      let payload_kind = Enc.string_of_payload_kind ~capitalize:() payload_kind in 
+      match field_type with
+      | T.Unit -> (
+        F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; %s ; loop ()"
+          field_number 
+          payload_kind 
+          field_name 
+          constructor_name 
+          f  
+      )
+      | _ -> (
+        F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s (%s) ; loop ()"
+          field_number 
+          payload_kind 
+          field_name 
+          constructor_name 
+          f  
+      )
     ) variant_constructors;  
     ()
   in 
@@ -227,16 +246,19 @@ let gen_decode_variant ?and_ {T.variant_name; variant_constructors; variant_enco
   let process_ctor sc ctor = 
     let {T.encoding_type; field_type; field_name; type_qualifier = _  } = ctor in  
     let {Enc.field_number; Enc.nested; Enc.payload_kind; _  } = encoding_type in 
-    let decoding  =  match field_type with 
-      | T.User_defined_type t -> 
-        let f_name = function_name_of_user_defined "decode" t in
+    match field_type with 
+    | T.User_defined_type t -> 
+      let f_name = function_name_of_user_defined "decode" t in
+      let decoding = 
         if nested 
         then (f_name ^ " (Pbrt.Decoder.nested d)")
-        else (f_name ^ " d")
-      | _ -> 
-        Backend_ocaml_static.runtime_function (`Decode, payload_kind, field_type) ^ " d"
-    in 
-    F.line sc @@ sp "| Some (%i, _) -> %s (%s)" field_number field_name decoding
+        else (f_name ^ " d") in
+      F.line sc @@ sp "| Some (%i, _) -> %s (%s)" field_number field_name decoding 
+    | T.Unit -> 
+      F.line sc @@ sp "| Some (%i, _) -> (Pbrt.Decoder.empty_nested d ; %s)" field_number field_name 
+    | _ -> 
+      let decoding = Backend_ocaml_static.runtime_function (`Decode, payload_kind, field_type) ^ " d" in
+      F.line sc @@ sp "| Some (%i, _) -> %s (%s)" field_number field_name decoding
   in 
 
   let sc = F.empty_scope () in 
@@ -308,6 +330,8 @@ let gen_encode_field sc v_name encoding_type field_type =
     if nested 
     then F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
     else F.line sc @@ sp "%s %s encoder;" f_name v_name 
+  | T.Unit -> 
+    F.line sc "Pbrt.Encoder.empty_nested encoder;" 
   | _ ->  
     let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
     F.line sc @@ sp "%s %s encoder;" rt v_name
@@ -347,7 +371,10 @@ let gen_encode_record ?and_ {T.record_name; fields } =
       | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (  
         F.line sc @@ sp "(match v.%s with" field_name;
         List.iter (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
-          F.line sc @@ sp "| %s x -> (" field_name;  
+          (match field_type with 
+          | T.Unit -> F.line sc @@ sp "| %s -> (" field_name
+          | _ -> F.line sc @@ sp "| %s x -> (" field_name
+          );
           F.scope sc (fun sc -> 
             gen_encode_field sc "x" encoding_type field_type
           ); 
@@ -370,7 +397,10 @@ let gen_encode_variant ?and_ variant =
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
-      F.line sc @@ sp "| %s x -> (" field_name ;
+      (match field_type with 
+      | T.Unit -> F.line sc @@ sp "| %s -> (" field_name
+      | _ -> F.line sc @@ sp "| %s x -> (" field_name
+      );
       F.scope sc (fun sc -> 
         gen_encode_field sc "x" encoding_type field_type
       ); 
@@ -465,7 +495,11 @@ let gen_pp_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_enco
   F.scope sc (fun sc -> 
     List.iter (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
       let field_string_of = gen_pp_field field_type in 
-      F.line sc @@ sp  "| %s x -> F.fprintf fmt \"@[%s(%%a)@]\" %s x" field_name field_name field_string_of 
+      match field_type with
+      | T.Unit -> 
+        F.line sc @@ sp "| %s  -> F.fprintf fmt \"%s\"" field_name field_name 
+      | _ -> 
+        F.line sc @@ sp  "| %s x -> F.fprintf fmt \"@[%s(%%a)@]\" %s x" field_name field_name field_string_of 
     ) variant_constructors ;
   );
   F.print sc 
@@ -501,6 +535,7 @@ let gen_default_field field_name field_type field_default =
   match field_type, field_default with 
   | T.User_defined_type t, _ -> 
     function_name_of_user_defined "default" t  ^ " ()"
+  | T.Unit  , None -> "()"
   | T.String, None -> "\"\""
   | T.String, Some (Pbpt.Constant_string s) -> sp "\"%s\"" s 
   | T.Float , None -> "0." 
@@ -548,8 +583,12 @@ let gen_default_record  ?and_ {T.record_name; fields } =
         match variant_constructors with
         | []     -> failwith "programmatic TODO error" 
         | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
-          F.line sc @@ sp "%s = %s (%s);" 
-            field_name constructor_name (gen_default_field field_name field_type encoding_type.Encoding_util.default)  
+          match field_type with 
+          | T.Unit -> F.line sc @@ sp "%s = %s;" field_name constructor_name 
+          | _ -> (
+            F.line sc @@ sp "%s = %s (%s);" 
+              field_name constructor_name (gen_default_field field_name field_type encoding_type.Encoding_util.default)  
+          )
       ) (* one of        *)
       | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone} -> (
         raise @@ E.programmatic_error E.One_of_should_be_inlined_in_message
@@ -563,11 +602,14 @@ let gen_default_variant ?and_ {T.variant_name; T.variant_constructors ; T.varian
   match variant_constructors with
   | []     -> failwith "programmatic TODO error" 
   | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
-    sp "%s default_%s () = %s (%s)" 
-       (let_decl_of_and and_) 
-       variant_name 
-       constructor_name 
-       (gen_default_field variant_name field_type encoding_type.Encoding_util.default)  
+    let decl = let_decl_of_and and_ in 
+    match field_type with
+    | T.Unit -> 
+      sp "%s default_%s () = %s" decl variant_name constructor_name 
+    |  _ -> 
+      let default_field = gen_default_field variant_name field_type encoding_type.Encoding_util.default in
+      sp "%s default_%s () = %s (%s)" 
+         decl variant_name constructor_name default_field 
 
 let gen_default_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } = 
   let first_constructor_name = match cvariant_constructors with

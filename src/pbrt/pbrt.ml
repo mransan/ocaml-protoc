@@ -209,6 +209,12 @@ module Decoder = struct
     let d' = { d with limit = d.offset + len; } in
     d.offset <- d.offset + len;
     d'
+
+  let empty_nested d =
+    let len = int_as_varint d in
+    if len <> 0 
+    then raise (Failure Incomplete) 
+    else () 
   
   let bool d = 
     if int_as_varint d = 0 then false else true
@@ -382,6 +388,9 @@ module Encoder = struct
     f e';
     smallint (Buffer.length e') e;
     Buffer.add_buffer e e'
+
+  let empty_nested e  = 
+    smallint 0 e 
 
   let key (k, pk) e =
     let pk' =

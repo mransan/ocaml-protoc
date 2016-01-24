@@ -168,12 +168,15 @@ let user_defined_type_of_id all_types file_name i =
   | exception Not_found -> 
     raise @@ E.programmatic_error E.No_type_found_for_id 
   | {Pbtt.file_name; _ } as t -> 
-      let field_type_module = module_of_file_name file_name in  
-      let {Pbtt.message_names; _ } = Pbtt_util.type_scope_of_type t in 
-      let type_name = type_name message_names (Pbtt_util.type_name_of_type t) in 
-      if field_type_module = module_ 
-      then OCaml_types.({module_ = None; type_name}) 
-      else OCaml_types.({module_ = Some field_type_module; type_name}) 
+      if Pbtt_util.is_empty_message t 
+      then OCaml_types.Unit 
+      else 
+        let field_type_module = module_of_file_name file_name in  
+        let {Pbtt.message_names; _ } = Pbtt_util.type_scope_of_type t in 
+        let type_name = type_name message_names (Pbtt_util.type_name_of_type t) in 
+        if field_type_module = module_ 
+        then OCaml_types.(User_defined_type {module_ = None; type_name}) 
+        else OCaml_types.(User_defined_type {module_ = Some field_type_module; type_name}) 
 
 let compile_field ?as_constructor all_types f type_qualifier file_name field = 
   let field_name = Pbtt_util.field_name field in 
@@ -204,8 +207,7 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     | Pbtt.Field_type_string  -> OCaml_types.String
     | Pbtt.Field_type_bytes  -> OCaml_types.Bytes
     | Pbtt.Field_type_type id -> 
-      let user_defined_type = user_defined_type_of_id all_types file_name id in 
-      OCaml_types.User_defined_type user_defined_type
+      user_defined_type_of_id all_types file_name id
   in {
     OCaml_types.field_type; 
     OCaml_types.field_name; 
@@ -249,6 +251,7 @@ let compile_message
      OCaml code much easier. 
    *)
   match message_body with 
+  | []  -> [] 
   | Pbtt.Message_oneof_field f :: [] -> (
     [OCaml_types.({
       module_; 

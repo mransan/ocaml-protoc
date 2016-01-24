@@ -31,6 +31,7 @@ type user_defined_type = {
 }
 
 type field_type = 
+  | Unit   (** currently being used for empty protobuf message *)
   | String 
   | Float 
   | Int 

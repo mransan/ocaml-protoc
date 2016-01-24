@@ -111,6 +111,9 @@ module Decoder : sig
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
   val nested    : t -> t
+  
+  (** [empty_nested d] decode an empty nested sub message. *)
+  val empty_nested : t -> unit
 
   (** [bool d] reads a boolean value. Boolean value is *)
   val bool : t -> bool 
@@ -226,6 +229,9 @@ module Encoder : sig
   
   (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
   val nested    : (t -> unit) -> t -> unit
+  
+  (** [empty_nested e] encode an empty nested sub message. *)
+  val empty_nested : t -> unit
 
   (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
   val key       : (int * payload_kind) -> t -> unit

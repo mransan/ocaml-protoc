@@ -25,6 +25,9 @@
 
 let prefix_payload_to_ocaml_t  = {|module F = Format 
 
+let pp_unit fmt () = 
+  F.pp_print_string fmt "()"
+
 let pp_int = 
   F.pp_print_int 
 
