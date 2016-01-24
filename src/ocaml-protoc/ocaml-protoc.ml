@@ -69,8 +69,10 @@ let parse_args () =
   )  in 
   let usage = "protobufo.tsk -out <file_name> <file_name>.proto" in  
   Arg.parse cmd_line_args anon_fun usage;
-  assert(!proto_file_name <> ""); 
-  assert(!ml_out          <> ""); 
+  (if !proto_file_name = ""
+   then failwith "Missing protobuf file name from command line argument"); 
+  (if !ml_out = ""
+   then failwith "Missing -ml_out (output directory) from command line argument"); 
 
   let out_file_name = 
     let basename = Filename.basename !proto_file_name in 
