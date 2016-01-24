@@ -2,6 +2,11 @@
 
 A [protobuf](https://developers.google.com/protocol-buffers/) compiler for OCaml. 
 
+* [Introduction](#introduction)
+* [Simple Example](#a-simple-example)
+* [Build/Install](#build-install)
+
+
 ### Introduction 
 
 `ocaml-protoc` compiles [protobuf message files](https://developers.google.com/protocol-buffers/docs/proto) into 
@@ -86,4 +91,58 @@ let () =
   (* Decode the person and Pretty-print it *)
   let person = Test14_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in 
   Format.fprintf Format.std_formatter "%a" Test14_pb.pp_person person
+```
+### Buid-Install
+
+**Prerequesite**
+
+`ocaml-protoc` solely depends on the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
+
+**Install from source**
+
+Assuming you want to install `ocaml-protoc` in `tmp` directory inside source directory simply do:
+
+```bash
+export PREFIX=`pwd`/tmp
+make install
+```
+
+You should now see the following:
+```bash
+tmp//bin/ocaml-protoc            #symbolic link to the native executable
+tmp//bin/ocaml-protoc.native     
+tmp//lib/pbrt.a
+tmp//lib/pbrt.cma
+tmp//lib/pbrt.cmi
+tmp//lib/pbrt.cmt
+tmp//lib/pbrt.cmti
+tmp//lib/pbrt.cmxa
+tmp//lib/pbrt.cmxs
+tmp//lib/pbrt.mli
+```
+
+*Note that if you only want the byte code installation use `make install.byte`*
+
+**Intall from OPAM**
+
+Installation from OPAM will be provided soon.
+
+**Build your program** 
+
+Here are the steps to build the example above where the source are in `src/examples/`:
+
+```Bash
+# Generate the OCaml protobuf module 
+../../tmp/bin/ocaml-protoc -ml_out ./  example01.proto
+
+# Compile the example including the ocaml protobuf runtime (pbrt.cmxa)
+ocamlopt.opt \
+  -I ../../tmp/lib/ -I ./  \
+  pbrt.cmxa \
+  -o example01 \
+  example01_pb.mli example01_pb.ml example01.ml
+```
+You can now run the example
+```Bash
+./example01
 ```
