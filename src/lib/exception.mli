@@ -76,34 +76,34 @@ val unresolved_type :
   field_name:string -> 
   type_:string  ->
   message_name:string -> 
-  unit -> exn
+  unit -> 'a
 
 val duplicated_field_number : 
   field_name:string ->
   previous_field_name:string -> 
   message_name:string -> 
-  unit -> exn 
+  unit -> 'a 
 
 val invalid_default_value : 
   field_name:string -> 
   info:string ->
-  unit -> exn
+  unit -> 'a
 
 val unsupported_field_type : 
   field_name:string ->
   field_type:string -> 
   backend_name:string ->
-  unit -> exn
+  unit -> 'a
 
-val import_file_not_found : string -> exn 
+val import_file_not_found : string -> 'a 
 
-val programmatic_error : programmatic_error -> exn
+val programmatic_error : programmatic_error -> 'a
 
-val invalid_import_qualifier : unit -> exn
+val invalid_import_qualifier : unit -> 'a
 
-val invalid_file_name : string -> exn 
+val invalid_file_name : string -> 'a 
 
-val invalid_message_declaration : string -> exn 
+val invalid_message_declaration : string -> 'a 
 
-val invalid_packed_option : string -> exn 
+val invalid_packed_option : string -> 'a 
 (** [invalid_packed_option field_name] *)

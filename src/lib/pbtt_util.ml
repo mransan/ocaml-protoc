@@ -82,7 +82,7 @@ let scope_of_package = function
 
 let unresolved_of_string s = 
   match Util.rev_split_by_char '.' s with 
-  | [] -> raise @@ E.programmatic_error E.Invalid_string_split
+  | [] -> E.programmatic_error E.Invalid_string_split
   | hd :: tl -> {
     Pbtt.scope = (List.rev tl); 
     Pbtt.type_name = hd;
@@ -123,7 +123,7 @@ let map_field_type : 'a Pbtt.field_type  -> 'b Pbtt.field_type = function
  | Pbtt.Field_type_bool       -> Pbtt.Field_type_bool 
  | Pbtt.Field_type_string     -> Pbtt.Field_type_string 
  | Pbtt.Field_type_bytes      -> Pbtt.Field_type_bytes 
- | Pbtt.Field_type_type _ -> raise @@ E.programmatic_error E.Unexpected_field_type 
+ | Pbtt.Field_type_type _ -> E.programmatic_error E.Unexpected_field_type 
 
 let compile_default_p2 all_types field = 
   let field_name = field_name field in 
@@ -139,7 +139,7 @@ let compile_default_p2 all_types field =
       | Pbpt.Constant_int i   -> Some (Pbpt.Constant_float (float_of_int i))
       | Pbpt.Constant_float _ -> Some constant 
       | _  -> 
-        raise @@ E.invalid_default_value 
+        E.invalid_default_value 
           ~field_name ~info:"invalid default type (float/int expected)" ()
     )
     | Pbtt.Field_type_int32 
@@ -152,37 +152,37 @@ let compile_default_p2 all_types field =
     | Pbtt.Field_type_sfixed64 -> (
       match constant with 
       | Pbpt.Constant_int _ -> Some constant
-      | _ -> raise @@ E.invalid_default_value ~field_name ~info:"invalid default type (int expected)" ()
+      | _ -> E.invalid_default_value ~field_name ~info:"invalid default type (int expected)" ()
     )
     | Pbtt.Field_type_uint32 
     | Pbtt.Field_type_uint64 -> (
       match constant with 
       | Pbpt.Constant_int i -> if i >=0 
         then Some constant 
-        else raise @@ E.invalid_default_value 
+        else E.invalid_default_value 
           ~field_name ~info:"negative default value for unsigned int" () 
-      | _ -> raise @@ E.invalid_default_value
+      | _ -> E.invalid_default_value
           ~field_name ~info:"invalid default type (int expected)" ()
     )
     | Pbtt.Field_type_bool -> (
       match constant with 
       | Pbpt.Constant_bool _ -> Some constant
-      | _  -> raise @@ E.invalid_default_value 
+      | _  -> E.invalid_default_value 
         ~field_name ~info:"invalid default type (bool expected)" ()
     ) 
     | Pbtt.Field_type_string -> (
       match constant with 
       | Pbpt.Constant_string _ -> Some constant 
-      | _  -> raise @@ E.invalid_default_value ~field_name ~info:"invalid default type (string expected)" ()
+      | _  -> E.invalid_default_value ~field_name ~info:"invalid default type (string expected)" ()
     ) 
-    | Pbtt.Field_type_bytes -> raise @@ E.invalid_default_value 
+    | Pbtt.Field_type_bytes -> E.invalid_default_value 
       ~field_name ~info:"default value not supported for bytes" ()
     | Pbtt.Field_type_type (id:Pbtt.resolved) -> (
       match constant with 
       | Pbpt.Constant_litteral default_enum_value -> (
         let {Pbtt.spec; _ } = type_of_id all_types id in 
         match spec with 
-        | Pbtt.Message _ -> raise @@ E.invalid_default_value 
+        | Pbtt.Message _ -> E.invalid_default_value 
           ~field_name ~info:"field of type message cannot have a default litteral value" ()
         | Pbtt.Enum {Pbtt.enum_values; _ } -> ( 
           let default_enum_value = Util.apply_until (fun {Pbtt.enum_value_name; _ } -> 
@@ -193,11 +193,11 @@ let compile_default_p2 all_types field =
           in
           match default_enum_value with
           | Some _ -> Some constant
-          | None   -> raise @@ E.invalid_default_value 
+          | None   -> E.invalid_default_value 
             ~field_name ~info:"Invalid default enum value" () 
         )
       ) 
-      | _ -> raise @@ E.invalid_default_value 
+      | _ -> E.invalid_default_value 
         ~field_name ~info:"default value not supported for message" ()
     )
   )
@@ -314,7 +314,7 @@ let rec compile_message_p1 file_name message_scope ({
     then 
       (number, name)::number_index
     else 
-      raise @@ E.duplicated_field_number 
+      E.duplicated_field_number 
         ~field_name:name ~previous_field_name:"" ~message_name ()
   in
 
@@ -426,7 +426,7 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
       match id with 
       | Some id -> (Pbtt.Field_type_type id:Pbtt.resolved Pbtt.field_type) 
       | None    -> 
-        raise @@ E.unresolved_type ~field_name ~type_:type_name ~message_name () 
+        E.unresolved_type ~field_name ~type_:type_name ~message_name () 
     )
     | field_type -> map_field_type field_type
   in

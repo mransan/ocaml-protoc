@@ -172,7 +172,7 @@ let gen_decode_record ?and_ {T.record_name; fields} =
       | T.Option, false -> sp "Some (%s)" f
       | T.List , false  -> sp "(%s) :: v.%s" f field_name 
       | T.List , true -> sp "(Pbrt.Decoder.packed %s)" f
-      | _ , true -> raise @@ E.invalid_packed_option field_name 
+      | _ , true -> E.invalid_packed_option field_name 
     in
     F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; loop ()"
       field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind packed) field_name rhs
@@ -233,7 +233,7 @@ let gen_decode_record ?and_ {T.record_name; fields} =
         | T.One_of ({T.variant_encoding = T.Inlined_within_message; _} as variant)  -> 
             process_one_of sc field variant 
         | T.One_of {T.variant_encoding = T.Standalone; _ } -> 
-          raise @@ E.programmatic_error E.One_of_should_be_inlined_in_message
+          E.programmatic_error E.One_of_should_be_inlined_in_message
       ) fields; 
       F.line sc "| Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()";
     ); 
@@ -334,11 +334,11 @@ let gen_encode_field sc v_name encoding_type field_type =
     then F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
     else F.line sc @@ sp "%s %s encoder;" f_name v_name 
   | T.User_defined_type _, true -> 
-    raise @@ E.invalid_packed_option v_name 
+    E.invalid_packed_option v_name 
   | T.Unit, false -> 
     F.line sc "Pbrt.Encoder.empty_nested encoder;" 
   | T.Unit , true -> 
-    raise @@ E.invalid_packed_option v_name
+    E.invalid_packed_option v_name
   | _, false ->  
     let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
     F.line sc @@ sp "%s %s encoder;" rt v_name
@@ -383,7 +383,7 @@ let gen_encode_record ?and_ {T.record_name; fields } =
           gen_encode_field sc v_name encoding_type field_type
         )
         | _ , true -> 
-          raise @@ E.invalid_packed_option field_name 
+          E.invalid_packed_option field_name 
       )
       | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (  
         F.line sc @@ sp "(match v.%s with" field_name;
@@ -400,7 +400,7 @@ let gen_encode_record ?and_ {T.record_name; fields } =
         F.line sc ");";
       ) (* one of        *)
       | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Standalone} -> (  
-        raise @@ E.programmatic_error E.One_of_should_be_inlined_in_message
+        E.programmatic_error E.One_of_should_be_inlined_in_message
       )
     ) fields; 
     F.line sc "()";
@@ -496,7 +496,7 @@ let gen_pp_record  ?and_ {T.record_name; fields } =
           F.line sc @@ sp "pp_equal \"%s\" %s fmt %s;" field_name ("pp_" ^ variant_name) x
         )                (* one of        *)
         | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone } -> (
-          raise @@ E.programmatic_error E.One_of_should_be_inlined_in_message
+          E.programmatic_error E.One_of_should_be_inlined_in_message
         )
       ) fields; 
       F.line sc "F.pp_close_box fmt ()";
@@ -567,7 +567,7 @@ let gen_default_field field_name field_type field_default =
   | T.Bytes , Some (Pbpt.Constant_string s) -> sp "Bytes.of_string \"%s\"" s  
   | T.Bool  , None -> "false"
   | T.Bool  , Some (Pbpt.Constant_bool b) -> string_of_bool b
-  | _ -> raise @@ E.invalid_default_value 
+  | _ -> E.invalid_default_value 
     ~field_name ~info:"invalid default type" ()
 
 let gen_default_record  ?and_ {T.record_name; fields } = 
@@ -608,7 +608,7 @@ let gen_default_record  ?and_ {T.record_name; fields } =
           )
       ) (* one of        *)
       | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone} -> (
-        raise @@ E.programmatic_error E.One_of_should_be_inlined_in_message
+        E.programmatic_error E.One_of_should_be_inlined_in_message
       )
     ) fields;          (* record fields *) 
   ); (* end of function *)

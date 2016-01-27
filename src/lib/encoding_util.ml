@@ -57,7 +57,7 @@ let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) =
 
   let packed = match Pbtt_util.field_option field "packed" with 
     | Some (Pbpt.Constant_bool x) -> x 
-    | Some _ -> raise @@ E.invalid_packed_option (Pbtt_util.field_name field)  
+    | Some _ -> E.invalid_packed_option (Pbtt_util.field_name field)  
     | None -> false 
   in 
 
