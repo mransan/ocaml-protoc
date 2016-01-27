@@ -1,0 +1,25 @@
+message a {
+    repeated int32 aa = 4 [packed=true];
+}
+
+message b {
+    oneof sub {
+        a     ba = 1;
+        int32 bb = 2;
+    }
+}
+
+message c {
+    oneof sub {
+        a     ca = 1;
+        int32 cb = 2;
+    }
+    optional a cc = 3;
+}
+
+message d {
+    required a da = 1;
+    required b db = 2;
+    required c dc = 3;
+}
+

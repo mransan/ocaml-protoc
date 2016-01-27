@@ -67,6 +67,7 @@ type error =
   | Invalid_file_name of string  
   | Import_file_not_found of string 
   | Invalid_message_declaration of string 
+  | Invalid_packed_option of string 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -103,3 +104,6 @@ val invalid_import_qualifier : unit -> exn
 val invalid_file_name : string -> exn 
 
 val invalid_message_declaration : string -> exn 
+
+val invalid_packed_option : string -> exn 
+(** [invalid_packed_option field_name] *)

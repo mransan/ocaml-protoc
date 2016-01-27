@@ -251,9 +251,11 @@ let compile_message
   (* TODO maybe module_ should be resolved before `compile_message` since 
      it is common with compile_enum
    *)
+
   let {Pbtt.message_name; Pbtt.message_body;} = message in 
 
   let {Pbtt.message_names; _ } = scope in  
+  
   let record_name = type_name message_names message_name in 
 
   (* In case a message is only made of a `one of` field then we 

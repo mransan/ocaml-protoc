@@ -102,6 +102,11 @@ module Decoder : sig
   (** [int_as_bits64 d] reads a int value encoded in 64 bits. *)
   val int_as_bits64 : t -> int 
 
+  (** [packed f decoder] returns the list of element to be decoded in a packed
+      encoding.
+   *)
+  val packed : (t -> 'a) -> t -> 'a list
+
   (** [bytes d] reads a varint indicating length and then that much
       bytes from [d].
       If [d] has exhausted its input, raises [Failure Incomplete]. *)
@@ -214,6 +219,11 @@ module Encoder : sig
   
   (** [float_as_bits64 v e] writes eight bytes of [v] to [e]. *)
   val float_as_bits64 : float -> t -> unit
+
+  (** [packed l f e] encodes each element of [l] with packed encoding 
+      using [f] for eahc element
+   *) 
+  val packed : 'a list -> ('a -> t -> unit) -> t -> unit 
 
   (** [bytes b e] writes a varint indicating length of [b] and then
       [b] to [e]. *)
