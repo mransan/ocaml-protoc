@@ -65,8 +65,8 @@ type variant_encoding =
 (** protobuf type system does not explicitely support standalone variant type since
     `one of` fields can only be within a `message` type. 
 
-   However we support an optimization so that protobuf message which only
-   contains a single `one of` field are mapped to an OCaml variant rather 
+   However we support an optimization so that protobuf messages which only
+   contain a single `one of` field are mapped to an OCaml variant rather 
    than a record with a single field of a variant type. This optimization allow
    cleaner and more consice generated code. 
 

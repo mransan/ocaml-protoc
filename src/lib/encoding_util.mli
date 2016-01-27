@@ -29,18 +29,18 @@ type payload_kind =
   | Bits64
   | Bytes 
 
-type other_module_location = {
-  file_name: string; 
-  type_name: string; 
-}
-
 type field_encoding = {
   field_number : int; 
   payload_kind : payload_kind; 
   nested : bool;
   default: Pbpt.constant option;
+  packed: bool; (**
+  https://developers.google.com/protocol-buffers/docs/encoding#packed *)
 }
 
-val string_of_payload_kind : ?capitalize:unit -> payload_kind -> string 
+val string_of_payload_kind : ?capitalize:unit -> payload_kind -> bool -> string 
+(** [string_of_payload_kind ~capitalize:() payload_kind packed] will return the
+    string corresponding to the payload kind. 
+ *)
 
 val encoding_of_field_type : Pbtt.resolved Pbtt.proto -> (Pbtt.resolved, 'a) Pbtt.field -> field_encoding 

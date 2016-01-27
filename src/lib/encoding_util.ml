@@ -23,37 +23,43 @@
 
 *)
 
+module E = Exception
+
 type payload_kind = 
   | Varint of bool (** zigzag *)  
   | Bits32
   | Bits64
   | Bytes 
 
-type other_module_location = {
-  file_name: string; 
-  type_name: string; 
-}
-
-
 type field_encoding = {
   field_number: int; 
   payload_kind: payload_kind; 
   nested: bool;
   default: Pbpt.constant option;
+  packed: bool;
 }
 
-let string_of_payload_kind ?capitalize payload_kind = 
-  match payload_kind, capitalize with
-  | Varint _ , None-> "varint"
-  | Bits32   , None-> "bits32"
-  | Bits64   , None-> "bits64"
-  | Bytes    , None-> "bytes"
-  | Varint _ , Some _ -> "Varint"
-  | Bits32   , Some _ -> "Bits32"
-  | Bits64   , Some _ -> "Bits64"
-  | Bytes    , Some _ -> "Bytes"
+let string_of_payload_kind ?capitalize payload_kind packed = 
+  let s = match payload_kind,  packed with
+  | Varint _ , false -> "varint"
+  | Bits32   , false -> "bits32"
+  | Bits64   , false -> "bits64"
+  | Bytes    , _ -> "bytes"
+  | Varint _ , true 
+  | Bits32   , true
+  | Bits64   , true  -> "bytes"
+  in 
+  match capitalize with
+  | None -> s 
+  | Some () -> String.capitalize s 
 
 let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) = 
+
+  let packed = match Pbtt_util.field_option field "packed" with 
+    | Some (Pbpt.Constant_bool x) -> x 
+    | Some _ -> raise @@ E.invalid_packed_option (Pbtt_util.field_name field)  
+    | None -> false 
+  in 
 
   let pk, nested = match Pbtt_util.field_type field with 
     | Pbtt.Field_type_double  -> (Bits64,false)
@@ -80,4 +86,5 @@ let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) =
     nested; 
     field_number = Pbtt_util.field_number field;
     default = Pbtt_util.field_default field;
+    packed;
   }

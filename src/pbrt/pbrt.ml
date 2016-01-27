@@ -241,6 +241,17 @@ module Decoder = struct
     Int64.to_int @@ int64_as_bits64 d 
     (* TODO this could be faster by implementing it directly *)
   
+  let packed f d =
+    let ({limit;_ } as d') = nested d in 
+    let rec loop acc = 
+      if d'.offset = limit  
+      then acc 
+      else 
+        let acc = (f d')::acc in 
+        loop acc 
+    in 
+    loop []
+  
   let key d =
     if d.offset = d.limit
     then None
@@ -388,6 +399,13 @@ module Encoder = struct
     f e';
     smallint (Buffer.length e') e;
     Buffer.add_buffer e e'
+  
+  let packed l f e = 
+    nested (fun e -> 
+      List.iter (fun i -> 
+        f i e
+      ) l 
+    ) e 
 
   let empty_nested e  = 
     smallint 0 e 

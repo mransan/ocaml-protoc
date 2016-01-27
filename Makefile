@@ -144,7 +144,7 @@ src/integration-tests/test10_cpp.tsk: \
 	$(ML_PROTOC) -I src/integration-tests/ -ml_out ./src/integration-tests/ $<
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
-	$(OCB) -I src/integration-tests -pkg unix $@ 
+	$(OCB) -tag debug -I src/integration-tests -pkg unix $@ 
 
 test%: bin.native bin.byte src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
 	./src/integration-tests/test$*_cpp.tsk encode
@@ -162,7 +162,7 @@ testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test0
 
 .PHONY: integration
 
-integration: test01 test02 testCompat test05 test06 test07 test08 test09 test10 test11 test12 test13 
+integration: test01 test02 testCompat test05 test06 test07 test08 test09 test10 test11 test12 test13 test14 
 
 .PHONY: google_unittest
 

@@ -165,15 +165,17 @@ let gen_decode_record ?and_ {T.record_name; fields} =
 
   let process_regular_field sc field field_encoding =   
     let {T.encoding_type; T.field_type; T.field_name; T.type_qualifier;} = field in 
-    let {Enc.field_number; payload_kind; nested} = field_encoding in 
+    let {Enc.field_number; payload_kind; nested; packed} = field_encoding in 
     let f = decode_field_f field_type payload_kind nested in 
-    let rhs = match type_qualifier with
-      | T.No_qualifier -> sp "(%s)" f  
-      | T.Option       -> sp "Some (%s)" f
-      | T.List         -> sp "(%s) :: v.%s" f field_name 
+    let rhs = match type_qualifier, packed with
+      | T.No_qualifier, false -> sp "(%s)" f  
+      | T.Option, false -> sp "Some (%s)" f
+      | T.List , false  -> sp "(%s) :: v.%s" f field_name 
+      | T.List , true -> sp "(Pbrt.Decoder.packed %s)" f
+      | _ , true -> raise @@ E.invalid_packed_option field_name 
     in
     F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; loop ()"
-      field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind) field_name rhs
+      field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind packed) field_name rhs
   in 
 
   let process_one_of sc field variant = 
@@ -181,13 +183,13 @@ let gen_decode_record ?and_ {T.record_name; fields} =
     let {T.variant_name;variant_constructors;variant_encoding = _ } = variant in 
     List.iter (fun field ->
       let {
-        T.encoding_type = {Enc.field_number; payload_kind; nested} ;
+        T.encoding_type = {Enc.field_number; payload_kind; nested; packed} ;
         T.field_type; 
         T.field_name = constructor_name; 
         T.type_qualifier = _ ;
       } = field in 
       let f = decode_field_f field_type payload_kind nested in 
-      let payload_kind = Enc.string_of_payload_kind ~capitalize:() payload_kind in 
+      let payload_kind = Enc.string_of_payload_kind ~capitalize:() payload_kind packed in 
       match field_type with
       | T.Unit -> (
         F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; %s ; loop ()"
@@ -321,20 +323,28 @@ let gen_encode_field sc v_name encoding_type field_type =
   let {
     Enc.field_number; 
     Enc.payload_kind; 
-    Enc.nested} = encoding_type in 
+    Enc.nested; 
+    Enc.packed} = encoding_type in 
   F.line sc @@ sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
-      field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind);
-  match field_type with 
-  | T.User_defined_type t -> 
+      field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind packed);
+  match field_type, packed with 
+  | T.User_defined_type t, false -> 
     let f_name = function_name_of_user_defined "encode" t in 
     if nested 
     then F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
     else F.line sc @@ sp "%s %s encoder;" f_name v_name 
-  | T.Unit -> 
+  | T.User_defined_type _, true -> 
+    raise @@ E.invalid_packed_option v_name 
+  | T.Unit, false -> 
     F.line sc "Pbrt.Encoder.empty_nested encoder;" 
-  | _ ->  
+  | T.Unit , true -> 
+    raise @@ E.invalid_packed_option v_name
+  | _, false ->  
     let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
     F.line sc @@ sp "%s %s encoder;" rt v_name
+  | _, true ->  
+    let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
+    F.line sc @@ sp "Pbrt.Encoder.packed %s %s encoder;" v_name rt 
 
 let gen_encode_record ?and_ {T.record_name; fields } = 
   L.log "gen_encode_record record_name: %s\n" record_name; 
@@ -346,12 +356,13 @@ let gen_encode_record ?and_ {T.record_name; fields } =
       let {T.encoding_type; field_type; field_name; type_qualifier ; } = field in 
       match encoding_type with 
       | T.Regular_field encoding_type -> ( 
-        match type_qualifier with 
-        | T.No_qualifier -> (
+        let {Enc.packed; _ } = encoding_type in
+        match type_qualifier, packed with 
+        | T.No_qualifier, false -> (
           let v_name = sp "v.%s" field_name in 
           gen_encode_field sc v_name encoding_type field_type
         )
-        | T.Option -> (
+        | T.Option, false -> (
           F.line sc @@ sp "(match v.%s with " field_name;
           F.line sc @@ sp "| Some x -> (";
           F.scope sc (fun sc ->
@@ -360,13 +371,19 @@ let gen_encode_record ?and_ {T.record_name; fields } =
           F.line sc ")";
           F.line sc "| None -> ());";
         )
-        | T.List -> (
+        | T.List, false -> (
           F.line sc "List.iter (fun x -> ";
           F.scope sc (fun sc -> 
             gen_encode_field sc "x" encoding_type field_type;
           );
           F.line sc @@ sp ") v.%s;" field_name; 
         )
+        | T.List, true -> (
+          let v_name = sp "v.%s" field_name in 
+          gen_encode_field sc v_name encoding_type field_type
+        )
+        | _ , true -> 
+          raise @@ E.invalid_packed_option field_name 
       )
       | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (  
         F.line sc @@ sp "(match v.%s with" field_name;

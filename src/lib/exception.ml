@@ -76,6 +76,7 @@ type error =
   | Invalid_file_name of string 
   | Import_file_not_found of string 
   | Invalid_message_declaration of string 
+  | Invalid_packed_option of string 
 
 
 exception Compilation_error of error  
@@ -161,3 +162,6 @@ let invalid_file_name file_name =
 
 let invalid_message_declaration s = 
   Compilation_error (Invalid_message_declaration s)
+
+let invalid_packed_option field_name = 
+  Compilation_error (Invalid_packed_option field_name) 
