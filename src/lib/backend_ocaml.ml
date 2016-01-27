@@ -134,7 +134,7 @@ let module_of_file_name file_name =
   match String.rindex file_name '.' with 
   | dot_index -> 
     module_name @@ (String.sub file_name 0 dot_index ^ "_pb") 
-  | exception Not_found -> raise @@ E.invalid_file_name file_name  
+  | exception Not_found -> E.invalid_file_name file_name  
 
 let type_name message_scope name = 
   let module S = String in  
@@ -166,7 +166,7 @@ let user_defined_type_of_id all_types file_name i =
   let module_ = module_of_file_name file_name in 
   match Pbtt_util.type_of_id all_types i with
   | exception Not_found -> 
-    raise @@ E.programmatic_error E.No_type_found_for_id 
+    E.programmatic_error E.No_type_found_for_id 
   | {Pbtt.file_name; _ } as t -> 
       if Pbtt_util.is_empty_message t 
       then OCaml_types.Unit 
@@ -211,9 +211,9 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     | Pbtt.Field_type_fixed32, _ -> OCaml_types.Int32
     | Pbtt.Field_type_fixed64, _ -> OCaml_types.Int64
     | Pbtt.Field_type_sfixed32, _ -> 
-        raise @@ E.unsupported_field_type ~field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
+        E.unsupported_field_type ~field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
     | Pbtt.Field_type_sfixed64, _ -> 
-        raise @@ E.unsupported_field_type ~field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
+        E.unsupported_field_type ~field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
     | Pbtt.Field_type_bool, _ -> OCaml_types.Bool
     | Pbtt.Field_type_string, _-> OCaml_types.String
     | Pbtt.Field_type_bytes, _ -> OCaml_types.Bytes
