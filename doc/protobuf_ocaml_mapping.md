@@ -1,0 +1,58 @@
+## Protobuf <-> OCaml Mapping
+
+This page describes how the mapping between protobuf type system and OCaml is done. 
+
+ 
+*Basic Types*
+
+| .proto type  | OCaml Type  | [Extensions](src/ocaml_extensions.md) | Notes |
+|--------------|-------------|------------|-------|
+| double       | float       |            |       |
+| float        | float       |            |       | 
+| int32        | int32       |  int       |       |
+| int64        | int64       |  int       |       |
+| uint32       | int32       |  int       |       |
+| uint64       | int64       |  int       |       |
+| sint32       | int32       |  int       |       |
+| sint64       | int64       |  int       |       |
+| fixed32      | int32       |  int       |       |
+| fixed64      | int64       |  int       |       |
+| sfixed32     |             |            | This encoding is not supported |
+| sfixed64     |             |            | This encoding is not supported |
+| bool         | bool        |            |  |
+| string       | string      |            |  |
+| bytes        | bytes       |            |  |
+
+
+*oneof fields*
+
+`oneof` fields are encoded as OCaml `variant`. The variant name is the concatenation of the enclosing message name 
+and the `oneof` field name.
+
+**Note that since it's not possible to encode the variant type without being part of a message, no encoding/decoding
+functions are generated.**
+
+*Message* 
+
+Message are encoded as OCaml `records` with all fields mutable. 
+
+Note that if the protobuf message only contains a single `oneof` field then a single `variant` will be generated. 
+This simplify greatly the generated code; for instance:
+
+```Javascript
+message IntOrString {
+    oneof t {
+        int32  intVal    = 1;
+        string stringVal = 2;
+    }
+}
+
+```
+will generate the compact representation:
+
+```OCaml
+type int_or_string =
+  | Int_val of int32
+  | String_val of string
+```
+

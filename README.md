@@ -5,6 +5,7 @@ A [protobuf](https://developers.google.com/protocol-buffers/) compiler for OCaml
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
 * [Build/Install](#build-install)
+* [Protobuf <-> OCaml mapping](src/protobuf_ocaml_mapping.md)
 
 
 ### Introduction 
