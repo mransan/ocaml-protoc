@@ -36,7 +36,7 @@ and the `oneof` field name.
 *Note that since it's not possible to encode the variant type without being part of a message, no encoding/decoding
 functions are generated.*
 
-#### [Field rules](https://developers.google.com/protocol-buffers/docs/proto#specifying-field-rules)
+##### [Field rules](https://developers.google.com/protocol-buffers/docs/proto#specifying-field-rules)
 
 `optional` field will generate `option` type in OCaml, while `repeated` field will generate OCaml `list`.
 
