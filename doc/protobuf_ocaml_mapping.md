@@ -2,10 +2,14 @@
 
 This page describes how the mapping between protobuf type system and OCaml is done. 
 
+* [Basic Types](#basic-types)
+* [Oneof fields](#oneof-fields)
+* [Field rules](#field-rules)
+* [Message](#message)
  
-*Basic Types*
+##### [Basic Types](https://developers.google.com/protocol-buffers/docs/proto#scalar)
 
-| .proto type  | OCaml Type  | [Extensions](src/ocaml_extensions.md) | Notes |
+| .proto type  | OCaml Type  | [Extensions](ocaml_extensions.md) | Notes |
 |--------------|-------------|------------|-------|
 | double       | float       |            |       |
 | float        | float       |            |       | 
@@ -24,15 +28,20 @@ This page describes how the mapping between protobuf type system and OCaml is do
 | bytes        | bytes       |            |  |
 
 
-*oneof fields*
+##### [Oneof fields](https://developers.google.com/protocol-buffers/docs/proto#oneof)
 
 `oneof` fields are encoded as OCaml `variant`. The variant name is the concatenation of the enclosing message name 
 and the `oneof` field name.
 
-**Note that since it's not possible to encode the variant type without being part of a message, no encoding/decoding
-functions are generated.**
+*Note that since it's not possible to encode the variant type without being part of a message, no encoding/decoding
+functions are generated.*
 
-*Message* 
+#### [Field rules](https://developers.google.com/protocol-buffers/docs/proto#specifying-field-rules)
+
+`optional` field will generate `option` type in OCaml, while `repeated` field will generate OCaml `list`.
+
+
+##### [Message](https://developers.google.com/protocol-buffers/docs/proto#simple) 
 
 Message are encoded as OCaml `records` with all fields mutable. 
 
