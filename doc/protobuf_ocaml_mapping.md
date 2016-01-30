@@ -70,8 +70,8 @@ type int_or_string =
 ##### File name 
 
 `ocaml-protoc` generate one OCaml file (module) for each protobuf file following a similar convention as protoc:
-* <file name>_pb.mli 
-* <file name>_pb.ml 
+* &lt;file name&gt;_pb.mli 
+* &lt;file name&gt;_pb.ml 
 
 ##### [Package](https://developers.google.com/protocol-buffers/docs/proto#packages) 
 
