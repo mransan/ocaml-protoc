@@ -4,115 +4,121 @@ OCB = 		ocamlbuild $(OCB_FLAGS)
 .PHONY: clean default
 
 default:
-	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|install.byte]`)
+	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)
 	
 clean:
-			$(OCB) -clean
-			rm -f *.data
-			rm -f src/integration-tests/*.tsk  
-			rm -f src/integration-tests/*.pb.cc
-			rm -f src/integration-tests/*.pb.h
-			rm -f src/integration-tests/*_pb.ml
-			rm -f src/integration-tests/*_pb.mli
-			rm -f src/google_unittest/*_pb.ml
-			rm -f src/google_unittest/*_pb.mli
-			rm -f src/examples/*_pb.ml
-			rm -f src/examples/*_pb.mli
+	$(OCB) -clean
+	rm -f *.data
+	rm -f src/integration-tests/*.tsk  
+	rm -f src/integration-tests/*.pb.cc
+	rm -f src/integration-tests/*.pb.h
+	rm -f src/integration-tests/*_pb.ml
+	rm -f src/integration-tests/*_pb.mli
+	rm -f src/google_unittest/*_pb.ml
+	rm -f src/google_unittest/*_pb.mli
+	rm -f src/examples/*_pb.ml
+	rm -f src/examples/*_pb.mli
+
+###################
+# ---- BUILD ---- # 
+###################
 
 # ocaml-protoc runtime library (native build)
 lib.native:
-			$(OCB) pbrt.cmxa
-			$(OCB) pbrt.cmxs
+	$(OCB) pbrt.cmxa
+	$(OCB) pbrt.cmxs
 
 # ocaml-protoc runtime library (byte code build)
 lib.byte:
-			$(OCB) pbrt.cma
+	$(OCB) pbrt.cma
 
 # ocaml-protoc native executable 
 bin.native: 
-			$(OCB) ocaml-protoc.native
+	$(OCB) ocaml-protoc.native
 
 # ocaml-protoc byte executable
 bin.byte:
-			$(OCB) ocaml-protoc.byte
+	$(OCB) ocaml-protoc.byte
 
-PREFIX_BIN=$(PREFIX)/bin
-PREFIX_LIB=$(PREFIX)/lib
-PREFIX_INC=$(PREFIX)/include/ocaml-protoc
+####################
+# ---- INSTALL---- # 
+####################
 
-# -- Install -- 
-
-.PHONY : check_prefix uninstall install install.byte install.native 
+.PHONY : check_prefix check_install uninstall install lib-install bin-install lib-uninstall bin-uninstall
 
 check_prefix:
 ifndef PREFIX
 	$(error PREFIX variable undefined... required for install)
 endif
-	mkdir -p $(PREFIX_BIN)
-	mkdir -p $(PREFIX_LIB)
-	mkdir -p $(PREFIX_INC)
+ifndef BINDIR
+    BINDIR = $(PREFIX)/bin
+endif
+export BINDIR
 
-install.byte: check_prefix lib.byte bin.byte 
-	cp ./ocaml-protoc.byte $(PREFIX_BIN)
-	cp _build/src/pbrt/pbrt.cma  $(PREFIX_LIB)  
-	cp _build/src/pbrt/pbrt.cmi  $(PREFIX_LIB)
-	cp _build/src/pbrt/pbrt.cmt  $(PREFIX_LIB)
-	cp _build/src/pbrt/pbrt.cmti $(PREFIX_LIB)
-	cp _build/src/pbrt/pbrt.mli  $(PREFIX_LIB) 
-	cp lib/ocamloptions.proto $(PREFIX_INC) 
-	ln -s $(PREFIX_BIN)/ocaml-protoc.byte $(PREFIX_BIN)/ocaml-protoc
+check_install: check_prefix 
+	@if [ ! -d $(BINDIR) ]; then \
+        echo "$(BINDIR) directory does not exist... create it first"; exit 1; \
+    fi;
 
-install.native: check_prefix lib.byte lib.native bin.native
-	cp ./ocaml-protoc.native $(PREFIX_BIN)
-	cp _build/src/pbrt/pbrt.cma  $(PREFIX_LIB)  
-	cp _build/src/pbrt/pbrt.a $(PREFIX_LIB)  
-	cp _build/src/pbrt/pbrt.cmxa $(PREFIX_LIB)  
-	cp _build/src/pbrt/pbrt.cmxs $(PREFIX_LIB)  
-	cp _build/src/pbrt/pbrt.cmi  $(PREFIX_LIB)
-	cp _build/src/pbrt/pbrt.cmt  $(PREFIX_LIB)
-	cp _build/src/pbrt/pbrt.cmti $(PREFIX_LIB)
-	cp _build/src/pbrt/pbrt.mli  $(PREFIX_LIB) 
-	cp src/lib/ocamloptions.proto $(PREFIX_INC) 
-	ln -s $(PREFIX_BIN)/ocaml-protoc.native $(PREFIX_BIN)/ocaml-protoc
+LIB_BUILD       =_build/src/pbrt
+LIB_INSTALL     = META $(LIB_BUILD)/pbrt.cmi $(LIB_BUILD)/pbrt.cma src/include/ocaml-protoc/ocamloptions.proto 
+LIB_INSTALL_OPT = $(LIB_BUILD)/pbrt.cmxa $(LIB_BUILD)/pbrt.a
 
-install: install.native
+lib.install: lib.byte lib.native
+	ocamlfind install ocaml-protoc $(LIB_INSTALL) $(LIB_INSTALL_OPT)
+
+lib.uninstall:
+	ocamlfind remove ocaml-protoc
+
+ifeq "$(shell ocamlc -config |grep os_type)" "os_type: Win32"
+	@EXE=.exe
+else
+	@EXE=
+endif
+
+bin.install: check_install bin.native
+	@mv ocaml-protoc.native ocaml-protoc$(EXE) 
+	install -m 0755 ocaml-protoc$(EXE) $(BINDIR)
+
+bin.uninstall: check_install
+	rm -f $(BINDIR)/ocaml-protoc$(EXE)
+
+install: check_install lib.install bin.install
+
+uninstall: lib.uninstall bin.uninstall
 	
-uninstall:
-	rm -f $(PREFIX_BIN)/ocaml-protoc
-	rm -f $(PREFIX_BIN)/ocaml-protoc.byte
-	rm -f $(PREFIX_BIN)/ocaml-protoc.native
-	rm -f $(PREFIX_LIB)/pbrt.*
-
+###################
 # ---- TESTS ---- # 
+###################
 
 .PHONY: unit-tests
 
 # unit test of the ocaml-protoc internals  
 unit-tests: 		
-			$(OCB) ./src/unit-tests/parse_field_options.native 
-			$(OCB) ./src/unit-tests/parse_file_options.native 
-			$(OCB) ./src/unit-tests/parse_fields.native 
-			$(OCB) ./src/unit-tests/parse_enum.native
-			$(OCB) ./src/unit-tests/parse_message.native 
-			$(OCB) ./src/unit-tests/parse_import.native 
-			$(OCB) ./src/unit-tests/pbtt_compile_p1.native 
-			$(OCB) ./src/unit-tests/pbtt_compile_p2.native 
-			$(OCB) ./src/unit-tests/backend_ocaml_test.native
-			$(OCB) ./src/unit-tests/ocaml_codegen_test.native
-			$(OCB) ./src/unit-tests/graph_test.native
-			./parse_field_options.native
-			./parse_file_options.native
-			./parse_fields.native
-			./parse_enum.native
-			./parse_message.native
-			./parse_import.native
-			./pbtt_compile_p1.native
-			./pbtt_compile_p2.native
-			./backend_ocaml_test.native
-			./ocaml_codegen_test.native
-			./graph_test.native
+	$(OCB) ./src/unit-tests/parse_field_options.native 
+	$(OCB) ./src/unit-tests/parse_file_options.native 
+	$(OCB) ./src/unit-tests/parse_fields.native 
+	$(OCB) ./src/unit-tests/parse_enum.native
+	$(OCB) ./src/unit-tests/parse_message.native 
+	$(OCB) ./src/unit-tests/parse_import.native 
+	$(OCB) ./src/unit-tests/pbtt_compile_p1.native 
+	$(OCB) ./src/unit-tests/pbtt_compile_p2.native 
+	$(OCB) ./src/unit-tests/backend_ocaml_test.native
+	$(OCB) ./src/unit-tests/ocaml_codegen_test.native
+	$(OCB) ./src/unit-tests/graph_test.native
+	./parse_field_options.native
+	./parse_file_options.native
+	./parse_fields.native
+	./parse_enum.native
+	./parse_message.native
+	./parse_import.native
+	./pbtt_compile_p1.native
+	./pbtt_compile_p2.native
+	./backend_ocaml_test.native
+	./ocaml_codegen_test.native
+	./graph_test.native
 			
-# integration tests with Google protoc (C++ target) to ensure that 
+# Integration tests with Google protoc (C++ target) to ensure that 
 # the generated OCaml code can encode/decode message compatible with Google 
 # implementation
 
