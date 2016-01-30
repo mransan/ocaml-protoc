@@ -11,7 +11,7 @@ This page describes how the mapping between protobuf type system and OCaml is do
 * [Package](#package) 
 * [Extensions](#extensions)
 * [Nested Types](#nested-types)
-* [Maps Group Services](#map-group-services)
+* [Maps Groups Services](#maps-groups-services)
  
 ##### [Basic Types](https://developers.google.com/protocol-buffers/docs/proto#scalar)
 
