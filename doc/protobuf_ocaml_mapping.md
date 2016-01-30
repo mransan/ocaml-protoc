@@ -8,6 +8,7 @@ This page describes how the mapping between protobuf type system and OCaml is do
 * [Message](#message)
 * [File name](#file-name) 
 * [Package](#package) 
+* [Extensions](#extensions)
  
 ##### [Basic Types](https://developers.google.com/protocol-buffers/docs/proto#scalar)
 
@@ -76,3 +77,7 @@ type int_or_string =
 ##### [Package](https://developers.google.com/protocol-buffers/docs/proto#packages) 
 
 While `ocaml-protoc` honors the package [compilation rules](https://developers.google.com/protocol-buffers/docs/proto#packages-and-name-resolution) it does not use the package name for the generated OCaml code. Therefore any package semantic or convention is lost in the OCaml code.  
+
+##### [Extensions](https://developers.google.com/protocol-buffers/docs/proto#extensions)
+
+Extensions are parsed by `ocaml-protoc` however they are **ignored**. The main reason is that I have not reached a conclusion as to how they should be represented.
