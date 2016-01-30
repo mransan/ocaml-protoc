@@ -152,3 +152,9 @@ You can now run the example
 ```Bash
 ./example01
 ```
+### Protobuf <-> OCaml mapping
+see [here](doc/protobuf_ocaml_mapping.md).
+
+### Compiler Internals
+
+see [here](doc/compiler_internals.md)
