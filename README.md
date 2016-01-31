@@ -103,28 +103,23 @@ let () =
 
 `ocaml-protoc` solely depends on the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
 
-**Install from source**
+**Install from source with sole dependency from the compiler**
 
 Assuming you want to install `ocaml-protoc` in `tmp` directory inside source directory simply do:
 
 ```bash
 export PREFIX=`pwd`/tmp
-make install
+make -f Makefile.no_dep install
 ```
 
 You should now see the following:
 ```bash
-tmp//bin/ocaml-protoc                           #symbolic link to the native executable
-tmp//bin/ocaml-protoc.native     
-tmp//include/ocaml-protoc/ocamloptions.proto    #protobuf extensions for OCaml code 
-tmp//lib/pbrt.a
-tmp//lib/pbrt.cma
-tmp//lib/pbrt.cmi
-tmp//lib/pbrt.cmt
-tmp//lib/pbrt.cmti
-tmp//lib/pbrt.cmxa
-tmp//lib/pbrt.cmxs
-tmp//lib/pbrt.mli
+tmp/bin/ocaml-protoc                           #native executable
+tmp/include/ocaml-protoc/ocamloptions.proto    #protobuf extensions for OCaml code 
+tmp/lib/pbrt.a
+tmp/lib/pbrt.cma
+tmp/lib/pbrt.cmi
+tmp/lib/pbrt.cmxa
 ```
 
 *Note that if you only want the byte code installation use `make install.byte`*

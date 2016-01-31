@@ -5,6 +5,7 @@ This page describes how the mapping between protobuf type system and OCaml is do
 * [Basic Types](#basic-types)
 * [Oneof fields](#oneof-fields)
 * [Field rules](#field-rules)
+* [Default values](#default-values)
 * [Message](#message)
 * [Enumerations](#enumerations)
 * [File name](#file-name) 
@@ -46,6 +47,13 @@ functions are generated.*
 
 `optional` field will generate `option` type in OCaml, while `repeated` field will generate OCaml `list`.
 
+##### [Default values](https://developers.google.com/protocol-buffers/docs/proto#optional)
+
+`ocaml-protoc` supports the majority of the default values that can be specified in a `.proto` file:
+* double/float: Decimal notation (ie 12.345) is supported while scientific notation [is not](https://github.com/mransan/ocaml-protoc/issues/41) (ie 2E8 or -8e2). `nan` and `inf` [are not supported](https://github.com/mransan/ocaml-protoc/issues/45).  
+* int types: Decimal notation (ie 123) is supported while [hexadecimal is not](https://github.com/mransan/ocaml-protoc/issues/42) (ie 0xFF) 
+* string: default ASCII strings are supported but not [escaped byte notation](https://github.com/mransan/ocaml-protoc/issues/43) (ie \001\002)
+* bytes: [not supported](https://github.com/mransan/ocaml-protoc/issues/44) 
 
 ##### [Message](https://developers.google.com/protocol-buffers/docs/proto#simple) 
 

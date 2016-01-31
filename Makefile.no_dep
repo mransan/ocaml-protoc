@@ -1,0 +1,55 @@
+.PHONY: clean check_prefix copy_file_for_lib copy_file_for_bin lib bin.native install
+
+check_prefix:
+ifndef PREFIX
+	$(error PREFIX variable undefined... required for install)
+endif
+
+TMP_DIR=__tmp__
+
+.PHONY: copy
+
+ALL_BIN_FILES=`ls src/compilerlib/*.ml*`
+ALL_BIN_FILES+=src/ocaml-protoc/ocaml-protoc.ml
+
+copy_file_for_bin:
+	mkdir -p $(TMP_DIR)
+	@for file in $(ALL_BIN_FILES) ; do \
+	   cp $$file $(TMP_DIR); \
+    done
+
+bin.native: check_prefix copy_file_for_bin
+	cd $(TMP_DIR) && \
+		ocamllex lexer.mll && \
+	    ocamlyacc parser.mly && \
+		ocamlopt `ocamldep -sort *.ml*` -o ocaml-protoc
+	mkdir -p $(PREFIX)/bin
+	cp $(TMP_DIR)/ocaml-protoc $(PREFIX)/bin
+	rm -rf $(TMP_DIR)
+
+ALL_LIB_FILES=`ls src/runtime/*.ml*`
+
+copy_file_for_lib:
+	mkdir -p $(TMP_DIR)
+	@for file in $(ALL_LIB_FILES) ; do \
+	   cp $$file $(TMP_DIR); \
+    done
+
+lib: check_prefix copy_file_for_lib
+	cd $(TMP_DIR) && \
+		ocamlopt `ocamldep -sort *.ml*` -a -o pbrt.cmxa && \
+		ocamlc `ocamldep -sort *.ml*` -a -o pbrt.cma 
+	mkdir -p $(PREFIX)/lib
+	cp $(TMP_DIR)/pbrt.cmxa $(PREFIX)/lib
+	cp $(TMP_DIR)/pbrt.cma $(PREFIX)/lib
+	cp $(TMP_DIR)/pbrt.a $(PREFIX)/lib
+	cp $(TMP_DIR)/pbrt.cmi $(PREFIX)/lib
+	mkdir -p $(PREFIX)/include/ocaml-protoc/
+	cp src/include/ocaml-protoc/ocamloptions.proto $(PREFIX)/include/ocaml-protoc
+	rm -rf $(TMP_DIR)
+
+install: lib bin.native
+
+clean: check_prefix
+	rm $(PREFIX)/bin/ocaml-protoc
+	rm $(PREFIX)/lib/pbrt.*

@@ -1,4 +1,4 @@
-OCB_FLAGS = -I src/lib -I src/pbrt -I src/ocaml-protoc
+OCB_FLAGS = -I src/compilerlib -I src/runtime -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
 .PHONY: clean default
@@ -60,7 +60,7 @@ check_install: check_prefix
         echo "$(BINDIR) directory does not exist... create it first"; exit 1; \
     fi;
 
-LIB_BUILD       =_build/src/pbrt
+LIB_BUILD       =_build/src/runtime
 LIB_INSTALL     = META $(LIB_BUILD)/pbrt.cmi $(LIB_BUILD)/pbrt.cma src/include/ocaml-protoc/ocamloptions.proto 
 LIB_INSTALL_OPT = $(LIB_BUILD)/pbrt.cmxa $(LIB_BUILD)/pbrt.a
 
