@@ -103,7 +103,7 @@ let () =
 
 `ocaml-protoc` solely depends on the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
 
-**Install from source with sole dependency from the compiler**
+**Install from source with sole dependency from the compiler (All platforms)**
 
 Assuming you want to install `ocaml-protoc` in `tmp` directory inside source directory simply do:
 
@@ -121,8 +121,12 @@ tmp/lib/pbrt.cma
 tmp/lib/pbrt.cmi
 tmp/lib/pbrt.cmxa
 ```
+**Install from source with [ocamlfind](http://projects.camlcity.org/projects/findlib.html)**
 
-*Note that if you only want the byte code installation use `make install.byte`*
+```bash
+export PREFIX=`pwd`/tmp
+make install
+```
 
 **Intall from OPAM**
 
@@ -130,11 +134,11 @@ Installation from OPAM will be provided soon.
 
 **Build your program** 
 
-Here are the steps to build the example above where the source are in `src/examples/`:
+Here are the steps to build the example above where the source are in `src/examples/`. We now assume that `$PREFIX/bin` is in your path.
 
 ```Bash
 # Generate the OCaml protobuf module 
-../../tmp/bin/ocaml-protoc -ml_out ./  example01.proto
+ocaml-protoc -ml_out ./ example01.proto
 
 # Compile the example including the ocaml protobuf runtime (pbrt.cmxa)
 ocamlopt.opt \
@@ -143,6 +147,14 @@ ocamlopt.opt \
   -o example01 \
   example01_pb.mli example01_pb.ml example01.ml
 ```
+
+Alternatively if you are using `findlib`:
+```Bash
+ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
+  -o example01 \
+  example01_pb.mli example01_pb.ml example01.ml
+```
+
 You can now run the example
 ```Bash
 ./example01
