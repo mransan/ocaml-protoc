@@ -7,6 +7,7 @@ A [protobuf](https://developers.google.com/protocol-buffers/) compiler for OCaml
 * [Build/Install](#build-install)
 * [Protobuf <-> OCaml mapping](doc/protobuf_ocaml_mapping.md)
 * [Compiler Internals](doc/compiler_internals.md)
+* [Protobuf extensions](doc/ocaml_extensions.md)
 
 
 ### Introduction 
@@ -165,3 +166,7 @@ see [here](doc/protobuf_ocaml_mapping.md).
 ### Compiler Internals
 
 see [here](doc/compiler_internals.md)
+
+### Protobuf Extensions
+ 
+see [here](doc/ocaml_extensions.md)
