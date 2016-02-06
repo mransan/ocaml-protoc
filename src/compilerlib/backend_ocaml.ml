@@ -274,10 +274,12 @@ let compile_message
   | _ -> 
     let variants, fields = List.fold_left (fun (variants, fields) -> function
       | Pbtt.Message_field f -> (
-        let type_qualifier = match Pbtt_util.field_label f with 
-          | `Optional -> OCaml_types.Option 
-          | `Required -> OCaml_types.No_qualifier
-          | `Repeated -> OCaml_types.List
+        let ocaml_container = Pbtt_util.field_option f "ocaml_container" in 
+        let type_qualifier = match Pbtt_util.field_label f, ocaml_container with 
+          | `Optional , _    -> OCaml_types.Option 
+          | `Required , _    -> OCaml_types.No_qualifier
+          | `Repeated , Some (Pbpt.Constant_litteral "repeated_field") -> OCaml_types.Repeated_field 
+          | `Repeated , _    -> OCaml_types.List
         in 
         (variants, (compile_field all_types (fun x -> OCaml_types.Regular_field x) type_qualifier file_name f)::fields)
       )

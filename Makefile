@@ -106,6 +106,7 @@ unit-tests:
 	$(OCB) ./src/unit-tests/backend_ocaml_test.native
 	$(OCB) ./src/unit-tests/ocaml_codegen_test.native
 	$(OCB) ./src/unit-tests/graph_test.native
+	$(OCB) ./src/unit-tests/pbrt_array.native
 	./parse_field_options.native
 	./parse_file_options.native
 	./parse_fields.native
@@ -117,6 +118,7 @@ unit-tests:
 	./backend_ocaml_test.native
 	./ocaml_codegen_test.native
 	./graph_test.native
+	./pbrt_array.native
 			
 # Integration tests with Google protoc (C++ target) to ensure that 
 # the generated OCaml code can encode/decode message compatible with Google 
@@ -132,8 +134,8 @@ export LD_LIBRARY_PATH=../../install/build/lib
 
 ML_PROTOC=./ocaml-protoc.byte
 
-%_cpp.tsk: %_cpp.cpp %.pb.cc 
-	g++ -I ./ -I ./src/integration-tests/  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
+%_cpp.tsk: %_cpp.cpp %.pb.cc src/include/ocaml-protoc/ocamloptions.pb.cc
+	g++ -I ./ -I ./src/integration-tests/  -I src/include/ocaml-protoc -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
 
 src/integration-tests/test10_cpp.tsk: \
 	src/integration-tests/test10_cpp.cpp \
@@ -144,10 +146,10 @@ src/integration-tests/test10_cpp.tsk: \
 .SECONDARY: 
 
 %.pb.cc: %.proto
-	$(PROTOC) --cpp_out src/integration-tests/ -I src/integration-tests/ $<
+	$(PROTOC) --cpp_out src/integration-tests/ -I $(PB_HINC) -I src/include/ocaml-protoc/ -I src/integration-tests/ $<
 
 %_pb.ml %_pb.mli : %.proto bin.byte bin.native
-	$(ML_PROTOC) -I src/integration-tests/ -ml_out ./src/integration-tests/ $<
+	$(ML_PROTOC) -I $(PB_HINC) -I src/include/ocaml-protoc/ -I src/integration-tests/ -ml_out ./src/integration-tests/ $<
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -tag debug -I src/integration-tests -pkg unix $@ 
@@ -193,5 +195,5 @@ example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte b
 all-examples: example01.native example02.native
 
 it: bin.native
-			$(OCB) ./src/unit-tests/format_play_ground.native
-			./format_play_ground.native
+			$(OCB) ./src/unit-tests/pbrt_array.native
+			time ./pbrt_array.native
