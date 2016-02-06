@@ -81,7 +81,9 @@ let gen_type_record ?mutable_ ?and_ {T.record_name; fields } =
     | None    -> (fun _ -> "") 
     | Some () -> (function 
       | T.Repeated_field -> "" 
-      | _              -> "mutable "
+        (* Pbrt.Repeated_field.t is already a mutable data type. 
+         *)
+      | _                -> "mutable "
     ) 
   in
   let sc = F.empty_scope () in 

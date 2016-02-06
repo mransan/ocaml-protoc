@@ -1,5 +1,8 @@
 module T  = Test15_pb
 
+(** [fill_0_to_n n] create and fill a Pbrt.Repeated_field 
+    with int32 values from [0; n].
+ *)
 let fill_0_to_n n = 
   let n = n + 1 in 
   let l = Pbrt.Repeated_field.make 0l in 

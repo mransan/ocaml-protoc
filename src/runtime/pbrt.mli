@@ -225,11 +225,6 @@ module Encoder : sig
   (** [float_as_bits64 v e] writes eight bytes of [v] to [e]. *)
   val float_as_bits64 : float -> t -> unit
 
-  (** [packed l f e] encodes each element of [l] with packed encoding 
-      using [f] for eahc element
-   *) 
-  val packed : 'a list -> ('a -> t -> unit) -> t -> unit 
-
   (** [bytes b e] writes a varint indicating length of [b] and then
       [b] to [e]. *)
   val bytes     : bytes -> t -> unit

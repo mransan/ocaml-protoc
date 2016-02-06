@@ -409,13 +409,6 @@ module Encoder = struct
     smallint (Buffer.length e') e;
     Buffer.add_buffer e e'
   
-  let packed l f e = 
-    nested (fun e -> 
-      List.iter (fun i -> 
-        f i e
-      ) l 
-    ) e 
-
   let empty_nested e  = 
     smallint 0 e 
 
