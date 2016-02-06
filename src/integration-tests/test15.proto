@@ -1,0 +1,10 @@
+import "ocamloptions.proto";
+
+message m1 {
+    required int32 f = 1; 
+    repeated int32 l = 2 [(ocaml_container) = repeated_field, packed=true]; 
+}
+
+message m2 {
+    repeated m1 m1_l = 1; 
+}

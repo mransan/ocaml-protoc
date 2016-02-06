@@ -106,6 +106,11 @@ module Decoder : sig
       encoding.
    *)
   val packed : (t -> 'a) -> t -> 'a list
+  
+  (** [packed f decoder] returns the list of element to be decoded in a packed
+      encoding.
+   *)
+  val packed_fold : ('a -> t -> 'a) -> 'a -> t -> 'a 
 
   (** [bytes d] reads a varint indicating length and then that much
       bytes from [d].
@@ -256,3 +261,73 @@ module Encoder : sig
       [Failure (Overflow fld)]. *)
   val int32_of_int64  : string -> int64 -> int32
 end
+
+module Repeated_field : sig 
+
+  type 'a t 
+  (** optimized data structure for fast inserts so that decoding 
+      can be efficient
+
+      Type can be constructed at no cost from an existing array. 
+    *)
+
+  val make : 'a -> 'a t 
+  (** [make v] create an initial repeated field container [v] is 
+      not used but needed to initialize the internal array 
+      data structure. 
+
+      This design flow is intentional to keep optimal 
+      performance.
+
+      Therefore [lengh (make 1)] will return [0]. 
+   *) 
+  
+  val of_array_no_copy : 'a array -> 'a t 
+  (** [of_array_no_copy a] initialized a new repeated field 
+      container with [a].
+
+      [a] is not copied into [a] but only referenced so any later
+      modification to any [a] element will affected [a t] container. 
+    *)
+
+  val length : 'a t -> int 
+  (** [length c] returns the number of insterted element in [c]. 
+    *)
+
+  val add  : 'a -> 'a t -> unit 
+  (** [add x c] appends [a] to container [c] 
+      
+      This operation is not constant time since it might trigger 
+      an alocation of an array. However it is optimized for the 
+      total insert time of element one by one.  
+   *)
+
+  val to_array : 'a t -> 'a array
+  (** [to_array c] convert the repeated field container to an 
+      array. 
+   *)
+  
+  val to_list : 'a t -> 'a list 
+  (** [to_list c] convert the repeated field container to an 
+      list. 
+   *)
+
+  val iter : ('a -> unit) -> 'a t -> unit
+  (** [iter f c] applies [f] to all element in [c] *)
+
+  val iteri : (int -> 'a -> unit) -> 'a t -> unit
+  (** [iteri f c] applies [f] to all element in [c] *) 
+
+  val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t-> 'b
+  (** [fold_left f e0 c] accumulates [e0] through each elements *)
+
+  val map_to_array : ('a -> 'b) -> 'a t -> 'b array 
+  (** [map_to_array f c] map all [c] element to an array containing [f e_i] 
+      element. 
+   *)
+  
+  val map_to_list : ('a -> 'b) -> 'a t -> 'b list
+  (** [map_to_list f c] map all [c] element to a list containing [f e_i] 
+      element. 
+   *)
+end 

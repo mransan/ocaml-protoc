@@ -252,6 +252,15 @@ module Decoder = struct
     in 
     loop []
   
+  let packed_fold f e0 d =
+    let ({limit;_ } as d') = nested d in 
+    let rec loop acc = 
+      if d'.offset = limit  
+      then acc 
+      else loop (f acc d')
+    in 
+    loop e0 
+  
   let key d =
     if d.offset = d.limit
     then None
@@ -432,3 +441,148 @@ module Encoder = struct
     );
     Int32.of_int v
 end
+
+module Repeated_field = struct 
+
+  (** [t] is a container optimized for fast repeated inserts. 
+      
+      It is made of a list of growing size array [l] as well as 
+      a current array [a] in which inserts are performed until 
+      [a] is full and appended to [l]. 
+
+      The main growing logic is implemented in the [add] functions. 
+    *) 
+  type 'a t = {
+    mutable s : int;           (* total size (allocated) of the partial array [a] *) 
+    mutable i : int;           (* current number of inserted element in [a] *) 
+    mutable a : 'a array;      (* partial array *)  
+    mutable l : 'a array list; (* previously filled array [List.hd l] is the last filled array *)
+  }
+
+  let make v = {
+    s = 16; 
+    i = 0; 
+    a = Array.make 16 v; 
+    l = []; 
+  }
+
+  let of_array_no_copy a = {
+    (* We intentionally don't put [a] argument in [l]
+       directly since it would require the allocation of a new 
+       array and an initial value. Since [Array.length a] could be [0] 
+       we would not be able to get such a value from the [a] argument. 
+
+       Hence the transfer of [a] to [l] will be done in the subsequent
+       [add v t] call in which [v] argument is used to initialize the new array.
+     *)
+    s = Array.length a; 
+    i = Array.length a; 
+    a = a; 
+    l = [];
+  }
+  
+  let add v ({s; i; a; l} as tmp) = 
+    match i with
+    | i when i = s -> (
+      (* [1.3] is an emperical growth factor found to be 
+         a good balance for allocation of a new 
+         array. 
+       *)
+      tmp.s <- int_of_float (float_of_int s *.  1.3);
+      tmp.i <- 1;
+      tmp.l <- a :: l;
+      tmp.a <- Array.make tmp.s v;
+    )
+    | i -> (
+      Array.unsafe_set a i v; 
+      tmp.i  <- i + 1; 
+    )
+  
+  let to_array {s; i; a; l} = 
+    let l = match i with 
+      | 0 -> l 
+      | i when i = s -> a :: l  
+      | i -> (Array.sub a 0 i) :: l 
+    in 
+    Array.concat (List.rev l) 
+
+  (** [list_rev_iter f l] iterate over the list in reverse order *)
+  let rec list_rev_iter f = function 
+    | [] -> () 
+    | hd::tl -> (
+      list_rev_iter f tl; 
+      f hd
+    )
+
+  let iter f {s; i; a; l} = 
+    list_rev_iter (fun a -> 
+      let len = Array.length a - 1 in 
+      for j = 0 to len do
+        f (Array.unsafe_get a j)
+      done
+    ) l; 
+    let len = i - 1 in 
+    for j = 0 to len do
+      f (Array.unsafe_get a j)
+    done
+  
+  let iteri f {s; i; a; l} = 
+    let counter = ref 0 in 
+    list_rev_iter (fun a -> 
+      let len = Array.length a - 1 in 
+      for j = 0 to len do
+        f !counter (Array.unsafe_get a j);
+        incr counter; 
+      done
+    ) l; 
+    let len = i - 1 in 
+    for j = 0 to len do
+      f !counter (Array.unsafe_get a j);
+      incr counter; 
+    done
+                      
+  let fold_left f e0 t =   
+    let acc = ref e0 in
+    iter (fun e ->
+       acc := f !acc e 
+    ) t;
+    !acc 
+
+  let length {s = _ ; i; a=_; l } : int= 
+    let len = List.fold_left (fun len a -> 
+      len + (Array.length a)
+    ) 0 l in 
+    len + i
+
+  let map_to_array f ({s; i; a; l} as t) = 
+    let len = length t in  
+    let dest = Array.make len (f @@ Array.unsafe_get t.a 0) in 
+    let index = ref 0 in 
+
+    iter (fun e -> 
+      Array.unsafe_set dest !index (f e); 
+      incr index
+    ) t;
+    dest 
+  
+  let map_to_list f ({s = _ ; i; a; l}) = 
+
+    let rec a_to_list a i res =
+      if i < 0 
+      then res 
+      else a_to_list a (i - 1) (f (Array.unsafe_get a i) :: res)
+    in
+    
+    (* start with last (partial) array and its last index *)
+    let res = a_to_list a (i - 1) [] in 
+
+    (* go over the filled array *)
+    List.fold_left (fun acc a -> 
+      a_to_list a (Array.length a - 1) acc  
+    ) res l  
+
+  external identity : 'a -> 'a = "%identity" 
+  
+  let to_list t = map_to_list identity t 
+      
+end (* Array *) 

@@ -47,6 +47,7 @@ type type_qualifier =
   | No_qualifier
   | Option
   | List 
+  | Repeated_field
 
 (** the field is parametrized by the encoding_type with could either 
     [field_encoding] or [record_encoding_type] depending 

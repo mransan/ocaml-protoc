@@ -122,6 +122,8 @@ let () =
       Some s
     | Compilation_error (Invalid_message_declaration s) -> 
       Some (Printf.sprintf "Invalid message declaration : %s" s)
+    | Compilation_error (Invalid_packed_option field_name) ->
+      Some (Printf.sprintf "Invalid packed option for field: %s" field_name)
     | _         -> None
     )
 
