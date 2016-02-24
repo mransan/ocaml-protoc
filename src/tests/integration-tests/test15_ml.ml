@@ -5,11 +5,11 @@ module T  = Test15_pb
  *)
 let fill_0_to_n n = 
   let n = n + 1 in 
-  let l = Pbrt.Repeated_field.make 0l in 
+  let l = Pbrt.Repeated_field.make 0 in 
   let rec loop = function
     | i when i = n -> l 
     | i -> (
-      Pbrt.Repeated_field.add (Int32.of_int i) l;
+      Pbrt.Repeated_field.add i l;
       loop (i + 1) 
     )
   in 

@@ -1,6 +1,11 @@
 OCB_FLAGS = -I src/compilerlib -I src/runtime -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
+UNIT_TESTS_DIR        =src/tests/unit-tests
+INTEGRATION_TESTS_DIR =src/tests/integration-tests
+BENCHMARK_DIR         =src/tests/benchmark
+GOOGLE_UNITTEST_DIR   =src/tests/google_unittest
+
 .PHONY: clean default
 
 default:
@@ -9,13 +14,13 @@ default:
 clean:
 	$(OCB) -clean
 	rm -f *.data
-	rm -f src/integration-tests/*.tsk  
-	rm -f src/integration-tests/*.pb.cc
-	rm -f src/integration-tests/*.pb.h
-	rm -f src/integration-tests/*_pb.ml
-	rm -f src/integration-tests/*_pb.mli
-	rm -f src/google_unittest/*_pb.ml
-	rm -f src/google_unittest/*_pb.mli
+	rm -f $(INTEGRATION_TESTS_DIR)/*.tsk  
+	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.cc
+	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.h
+	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml
+	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.mli
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.ml
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.mli
 	rm -f src/examples/*_pb.ml
 	rm -f src/examples/*_pb.mli
 
@@ -95,18 +100,18 @@ uninstall: lib.uninstall bin.uninstall
 
 # unit test of the ocaml-protoc internals  
 unit-tests: 		
-	$(OCB) ./src/unit-tests/parse_field_options.native 
-	$(OCB) ./src/unit-tests/parse_file_options.native 
-	$(OCB) ./src/unit-tests/parse_fields.native 
-	$(OCB) ./src/unit-tests/parse_enum.native
-	$(OCB) ./src/unit-tests/parse_message.native 
-	$(OCB) ./src/unit-tests/parse_import.native 
-	$(OCB) ./src/unit-tests/pbtt_compile_p1.native 
-	$(OCB) ./src/unit-tests/pbtt_compile_p2.native 
-	$(OCB) ./src/unit-tests/backend_ocaml_test.native
-	$(OCB) ./src/unit-tests/ocaml_codegen_test.native
-	$(OCB) ./src/unit-tests/graph_test.native
-	$(OCB) ./src/unit-tests/pbrt_array.native
+	$(OCB) $(UNIT_TESTS_DIR)/parse_field_options.native 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_file_options.native 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_fields.native 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_enum.native
+	$(OCB) $(UNIT_TESTS_DIR)/parse_message.native 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_import.native 
+	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p1.native 
+	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p2.native 
+	$(OCB) $(UNIT_TESTS_DIR)/backend_ocaml_test.native
+	$(OCB) $(UNIT_TESTS_DIR)/ocaml_codegen_test.native
+	$(OCB) $(UNIT_TESTS_DIR)/graph_test.native
+	$(OCB) $(UNIT_TESTS_DIR)/pbrt_array.native
 	./parse_field_options.native
 	./parse_file_options.native
 	./parse_fields.native
@@ -125,75 +130,82 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_BUILD = ../../install/build
-PB_HINC = $(PB_BUILD)/include/
-PB_LINC = $(PB_BUILD)/lib/
-PROTOC  = $(PB_BUILD)/bin/protoc 
+PB_INSTALL = ../../install/build
+PB_HINC    = $(PB_INSTALL)/include/
+PB_LINC    = $(PB_INSTALL)/lib/
+PROTOC     = $(PB_INSTALL)/bin/protoc 
 
-export LD_LIBRARY_PATH=../../install/build/lib
+export LD_LIBRARY_PATH=$(PB_LINC)
 
-ML_PROTOC=./ocaml-protoc.byte
+OCAMLOPTIONS_HINC=src/include/ocaml-protoc
+ML_PROTOC=./ocaml-protoc.byte -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC)
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc src/include/ocaml-protoc/ocamloptions.pb.cc
-	g++ -I ./ -I ./src/integration-tests/  -I src/include/ocaml-protoc -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
+	g++ -I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
 
-src/integration-tests/test10_cpp.tsk: \
-	src/integration-tests/test10_cpp.cpp \
-	src/integration-tests/test10.pb.cc \
-	src/integration-tests/test09.pb.cc 
-	g++ -I ./ -I ./src/integration-tests/  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
+$(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
+	$(INTEGRATION_TESTS_DIR)/test10_cpp.cpp \
+	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
+	$(INTEGRATION_TESTS_DIR)/test09.pb.cc 
+	g++ -I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
 
 .SECONDARY: 
 
 %.pb.cc: %.proto
-	$(PROTOC) --cpp_out src/integration-tests/ -I $(PB_HINC) -I src/include/ocaml-protoc/ -I src/integration-tests/ $<
+	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I src/include/ocaml-protoc/ -I $(INTEGRATION_TESTS_DIR) $<
 
 %_pb.ml %_pb.mli : %.proto bin.byte bin.native
-	$(ML_PROTOC) -I $(PB_HINC) -I src/include/ocaml-protoc/ -I src/integration-tests/ -ml_out ./src/integration-tests/ $<
+	$(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
-	$(OCB) -tag debug -I src/integration-tests -pkg unix $@ 
+	$(OCB) -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
 
-test%: bin.native bin.byte src/integration-tests/test%_ml.native ./src/integration-tests/test%_cpp.tsk 
-	./src/integration-tests/test$*_cpp.tsk encode
-	time ./_build/src/integration-tests/test$*_ml.native decode
-	./_build/src/integration-tests/test$*_ml.native encode
-	time ./src/integration-tests/test$*_cpp.tsk decode
+test%: bin.native bin.byte $(INTEGRATION_TESTS_DIR)/test%_ml.native $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk 
+	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk encode
+	time ./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native decode
+	./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native encode
+	time $(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk decode
 
 .PHONY: testCompat 
 
-testCompat: ./src/integration-tests/test03_cpp.tsk ./src/integration-tests/test04_ml.native 
-	./src/integration-tests/test03_cpp.tsk encode
-	./_build/src/integration-tests/test04_ml.native decode
-	./_build/src/integration-tests/test04_ml.native encode
-	./src/integration-tests/test03_cpp.tsk decode
+testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/test04_ml.native 
+	$(INTEGRATION_TESTS_DIR)/test03_cpp.tsk encode
+	./_build/$(INTEGRATION_TESTS_DIR)/test04_ml.native decode
+	./_build/$(INTEGRATION_TESTS_DIR)/test04_ml.native encode
+	$(INTEGRATION_TESTS_DIR)/test03_cpp.tsk decode
 
 .PHONY: integration
 
-integration: test01 test02 testCompat test05 test06 test07 test08 test09 test10 test11 test12 test13 test14 
+integration: test01 test02 testCompat test05 test06 test07 test08 test09 test10 test11 test12 test13 test14 test15 
 
 .PHONY: google_unittest
 
 google_unittest: bin.byte
-	$(ML_PROTOC) -I ./src/google_unittest/ -ml_out ./src/google_unittest/ src/google_unittest/unittest_import.proto 
-	$(ML_PROTOC) -I ./src/google_unittest/ -ml_out ./src/google_unittest/ src/google_unittest/unittest.proto 
-	$(OCB) -I src/google_unittest google_unittest.native
+	$(ML_PROTOC) -I $(GOOGLE_UNITTEST_DIR) -ml_out $(GOOGLE_UNITTEST_DIR) $(GOOGLE_UNITTEST_DIR)/unittest_import.proto 
+	$(ML_PROTOC) -I $(GOOGLE_UNITTEST_DIR) -ml_out $(GOOGLE_UNITTEST_DIR) $(GOOGLE_UNITTEST_DIR)/unittest.proto 
+	$(OCB) -I $(GOOGLE_UNITTEST_DIR) google_unittest.native
 	./google_unittest.native
 
 .PHONY: all-tests
 
-all-tests: bin.native bin.byte unit-tests integration google_unittest testCompat 
+all-tests: unit-tests integration google_unittest testCompat 
 
 # -- Examples -- 
 
 .PHONY: all-examples
 
 example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte bin.native 
-	$(ML_PROTOC) -I $(PB_HINC) -I ./src/include -ml_out src/examples/ ./src/examples/example$*.proto 
+	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
 	$(OCB) -I src/examples src/examples/example$*.native
 
 all-examples: example01.native example02.native
 
 it: bin.native
-			$(OCB) ./src/unit-tests/pbrt_array.native
-			time ./pbrt_array.native
+	$(OCB) ./src/unit-tests/pbrt_array.native
+	time ./pbrt_array.native
+
+.PHONY: benchmark_single_ml.native
+
+benchmark_single_ml.native: bin.byte
+	$(ML_PROTOC) -I $(BENCHMARK_DIR) -ml_out $(BENCHMARK_DIR) $(BENCHMARK_DIR)/benchmark.proto
+	$(OCB) -use-ocamlfind -pkg unix -I src/tests/benchmark $@ 
