@@ -1,0 +1,73 @@
+
+import "ocamloptions.proto";
+
+// Utility types
+// -------------
+
+message none {
+}
+
+message test_type {
+    oneof t {
+        int32 encode = 1 [(ocaml_type) = int_t];
+        none  decode = 2;
+    }
+}
+
+// Testing Framework types
+// ----------------------
+
+enum TestId {
+    INT_LIST = 1; 
+    INT_REPEATED = 2;
+    INT_PACKED_REPEATED = 3;
+}
+
+message TestRequest {
+    required test_type type      = 1; 
+    required string    file_name = 2;
+    required TestId    test_id   = 3; 
+}
+
+message TestRequests {
+    repeated TestRequests requests = 1;
+}
+
+message EncodeData {
+    required double creation_time  = 1; 
+    required double encode_time    = 2; 
+    required double to_file_time   = 3;
+}
+
+message DecodeData {
+    required double from_file_time = 1; 
+    required double decode_time    = 2; 
+}
+
+message TestResponse {
+    required int32  difficulty_size = 1 [(ocaml_type) = int_t]; 
+    required TestId test_id         = 3;
+    oneof data {
+        EncodeData encode = 4; 
+        DecodeData decode = 5;
+    }
+}
+
+message TestResponses {
+    repeated TestResponses responses = 1;
+}
+
+// Types to be benchmarked
+// -----------------------
+
+message IntList {
+    repeated int32 int_list = 1 [(ocaml_type) = int_t];
+}
+
+message IntRepeated {
+    repeated int32 int_repeated = 1 [(ocaml_type) = int_t,(ocaml_container) = repeated_field];
+}
+
+message IntPackedRepeated {
+    repeated int32 int_packed_repeated = 1 [packed=true, (ocaml_type) = int_t,(ocaml_container) = repeated_field];
+}

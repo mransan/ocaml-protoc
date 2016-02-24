@@ -1,5 +1,5 @@
 message a {
-    repeated int32 aa = 4 [packed=true];
+    repeated int32 aa = 4 [packed=false];
 }
 
 message b {

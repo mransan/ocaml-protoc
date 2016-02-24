@@ -333,14 +333,17 @@ let gen_decode_sig t =
   ) 
   | {T.spec = T.Const_variant {T.cvariant_name; _ } } -> Some (f cvariant_name)
 
+
+let gen_encode_field_key sc {Enc.field_number; Enc.payload_kind; Enc.packed; _ } = 
+  F.line sc @@ sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
+      field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind packed)
+
 let gen_encode_field sc v_name encoding_type field_type = 
   let {
     Enc.field_number; 
     Enc.payload_kind; 
     Enc.nested; 
     Enc.packed} = encoding_type in 
-  F.line sc @@ sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
-      field_number (constructor_name @@ Enc.string_of_payload_kind payload_kind packed);
   match field_type, packed with 
   | T.User_defined_type t, false -> 
     let f_name = function_name_of_user_defined "encode" t in 
@@ -371,12 +374,14 @@ let gen_encode_record ?and_ {T.record_name; fields } =
         match type_qualifier, packed with 
         | T.No_qualifier, false -> (
           let v_name = sp "v.%s" field_name in 
+          gen_encode_field_key sc encoding_type;
           gen_encode_field sc v_name encoding_type field_type
         )
         | T.Option, false -> (
           F.line sc @@ sp "(match v.%s with " field_name;
           F.line sc @@ sp "| Some x -> (";
           F.scope sc (fun sc ->
+            gen_encode_field_key sc encoding_type;
             gen_encode_field sc "x" encoding_type field_type;
           ); 
           F.line sc ")";
@@ -388,6 +393,7 @@ let gen_encode_record ?and_ {T.record_name; fields } =
         | T.List, false -> (
           F.line sc "List.iter (fun x -> ";
           F.scope sc (fun sc -> 
+            gen_encode_field_key sc encoding_type;
             gen_encode_field sc "x" encoding_type field_type;
           );
           F.line sc @@ sp ") v.%s;" field_name; 
@@ -395,12 +401,14 @@ let gen_encode_record ?and_ {T.record_name; fields } =
         | T.Repeated_field, false -> (
           F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
           F.scope sc (fun sc -> 
+            gen_encode_field_key sc encoding_type;
             gen_encode_field sc "x" encoding_type field_type;
           );
           F.line sc @@ sp ") v.%s;" field_name; 
         )
         | T.List, true -> (
-          F.line sc "Pbrt.Encoder.nested (fun e ->";
+          gen_encode_field_key sc encoding_type;
+          F.line sc "Pbrt.Encoder.nested (fun encoder ->";
           F.scope sc (fun sc -> 
             F.line sc "List.iter (fun x -> ";
             F.scope sc (fun sc -> 
@@ -408,10 +416,11 @@ let gen_encode_record ?and_ {T.record_name; fields } =
             );
             F.line sc @@ sp ") v.%s;" field_name; 
           );
-          F.line sc");";
+          F.line sc") encoder;";
         )
         | T.Repeated_field , true -> (
-          F.line sc "Pbrt.Encoder.nested (fun e ->";
+          gen_encode_field_key sc encoding_type;
+          F.line sc "Pbrt.Encoder.nested (fun encoder ->";
           F.scope sc (fun sc -> 
             F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
             F.scope sc (fun sc -> 
@@ -419,7 +428,7 @@ let gen_encode_record ?and_ {T.record_name; fields } =
             );
             F.line sc @@ sp ") v.%s;" field_name; 
           );
-          F.line sc");";
+          F.line sc") encoder;";
         )
       )
       | T.One_of {T.variant_constructors; T.variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (  
@@ -430,6 +439,7 @@ let gen_encode_record ?and_ {T.record_name; fields } =
           | _ -> F.line sc @@ sp "| %s x -> (" field_name
           );
           F.scope sc (fun sc -> 
+            gen_encode_field_key sc encoding_type;
             gen_encode_field sc "x" encoding_type field_type
           ); 
           F.line sc ")";
@@ -456,6 +466,7 @@ let gen_encode_variant ?and_ variant =
       | _ -> F.line sc @@ sp "| %s x -> (" field_name
       );
       F.scope sc (fun sc -> 
+        gen_encode_field_key sc encoding_type;
         gen_encode_field sc "x" encoding_type field_type
       ); 
       F.line sc ")";

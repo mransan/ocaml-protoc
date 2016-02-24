@@ -194,14 +194,14 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
   let field_type = match encoding_type, ocaml_type with
     | Pbtt.Field_type_double, _ -> OCaml_types.Float
     | Pbtt.Field_type_float, _ ->  OCaml_types.Float
-    | Pbtt.Field_type_int32, Some (Pbpt.Constant_litteral "int") ->  OCaml_types.Int
-    | Pbtt.Field_type_int64, Some (Pbpt.Constant_litteral "int") ->  OCaml_types.Int
-    | Pbtt.Field_type_uint32, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
-    | Pbtt.Field_type_uint64, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
-    | Pbtt.Field_type_sint32, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
-    | Pbtt.Field_type_sint64, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
-    | Pbtt.Field_type_fixed32, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
-    | Pbtt.Field_type_fixed64, Some (Pbpt.Constant_litteral "int") -> OCaml_types.Int
+    | Pbtt.Field_type_int32, Some (Pbpt.Constant_litteral "int_t") ->  OCaml_types.Int
+    | Pbtt.Field_type_int64, Some (Pbpt.Constant_litteral "int_t") ->  OCaml_types.Int
+    | Pbtt.Field_type_uint32, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
+    | Pbtt.Field_type_uint64, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
+    | Pbtt.Field_type_sint32, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
+    | Pbtt.Field_type_sint64, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
+    | Pbtt.Field_type_fixed32, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
+    | Pbtt.Field_type_fixed64, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
     | Pbtt.Field_type_int32, _ ->  OCaml_types.Int32
     | Pbtt.Field_type_int64, _ ->  OCaml_types.Int64
     | Pbtt.Field_type_uint32, _ -> OCaml_types.Int32

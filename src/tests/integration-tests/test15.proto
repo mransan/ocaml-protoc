@@ -2,7 +2,7 @@ import "ocamloptions.proto";
 
 message m1 {
     required int32 f = 1; 
-    repeated int32 l = 2 [(ocaml_container) = repeated_field, packed=true]; 
+    repeated int32 l = 2 [(ocaml_container) = repeated_field, packed=true, (ocaml_type) = int_t]; 
 }
 
 message m2 {
