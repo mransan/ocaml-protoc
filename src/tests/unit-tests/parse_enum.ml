@@ -1,3 +1,5 @@
+module E = Exception 
+
 let parse f s  = 
   f Lexer.lexer (Lexing.from_string s)
 let () = 
@@ -34,6 +36,19 @@ let () =
   assert(ev2 = List.nth e.Pbpt.enum_values 1); 
   ()
 
+let () = 
+  let s =" 
+  enum Test {
+  EV1 = 1
+  EV2 = 2;
+  }
+  " in 
+  match parse Parser.enum_ s with
+  | x -> assert false 
+  | exception E.Compilation_error (E.Missing_semicolon_for_enum_value "EV1") -> ()
+  | exception exn -> 
+    print_endline @@ Printexc.to_string exn; 
+    assert false
 
 let () = 
   print_endline "Parse Enum ... Ok" 

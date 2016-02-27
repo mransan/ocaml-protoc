@@ -119,4 +119,16 @@ let () =
   ()
 
 let () = 
+  let s = "
+  message M {
+    required int32 ival = 1;
+  message M2 {}  message M3 {} message M4 {}
+  "
+  in 
+  match parse Parser.message_ s with 
+  | _ -> assert false 
+  | exception Exception.Compilation_error (Exception.Missing_closing_brace_for_message _ ) -> () 
+  | exception exn -> print_endline @@ Printexc.to_string exn ; assert false 
+
+let () = 
   print_endline "Parse Message ... Ok"

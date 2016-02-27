@@ -37,7 +37,7 @@ let imported_filename include_dirs file_name =
       match found_file, Sys.file_exists try_file_name with 
       | None         , true  -> Some try_file_name 
       | Some previous, true  -> (
-        Printf.printf "Imported file %s found in 2 directories, picking: %s\n"
+        Printf.eprintf "[Warning] Imported file %s found in 2 directories, picking: %s\n"
           file_name previous; 
         found_file
       )
@@ -79,24 +79,30 @@ let parse_args () =
     let caml_basename = caml_file_name_of_proto_file_name basename in  
     Filename.concat !ml_out caml_basename 
   in
+
+  let generated_files = [] in
      
-  Printf.printf "proto: %s -> caml: %s \n" !proto_file_name out_file_name; 
-  let struct_oc = match out_file_name with 
-    | "" -> stdout 
-    | _  -> open_out (out_file_name ^ ".ml") in 
-  let sig_oc = match out_file_name with 
-    | "" -> stdout 
-    | _  -> open_out (out_file_name ^ ".mli") in 
-  (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug)  
+  let struct_oc, generated_files = match out_file_name with 
+    | "" -> stdout, generated_files  
+    | _  -> 
+      let ml_file_name = out_file_name ^ ".ml" in 
+      open_out ml_file_name, ml_file_name :: generated_files 
+  in
+  let sig_oc, generated_files = match out_file_name with 
+    | "" -> stdout, generated_files 
+    | _  -> 
+      let ml_file_name = out_file_name ^ ".mli" in 
+      open_out ml_file_name, ml_file_name :: generated_files 
+  in
+
+  (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug, generated_files)  
 
 
 (* -- main -- *)
 
 let () = 
 
-  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging = parse_args () in 
-
-  Printf.printf "include dirs %s \n" @@ String.concat ", " include_dirs;  
+  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging, generated_files = parse_args () in 
 
   if enable_debugging
   then L.setup_from_out_channel stdout;
@@ -128,7 +134,6 @@ let () =
   ) pbtt_msgs; 
 
   let pbtt_msgs = List.map (Pbtt_util.compile_proto_p2 pbtt_msgs) pbtt_msgs in 
-
 
   (* -- OCaml Backend -- *)
 
@@ -199,4 +204,8 @@ let () =
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_pp_sig t) types_ ;
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_default_sig t) types_ ;
     ]
-  ) (otypes)
+  ) (otypes);
+  List.iter (fun file_name ->
+    Printf.printf "Generated %s\n" file_name; 
+  ); 
+  ()

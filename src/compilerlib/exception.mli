@@ -56,11 +56,11 @@ type unsupported_field_type = {
 
 type error = 
   | Unresolved_type of unresolved_type 
-   (** When the type of a field could not be resolved *) 
+    (** When the type of a field could not be resolved *) 
   | Duplicated_field_number of duplicate_field_number 
-   (** When there are 2 field with either identical number or name *)
+    (** When there are 2 field with either identical number or name *)
   | Invalid_default_value of invalid_default_value 
-   (** When a default value type type does not match the field type *)
+    (** When a default value type type does not match the field type *)
   | Unsupported_field_type of unsupported_field_type 
   | Programatic_error of programmatic_error 
   | Invalid_import_qualifier 
@@ -68,6 +68,9 @@ type error =
   | Import_file_not_found of string 
   | Invalid_message_declaration of string 
   | Invalid_packed_option of string 
+  | Missing_closing_brace_for_message of string
+  | Missing_semicolon_for_enum_value of string
+  | Syntax_error 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -107,3 +110,9 @@ val invalid_message_declaration : string -> 'a
 
 val invalid_packed_option : string -> 'a 
 (** [invalid_packed_option field_name] *)
+
+val missing_closing_brace_for_message : string -> 'a 
+
+val syntax_error : unit -> 'a 
+
+val missing_semicolon_for_enum_value : string -> 'a 

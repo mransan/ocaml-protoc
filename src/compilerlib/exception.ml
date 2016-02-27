@@ -77,6 +77,9 @@ type error =
   | Import_file_not_found of string 
   | Invalid_message_declaration of string 
   | Invalid_packed_option of string 
+  | Missing_closing_brace_for_message of string
+  | Missing_semicolon_for_enum_value of string
+  | Syntax_error 
 
 
 exception Compilation_error of error  
@@ -124,6 +127,12 @@ let () =
       Some (Printf.sprintf "Invalid message declaration : %s" s)
     | Compilation_error (Invalid_packed_option field_name) ->
       Some (Printf.sprintf "Invalid packed option for field: %s" field_name)
+    | Compilation_error (Missing_closing_brace_for_message message) -> 
+      Some (Printf.sprintf "Missing closing brace for message: %s" message)
+    | Compilation_error (Missing_semicolon_for_enum_value enum_value) -> 
+      Some (Printf.sprintf "Missing semicolon for enum value: %s" enum_value)
+    | Compilation_error Syntax_error -> 
+      Some ("ocaml-protoc syntax error")
     | _         -> None
     )
 
@@ -168,3 +177,11 @@ let invalid_message_declaration s =
 
 let invalid_packed_option field_name = 
   raise (Compilation_error (Invalid_packed_option field_name)) 
+
+let missing_closing_brace_for_message message = 
+  raise (Compilation_error (Missing_closing_brace_for_message message))
+
+let missing_semicolon_for_enum_value enum_value = 
+  raise (Compilation_error (Missing_semicolon_for_enum_value enum_value))
+
+let syntax_error () = raise (Compilation_error Syntax_error) 

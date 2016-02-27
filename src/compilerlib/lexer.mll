@@ -34,17 +34,18 @@ let create_hashtable size init =
 
 
 let keywords = create_hashtable 50 [
-  "required", REQUIRED; 
-  "optional", OPTIONAL; 
-  "repeated", REPEATED;
-  "oneof"   , ONE_OF;
-  "enum"    , ENUM;
-  "package" , PACKAGE;
-  "import" , IMPORT;
-  "option" , OPTION;
+  "message"    , MESSAGE; 
+  "required"   , REQUIRED; 
+  "optional"   , OPTIONAL; 
+  "repeated"   , REPEATED;
+  "oneof"      , ONE_OF;
+  "enum"       , ENUM;
+  "package"    , PACKAGE;
+  "import"     , IMPORT;
+  "option"     , OPTION;
   "extensions" , EXTENSIONS;
-  "extend" , EXTEND;
-  "syntax" , SYNTAX;
+  "extend"     , EXTEND;
+  "syntax"     , SYNTAX;
 ]
 
 let resolve_identifier ident = 

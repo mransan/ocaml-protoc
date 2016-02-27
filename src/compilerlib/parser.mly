@@ -153,17 +153,18 @@ package_declaration :
   | PACKAGE IDENT semicolon {$2}  
 
 message : 
-  | IDENT IDENT LBRACE message_body_content_list rbrace { 
-    if $1 <> "message"
-    then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
-    else Pbpt_util.message ~content:$4 $2
+  | MESSAGE IDENT LBRACE message_body_content_list error { 
+    Exception.missing_closing_brace_for_message $2
   } 
-  | IDENT IDENT LBRACE rbrace { 
-    if $1 <> "message"
-    then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
-    else Pbpt_util.message ~content:[]  $2
+  | MESSAGE IDENT LBRACE message_body_content_list rbrace { 
+    Pbpt_util.message ~content:$4 $2
   } 
-
+  | MESSAGE IDENT LBRACE rbrace { 
+    Pbpt_util.message ~content:[]  $2
+  } 
+  | MESSAGE IDENT LBRACE error { 
+    Exception.missing_closing_brace_for_message $2
+  } 
 
 message_body_content_list:
   | message_body_content  { [$1] }
@@ -175,7 +176,6 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
-
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {
@@ -246,6 +246,7 @@ field_name :
   | EXTENSIONS{"extensions"}
   | EXTEND    {"extend"}
   | SYNTAX    {"syntax"}
+  | MESSAGE   {"message"}
 
 label :
   | REQUIRED { `Required }  
@@ -253,7 +254,7 @@ label :
   | OPTIONAL { `Optional }
 
 field_options : 
-    LBRACKET field_option_list RBRACKET { $2 }; 
+  | LBRACKET field_option_list RBRACKET { $2 }; 
   | LBRACKET RBRACKET { [] }; 
 
 field_option_list : 
@@ -263,7 +264,6 @@ field_option_list :
 field_option :
   | IDENT EQUAL constant { ($1, $3) } 
   | LPAREN IDENT RPAREN EQUAL constant { ($2, $5)} 
-
 
 file_option_identifier_item :
   | IDENT                   {$1}
@@ -279,9 +279,10 @@ file_option :
 constant : 
   | INT        { Pbpt.Constant_int $1 }
   | FLOAT      { Pbpt.Constant_float $1 }
-  | IDENT      { match $1 with 
-    | "true"  -> Pbpt.Constant_bool true 
-    | "false" -> Pbpt.Constant_bool false 
+  | IDENT      { 
+    match $1 with 
+    | "true"   -> Pbpt.Constant_bool true 
+    | "false"  -> Pbpt.Constant_bool false 
     | litteral -> Pbpt.Constant_litteral litteral 
   }
   | STRING     { Pbpt.Constant_string $1 }; 
@@ -295,6 +296,7 @@ enum_values:
 
 enum_value : 
   | IDENT EQUAL INT semicolon { Pbpt_util.enum_value ~int_value:$3 $1 } 
+  | IDENT EQUAL INT error     { Exception.missing_semicolon_for_enum_value $1 }
 
 semicolon:
   | SEMICOLON           {()} 
