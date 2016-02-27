@@ -1,10 +1,10 @@
 OCB_FLAGS = -I src/compilerlib -I src/runtime -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
-UNIT_TESTS_DIR        =src/tests/unit-tests
-INTEGRATION_TESTS_DIR =src/tests/integration-tests
-BENCHMARK_DIR         =src/tests/benchmark
-GOOGLE_UNITTEST_DIR   =src/tests/google_unittest
+UNIT_TESTS_DIR        = src/tests/unit-tests
+INTEGRATION_TESTS_DIR = src/tests/integration-tests
+BENCHMARK_DIR         = src/tests/benchmark
+GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
 
 .PHONY: clean default
 
