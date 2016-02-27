@@ -9,7 +9,7 @@ let () =
   ()
 
 let () = 
-  let s ="extend M {optional int32 i = 1;} " in 
+  let s ="extend M {optional int32 i = 1; ; }; " in 
   let ev = parse s in 
   assert("M" = ev.Pbpt.extend_name); 
   begin 

@@ -10,7 +10,7 @@ let () =
     message Inner { 
       required int64 inner_ival = 1;
       required string inner_sval = 2;
-    }
+    } ; // make sure that the ';' is supported.
     
     required Inner inner = 3; 
   }"
@@ -58,13 +58,16 @@ let () =
   ()
 
 let () = 
-  let s =" 
-  message Test {
-  }" in 
-  let proto = parse Parser.proto_ s in 
-  let messages = proto.Pbpt.messages in 
-  assert(1 = List.length messages);
+  let do_test s = 
+    let proto = parse Parser.proto_ s in 
+    let messages = proto.Pbpt.messages in 
+    assert(1 = List.length messages);
+  in
+  do_test " message Test { } ";
+  do_test " message Test { }; ";
+  do_test " message Test { } ; ; ;; ";
   ()
+
 
 let () = 
   let s =" 

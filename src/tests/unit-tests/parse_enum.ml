@@ -11,7 +11,7 @@ let () =
 
 let () = 
   let s =" 
-  BLAH_12_BLAH = -99999;
+  BLAH_12_BLAH = -99999; ;
   " in 
   let ev = parse Parser.enum_value_ s in 
   assert("BLAH_12_BLAH" = ev.Pbpt.enum_value_name);

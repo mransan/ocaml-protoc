@@ -11,7 +11,7 @@ let () =
   assert (fo = parse s)  
 
 let () = 
-  let s  = "option blah = 1; option foo = \"blah\"; " in  
+  let s  = "option blah = 1; ;  option foo = \"blah\"; " in  
   let fo = ("blah", Pbpt.Constant_int 1)::
            ("foo" , Pbpt.Constant_string "blah")::[] in 
   let proto = parse_proto s in 

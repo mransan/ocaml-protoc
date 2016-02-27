@@ -139,30 +139,31 @@ proto_content:
   | extend              proto {Pbpt_util.proto ~extend:$1 ~proto:$2 ()}
 
 syntax:
-  | SYNTAX EQUAL STRING SEMICOLON { $3 }
+  | SYNTAX EQUAL STRING semicolon { $3 }
 
 import:
-  | IMPORT STRING SEMICOLON       { Pbpt_util.import $2} 
-  | IMPORT IDENT STRING SEMICOLON { 
+  | IMPORT STRING semicolon { Pbpt_util.import $2} 
+  | IMPORT IDENT STRING semicolon { 
     if $2 <> "public" 
     then raise @@ Exception.invalid_import_qualifier () 
     else Pbpt_util.import ~public:() $3
   } 
 
 package_declaration :
-  | PACKAGE IDENT SEMICOLON  {$2}  
+  | PACKAGE IDENT semicolon {$2}  
 
 message : 
-  | IDENT IDENT LBRACE message_body_content_list RBRACE { 
+  | IDENT IDENT LBRACE message_body_content_list rbrace { 
     if $1 <> "message"
     then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
     else Pbpt_util.message ~content:$4 $2
   } 
-  | IDENT IDENT LBRACE RBRACE { 
+  | IDENT IDENT LBRACE rbrace { 
     if $1 <> "message"
     then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
     else Pbpt_util.message ~content:[]  $2
   } 
+
 
 message_body_content_list:
   | message_body_content  { [$1] }
@@ -177,10 +178,10 @@ message_body_content :
 
 
 extend : 
-  | EXTEND IDENT LBRACE normal_field_list RBRACE {
+  | EXTEND IDENT LBRACE normal_field_list rbrace {
     Pbpt_util.extend $2 $4 
   }
-  | EXTEND IDENT LBRACE RBRACE {
+  | EXTEND IDENT LBRACE rbrace {
     Pbpt_util.extend $2 [] 
   }
 
@@ -189,7 +190,7 @@ normal_field_list :
   | normal_field normal_field_list {$1 :: $2}
 
 extension : 
-  | EXTENSIONS extension_range_list SEMICOLON {$2}  
+  | EXTENSIONS extension_range_list semicolon {$2}  
 
 extension_range_list : 
   | extension_range                            {$1 :: []}
@@ -208,7 +209,7 @@ extension_range :
   }
 
 oneof :
-  ONE_OF IDENT LBRACE oneof_field_list RBRACE { 
+  ONE_OF IDENT LBRACE oneof_field_list rbrace { 
     Pbpt_util.oneof ~fields:$4 $2 
   }  
 
@@ -217,18 +218,18 @@ oneof_field_list :
   | oneof_field oneof_field_list { $1::$2 } 
 
 oneof_field : 
-  | IDENT field_name EQUAL INT field_options SEMICOLON { 
+  | IDENT field_name EQUAL INT field_options semicolon { 
     Pbpt_util.oneof_field ~type_:$1 ~number:$4 ~options:$5 $2  
   } 
-  | IDENT field_name EQUAL INT SEMICOLON               { 
+  | IDENT field_name EQUAL INT semicolon { 
     Pbpt_util.oneof_field ~type_:$1 ~number:$4 $2  
   } 
 
 normal_field : 
-  | label IDENT field_name EQUAL INT field_options SEMICOLON { 
+  | label IDENT field_name EQUAL INT field_options semicolon { 
     Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 ~options:$6 $3
   } 
-  | label IDENT field_name EQUAL INT SEMICOLON { 
+  | label IDENT field_name EQUAL INT semicolon { 
     Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 $3 
   } 
 
@@ -273,7 +274,7 @@ file_option_identifier :
   | file_option_identifier IDENT   {$1 ^ $2}
 
 file_option :
-  | OPTION file_option_identifier EQUAL constant SEMICOLON { ($2, $4) }
+  | OPTION file_option_identifier EQUAL constant semicolon { ($2, $4) }
 
 constant : 
   | INT        { Pbpt.Constant_int $1 }
@@ -286,13 +287,20 @@ constant :
   | STRING     { Pbpt.Constant_string $1 }; 
 
 enum:
-  | ENUM IDENT LBRACE enum_values RBRACE {Pbpt_util.enum ~enum_values:$4 $2 } 
-  | ENUM IDENT LBRACE enum_values RBRACE SEMICOLON {Pbpt_util.enum ~enum_values:$4 $2 } 
+  | ENUM IDENT LBRACE enum_values rbrace {Pbpt_util.enum ~enum_values:$4 $2 } 
 
 enum_values:
   | enum_value               { $1::[] }
   | enum_value enum_values   { $1::$2 } 
 
 enum_value : 
-  | IDENT EQUAL INT SEMICOLON { Pbpt_util.enum_value ~int_value:$3 $1 } 
+  | IDENT EQUAL INT semicolon { Pbpt_util.enum_value ~int_value:$3 $1 } 
+
+semicolon:
+  | SEMICOLON           {()} 
+  | semicolon SEMICOLON {()} 
+
+rbrace :
+  | RBRACE           { () }
+  | rbrace SEMICOLON { () }
 %%
