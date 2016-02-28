@@ -28,10 +28,8 @@ let decode_ref_data () = T.({
       area_code = 917l;
       number    = 123451l;
     } :: []; 
-    number_of_children = None; 
+    number_of_children = Some (0l);
   }) 
-
-   
 
 let () = 
 

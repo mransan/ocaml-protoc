@@ -100,13 +100,7 @@ let parse_args () =
 
 (* -- main -- *)
 
-let () = 
-
-  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging, generated_files = parse_args () in 
-
-  if enable_debugging
-  then L.setup_from_out_channel stdout;
-
+let compile include_dirs proto_file_name = 
   let rec loop acc = function
     | None -> acc 
     | Some file_name -> 
@@ -117,7 +111,7 @@ let () =
       in  
       
       let ic    = open_in file_name in 
-      let proto = Parser.proto_ Lexer.lexer (Lexing.from_channel ic) in 
+      let proto = Pbparser.proto_ Pblexer.lexer (Lexing.from_channel ic) in 
       close_in ic; 
       let pbtt_msgs = acc @ Pbtt_util.compile_proto_p1 file_name proto in 
       let pbtt_msgs = List.fold_left (fun pbtt_msgs {Pbpt.file_name; _ } -> 
@@ -145,12 +139,15 @@ let () =
   ) grouped_proto in 
 
   let module BO = Backend_ocaml in 
+
   let otypes = List.rev @@ List.fold_left (fun otypes types -> 
     let l = List.flatten @@ List.map (fun t -> BO.compile pbtt_msgs t) types in 
     l :: otypes
   ) [] grouped_proto  in 
 
+  otypes
 
+let generate_code sig_oc struct_oc otypes = 
   let wrap s = 
     if s <> "" then [s ; "\n\n" ] else [s] 
   in 
@@ -205,7 +202,31 @@ let () =
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_default_sig t) types_ ;
     ]
   ) (otypes);
-  List.iter (fun file_name ->
-    Printf.printf "Generated %s\n" file_name; 
-  ); 
   ()
+
+let () = 
+
+  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging, generated_files = parse_args () in 
+
+  if enable_debugging
+  then L.setup_from_out_channel stdout;
+
+  let close_file_channels () = 
+    close_out struct_oc; 
+    close_out sig_oc
+  in 
+
+  try
+    let otypes = compile include_dirs proto_file_name in 
+    generate_code sig_oc struct_oc otypes;
+    close_file_channels ();
+    List.iter (fun file_name ->
+      Printf.printf "Generated %s\n" file_name; 
+    ) generated_files; 
+    ()
+  with exn -> 
+    close_file_channels ();
+    List.iter (fun file_name ->
+      Sys.remove file_name
+    ) generated_files; 
+    (raise exn : unit)

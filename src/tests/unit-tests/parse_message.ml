@@ -1,5 +1,6 @@
+module E = Exception
 let parse f s  = 
-  f Lexer.lexer (Lexing.from_string s)
+  f Pblexer.lexer (Lexing.from_string s)
 
 let () = 
   let s = "
@@ -21,7 +22,7 @@ let () =
   let {
     Pbpt.message_name; 
     Pbpt.message_body;
-  } = parse Parser.message_ s in 
+  } = parse Pbparser.message_ s in 
   assert (message_name  = "Outer");
   assert (List.length message_body= 4);
   ()
@@ -42,7 +43,7 @@ let () =
   let {
     Pbpt.message_name; 
     Pbpt.message_body;
-  } = parse Parser.message_ s in 
+  } = parse Pbparser.message_ s in 
   assert (message_name  = "TestM");
   assert (List.length message_body= 2);
   match List.hd message_body with 
@@ -59,7 +60,7 @@ let () =
 
 let () = 
   let do_test s = 
-    let proto = parse Parser.proto_ s in 
+    let proto = parse Pbparser.proto_ s in 
     let messages = proto.Pbpt.messages in 
     assert(1 = List.length messages);
   in
@@ -74,7 +75,7 @@ let () =
   message M1 {} 
   message M2 {}
   " in 
-  let proto = parse Parser.proto_ s in 
+  let proto = parse Pbparser.proto_ s in 
   let messages = proto.Pbpt.messages in 
   assert(2= List.length messages);
   assert("M1" = (List.nth messages 0).Pbpt.message_name);
@@ -87,7 +88,7 @@ let () =
   message M1 {} 
   message M2 {}
   " in 
-  let proto = parse Parser.proto_ s in 
+  let proto = parse Pbparser.proto_ s in 
   assert(None = proto.Pbpt.syntax);
   assert(Some "my.proto" = proto.Pbpt.package);
   assert(0= List.length proto.Pbpt.imports);
@@ -106,7 +107,7 @@ let () =
   message M2 {}
   extend  M2 {} 
   " in 
-  let proto = parse Parser.proto_ s in 
+  let proto = parse Pbparser.proto_ s in 
   assert(Some "proto2"  = proto.Pbpt.syntax);
   assert(Some "my.proto" = proto.Pbpt.package);
   assert(2= List.length proto.Pbpt.imports);
@@ -125,9 +126,9 @@ let () =
   message M2 {}  message M3 {} message M4 {}
   "
   in 
-  match parse Parser.message_ s with 
+  match parse Pbparser.message_ s with 
   | _ -> assert false 
-  | exception Exception.Compilation_error (Exception.Missing_closing_brace_for_message _ ) -> () 
+  | exception E.Compilation_error (E.Syntax_error (E.Message, _)) -> () 
   | exception exn -> print_endline @@ Printexc.to_string exn ; assert false 
 
 let () = 

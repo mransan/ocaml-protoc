@@ -69,9 +69,11 @@ let check_decoded ?noprint x f_pp ref_data =
   )
   else (
     print_endline "ML: -- Test Failed --";  
-    match noprint with
-    | None -> print_endline @@ string_of_pp f_pp x
-    | Some () -> (); 
+    begin 
+      match noprint with
+      | None -> print_endline @@ string_of_pp f_pp x
+      | Some () -> (); 
+    end; 
     exit 1
   )
 
