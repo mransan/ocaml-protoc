@@ -4,7 +4,7 @@ module Eu = Encoding_util
 let file_name = "a.proto"
 
 let parse f s  = 
-  f Lexer.lexer (Lexing.from_string s)
+  f Pblexer.lexer (Lexing.from_string s)
 
 let () = 
   let message_scope = [] in 
@@ -67,7 +67,7 @@ let () =
 module BO = Backend_ocaml
 
 let compile_to_ocaml ?all_pbtt_types:(all_pbtt_types = []) ?file_name:(file_name = file_name) s = 
-  let ast = parse Parser.message_ s in 
+  let ast = parse Pbparser.message_ s in 
   let all_pbtt_types' = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope ast in 
   let all_pbtt_types' = all_pbtt_types' @ all_pbtt_types in 
   let all_pbtt_types'' = List.map (fun t -> 

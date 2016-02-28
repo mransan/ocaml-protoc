@@ -1,4 +1,4 @@
-/*
+/*(*
   The MIT License (MIT)
   
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
@@ -20,7 +20,7 @@
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
-
+  *)
 */
 
 %token REQUIRED
@@ -113,12 +113,6 @@ extension_range_list_ : extension_range_list EOF {$1}
 extension_       : extension    EOF {$1}
 extend_          : extend       EOF {$1}
 
-/*
-message = "message" messageName messageBody
-messageBody = "{" { field | enum | message | extend | extensions | group |
-option | oneof | mapField | reserved | emptyStatement } "}"
-*/
-
 proto:
   | syntax proto_content {Pbpt_util.proto ~syntax:$1 ~proto:$2 ()}
   | proto_content        {$1}
@@ -153,17 +147,12 @@ package_declaration :
   | PACKAGE IDENT semicolon {$2}  
 
 message : 
-  | IDENT IDENT LBRACE message_body_content_list rbrace { 
-    if $1 <> "message"
-    then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
-    else Pbpt_util.message ~content:$4 $2
+  | MESSAGE IDENT LBRACE message_body_content_list rbrace { 
+    Pbpt_util.message ~content:$4 $2
   } 
-  | IDENT IDENT LBRACE rbrace { 
-    if $1 <> "message"
-    then raise @@ Exception.invalid_message_declaration "<message> keyword expected"
-    else Pbpt_util.message ~content:[]  $2
+  | MESSAGE IDENT LBRACE rbrace { 
+    Pbpt_util.message ~content:[]  $2
   } 
-
 
 message_body_content_list:
   | message_body_content  { [$1] }
@@ -175,7 +164,7 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
-
+  | error        { Exception.syntax_error Exception.Message (Location.rhs_loc 1)}
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {
@@ -209,13 +198,13 @@ extension_range :
   }
 
 oneof :
-  ONE_OF IDENT LBRACE oneof_field_list rbrace { 
+  | ONE_OF IDENT LBRACE oneof_field_list rbrace { 
     Pbpt_util.oneof ~fields:$4 $2 
   }  
 
 oneof_field_list :
-  | oneof_field                  { [$1]   }
-  | oneof_field oneof_field_list { $1::$2 } 
+  |                                     { []   }
+  | oneof_field oneof_field_list        { $1::$2 } 
 
 oneof_field : 
   | IDENT field_name EQUAL INT field_options semicolon { 
@@ -246,6 +235,7 @@ field_name :
   | EXTENSIONS{"extensions"}
   | EXTEND    {"extend"}
   | SYNTAX    {"syntax"}
+  | MESSAGE   {"message"}
 
 label :
   | REQUIRED { `Required }  
@@ -253,7 +243,7 @@ label :
   | OPTIONAL { `Optional }
 
 field_options : 
-    LBRACKET field_option_list RBRACKET { $2 }; 
+  | LBRACKET field_option_list RBRACKET { $2 }; 
   | LBRACKET RBRACKET { [] }; 
 
 field_option_list : 
@@ -263,7 +253,6 @@ field_option_list :
 field_option :
   | IDENT EQUAL constant { ($1, $3) } 
   | LPAREN IDENT RPAREN EQUAL constant { ($2, $5)} 
-
 
 file_option_identifier_item :
   | IDENT                   {$1}
@@ -279,9 +268,10 @@ file_option :
 constant : 
   | INT        { Pbpt.Constant_int $1 }
   | FLOAT      { Pbpt.Constant_float $1 }
-  | IDENT      { match $1 with 
-    | "true"  -> Pbpt.Constant_bool true 
-    | "false" -> Pbpt.Constant_bool false 
+  | IDENT      { 
+    match $1 with 
+    | "true"   -> Pbpt.Constant_bool true 
+    | "false"  -> Pbpt.Constant_bool false 
     | litteral -> Pbpt.Constant_litteral litteral 
   }
   | STRING     { Pbpt.Constant_string $1 }; 
@@ -290,11 +280,18 @@ enum:
   | ENUM IDENT LBRACE enum_values rbrace {Pbpt_util.enum ~enum_values:$4 $2 } 
 
 enum_values:
-  | enum_value               { $1::[] }
-  | enum_value enum_values   { $1::$2 } 
+  |                              { [] }
+  | enum_value enum_values       { $1::$2 }; 
 
 enum_value : 
-  | IDENT EQUAL INT semicolon { Pbpt_util.enum_value ~int_value:$3 $1 } 
+  | IDENT EQUAL INT semicolon  { Pbpt_util.enum_value ~int_value:$3 $1 } 
+  | IDENT EQUAL INT { 
+    Exception.missing_semicolon_for_enum_value $1 
+  }
+  | IDENT EQUAL INT COMMA { Exception.invalid_enum_specification $1 }
+  | IDENT COMMA           { Exception.invalid_enum_specification $1 }
+  | IDENT SEMICOLON       { Exception.invalid_enum_specification $1 }
+  | IDENT                 { Exception.invalid_enum_specification $1 }
 
 semicolon:
   | SEMICOLON           {()} 

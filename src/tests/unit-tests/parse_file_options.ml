@@ -1,8 +1,8 @@
 let parse s  = 
-  Parser.file_option_ Lexer.lexer (Lexing.from_string s)
+  Pbparser.file_option_ Pblexer.lexer (Lexing.from_string s)
 
 let parse_proto s  = 
-  Parser.proto_ Lexer.lexer (Lexing.from_string s)
+  Pbparser.proto_ Pblexer.lexer (Lexing.from_string s)
 
 
 let () = 

@@ -23,7 +23,7 @@
 
 *)
 {
-open Parser 
+open Pbparser 
 
 let create_hashtable size init =
   let tbl = Hashtbl.create size in
@@ -32,19 +32,19 @@ let create_hashtable size init =
   ) init;
   tbl
 
-
 let keywords = create_hashtable 50 [
-  "required", REQUIRED; 
-  "optional", OPTIONAL; 
-  "repeated", REPEATED;
-  "oneof"   , ONE_OF;
-  "enum"    , ENUM;
-  "package" , PACKAGE;
-  "import" , IMPORT;
-  "option" , OPTION;
+  "message"    , MESSAGE; 
+  "required"   , REQUIRED; 
+  "optional"   , OPTIONAL; 
+  "repeated"   , REPEATED;
+  "oneof"      , ONE_OF;
+  "enum"       , ENUM;
+  "package"    , PACKAGE;
+  "import"     , IMPORT;
+  "option"     , OPTION;
   "extensions" , EXTENSIONS;
-  "extend" , EXTEND;
-  "syntax" , SYNTAX;
+  "extend"     , EXTEND;
+  "syntax"     , SYNTAX;
 ]
 
 let resolve_identifier ident = 
@@ -54,14 +54,25 @@ let resolve_identifier ident =
 type comment =
   | Comment_value of string  
   | Comment_eof  
+
 let comment_value s = Comment_value s 
+
 let comment_eof     = Comment_eof
 
 type string_ = 
   | String_value of string 
   | String_eof
+
 let string_value s = String_value s 
+
 let string_eof     = String_eof 
+
+let update_loc lexbuf =
+  let pos = lexbuf.Lexing.lex_curr_p in
+  lexbuf.Lexing.lex_curr_p <- Lexing.({ pos with
+    pos_lnum = 1;
+    pos_bol = pos.pos_cnum;
+  })
 
 }
 let letter        = ['a'-'z' 'A'-'Z']
@@ -110,7 +121,7 @@ rule lexer = parse
   | int_litteral  { INT (int_of_string @@ Lexing.lexeme lexbuf) }
   | float_literal { FLOAT (float_of_string @@ Lexing.lexeme lexbuf) }
   | inf_litteral  { FLOAT nan }
-  | newline       { lexer lexbuf }
+  | newline       { update_loc lexbuf; lexer lexbuf }
   | blank         { lexer lexbuf }
   | full_ident    { resolve_identifier (Lexing.lexeme lexbuf) }
   | eof           { EOF }
@@ -118,11 +129,12 @@ rule lexer = parse
   Lexing.lexeme lexbuf}  
 
 and comment l = parse 
-  | newline {comment_value @@ String.concat "" (List.rev l)} 
+  | newline {update_loc lexbuf ; comment_value @@ String.concat "" (List.rev l)} 
   | _       {comment ((Lexing.lexeme lexbuf)::l) lexbuf }  
   | eof     {comment_eof } 
 
 and multi_line_comment l = parse  
+  | newline {update_loc lexbuf ; multi_line_comment l lexbuf }
   | "*/" {
       ignore @@ Lexing.lexeme lexbuf; 
       comment_value @@ String.concat "" (List.rev l)

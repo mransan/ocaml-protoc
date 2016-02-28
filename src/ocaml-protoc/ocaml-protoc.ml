@@ -37,7 +37,7 @@ let imported_filename include_dirs file_name =
       match found_file, Sys.file_exists try_file_name with 
       | None         , true  -> Some try_file_name 
       | Some previous, true  -> (
-        Printf.printf "Imported file %s found in 2 directories, picking: %s\n"
+        Printf.eprintf "[Warning] Imported file %s found in 2 directories, picking: %s\n"
           file_name previous; 
         found_file
       )
@@ -79,28 +79,28 @@ let parse_args () =
     let caml_basename = caml_file_name_of_proto_file_name basename in  
     Filename.concat !ml_out caml_basename 
   in
+
+  let generated_files = [] in
      
-  Printf.printf "proto: %s -> caml: %s \n" !proto_file_name out_file_name; 
-  let struct_oc = match out_file_name with 
-    | "" -> stdout 
-    | _  -> open_out (out_file_name ^ ".ml") in 
-  let sig_oc = match out_file_name with 
-    | "" -> stdout 
-    | _  -> open_out (out_file_name ^ ".mli") in 
-  (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug)  
+  let struct_oc, generated_files = match out_file_name with 
+    | "" -> stdout, generated_files  
+    | _  -> 
+      let ml_file_name = out_file_name ^ ".ml" in 
+      open_out ml_file_name, ml_file_name :: generated_files 
+  in
+  let sig_oc, generated_files = match out_file_name with 
+    | "" -> stdout, generated_files 
+    | _  -> 
+      let ml_file_name = out_file_name ^ ".mli" in 
+      open_out ml_file_name, ml_file_name :: generated_files 
+  in
+
+  (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug, generated_files)  
 
 
 (* -- main -- *)
 
-let () = 
-
-  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging = parse_args () in 
-
-  Printf.printf "include dirs %s \n" @@ String.concat ", " include_dirs;  
-
-  if enable_debugging
-  then L.setup_from_out_channel stdout;
-
+let compile include_dirs proto_file_name = 
   let rec loop acc = function
     | None -> acc 
     | Some file_name -> 
@@ -111,7 +111,7 @@ let () =
       in  
       
       let ic    = open_in file_name in 
-      let proto = Parser.proto_ Lexer.lexer (Lexing.from_channel ic) in 
+      let proto = Pbparser.proto_ Pblexer.lexer (Lexing.from_channel ic) in 
       close_in ic; 
       let pbtt_msgs = acc @ Pbtt_util.compile_proto_p1 file_name proto in 
       let pbtt_msgs = List.fold_left (fun pbtt_msgs {Pbpt.file_name; _ } -> 
@@ -129,7 +129,6 @@ let () =
 
   let pbtt_msgs = List.map (Pbtt_util.compile_proto_p2 pbtt_msgs) pbtt_msgs in 
 
-
   (* -- OCaml Backend -- *)
 
   let grouped_proto = List.rev @@ Pbtt_util.group pbtt_msgs in 
@@ -140,12 +139,15 @@ let () =
   ) grouped_proto in 
 
   let module BO = Backend_ocaml in 
+
   let otypes = List.rev @@ List.fold_left (fun otypes types -> 
     let l = List.flatten @@ List.map (fun t -> BO.compile pbtt_msgs t) types in 
     l :: otypes
   ) [] grouped_proto  in 
 
+  otypes
 
+let generate_code sig_oc struct_oc otypes = 
   let wrap s = 
     if s <> "" then [s ; "\n\n" ] else [s] 
   in 
@@ -199,4 +201,32 @@ let () =
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_pp_sig t) types_ ;
       List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_default_sig t) types_ ;
     ]
-  ) (otypes)
+  ) (otypes);
+  ()
+
+let () = 
+
+  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging, generated_files = parse_args () in 
+
+  if enable_debugging
+  then L.setup_from_out_channel stdout;
+
+  let close_file_channels () = 
+    close_out struct_oc; 
+    close_out sig_oc
+  in 
+
+  try
+    let otypes = compile include_dirs proto_file_name in 
+    generate_code sig_oc struct_oc otypes;
+    close_file_channels ();
+    List.iter (fun file_name ->
+      Printf.printf "Generated %s\n" file_name; 
+    ) generated_files; 
+    ()
+  with exn -> 
+    close_file_channels ();
+    List.iter (fun file_name ->
+      Sys.remove file_name
+    ) generated_files; 
+    (raise exn : unit)

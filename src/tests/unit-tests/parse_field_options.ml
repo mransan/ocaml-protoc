@@ -1,6 +1,6 @@
 
 let parse f s  = 
-  f Lexer.lexer (Lexing.from_string s)
+  f Pblexer.lexer (Lexing.from_string s)
 
 let () = 
 
@@ -9,7 +9,7 @@ let () =
     Printf.printf "---- %s ----\n" s;
     loop @@ Lexing.from_string s; 
      *)
-    List.assoc "default" @@ parse Parser.field_options_ s  
+    List.assoc "default" @@ parse Pbparser.field_options_ s  
   in 
   
   assert (Pbpt.Constant_int 1    = test_default "[default = 1 ]"); 
@@ -24,15 +24,15 @@ let () =
   () 
 
 let () = 
-  let field_options = parse Parser.field_options_ "[]" in 
+  let field_options = parse Pbparser.field_options_ "[]" in 
   assert (field_options = [])
 
 let () = 
-  let field_options = parse Parser.field_options_ "[a=1,b=true]" in 
+  let field_options = parse Pbparser.field_options_ "[a=1,b=true]" in 
   assert (List.length field_options = 2)
 
 let () = 
-  let field_options = parse Parser.field_options_ "[(ocaml_type) = int]" in 
+  let field_options = parse Pbparser.field_options_ "[(ocaml_type) = int]" in 
   assert ([("ocaml_type", Pbpt.Constant_litteral "int")] = field_options)
 
 let () =

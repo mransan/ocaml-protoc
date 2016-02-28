@@ -1,7 +1,7 @@
 let file_name = "a.proto" 
 
 let parse f s  = 
-  f Lexer.lexer (Lexing.from_string s)
+  f Pblexer.lexer (Lexing.from_string s)
   
 let () = 
   let s = "
@@ -13,7 +13,7 @@ let () =
     required TestE teste_field = 1; 
   }"
   in 
-  let m = parse Parser.message_ s in 
+  let m = parse Pbparser.message_ s in 
   let all_types = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope m in 
   assert (2 =List.length all_types); 
   match List.nth all_types 0 with 
@@ -58,7 +58,7 @@ let () =
     required string sval = 2;
   }"
   in 
-  let ast  = parse Parser.message_ s in 
+  let ast  = parse Pbparser.message_ s in 
   let all_messages = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 1);
   begin
@@ -84,7 +84,7 @@ let () =
     }
   }"
   in 
-  let ast  = parse Parser.message_ s in 
+  let ast  = parse Pbparser.message_ s in 
   let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 2);
   match List.hd all_messages with
@@ -121,7 +121,7 @@ let () =
     required Msg1.Msg2.SubMessage mval  = 1;
   }"
   in 
-  let ast  = parse Parser.message_ s in 
+  let ast  = parse Pbparser.message_ s in 
   let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 1);
   match List.hd all_messages with
@@ -153,7 +153,7 @@ let () =
     message M3 { message M31 { message M311 { } } } 
   }
   " in 
-  let ast = parse Parser.message_ s in 
+  let ast = parse Pbparser.message_ s in 
   let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope  ast in 
   assert (6 = List.length all_messages); 
   let filtered = Pbtt_util.find_all_types_in_field_scope all_messages [] in 

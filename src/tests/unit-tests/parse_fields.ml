@@ -1,6 +1,6 @@
 
 let parse f s  = 
-  f Lexer.lexer (Lexing.from_string s)
+  f Pblexer.lexer (Lexing.from_string s)
 
 let () =
   let do_test s = 
@@ -10,7 +10,7 @@ let () =
       field_label; 
       field_options; 
       field_number
-    } = parse Parser.normal_field_ s in 
+    } = parse Pbparser.normal_field_ s in 
     assert (field_name = "x"); 
     assert (field_label = `Optional); 
     assert (field_type = "int32"); 
@@ -28,7 +28,7 @@ let () =
     field_label; 
     field_options; 
     field_number
-  } = parse Parser.normal_field_ "optional .M1 x = 1;" in 
+  } = parse Pbparser.normal_field_ "optional .M1 x = 1;" in 
   assert (field_name = "x"); 
   assert (field_label = `Optional); 
   assert (field_type = ".M1"); 
@@ -41,7 +41,7 @@ let () =
     let {
       Pbpt.oneof_name; 
       Pbpt.oneof_fields; 
-    } = parse Parser.oneof_ s in
+    } = parse Pbparser.oneof_ s in
     assert (oneof_name = "foo"); 
     assert (List.length oneof_fields = 2);
     let {

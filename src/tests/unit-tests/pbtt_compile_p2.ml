@@ -1,6 +1,6 @@
 
 let parse f s  = 
-  f Lexer.lexer (Lexing.from_string s)
+  f Pblexer.lexer (Lexing.from_string s)
 
 let () = 
   let s = "
@@ -34,7 +34,7 @@ let () =
     required M2 vm2 = 1;
   }
   " in 
-  let ast = parse Parser.message_ s in 
+  let ast = parse Pbparser.message_ s in 
   let all_types = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in 
   ignore @@ List.map (function 
     | {Pbtt.spec = Pbtt.Message m ; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m
@@ -48,7 +48,7 @@ let assert_unresolved f =
   | _ -> assert(false)
 
 let test_unresolved_msg s = 
-  let ast = parse Parser.message_ s in 
+  let ast = parse Pbparser.message_ s in 
   let all_types = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in 
   assert_unresolved (fun () -> 
     ignore @@ List.map (function 
@@ -103,7 +103,7 @@ let assert_duplicate f =
 
 
 let test_duplicate s = 
-  let ast = parse Parser.message_ s in 
+  let ast = parse Pbparser.message_ s in 
   assert_duplicate (fun () -> 
     let all_types = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in 
     ignore @@ List.map (function 
