@@ -30,7 +30,9 @@ let () =
   mutable v2 : string option;
   mutable v3 : other;
 }|} in 
-  assert(s = Ocaml_codegen.gen_type (Ocaml_types.{module_ = "A"; spec = Record r}));
+  let sc = Fmt.empty_scope () in 
+  Codegen_type.gen_struct (Ocaml_types.{module_ = "A"; spec = Record r}) sc; 
+  assert(s = (Fmt.print sc));
   ()
 
 let () = 

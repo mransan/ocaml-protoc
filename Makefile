@@ -1,4 +1,4 @@
-OCB_FLAGS = -use-ocamlfind -package compiler-libs.common -I src/compilerlib -I src/runtime -I src/ocaml-protoc
+OCB_FLAGS = -use-ocamlfind -package compiler-libs.common -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
 UNIT_TESTS_DIR        = src/tests/unit-tests

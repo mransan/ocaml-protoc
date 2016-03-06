@@ -147,61 +147,51 @@ let compile include_dirs proto_file_name =
 
   otypes
 
+type codegen_f = ?and_:unit -> Ocaml_types.type_ -> Fmt.scope -> bool 
+
 let generate_code sig_oc struct_oc otypes = 
-  let wrap s = 
-    if s <> "" then [s ; "\n\n" ] else [s] 
-  in 
   (* -- `.ml` file -- *)
 
-  let gen types (f:(?and_:unit -> Ocaml_types.type_ -> string))  = 
-    List.flatten @@ List.rev @@ fst (List.fold_left (fun (sl, first) type_ -> 
-    (if first 
-    then wrap @@ f type_ 
-    else wrap @@ f ~and_:() type_)::sl, false 
-  ) ([], true) types) 
-  in 
+  let gen otypes sc (fs:codegen_f list)  = 
+    List.iter (fun (f:codegen_f) -> 
+      List.iter (fun types -> 
+        let _:bool = List.fold_left (fun first  type_ -> 
+          let has_encoded = if first 
+            then f type_ sc 
+            else f ~and_:() type_ sc
+          in 
+          Fmt.empty_line sc;
+          first && (not has_encoded) 
+        ) true types in 
+        ()
+      ) otypes 
+    ) fs 
+  in
 
-  let gen_opt types (f:(?and_:unit -> Ocaml_types.type_ -> string option))  = 
-    List.flatten @@ List.rev @@ fst (List.fold_left (fun (sl, first) type_ -> 
-      let s = 
-        if first 
-        then f type_ 
-        else f ~and_:() type_ in 
-      match s with 
-      | Some s -> (wrap s)::sl, false 
-      | None   -> sl   , first 
-  ) ([], true) types) 
-  in 
-
-  let concat = Util.concat in 
-  
-  output_string struct_oc @@ concat [
-    Backend_ocaml_static.prefix_payload_to_ocaml_t;
-    "\n";
-    concat @@ List.map (fun types_ -> 
-      concat @@ List.flatten [
-      gen     types_ Ocaml_codegen.gen_type ;
-      gen_opt types_ Ocaml_codegen.gen_default;
-      gen_opt types_ Ocaml_codegen.gen_decode;
-      gen_opt types_ Ocaml_codegen.gen_encode;
-      gen_opt types_ Ocaml_codegen.gen_pp;
-      ]
-    ) otypes;
+  let sc = Fmt.empty_scope () in 
+  Fmt.line sc Backend_ocaml_static.prefix_payload_to_ocaml_t;
+  gen otypes  sc [
+    Codegen_type.gen_struct ;
+    Codegen_default.gen_struct ;
+    Codegen_decode.gen_struct ;
+    Codegen_encode.gen_struct ;
+    Codegen_pp.gen_struct ;
   ];
+
+  output_string struct_oc (Fmt.print sc);
 
   (* -- `.mli` file -- *)
 
-  let wrap_opt = function | Some x -> wrap x | None -> [] in 
+  let sc = Fmt.empty_scope () in 
+  gen otypes  sc [
+    Codegen_type.gen_sig ;
+    Codegen_default.gen_sig ;
+    Codegen_decode.gen_sig ;
+    Codegen_encode.gen_sig ;
+    Codegen_pp.gen_sig ;
+  ];
 
-  output_string sig_oc @@ concat @@ List.map (fun types_ -> 
-    concat @@ List.flatten [
-      gen      types_ Ocaml_codegen.gen_type;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_decode_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_encode_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_pp_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_default_sig t) types_ ;
-    ]
-  ) (otypes);
+  output_string sig_oc (Fmt.print sc);
   ()
 
 let () = 

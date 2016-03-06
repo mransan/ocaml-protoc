@@ -12,6 +12,9 @@ let empty_scope () =
 let line scope s =
   scope.items <- (Line s)::scope.items  
 
+let empty_line scope = 
+  line scope "" 
+
 let scope scope f = 
   let sub_scope = empty_scope () in 
   f sub_scope; 
