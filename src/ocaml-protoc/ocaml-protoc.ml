@@ -26,7 +26,7 @@
 module L = Logger 
 module E = Exception
   
-let caml_file_name_of_proto_file_name = Ocaml_codegen.caml_file_name_of_proto_file_name 
+let caml_file_name_of_proto_file_name = Codegen_util.caml_file_name_of_proto_file_name 
 
 let imported_filename include_dirs file_name = 
   if Sys.file_exists file_name
@@ -149,11 +149,31 @@ let compile include_dirs proto_file_name =
 
 type codegen_f = ?and_:unit -> Ocaml_types.type_ -> Fmt.scope -> bool 
 
-let generate_code sig_oc struct_oc otypes = 
+
+let all_code_gen = [
+  (module Codegen_type: Codegen.S);
+  (module Codegen_default: Codegen.S);
+  (module Codegen_decode: Codegen.S);
+  (module Codegen_encode: Codegen.S);
+  (module Codegen_pp: Codegen.S);
+]
+  
+
+let generate_code sig_oc struct_oc otypes proto_file_name = 
   (* -- `.ml` file -- *)
 
-  let gen otypes sc (fs:codegen_f list)  = 
-    List.iter (fun (f:codegen_f) -> 
+  let gen otypes sc (fs:(codegen_f*string option) list)  = 
+    List.iter (fun ((f:codegen_f), ocamldoc_title)-> 
+      begin
+        match ocamldoc_title with
+        | None -> () 
+        | Some ocamldoc_title -> ( 
+            Fmt.empty_line sc;
+            Fmt.line sc @@ Codegen_util.sp "(** {2 %s} *)" ocamldoc_title;  
+            Fmt.empty_line sc;
+        )
+      end;
+
       List.iter (fun types -> 
         let _:bool = List.fold_left (fun first  type_ -> 
           let has_encoded = if first 
@@ -170,26 +190,22 @@ let generate_code sig_oc struct_oc otypes =
 
   let sc = Fmt.empty_scope () in 
   Fmt.line sc Backend_ocaml_static.prefix_payload_to_ocaml_t;
-  gen otypes  sc [
-    Codegen_type.gen_struct ;
-    Codegen_default.gen_struct ;
-    Codegen_decode.gen_struct ;
-    Codegen_encode.gen_struct ;
-    Codegen_pp.gen_struct ;
-  ];
+  gen otypes  sc (List.map (fun m -> 
+    let module C = (val m:Codegen.S) in 
+    C.gen_struct, None
+  ) all_code_gen);
 
   output_string struct_oc (Fmt.print sc);
 
   (* -- `.mli` file -- *)
 
   let sc = Fmt.empty_scope () in 
-  gen otypes  sc [
-    Codegen_type.gen_sig ;
-    Codegen_default.gen_sig ;
-    Codegen_decode.gen_sig ;
-    Codegen_encode.gen_sig ;
-    Codegen_pp.gen_sig ;
-  ];
+  Fmt.line sc @@ 
+    Codegen_util.sp "(** %s Generated Types and Encoding *)" (Filename.basename proto_file_name); 
+  gen otypes  sc (List.map (fun m -> 
+    let module C = (val m:Codegen.S) in 
+    C.gen_sig, Some C.ocamldoc_title
+  ) all_code_gen);
 
   output_string sig_oc (Fmt.print sc);
   ()
@@ -208,7 +224,7 @@ let () =
 
   try
     let otypes = compile include_dirs proto_file_name in 
-    generate_code sig_oc struct_oc otypes;
+    generate_code sig_oc struct_oc otypes proto_file_name;
     close_file_channels ();
     List.iter (fun file_name ->
       Printf.printf "Generated %s\n" file_name; 
