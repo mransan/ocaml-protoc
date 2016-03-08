@@ -1,8 +1,13 @@
+(** benchmark.proto Generated Types and Encoding *)
+
+(** {2 Types} *)
+
 type test_type =
   | Encode of int
   | Decode
 
 type test_id =
+  | Int32_list 
   | Int_list 
   | Int_repeated 
   | Int_packed_repeated 
@@ -42,6 +47,10 @@ type test_responses = {
   mutable responses : test_responses list;
 }
 
+type int32_list = {
+  mutable int32_list : int32 list;
+}
+
 type int_list = {
   mutable int_list : int list;
 }
@@ -53,6 +62,9 @@ type int_repeated = {
 type int_packed_repeated = {
   int_packed_repeated : int Pbrt.Repeated_field.t;
 }
+
+
+(** {2 Default values} *)
 
 val default_test_type : unit -> test_type
 (** [default_test_type ()] is the default value for type [test_type] *)
@@ -79,6 +91,9 @@ val default_test_response : unit -> test_response
 val default_test_responses : unit -> test_responses
 (** [default_test_responses ()] is the default value for type [test_responses] *)
 
+val default_int32_list : unit -> int32_list
+(** [default_int32_list ()] is the default value for type [int32_list] *)
+
 val default_int_list : unit -> int_list
 (** [default_int_list ()] is the default value for type [int_list] *)
 
@@ -87,6 +102,9 @@ val default_int_repeated : unit -> int_repeated
 
 val default_int_packed_repeated : unit -> int_packed_repeated
 (** [default_int_packed_repeated ()] is the default value for type [int_packed_repeated] *)
+
+
+(** {2 Protobuf Decoding} *)
 
 val decode_test_type : Pbrt.Decoder.t -> test_type
 (** [decode_test_type decoder] decodes a [test_type] value from [decoder] *)
@@ -113,6 +131,9 @@ val decode_test_response : Pbrt.Decoder.t -> test_response
 val decode_test_responses : Pbrt.Decoder.t -> test_responses
 (** [decode_test_responses decoder] decodes a [test_responses] value from [decoder] *)
 
+val decode_int32_list : Pbrt.Decoder.t -> int32_list
+(** [decode_int32_list decoder] decodes a [int32_list] value from [decoder] *)
+
 val decode_int_list : Pbrt.Decoder.t -> int_list
 (** [decode_int_list decoder] decodes a [int_list] value from [decoder] *)
 
@@ -121,6 +142,9 @@ val decode_int_repeated : Pbrt.Decoder.t -> int_repeated
 
 val decode_int_packed_repeated : Pbrt.Decoder.t -> int_packed_repeated
 (** [decode_int_packed_repeated decoder] decodes a [int_packed_repeated] value from [decoder] *)
+
+
+(** {2 Protobuf Encoding} *)
 
 val encode_test_type : test_type -> Pbrt.Encoder.t -> unit
 (** [encode_test_type v encoder] encodes [v] with the given [encoder] *)
@@ -147,6 +171,9 @@ val encode_test_response : test_response -> Pbrt.Encoder.t -> unit
 val encode_test_responses : test_responses -> Pbrt.Encoder.t -> unit
 (** [encode_test_responses v encoder] encodes [v] with the given [encoder] *)
 
+val encode_int32_list : int32_list -> Pbrt.Encoder.t -> unit
+(** [encode_int32_list v encoder] encodes [v] with the given [encoder] *)
+
 val encode_int_list : int_list -> Pbrt.Encoder.t -> unit
 (** [encode_int_list v encoder] encodes [v] with the given [encoder] *)
 
@@ -155,6 +182,9 @@ val encode_int_repeated : int_repeated -> Pbrt.Encoder.t -> unit
 
 val encode_int_packed_repeated : int_packed_repeated -> Pbrt.Encoder.t -> unit
 (** [encode_int_packed_repeated v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Formatters} *)
 
 val pp_test_type : Format.formatter -> test_type -> unit 
 (** [pp_test_type v] formats v] *)
@@ -182,6 +212,9 @@ val pp_test_response : Format.formatter -> test_response -> unit
 
 val pp_test_responses : Format.formatter -> test_responses -> unit 
 (** [pp_test_responses v] formats v] *)
+
+val pp_int32_list : Format.formatter -> int32_list -> unit 
+(** [pp_int32_list v] formats v] *)
 
 val pp_int_list : Format.formatter -> int_list -> unit 
 (** [pp_int_list v] formats v] *)

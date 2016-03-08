@@ -33,6 +33,7 @@ let string_of_test_id = function
   | Bench_t.Int_list            -> "int_list"
   | Bench_t.Int_repeated        -> "int_repeated"
   | Bench_t.Int_packed_repeated -> "int_packed_repeated"
+  | Bench_t.Int32_list          -> "int32_list"
 
 let make_test_requests ~number_of_sample test_ids = 
   let rec aux test_id acc = function
@@ -165,6 +166,7 @@ let () =
   Random.self_init ();
 
   let all_test_ids = [
+    Bench_t.Int32_list;
     Bench_t.Int_list;
     Bench_t.Int_repeated;
     Bench_t.Int_packed_repeated;
