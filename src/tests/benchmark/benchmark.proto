@@ -18,9 +18,10 @@ message test_type {
 // ----------------------
 
 enum TestId {
-    INT_LIST = 1; 
-    INT_REPEATED = 2;
-    INT_PACKED_REPEATED = 3;
+    INT32_LIST = 1; 
+    INT_LIST = 2; 
+    INT_REPEATED = 3;
+    INT_PACKED_REPEATED = 4;
 }
 
 message TestRequest {
@@ -59,6 +60,10 @@ message TestResponses {
 
 // Types to be benchmarked
 // -----------------------
+
+message Int32List {
+    repeated int32 int32_list = 1;
+}
 
 message IntList {
     repeated int32 int_list = 1 [(ocaml_type) = int_t];

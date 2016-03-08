@@ -48,6 +48,7 @@ type test_type =
   | Decode
 
 type test_id =
+  | Int32_list 
   | Int_list 
   | Int_repeated 
   | Int_packed_repeated 
@@ -87,6 +88,10 @@ type test_responses = {
   mutable responses : test_responses list;
 }
 
+type int32_list = {
+  mutable int32_list : int32 list;
+}
+
 type int_list = {
   mutable int_list : int list;
 }
@@ -101,7 +106,7 @@ type int_packed_repeated = {
 
 let rec default_test_type () : test_type = Encode (0)
 
-let rec default_test_id () = (Int_list:test_id)
+let rec default_test_id () = (Int32_list:test_id)
 
 let rec default_test_request () : test_request = {
   type_ = default_test_type ();
@@ -135,6 +140,10 @@ let rec default_test_responses () : test_responses = {
   responses = [];
 }
 
+let rec default_int32_list () : int32_list = {
+  int32_list = [];
+}
+
 let rec default_int_list () : int_list = {
   int_list = [];
 }
@@ -164,9 +173,10 @@ let rec decode_test_type d =
 
 let rec decode_test_id d = 
   match Pbrt.Decoder.int_as_varint d with
-  | 1 -> (Int_list:test_id)
-  | 2 -> (Int_repeated:test_id)
-  | 3 -> (Int_packed_repeated:test_id)
+  | 1 -> (Int32_list:test_id)
+  | 2 -> (Int_list:test_id)
+  | 3 -> (Int_repeated:test_id)
+  | 4 -> (Int_packed_repeated:test_id)
   | _ -> failwith "Unknown value for enum test_id"
 
 let rec decode_test_request d =
@@ -252,6 +262,19 @@ let rec decode_test_responses d =
   loop ();
   v
 
+let rec decode_int32_list d =
+  let v = default_int32_list () in
+  let rec loop () = 
+    match Pbrt.Decoder.key d with
+    | None -> (
+      v.int32_list <- List.rev v.int32_list;
+    )
+    | Some (1, Pbrt.Varint) -> v.int32_list <- (Pbrt.Decoder.int32_as_varint d) :: v.int32_list; loop ()
+    | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
+  in
+  loop ();
+  v
+
 let rec decode_int_list d =
   let v = default_int_list () in
   let rec loop () = 
@@ -302,9 +325,10 @@ let rec encode_test_type (v:test_type) encoder =
 
 let rec encode_test_id (v:test_id) encoder =
   match v with
-  | Int_list -> Pbrt.Encoder.int_as_varint 1 encoder
-  | Int_repeated -> Pbrt.Encoder.int_as_varint 2 encoder
-  | Int_packed_repeated -> Pbrt.Encoder.int_as_varint 3 encoder
+  | Int32_list -> Pbrt.Encoder.int_as_varint 1 encoder
+  | Int_list -> Pbrt.Encoder.int_as_varint 2 encoder
+  | Int_repeated -> Pbrt.Encoder.int_as_varint 3 encoder
+  | Int_packed_repeated -> Pbrt.Encoder.int_as_varint 4 encoder
 
 let rec encode_test_request (v:test_request) encoder = 
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
@@ -363,6 +387,13 @@ let rec encode_test_responses (v:test_responses) encoder =
   ) v.responses;
   ()
 
+let rec encode_int32_list (v:int32_list) encoder = 
+  List.iter (fun x -> 
+    Pbrt.Encoder.key (1, Pbrt.Varint) encoder; 
+    Pbrt.Encoder.int32_as_varint x encoder;
+  ) v.int32_list;
+  ()
+
 let rec encode_int_list (v:int_list) encoder = 
   List.iter (fun x -> 
     Pbrt.Encoder.key (1, Pbrt.Varint) encoder; 
@@ -393,6 +424,7 @@ let rec pp_test_type fmt (v:test_type) =
 
 let rec pp_test_id fmt (v:test_id) =
   match v with
+  | Int32_list -> F.fprintf fmt "Int32_list"
   | Int_list -> F.fprintf fmt "Int_list"
   | Int_repeated -> F.fprintf fmt "Int_repeated"
   | Int_packed_repeated -> F.fprintf fmt "Int_packed_repeated"
@@ -453,6 +485,14 @@ let rec pp_test_responses fmt (v:test_responses) =
   let pp_i fmt () =
     F.pp_open_vbox fmt 1;
     pp_equal "responses" (pp_list pp_test_responses) fmt v.responses;
+    F.pp_close_box fmt ()
+  in
+  pp_brk pp_i fmt ()
+
+let rec pp_int32_list fmt (v:int32_list) = 
+  let pp_i fmt () =
+    F.pp_open_vbox fmt 1;
+    pp_equal "int32_list" (pp_list pp_int32) fmt v.int32_list;
     F.pp_close_box fmt ()
   in
   pp_brk pp_i fmt ()
