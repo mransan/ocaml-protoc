@@ -26,7 +26,7 @@
 module L = Logger 
 module E = Exception
   
-let caml_file_name_of_proto_file_name = Ocaml_codegen.caml_file_name_of_proto_file_name 
+let caml_file_name_of_proto_file_name = Codegen_util.caml_file_name_of_proto_file_name 
 
 let imported_filename include_dirs file_name = 
   if Sys.file_exists file_name
@@ -147,61 +147,67 @@ let compile include_dirs proto_file_name =
 
   otypes
 
-let generate_code sig_oc struct_oc otypes = 
-  let wrap s = 
-    if s <> "" then [s ; "\n\n" ] else [s] 
-  in 
+type codegen_f = ?and_:unit -> Ocaml_types.type_ -> Fmt.scope -> bool 
+
+
+let all_code_gen = [
+  (module Codegen_type: Codegen.S);
+  (module Codegen_default: Codegen.S);
+  (module Codegen_decode: Codegen.S);
+  (module Codegen_encode: Codegen.S);
+  (module Codegen_pp: Codegen.S);
+]
+  
+
+let generate_code sig_oc struct_oc otypes proto_file_name = 
   (* -- `.ml` file -- *)
 
-  let gen types (f:(?and_:unit -> Ocaml_types.type_ -> string))  = 
-    List.flatten @@ List.rev @@ fst (List.fold_left (fun (sl, first) type_ -> 
-    (if first 
-    then wrap @@ f type_ 
-    else wrap @@ f ~and_:() type_)::sl, false 
-  ) ([], true) types) 
-  in 
+  let gen otypes sc (fs:(codegen_f*string option) list)  = 
+    List.iter (fun ((f:codegen_f), ocamldoc_title)-> 
+      begin
+        match ocamldoc_title with
+        | None -> () 
+        | Some ocamldoc_title -> ( 
+            Fmt.empty_line sc;
+            Fmt.line sc @@ Codegen_util.sp "(** {2 %s} *)" ocamldoc_title;  
+            Fmt.empty_line sc;
+        )
+      end;
 
-  let gen_opt types (f:(?and_:unit -> Ocaml_types.type_ -> string option))  = 
-    List.flatten @@ List.rev @@ fst (List.fold_left (fun (sl, first) type_ -> 
-      let s = 
-        if first 
-        then f type_ 
-        else f ~and_:() type_ in 
-      match s with 
-      | Some s -> (wrap s)::sl, false 
-      | None   -> sl   , first 
-  ) ([], true) types) 
-  in 
+      List.iter (fun types -> 
+        let _:bool = List.fold_left (fun first  type_ -> 
+          let has_encoded = if first 
+            then f type_ sc 
+            else f ~and_:() type_ sc
+          in 
+          Fmt.empty_line sc;
+          first && (not has_encoded) 
+        ) true types in 
+        ()
+      ) otypes 
+    ) fs 
+  in
 
-  let concat = Util.concat in 
-  
-  output_string struct_oc @@ concat [
-    Backend_ocaml_static.prefix_payload_to_ocaml_t;
-    "\n";
-    concat @@ List.map (fun types_ -> 
-      concat @@ List.flatten [
-      gen     types_ Ocaml_codegen.gen_type ;
-      gen_opt types_ Ocaml_codegen.gen_default;
-      gen_opt types_ Ocaml_codegen.gen_decode;
-      gen_opt types_ Ocaml_codegen.gen_encode;
-      gen_opt types_ Ocaml_codegen.gen_pp;
-      ]
-    ) otypes;
-  ];
+  let sc = Fmt.empty_scope () in 
+  Fmt.line sc Backend_ocaml_static.prefix_payload_to_ocaml_t;
+  gen otypes  sc (List.map (fun m -> 
+    let module C = (val m:Codegen.S) in 
+    C.gen_struct, None
+  ) all_code_gen);
+
+  output_string struct_oc (Fmt.print sc);
 
   (* -- `.mli` file -- *)
 
-  let wrap_opt = function | Some x -> wrap x | None -> [] in 
+  let sc = Fmt.empty_scope () in 
+  Fmt.line sc @@ 
+    Codegen_util.sp "(** %s Generated Types and Encoding *)" (Filename.basename proto_file_name); 
+  gen otypes  sc (List.map (fun m -> 
+    let module C = (val m:Codegen.S) in 
+    C.gen_sig, Some C.ocamldoc_title
+  ) all_code_gen);
 
-  output_string sig_oc @@ concat @@ List.map (fun types_ -> 
-    concat @@ List.flatten [
-      gen      types_ Ocaml_codegen.gen_type;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_decode_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_encode_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_pp_sig t) types_ ;
-      List.flatten @@ List.map (fun t -> wrap_opt @@ Ocaml_codegen.gen_default_sig t) types_ ;
-    ]
-  ) (otypes);
+  output_string sig_oc (Fmt.print sc);
   ()
 
 let () = 
@@ -218,7 +224,7 @@ let () =
 
   try
     let otypes = compile include_dirs proto_file_name in 
-    generate_code sig_oc struct_oc otypes;
+    generate_code sig_oc struct_oc otypes proto_file_name;
     close_file_channels ();
     List.iter (fun file_name ->
       Printf.printf "Generated %s\n" file_name; 

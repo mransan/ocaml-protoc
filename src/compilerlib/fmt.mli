@@ -15,6 +15,9 @@ val empty_scope : unit -> scope
 val line : scope -> string -> unit 
 (** [line scope s] adds [s] to [scope] *)
 
+val empty_line : scope -> unit 
+(** [empty_line scope] adds an empty line to [scope] *)
+
 val scope : scope -> (scope -> unit) -> unit 
 (** [scope scope f] adds a sub scope and apply [f] to it. *)
 

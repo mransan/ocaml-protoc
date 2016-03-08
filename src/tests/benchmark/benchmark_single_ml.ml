@@ -170,7 +170,7 @@ let () =
     Bench_t.Int_packed_repeated;
   ] in
 
-  let init_cases, test_cases = make_test_requests ~number_of_sample:5 all_test_ids in
+  let init_cases, test_cases = make_test_requests ~number_of_sample:10 all_test_ids in
   
   Printf.printf "Number of test cases: %i\n" (Array.length test_cases);
 
