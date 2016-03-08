@@ -34,6 +34,10 @@ message Person {
 ```
 The following OCaml code will get generated after running `ocaml-protoc -ml_out ./ example.proto`
 ```OCaml
+(** example01.proto Generated Types and Encoding *)
+
+(** {2 Types} *)
+
 type person = {
   mutable name : string;
   mutable id : int32;
@@ -41,17 +45,29 @@ type person = {
   mutable phone : string list;
 }
 
+
+(** {2 Default values} *)
+
+val default_person : unit -> person
+(** [default_person ()] is the default value for type [person] *)
+
+
+(** {2 Protobuf Decoding} *)
+
 val decode_person : Pbrt.Decoder.t -> person
 (** [decode_person decoder] decodes a [person] value from [decoder] *)
+
+
+(** {2 Protobuf Encoding} *)
 
 val encode_person : person -> Pbrt.Encoder.t -> unit
 (** [encode_person v encoder] encodes [v] with the given [encoder] *)
 
+
+(** {2 Formatters} *)
+
 val pp_person : Format.formatter -> person -> unit 
 (** [pp_person v] formats v] *)
-
-val default_person : unit -> person
-(** [default_person ()] is the default value for type [person] *)
 ```
 
 You can then use this OCaml module in your application to populate, serialize, and retrieve `person` protocol buffer messages.
