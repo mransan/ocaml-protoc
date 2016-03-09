@@ -9,7 +9,8 @@ TMP_DIR=__tmp__
 
 .PHONY: copy
 
-ALL_BIN_FILES=`ls src/compilerlib/*.ml*`
+ALL_BIN_FILES =`ls src/compilerlib/*.ml*`
+ALL_BIN_FILES+=`ls src/compilerlib/ocaml/*.ml*`
 ALL_BIN_FILES+=src/ocaml-protoc/ocaml-protoc.ml
 
 copy_file_for_bin:
@@ -20,9 +21,9 @@ copy_file_for_bin:
 
 bin.native: check_prefix copy_file_for_bin
 	cd $(TMP_DIR) && \
-		ocamllex lexer.mll && \
-	    ocamlyacc parser.mly && \
-		ocamlopt `ocamldep -sort *.ml*` -o ocaml-protoc
+		ocamllex  pblexer.mll && \
+	    ocamlyacc pbparser.mly && \
+		ocamlopt -I +compiler-libs ocamlcommon.cmxa `ocamldep -sort *.ml*`  -o ocaml-protoc
 	mkdir -p $(PREFIX)/bin
 	cp $(TMP_DIR)/ocaml-protoc $(PREFIX)/bin
 	rm -rf $(TMP_DIR)
@@ -37,9 +38,10 @@ copy_file_for_lib:
 
 lib: check_prefix copy_file_for_lib
 	cd $(TMP_DIR) && \
-		ocamlopt `ocamldep -sort *.ml*` -a -o pbrt.cmxa && \
-		ocamlc `ocamldep -sort *.ml*` -a -o pbrt.cma 
+		ocamlopt  `ocamldep -sort *.ml*` -a -o pbrt.cmxa && \
+		ocamlc    `ocamldep -sort *.ml*` -a -o pbrt.cma 
 	mkdir -p $(PREFIX)/lib
+	cp $(TMP_DIR)/pbrt.cmx  $(PREFIX)/lib
 	cp $(TMP_DIR)/pbrt.cmxa $(PREFIX)/lib
 	cp $(TMP_DIR)/pbrt.cma $(PREFIX)/lib
 	cp $(TMP_DIR)/pbrt.a $(PREFIX)/lib

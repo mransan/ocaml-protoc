@@ -9,7 +9,6 @@ let difficulty_size_of_difficulty = function
   | 5  -> 10_000_000
   | _  -> failwith "Invalid difficulty"
 
-
 module Int32List = struct 
 
   type t = Bench_t.int32_list 
