@@ -25,65 +25,20 @@
 
 (** Compiler exception *) 
 
+(** {2 Types} *)
+
 type programmatic_error =
   | Invalid_string_split 
   | Unexpected_field_type 
   | No_type_found_for_id 
   | One_of_should_be_inlined_in_message
 
-type unresolved_type = {
-  field_name: string; 
-  type_:string; 
-  message_name:string 
-}
-
-type duplicate_field_number = {
-  field_name: string; 
-  previous_field_name  : string;
-  message_name: string; 
-}
-
-type invalid_default_value = {
-  field_name: string; 
-  info: string; 
-}
-
-type unsupported_field_type = {
-  field_name: string; 
-  field_type: string; 
-  backend_name:string;
-}
-
-type error_context = 
-  | Message 
-  | Enum 
-  | One_of
-
-type missing_closing_braces = {
-  context: error_context;
-  element_name : string;
-}
-
-type error = 
-  | Unresolved_type of unresolved_type 
-    (** When the type of a field could not be resolved *) 
-  | Duplicated_field_number of duplicate_field_number 
-    (** When there are 2 field with either identical number or name *)
-  | Invalid_default_value of invalid_default_value 
-    (** When a default value type type does not match the field type *)
-  | Unsupported_field_type of unsupported_field_type 
-  | Programatic_error of programmatic_error 
-  | Invalid_import_qualifier 
-  | Invalid_file_name of string  
-  | Import_file_not_found of string 
-  | Invalid_message_declaration of string 
-  | Invalid_packed_option of string 
-  | Missing_semicolon_for_enum_value of string
-  | Invalid_enum_specification of string 
-  | Syntax_error of error_context * Location.t 
+type error
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
+
+(** {2 Raise Functions} *)
 
 val unresolved_type : 
   field_name:string -> 
@@ -119,10 +74,9 @@ val invalid_file_name : string -> 'a
 val invalid_message_declaration : string -> 'a 
 
 val invalid_packed_option : string -> 'a 
-(** [invalid_packed_option field_name] *)
 
 val missing_semicolon_for_enum_value : string -> 'a 
 
 val invalid_enum_specification : string -> 'a 
 
-val syntax_error : error_context -> Location.t -> 'a 
+val syntax_error : Location.t -> 'a 

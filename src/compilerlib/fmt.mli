@@ -3,8 +3,10 @@
 (** {2 types} *) 
 
 type scope 
-(** A scope is a formatting container which can contains line and other
-    scopes. 
+(** A scope is a formatting container which can contains line of text as well 
+    as other nested scopes
+
+    In other word a scope define an indentation section.
  *)
 
 (** {2 Creation} *) 

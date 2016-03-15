@@ -44,7 +44,6 @@ let empty_graph = Int_map.empty
 let add_node ({id; _ } as n) g = 
   Int_map.add id n g 
 
-
 (** Options utilities 
   *)
 module Option = struct 
@@ -70,6 +69,7 @@ end
 
 
 module Tarjan = struct 
+
   type tnode = {
     core: node; 
     mutable index : int option; 
@@ -151,4 +151,3 @@ module Tarjan = struct
 end 
 
 let tarjan = Tarjan.tarjan 
-

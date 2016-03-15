@@ -27,10 +27,10 @@
 
 (** field constant *) 
 type constant = 
-  | Constant_string   of string 
-  | Constant_bool     of bool 
-  | Constant_int      of int 
-  | Constant_float    of float 
+  | Constant_string of string 
+  | Constant_bool of bool 
+  | Constant_int of int 
+  | Constant_float of float 
   | Constant_litteral of string 
 
 (** field can have a list of options attached to 
@@ -38,11 +38,11 @@ type constant =
 
     [required int32 my_field = [default=1]]
   *) 
-type field_option  = string * constant 
+type field_option = string * constant 
 
 type field_options = field_option list 
 
-type file_option  = field_option 
+type file_option = field_option 
 
 (** A field property defining its occurence
  *)
@@ -76,14 +76,14 @@ type oneof = {
 }
 
 type enum_value = {
-  enum_value_name: string; 
+  enum_value_name : string; 
   enum_value_int : int;
 }
 
 type enum = {
-  enum_id   : int; 
+  enum_id  : int; 
   enum_name : string; 
-  enum_values: enum_value list; 
+  enum_values : enum_value list; 
 } 
 
 type extension_range_to = 

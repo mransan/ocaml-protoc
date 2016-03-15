@@ -23,7 +23,7 @@
 
 *)
 
-(** Light-weigth graph utilities to produce strongly connected component from 
+(** Basicgraph utilities to produce strongly connected component from 
     a graph using Tarjan algorithm once.
   *)
 

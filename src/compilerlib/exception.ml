@@ -63,16 +63,6 @@ type unsupported_field_type = {
   backend_name:string;
 }
 
-type error_context = 
-  | Message 
-  | Enum 
-  | One_of
-
-type missing_closing_braces = {
-  context: error_context;
-  element_name : string;
-}
-
 type error = 
   | Unresolved_type of unresolved_type 
     (** When the type of a field could not be resolved *) 
@@ -89,16 +79,11 @@ type error =
   | Invalid_packed_option of string 
   | Missing_semicolon_for_enum_value of string
   | Invalid_enum_specification of string 
-  | Syntax_error of error_context * Location.t 
+  | Syntax_error of Location.t 
 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
-
-let string_of_context = function
-  | Message -> "message"
-  | Enum    -> "enum"
-  | One_of  -> "oneof"
 
 let prepare_error = function 
   | Unresolved_type { field_name; type_; message_name} -> 
@@ -144,10 +129,9 @@ let prepare_error = function
   | Missing_semicolon_for_enum_value enum_value -> 
     P.sprintf "Missing semicolon for enum value: %s" enum_value
 
-  | Syntax_error (context, loc) -> 
-    let context = string_of_context context in 
+  | Syntax_error loc -> 
     let line    = loc.Location.loc_start.Lexing.pos_lnum in
-    P.sprintf "Syntax error for %s at line: %i" context line  
+    P.sprintf "Syntax error at line: %i" line  
 
   | Invalid_enum_specification enum_name -> 
     P.sprintf 
@@ -208,5 +192,5 @@ let missing_semicolon_for_enum_value enum_value =
 let invalid_enum_specification enum_name = 
   raise (Compilation_error (Invalid_enum_specification enum_name))
 
-let syntax_error context line = 
-  raise (Compilation_error (Syntax_error (context, line))) 
+let syntax_error loc = 
+  raise (Compilation_error (Syntax_error loc)) 
