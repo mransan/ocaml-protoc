@@ -1,10 +1,12 @@
-OCB_FLAGS = -use-ocamlfind -package compiler-libs.common -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
+OCB_FLAGS = -pkg compiler-libs.common -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
 UNIT_TESTS_DIR        = src/tests/unit-tests
 INTEGRATION_TESTS_DIR = src/tests/integration-tests
 BENCHMARK_DIR         = src/tests/benchmark
 GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
+
+OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
 
 .PHONY: clean default
 
@@ -39,11 +41,13 @@ lib.byte:
 
 # ocaml-protoc native executable 
 bin.native: 
-	$(OCB) ocaml-protoc.native
+	$(OCB) ocaml_protoc.native
+	mv ocaml_protoc.native ocaml-protoc.native
 
 # ocaml-protoc byte executable
 bin.byte:
-	$(OCB) ocaml-protoc.byte
+	$(OCB) ocaml_protoc.byte
+	mv ocaml_protoc.byte ocaml-protoc.byte
 
 ####################
 # ---- INSTALL---- # 
@@ -60,22 +64,40 @@ ifndef BINDIR
 endif
 export BINDIR
 
+ifndef CXX
+    CXX = g++
+endif
+export CXX
+
+ifndef CPPFLAGS
+    CPPFLAGS = 
+endif
+export CPPFLAGS
+
 check_install: check_prefix 
 	@if [ ! -d $(BINDIR) ]; then \
         echo "$(BINDIR) directory does not exist... create it first"; exit 1; \
     fi;
 
-LIB_BUILD       =_build/src/runtime
-LIB_INSTALL     = META $(LIB_BUILD)/pbrt.cmi $(LIB_BUILD)/pbrt.cma src/include/ocaml-protoc/ocamloptions.proto 
-LIB_INSTALL_OPT = $(LIB_BUILD)/pbrt.cmxa $(LIB_BUILD)/pbrt.a
+LIB_BUILD     =_build/src/runtime
+LIB_INSTALL   = META 
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmi 
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmo
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmx
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmt
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.annot
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cma 
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxa 
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.a
+LIB_INSTALL  +=$(OCAMLOPTIONS_HINC)/ocamloptions.proto 
 
 lib.install: lib.byte lib.native
-	ocamlfind install ocaml-protoc $(LIB_INSTALL) $(LIB_INSTALL_OPT)
+	ocamlfind install ocaml-protoc $(LIB_INSTALL)
 
 lib.uninstall:
 	ocamlfind remove ocaml-protoc
 
-ifeq "$(shell ocamlc -config |grep os_type)" "os_type: Win32"
+ifeq "$(shell ocamlc -config | grep os_type)" "os_type: Win32"
 	@EXE=.exe
 else
 	@EXE=
@@ -137,22 +159,21 @@ PROTOC     = $(PB_INSTALL)/bin/protoc
 
 export LD_LIBRARY_PATH=$(PB_LINC)
 
-OCAMLOPTIONS_HINC=src/include/ocaml-protoc
 ML_PROTOC=./ocaml-protoc.byte -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC)
 
-%_cpp.tsk: %_cpp.cpp %.pb.cc src/include/ocaml-protoc/ocamloptions.pb.cc
-	g++ -I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
+%_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
+	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
 
 $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10_cpp.cpp \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc 
-	g++ -I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
+	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
 
 .SECONDARY: 
 
 %.pb.cc: %.proto
-	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I src/include/ocaml-protoc/ -I $(INTEGRATION_TESTS_DIR) $<
+	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) $<
 
 %_pb.ml %_pb.mli : %.proto bin.byte bin.native
 	$(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
@@ -160,7 +181,9 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
 
-test%: bin.native bin.byte $(INTEGRATION_TESTS_DIR)/test%_ml.native $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk 
+test%: bin.native bin.byte \
+	   $(INTEGRATION_TESTS_DIR)/test%_ml.native \
+	   $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk 
 	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk encode
 	time ./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native decode
 	./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native encode
@@ -176,7 +199,8 @@ testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/tes
 
 .PHONY: integration
 
-integration: test01 test02 testCompat test05 test06 test07 test08 test09 test10 test11 test12 test13 test14 test15 
+integration: test01 test02 test05 test06 test07 test08 test09 test10 \
+	         test11 test12 test13 test14 test15 testCompat 
 
 .PHONY: google_unittest
 

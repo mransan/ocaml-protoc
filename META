@@ -1,5 +1,6 @@
 description = "Runtime support for ocaml-protoc"
 version = "0.1.0"
 requires = "ocamlbuild"
-archive(byte) = "pbrt.cma"
-archive(native) = "pbrt.cmxa"
+archive(byte) = "pbrt.cma, pbrt.cmo"
+archive(native) = "pbrt.cmxa, pbrt.cmx"
+archive(byte,native) = "ocamloptions.proto,ocamloptions.pb.h,ocamloptions.pb.cc"

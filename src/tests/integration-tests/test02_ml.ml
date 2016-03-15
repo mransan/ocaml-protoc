@@ -18,7 +18,7 @@ let decode_ref_data () = {
   *)
   T.o13 = true;
   T.o14 = "Iam a test string";
-  T.o15 = "Iam a test byte"; 
+  T.o15 = Bytes.of_string "Iam a test byte"; 
 }
 
 let () = 
