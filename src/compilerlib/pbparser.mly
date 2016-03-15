@@ -164,7 +164,7 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
-  | error        { Exception.syntax_error Exception.Message (Location.rhs_loc 1)}
+  | error        { Exception.syntax_error (Location.rhs_loc 1)}
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {
