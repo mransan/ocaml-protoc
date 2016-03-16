@@ -1,0 +1,8 @@
+message string_some {
+    message none {
+    }
+    oneof t {
+        none none = 1;
+        string some  = 2;
+    }
+}

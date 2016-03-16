@@ -34,7 +34,6 @@ This page describes how the mapping between protobuf type system and OCaml is do
 | string       | string      |            |  |
 | bytes        | bytes       |            |  |
 
-
 ##### [Oneof fields](https://developers.google.com/protocol-buffers/docs/proto#oneof)
 
 `oneof` fields are encoded as OCaml `variant`. The variant name is the concatenation of the enclosing message name 
@@ -57,7 +56,9 @@ functions are generated.*
 
 ##### [Message](https://developers.google.com/protocol-buffers/docs/proto#simple) 
 
-Message are encoded as OCaml `records` with all fields mutable. 
+Message are compiled to OCaml `records` with all fields mutable, while `oneof` fields are compiled to OCaml variant.
+
+**Oneof optimization**
 
 Note that if the protobuf message only contains a single `oneof` field then a single `variant` will be generated. 
 This simplify greatly the generated code; for instance:
@@ -98,6 +99,37 @@ Will generate the compact OCaml type:
 type string_some =
   | None
   | Some of string
+```
+
+**Recursive message**
+
+Recursive message are supported and compiled to recursive type in OCaml. For instance the following protobuf:
+
+```Javascript
+message IntList {
+    message Nil  {  }
+    message Cons {
+        required int32   value = 1 [(ocaml_type) = int_t] ; 
+        required IntList next  = 2;
+    }
+    oneof t {
+        Cons cons = 1;
+        Nil  nil  = 2; 
+    }
+}
+```
+
+Will compile to the following OCaml type:
+
+```OCaml
+type int_list_cons = {
+  mutable value : int;
+  mutable next : int_list;
+}
+
+and int_list =
+  | Cons of int_list_cons
+  | Nil
 ```
 
 ##### Enumerations
@@ -174,4 +206,9 @@ type ma = {
 
 ##### Maps Groups Services
 
-[Maps](https://developers.google.com/protocol-buffers/docs/proto#maps), [Groups](https://developers.google.com/protocol-buffers/docs/proto#groups) and [Services](https://developers.google.com/protocol-buffers/docs/proto#services) are currently **NOT supported. While groups are most likely never going be supported since they are being deprecated, maps should be relatively easy to add. Services requires a lot more work though, but I think generating an [Mirage Cohttp server](https://github.com/mirage/ocaml-cohttp) would be pretty awesome.
+[Maps](https://developers.google.com/protocol-buffers/docs/proto#maps), 
+[Groups](https://developers.google.com/protocol-buffers/docs/proto#groups) and 
+[Services](https://developers.google.com/protocol-buffers/docs/proto#services) are currently **NOT** supported. 
+
+While groups are most likely never going be supported since they are being deprecated, maps should be relatively easy to add. 
+Services requires a lot more work though, but I think generating an [Mirage Cohttp server](https://github.com/mirage/ocaml-cohttp) would be pretty awesome.
