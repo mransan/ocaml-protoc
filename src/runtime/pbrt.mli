@@ -21,241 +21,216 @@
   THE SOFTWARE.
 *)
 
-(** Low-level Protobuf codec *)
-
-(** Type of wire format payload kinds. *)
-type payload_kind =
+type payload_kind = Protobuf.payload_kind = 
   | Varint
   | Bits32
   | Bits64
-  | Bytes
+  | Bytes 
 
-module Decoder : sig
-  (** Type of failures possible while decoding. *)
-  type error =
-    | Incomplete
-    | Overlong_varint
-    | Malformed_field
-    | Overflow            of string
-    | Unexpected_payload  of string * payload_kind
-    | Missing_field       of string
-    | Malformed_variant   of string
+module Decoder : sig 
 
-  (** [error_to_string e] converts error [e] to its string representation. *)
-  val error_to_string : error -> string
+  (** {2 Types} *) 
 
-  exception Failure of error
+  type t = Protobuf.Decoder.t 
 
-  (** Type of wire format decoders. *)
-  type t
+  (** {2 Creator} *)
 
-  (** [of_bytes b] creates a decoder positioned at start of bytes [b]. *)
-  val of_bytes  : bytes -> t
+  val of_bytes : bytes -> t 
 
-  (** [of_string s] creates a decoder positioned at start of string [s]. *)
-  val of_string : string -> t
-
-  (** [at_end d] returns [true] if [d] has exhausted its input, and [false]
-      otherwise. *)
-  val at_end    : t -> bool
-
-  (** [skip d pk] skips the next value of kind [pk] in [d].
-      If skipping the value would exhaust input of [d], raises
-      [Encoding_error Incomplete]. *)
-  val skip      : t -> payload_kind -> unit
+  (** {2 Decoding Functions} *) 
   
-  (** [varint d] reads a varint to a int from [d].
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int_as_varint : t -> int 
-
-  (** [varint d] reads a varint to an int64 from [d].
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int64_as_varint : t -> int64
-  
-  (** [varint d] reads a varint to an int32 from [d].
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int32_as_varint : t -> int32
-  
-  (** [int_as_zigzag d] reads a varint from [d] to an int and zigzag-decodes it.
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int_as_zigzag : t -> int
-
-  (** [int64_as_zigzag d] reads a varint from [d] to an int64 and zigzag-decodes it.
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int64_as_zigzag : t -> int64
-  
-  (** [int32_as_zigzag d] reads a varint from [d] to an int32 and zigzag-decodes it.
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int32_as_zigzag : t -> int32
-
-  (** [int32_as_bits32d] reads four bytes from [d].
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int32_as_bits32 : t -> int32
-
-  (** [bits64 d] reads eight bytes from [d].
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val int64_as_bits64 : t -> int64
-  
-  (** [int_as_bits32 d] reads a int value encoded in 32 bits. *)
-  val int_as_bits32 : t -> int 
-  
-  (** [int_as_bits64 d] reads a int value encoded in 64 bits. *)
-  val int_as_bits64 : t -> int 
-
-  (** [packed f decoder] returns the list of element to be decoded in a packed
-      encoding.
-   *)
-  val packed : (t -> 'a) -> t -> 'a list
-  
-  (** [packed f decoder] returns the list of element to be decoded in a packed
-      encoding.
-   *)
-  val packed_fold : ('a -> t -> 'a) -> 'a -> t -> 'a 
-
-  (** [bytes d] reads a varint indicating length and then that much
-      bytes from [d].
-      If [d] has exhausted its input, raises [Failure Incomplete]. *)
-  val bytes     : t -> bytes
-  
-  (** [nested d] returns a decoder for a message nested in [d].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
-  val nested    : t -> t
-  
-  (** [empty_nested d] decode an empty nested sub message. *)
-  val empty_nested : t -> unit
-
-  (** [bool d] reads a boolean value. Boolean value is *)
-  val bool : t -> bool 
-  
-  (** [float_as_bits32 d] reads a floating point value encoded in 32 bits. *)
-  val float_as_bits32 : t -> float
-  
-  (** [float_as_bits64 d] reads a floating point value encoded in 64 bits. *)
-  val float_as_bits64 : t -> float
-  
-  (** [string d] reads a string value encoded as a byte sequence. *)
-  val string : t -> string
-
+  val key : t -> (int * Protobuf.payload_kind) option 
   (** [key d] reads a key and a payload kind from [d].
       If [d] has exhausted its input when the function is called, returns [None].
       If [d] has exhausted its input while reading, raises
       [Failure Incomplete].
       If the payload kind is unknown, raises [Failure Malformed_field]. *)
-  val key       : t -> (int * payload_kind) option
 
-  (** [int_of_int32 fld v] returns [v] truncated to [int].
-      If the value doesn't fit in the range of [int], raises
-      [Failure (Overflow fld)]. *)
-  val int_of_int32    : string -> int32 -> int
+  val skip : t -> payload_kind -> unit 
+  (** [skip d pk] skips the next value of kind [pk] in [d].
+      If skipping the value would exhaust input of [d], raises
+      [Encoding_error Incomplete]. *)
 
-  (** [int_of_int64 fld v] returns [v] truncated to [int].
-      If the value doesn't fit in the range of [int], raises
-      [Failure (Overflow fld)]. *)
-  val int_of_int64    : string -> int64 -> int
+  val nested : t -> t
+  (** [nested d] returns a decoder for a message nested in [d].
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [int32_of_int64 fld v] returns [v] truncated to [int32].
-      If the value doesn't fit in the range of [int32], raises
-      [Failure (Overflow fld)]. *)
-  val int32_of_int64  : string -> int64 -> int32
+  val empty_nested : t -> unit 
+  (** [empty_nested d] skips an empty message of 0 length.
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [bool_of_int64 fld v] returns [v] truncated to [bool].
-      If the value doesn't fit in the range of [bool], raises
-      [Failure (Overflow fld)]. *)
-  val bool_of_int64   : string -> int64 -> bool
+  val packed_fold : ('a -> t -> 'a) -> 'a -> t -> 'a 
+  (** [packed_fold f e0 d] folds over the a packed encoding with [f acc d] and 
+      initial value [e0]. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
+       
+  val int_as_varint : t -> int 
+  (** [int_as_varint d] reads an [int] value from [d] with [Varint] encoding. 
+      If the integer value read cannot be converted to [int] raises 
+      [Failure Overflow ""].  
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-end
+  val int_as_zigzag : t -> int 
+  (** [int_as_zigzag d] reads an [int] value from [d] with zigzag encoding. 
+      If the integer value read cannot be converted to [int] raises 
+      [Failure Overflow ""].  
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-module Encoder : sig
+  val int32_as_varint : t -> int32 
+  (** [int32_as_varint d] reads an [int32] value from [d] with [Varint] encoding. 
+      If the integer value read cannot be converted to [int32] raises 
+      [Failure Overflow ""].  
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** Type of failures possible while encoding. *)
-  type error =
-    | Overflow of string
+  val int32_as_zigzag : t -> int32 
+  (** [int32_as_varint d] reads an [int32] value from [d] with zigzag encoding. 
+      If the integer value read cannot be converted to [int32] raises 
+      [Failure Overflow ""].  
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [error_to_string e] converts error [e] to its string representation. *)
-  val error_to_string : error -> string
+  val int64_as_varint : t -> int64
+  (** [int64_as_varint d] reads an [int64] value from [d] with [Varint] encoding. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  exception Failure of error
+  val int64_as_zigzag : t -> int64
+  (** [int64_as_varint d] reads an [int64] value from [d] with zigzag encoding. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** Type of wire format encoders. *)
-  type t
+  val int32_as_bits32 : t -> int32 
+  (** [int32_as_bits32 d] reads an [int32] value from [d] with 32 bit encoding. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [create ()] creates a new encoder. *)
-  val create    : unit -> t
+  val int64_as_bits64 : t -> int64
+  (** [int64_as_bits64 d] reads an [int64] value from [d] with 64 bit encoding. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [to_string e] converts the message assembled in [e] to a string. *)
-  val to_string : t -> string
+  val bool : t -> bool
+  (** [bool d] reads a [bool] value from [d] with varing encoding. 
+      If the boolean value in [d] is neither 0 or 1 raises 
+      [Failure Overflow ""].
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [to_bytes e] converts the message assembled in [e] to bytes. *)
-  val to_bytes  : t -> bytes
-  
-  (** [int_as_varint i e] encodes an [int] [i] as a varint to [e]. *)
-  val int_as_varint : int -> t -> unit
+  val float_as_bits32 : t -> float
+  (** [float_as_bits32 d] reads a [float] value from [d] with 32 bit encoding. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [int64_as_varint i e] encodes an [int64] [i] as a varint to [e] *)
-  val int64_as_varint : int64 -> t -> unit
+  val float_as_bits64 : t -> float
+  (** [float_as_bits64 d] reads a [float] value from [d] with 64 bit encoding. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [int32_as_varinti e] encodes an [int32] [i] as a varint to [e] *)
-  val int32_as_varint : int32 -> t -> unit
-  
-  (** [int_as_zigzag e] zigzag-encodes an [int] [i] to [e]. *)
-  val int_as_zigzag : int -> t -> unit
+  val int_as_bits32 : t -> int
+  (** [int_as_bits32 d] reads a [int] value from [d] with 32 bit encoding. 
+      If the integer value read cannot be converted to [int] raises 
+      [Failure Overflow ""].  
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [int64_as_zigzag i e] zigzag-encodes an [int64] [i] to [e]. *)
-  val int64_as_zigzag : int64 -> t -> unit
-  
-  (** [int32_as_zigzag i e] zigzag-encodes an [int32] [i] to [e] *)
-  val int32_as_zigzag : int32 -> t -> unit
+  val int_as_bits64 : t -> int 
+  (** [int_as_bits64 d] reads a [int] value from [d] with 64 bit encoding. 
+      If the integer value read cannot be converted to [int] raises 
+      [Failure Overflow ""].  
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [bits32 i e] writes four bytes of [i] to [e]. *)
-  val int32_as_bits32    : int32 -> t -> unit
+  val string : t -> string 
+  (** [string d] reads a [string] value from [d]. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [bits64 i e] writes eight bytes of [i] to [e]. *)
-  val int64_as_bits64    : int64 -> t -> unit
-  
-  (** [int_as_bits32 i e] writes four bytes of [i] to [e]. *)
-  val int_as_bits32 : int -> t -> unit
+  val bytes : t -> bytes 
+  (** [bytes d] reads a [bytes] value from [d]. 
+      If reading the message would exhaust input of [d], raises
+      [Failure Incomplete]. *)
 
-  (** [int64_as_bits64 i e] writes eight bytes of [i] to [e]. *)
-  val int_as_bits64 : int -> t -> unit
+end (* Decoder *) 
 
-  (** [float_as_bits32 v e] writes four bytes of [v] to [e]. *)
-  val float_as_bits32 : float -> t -> unit
-  
-  (** [float_as_bits64 v e] writes eight bytes of [v] to [e]. *)
-  val float_as_bits64 : float -> t -> unit
+module Encoder : sig  
 
-  (** [bytes b e] writes a varint indicating length of [b] and then
-      [b] to [e]. *)
-  val bytes     : bytes -> t -> unit
+  (** {2 Types} *)
 
-  (** [string b e] writes a varint indicating length of [b] and then
-      [b] to [e]. *)
-  val string     : string -> t -> unit
+  type t = Protobuf.Encoder.t 
 
-  (** [bool b e] writes [b] as a varint of either [0] or [1]. 
-    *)
-  val bool     : bool -> t -> unit
-  
-  (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
-  val nested    : (t -> unit) -> t -> unit
-  
-  (** [empty_nested e] encode an empty nested sub message. *)
-  val empty_nested : t -> unit
+  (** {2 Creator} *)
 
+  val create : unit -> t 
+
+  (** {2 Convertion} *)
+
+  val to_bytes : t -> bytes 
+
+  (** {2 Encoding Functions} *)
+
+  val key : (int * payload_kind) -> t -> unit  
   (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
-  val key       : (int * payload_kind) -> t -> unit
 
-  (** [int32_of_int fld v] returns [v] truncated to [int32].
-      If the value doesn't fit in the range of [int32], raises
-      [Failure (Overflow fld)]. *)
-  val int32_of_int    : string -> int -> int32
+  val nested    : (t -> unit) -> t -> unit
+  (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
 
-  (** [int32_of_int64 fld v] returns [v] truncated to [int32].
-      If the value doesn't fit in the range of [int32], raises
-      [Failure (Overflow fld)]. *)
-  val int32_of_int64  : string -> int64 -> int32
-end
+  val empty_nested : t -> unit 
+  (** [nested f e] encodes a zero length empty message *)
+
+  val int_as_varint : int -> t -> unit
+  (** [int_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
+ 
+  val int_as_zigzag : int -> t -> unit
+  (** [int_as_zigzag i e] encodes [i] in [e] with [Varint] zigzag encoding *)
+
+  val int32_as_varint : int32 -> t -> unit
+  (** [int32_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
+
+  val int32_as_zigzag : int32 -> t -> unit
+  (** [int32_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
+
+  val int64_as_varint : int64 -> t -> unit
+  (** [int64_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
+
+  val int64_as_zigzag : int64 -> t -> unit 
+  (** [int64_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
+
+  val int32_as_bits32 : int32 -> t -> unit
+  (** [int32_as_varint i e] encodes [i] in [e] with [Bits32] encoding *)
+
+  val int64_as_bits64 : int64 -> t -> unit
+  (** [int64_as_varint i e] encodes [i] in [e] with [Bits64] encoding *)
+
+  val bool :  bool -> t -> unit
+  (** [encode b e] encodes [b] in [e] with [Varint] encoding *)
+
+  val float_as_bits32 : float -> t -> unit 
+  (** [float_as_bits32 f e] encodes [f] in [e] with [Bits32] encoding *)
+
+  val float_as_bits64 : float -> t -> unit
+  (** [float_as_bits64 f e] encodes [f] in [e] with [Bits64] encoding *)
+
+  val int_as_bits32 : int -> t -> unit 
+  (** [int_as_bits32 i e] encodes [i] in [e] with [Bits32] encoding 
+      TODO : add error handling 
+   *) 
+
+  val int_as_bits64 : int -> t -> unit 
+  (** [int_as_bits64 i e] encodes [i] in [e] with [Bits64] encoding
+   *)
+
+  val string : string -> t -> unit
+  (** [string s e] encodes [s] in [e] *)
+
+  val bytes : bytes -> t -> unit
+  (** [string s e] encodes [s] in [e] *)
+end 
 
 module Repeated_field : sig 
 

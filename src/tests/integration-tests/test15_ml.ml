@@ -4,16 +4,16 @@ module T  = Test15_pb
     with int32 values from [0; n].
  *)
 let fill_0_to_n n = 
-  let n = n + 1 in 
+  let n_plus_1 = n + 1 in 
   let l = Pbrt.Repeated_field.make 0 in 
   let rec loop = function
-    | i when i = n -> l 
+    | i when i = n_plus_1 -> l 
     | i -> (
       Pbrt.Repeated_field.add i l;
       loop (i + 1) 
     )
   in 
-  loop 0
+  loop (- n)
 
 let decode_ref_data () = T.({
   m1_l = [
