@@ -1,6 +1,16 @@
-###################
-# ---- TESTS ---- # 
-###################
+ifndef CXX
+    CXX = g++
+endif
+export CXX
+
+ifndef CPPFLAGS
+    CPPFLAGS = 
+endif
+export CPPFLAGS
+
+#
+# Unit tests
+# ----------
 
 .PHONY: unit-tests
 
@@ -30,6 +40,10 @@ unit-tests:
 	./ocaml_codegen_test.native
 	./graph_test.native
 	./pbrt_array.native
+
+#
+# Integration tests
+# -----------------
 			
 # Integration tests with Google protoc (C++ target) to ensure that 
 # the generated OCaml code can encode/decode message compatible with Google 
@@ -45,15 +59,6 @@ export LD_LIBRARY_PATH=$(PB_LINC)
 
 ML_PROTOC=./ocaml-protoc -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC)
 
-ifndef CXX
-    CXX = g++
-endif
-export CXX
-
-ifndef CPPFLAGS
-    CPPFLAGS = 
-endif
-export CPPFLAGS
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
 	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
@@ -96,6 +101,15 @@ testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/tes
 integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 	         test11 test12 test13 test14 test15 testCompat 
 
+#
+# Google Unittest 
+# ---------------
+
+# In this test we make sure we can successfully generate and compile
+# the code for the Google unittest.proto file. Because of some 
+# known limitation of `ocaml-protoc` some cases were commented 
+# out. 
+
 .PHONY: google_unittest
 
 google_unittest: bin.byte
@@ -108,7 +122,12 @@ google_unittest: bin.byte
 
 all-tests: unit-tests integration google_unittest testCompat 
 
-# -- Examples -- 
+#
+# Examples
+# --------
+
+# In this section we compile the example given in 
+# the '.md' Documentation
 
 .PHONY: all-examples
 
@@ -116,13 +135,19 @@ example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte b
 	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
 	$(OCB) -I src/examples src/examples/example$*.native
 
-all-examples: example01.native example02.native
+all-examples: example01.native example02.native example03.native
 
 it: bin.native
 	$(OCB) ./src/unit-tests/pbrt_array.native
 	time ./pbrt_array.native
 
 .PHONY: benchmark_single_ml.native
+
+#
+# Benchmarks
+# ----------
+
+# In this section we build benchmark tasks 
 
 benchmark_single_ml.native: bin.byte
 	$(ML_PROTOC) -I $(BENCHMARK_DIR) -ml_out $(BENCHMARK_DIR) $(BENCHMARK_DIR)/benchmark.proto

@@ -1,0 +1,15 @@
+// This example demonstrate the ability 
+// to define recursive message and compile them to 
+// OCaml 
+
+message IntList {
+    message Nil  {  }
+    message Cons {
+        required int32   value = 1 [(ocaml_type) = int_t] ; 
+        required IntList next  = 2;
+    }
+    oneof t {
+        Cons cons = 1;
+        Nil  nil  = 2; 
+    }
+}
