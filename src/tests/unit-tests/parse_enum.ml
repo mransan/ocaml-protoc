@@ -45,7 +45,7 @@ let () =
   " in 
   match parse Pbparser.enum_ s with
   | x -> assert false 
-  | exception E.Compilation_error (E.Missing_semicolon_for_enum_value "EV1") -> ()
+  | exception E.Compilation_error _ -> ()
   | exception exn -> 
     print_endline @@ Printexc.to_string exn; 
     assert false

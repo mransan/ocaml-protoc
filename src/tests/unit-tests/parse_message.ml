@@ -128,7 +128,7 @@ let () =
   in 
   match parse Pbparser.message_ s with 
   | _ -> assert false 
-  | exception E.Compilation_error (E.Syntax_error (E.Message, _)) -> () 
+  | exception E.Compilation_error _ -> ()
   | exception exn -> print_endline @@ Printexc.to_string exn ; assert false 
 
 let () = 

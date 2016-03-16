@@ -44,7 +44,7 @@ let () =
 
 let assert_unresolved f = 
   match ignore @@ f () with 
-  | exception (Exception.Compilation_error (Exception.Unresolved_type _) )-> () 
+  | exception (Exception.Compilation_error _ ) -> ()
   | _ -> assert(false)
 
 let test_unresolved_msg s = 
@@ -98,7 +98,7 @@ let () =
 
 let assert_duplicate f = 
   match ignore @@ f () with 
-  | exception (Exception.Compilation_error (Exception.Duplicated_field_number _) )-> () 
+  | exception (Exception.Compilation_error _ )-> () 
   | _ -> assert(false)
 
 

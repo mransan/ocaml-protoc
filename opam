@@ -11,15 +11,20 @@ bug-reports:"https://github.com/mransan/ocaml-protoc/issues"
 dev-repo:"https://github.com/mransan/ocaml-protoc.git"
 license: "MIT"
 build: [
-  [make "lib.byte"]
-  [make "lib.native"]
-  [make "bin.byte"]
-  [make "bin.native"]
+  [make "lib.byte"]   
+  [make "lib.native"] { ocaml-native }
+  [make "bin.byte"]   {!ocaml-native }
+  [make "bin.native"] { ocaml-native }
 ]
-install: [make "install" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
-remove:  [make  "uninstall" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
+install: [
+  [make "lib.install.byte"   ] {!ocaml-native} 
+  [make "lib.install.native" ] { ocaml-native}
+  [make "bin.install" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
+]
+remove:  [make "uninstall" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
 depends: "ocamlfind"
 depends: [
-  "ocamlfind" {build}
+  "ocamlfind"  {build}
   "ocamlbuild" {build}
+  "ppx_deriving_protobuf"
 ]

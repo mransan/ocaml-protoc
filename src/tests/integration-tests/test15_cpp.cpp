@@ -10,7 +10,7 @@ m2 create_test_m2() {
         m1& m1 = *m2.add_m1_l();
         {
             m1.set_f(123);
-            for(int i=0; i <= 100; ++i) {
+            for(int i=-100; i <= 100; ++i) {
                 m1.add_l(i);
             }
         }
@@ -19,7 +19,7 @@ m2 create_test_m2() {
         m1& m1 = *m2.add_m1_l();
         {
             m1.set_f(456);
-            for(int i=0; i <= 5; ++i) {
+            for(int i=-5; i <= 5; ++i) {
                 m1.add_l(i);
             }
         }
