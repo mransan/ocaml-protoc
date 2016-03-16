@@ -121,24 +121,6 @@ let () =
 
 `ocaml-protoc` solely depends on the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
 
-**Install from source with sole dependency from the compiler (All platforms)**
-
-Assuming you want to install `ocaml-protoc` in `tmp` directory inside source directory simply do:
-
-```bash
-export PREFIX=`pwd`/tmp
-make -f Makefile.no_dep install
-```
-
-You should now see the following:
-```bash
-tmp/bin/ocaml-protoc                           #native executable
-tmp/include/ocaml-protoc/ocamloptions.proto    #protobuf extensions for OCaml code 
-tmp/lib/pbrt.a
-tmp/lib/pbrt.cma
-tmp/lib/pbrt.cmi
-tmp/lib/pbrt.cmxa
-```
 **Install from source with [ocamlfind](http://projects.camlcity.org/projects/findlib.html)**
 
 ```bash
@@ -161,14 +143,14 @@ ocaml-protoc -ml_out ./ example01.proto
 # Compile the example including the ocaml protobuf runtime (pbrt.cmxa)
 ocamlopt.opt \
   -I ../../tmp/lib/ -I ./  \
-  pbrt.cmxa \
+  protobuf.cmxa pbrt.cmxa \
   -o example01 \
   example01_pb.mli example01_pb.ml example01.ml
 ```
 
 Alternatively if you are using `findlib`:
 ```Bash
-ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
+ocamlfind ocamlopt -linkpkg -package ppx_deriving_prototub.runtime -package ocaml-protoc \
   -o example01 \
   example01_pb.mli example01_pb.ml example01.ml
 ```
