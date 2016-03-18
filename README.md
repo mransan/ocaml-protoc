@@ -119,11 +119,14 @@ let () =
 
 **Prerequesite**
 
-`ocaml-protoc` solely depends on the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
+`ocaml-protoc` depends on :
+* the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
+* [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf) for the generated code runtime.
 
 **Install from source with [ocamlfind](http://projects.camlcity.org/projects/findlib.html)**
 
 ```bash
+mkdir -p tmp/bin
 export PREFIX=`pwd`/tmp
 make install
 ```
