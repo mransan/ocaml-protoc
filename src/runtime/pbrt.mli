@@ -301,3 +301,54 @@ module Repeated_field : sig
       element. 
    *)
 end 
+
+(** Runtime functions for Pretty Printing functionality 
+ *)
+module Pp : sig 
+
+  type formatter = Format.formatter 
+  
+  val pp_unit : formatter -> unit -> unit
+  (** [pp_unit fmt ()] formats [unit] value *)
+  
+  val pp_int : formatter -> int -> unit 
+  (** [pp_unit fmt i] formats [i] value *)
+  
+  val pp_float : formatter -> float  -> unit
+  (** [pp_unit fmt f] formats [f] value *)
+  
+  val pp_bool : formatter -> bool  -> unit
+  (** [pp_unit fmt b] formats [b] value *)
+  
+  val pp_int32 : formatter -> int32  -> unit
+  (** [pp_unit fmt i] formats [i] value *)
+  
+  val pp_int64 : formatter -> int64  -> unit
+  (** [pp_unit fmt i] formats [i] value *)
+  
+  val pp_string : formatter -> string  -> unit
+  (** [pp_unit fmt s] formats [s] value *)
+  
+  val pp_bytes : formatter -> bytes  -> unit
+  (** [pp_unit fmt b] formats [b] value *)
+  
+  val pp_option : (formatter -> 'a -> unit) -> formatter -> 'a option -> unit 
+  (** [pp_option f fmt o] formats an option value [o] using [f] formatter when
+      [o] is a [Some x] value 
+   *)
+  
+  val pp_list : (formatter -> 'a -> unit) -> formatter -> 'a list -> unit 
+  (** [pp_list f fmt l] formats a list value [l] using [f] formatter on each
+      of the elements.
+   *)
+  
+  val pp_record_field : string -> (formatter -> 'a -> unit) -> formatter -> 'a -> unit
+  (** [pp_record_field label_name fmt field_value] formats a record [field_value] with
+      [label_name]
+   *)
+  
+  val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit 
+  (** [pp_brk fmt r] formats record value [r] with curly brakets. 
+   *)
+
+end (* Pp *) 

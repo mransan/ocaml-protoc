@@ -23,52 +23,6 @@
 
 *)
 
-let prefix_payload_to_ocaml_t  = {|module F = Format 
-
-let pp_unit fmt () = 
-  F.pp_print_string fmt "()"
-
-let pp_int = 
-  F.pp_print_int 
-
-let pp_float = 
-  F.pp_print_float 
-
-let pp_bool = 
-  F.pp_print_bool 
-
-let pp_int32 fmt i = 
-  F.pp_print_string fmt (Int32.to_string i)  
-
-let pp_int64 fmt i = 
-  F.pp_print_string fmt (Int64.to_string i)  
-
-let pp_string fmt s = 
-  F.fprintf fmt "\"%a\"" F.pp_print_string s
-
-let pp_bytes fmt b = 
-  pp_string fmt (Bytes.to_string b) 
-
-let pp_option pp_f fmt = function
-  | None   -> F.fprintf fmt "@[None@]"
-  | Some x -> F.fprintf fmt "@[Some(%a)@]" pp_f x 
-
-let pp_list pp_element fmt l = 
-  let rec pp_i fmt = function
-    | [h]  -> Format.fprintf fmt "%a" pp_element h
-    | h::t ->
-      Format.fprintf fmt "%a;@,%a" pp_element h pp_i t
-    | []   -> ()
-  in
-  F.fprintf fmt "@[<v 1>[%a@,@]]" pp_i l 
-
-let pp_equal field_name pp_val fmt val_ = 
-  F.fprintf fmt "@,@[<h>%s = %a;@]" field_name pp_val val_ 
-
-let pp_brk pp_record (fmt:F.formatter) r : unit = 
-  F.fprintf fmt "@[<v>{%a@,@]}" pp_record r  
-|}
-
 let runtime_function = function 
   | `Decode , Encoding_util.Varint false, Ocaml_types.Int   -> "Pbrt.Decoder.int_as_varint" 
   | `Decode , Encoding_util.Varint true , Ocaml_types.Int   -> "Pbrt.Decoder.int_as_zigzag" 

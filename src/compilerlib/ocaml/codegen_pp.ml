@@ -8,7 +8,7 @@ open Codegen_util
 let gen_pp_field field_type = 
   match field_type with 
   | T.User_defined_type t -> function_name_of_user_defined "pp" t 
-  | _ ->  sp "pp_%s" (string_of_field_type field_type) 
+  | _ ->  sp "Pbrt.Pp.pp_%s" (string_of_field_type field_type) 
 
 let gen_pp_record  ?and_ {T.record_name; fields } sc = 
   L.log "gen_pp, record_name: %s\n" record_name; 
@@ -18,7 +18,7 @@ let gen_pp_record  ?and_ {T.record_name; fields } sc =
   F.scope sc (fun sc ->
     F.line sc "let pp_i fmt () ="; 
     F.scope sc (fun sc -> 
-      F.line sc "F.pp_open_vbox fmt 1;";
+      F.line sc "Format.pp_open_vbox fmt 1;";
       List.iter (fun field -> 
         let {T.field_type; field_name; type_qualifier ; encoding_type} = field in 
         let x:string = sp "v.%s" field_name in 
@@ -27,25 +27,35 @@ let gen_pp_record  ?and_ {T.record_name; fields } sc =
           let field_string_of = gen_pp_field field_type in 
           match type_qualifier with
           | T.No_qualifier -> 
-            F.line sc @@ sp "pp_equal \"%s\" %s fmt %s;" field_name field_string_of x
+            F.line sc @@ sp 
+              "Pbrt.Pp.pp_record_field \"%s\" %s fmt %s;" 
+              field_name field_string_of x
           | T.Option -> 
-            F.line sc @@ sp "pp_equal \"%s\" (pp_option %s) fmt %s;" field_name field_string_of x
+            F.line sc @@ sp 
+              "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_option %s) fmt %s;" 
+              field_name field_string_of x
           | T.List -> 
-            F.line sc @@ sp "pp_equal \"%s\" (pp_list %s) fmt %s;" field_name field_string_of x
+            F.line sc @@ sp 
+              "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_list %s) fmt %s;" 
+              field_name field_string_of x
           | T.Repeated_field -> 
-            F.line sc @@ sp "pp_equal \"%s\" (pp_list %s) fmt (Pbrt.Repeated_field.to_list %s);" field_name field_string_of x
+            F.line sc @@ sp 
+              "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_list %s) fmt (Pbrt.Repeated_field.to_list %s);" 
+              field_name field_string_of x
         )
         | T.One_of {T.variant_constructors = _ ; variant_name; T.variant_encoding = T.Inlined_within_message} -> (
-          F.line sc @@ sp "pp_equal \"%s\" %s fmt %s;" field_name ("pp_" ^ variant_name) x
-        )                (* one of        *)
+          F.line sc @@ sp 
+            "Pbrt.Pp.pp_record_field \"%s\" %s fmt %s;" 
+            field_name ("pp_" ^ variant_name) x
+        )
         | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone } -> (
           E.programmatic_error E.One_of_should_be_inlined_in_message
         )
       ) fields; 
-      F.line sc "F.pp_close_box fmt ()";
+      F.line sc "Format.pp_close_box fmt ()";
     );
     F.line sc "in";
-    F.line sc "pp_brk pp_i fmt ()";
+    F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()";
   )
 
 let gen_pp_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_encoding = _ } sc = 
@@ -56,9 +66,13 @@ let gen_pp_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_enco
       let field_string_of = gen_pp_field field_type in 
       match field_type with
       | T.Unit -> 
-        F.line sc @@ sp "| %s  -> F.fprintf fmt \"%s\"" field_name field_name 
+        F.line sc @@ sp 
+          "| %s  -> Format.fprintf fmt \"%s\"" 
+          field_name field_name 
       | _ -> 
-        F.line sc @@ sp  "| %s x -> F.fprintf fmt \"@[%s(%%a)@]\" %s x" field_name field_name field_string_of 
+        F.line sc @@ sp  
+          "| %s x -> Format.fprintf fmt \"@[%s(%%a)@]\" %s x" 
+          field_name field_name field_string_of 
     ) variant_constructors ;
   )
 
@@ -67,7 +81,7 @@ let gen_pp_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } sc =
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun (name, _ ) -> 
-      F.line sc @@ sp "| %s -> F.fprintf fmt \"%s\"" name name
+      F.line sc @@ sp "| %s -> Format.fprintf fmt \"%s\"" name name
     ) cvariant_constructors; 
   )
 
