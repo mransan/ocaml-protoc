@@ -115,7 +115,9 @@ bin.install: check_install
 bin.uninstall: check_install
 	rm -f $(BINDIR)/ocaml-protoc$(EXE)
 
-install: check_install lib.install bin.install
+all.install.build: lib.byte lib.native bin.native 
+install: all.install.build check_install lib.install.byte lib.install.native bin.install
+
 
 uninstall: lib.uninstall bin.uninstall
 	
