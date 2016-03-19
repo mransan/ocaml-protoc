@@ -4,6 +4,11 @@ OCB_INC   = -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/oc
 OCB_FLAGS = -use-ocamlfind -pkgs compiler-libs.common,ppx_deriving_protobuf.runtime 
 OCB       = ocamlbuild $(OCB_FLAGS) $(OCB_INC)
 
+ifeq "$(shell ocamlc -config | grep os_type)" "os_type: Win32"
+	@EXE=.exe
+else
+	@EXE=
+endif
 
 # Common Directories
 #
@@ -47,12 +52,12 @@ lib.byte:
 # ocaml-protoc native executable 
 bin.native: 
 	$(OCB) ocaml_protoc.native
-	mv ocaml_protoc.native ocaml-protoc
+	mv ocaml_protoc.native ocaml-protoc$(EXE)
 
 # ocaml-protoc byte executable
 bin.byte:
 	$(OCB) ocaml_protoc.byte
-	mv ocaml_protoc.byte ocaml-protoc
+	mv ocaml_protoc.byte ocaml-protoc$(EXE)
 
 ####################
 # ---- INSTALL---- # 
@@ -102,14 +107,8 @@ lib.install.native:
 lib.uninstall:
 	ocamlfind remove ocaml-protoc
 
-ifeq "$(shell ocamlc -config | grep os_type)" "os_type: Win32"
-	@EXE=.exe
-else
-	@EXE=
-endif
 
 bin.install: check_install
-	@mv ocaml-protoc ocaml-protoc$(EXE) 
 	install -m 0755 ocaml-protoc$(EXE) $(BINDIR)
 
 bin.uninstall: check_install

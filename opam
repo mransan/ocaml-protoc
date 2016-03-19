@@ -22,9 +22,7 @@ install: [
   [make "bin.install" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
 ]
 remove:  [make "uninstall" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
-depends: "ocamlfind"
 depends: [
   "ocamlfind"  {build}
-  "ocamlbuild" {build}
   "ppx_deriving_protobuf"
 ]
