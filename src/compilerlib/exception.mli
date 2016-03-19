@@ -79,4 +79,6 @@ val missing_semicolon_for_enum_value : string -> 'a
 
 val invalid_enum_specification : string -> 'a 
 
+val missing_one_of_name : unit -> 'a 
+
 val syntax_error : Location.t -> 'a 
