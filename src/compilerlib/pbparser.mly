@@ -201,6 +201,9 @@ oneof :
   | ONE_OF IDENT LBRACE oneof_field_list rbrace { 
     Pbpt_util.oneof ~fields:$4 $2 
   }  
+  | ONE_OF LBRACE oneof_field_list rbrace { 
+    Exception.missing_one_of_name ()
+  }  
 
 oneof_field_list :
   |                                     { []   }

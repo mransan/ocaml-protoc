@@ -79,6 +79,7 @@ type error =
   | Invalid_packed_option of string 
   | Missing_semicolon_for_enum_value of string
   | Invalid_enum_specification of string 
+  | Missing_one_of_name 
   | Syntax_error of Location.t 
 
 
@@ -128,6 +129,9 @@ let prepare_error = function
 
   | Missing_semicolon_for_enum_value enum_value -> 
     P.sprintf "Missing semicolon for enum value: %s" enum_value
+
+  | Missing_one_of_name -> 
+    P.sprintf "Missing oneof name"
 
   | Syntax_error loc -> 
     let line    = loc.Location.loc_start.Lexing.pos_lnum in
@@ -191,6 +195,9 @@ let missing_semicolon_for_enum_value enum_value =
 
 let invalid_enum_specification enum_name = 
   raise (Compilation_error (Invalid_enum_specification enum_name))
+
+let missing_one_of_name () = 
+  raise (Compilation_error Missing_one_of_name)
 
 let syntax_error loc = 
   raise (Compilation_error (Syntax_error loc)) 

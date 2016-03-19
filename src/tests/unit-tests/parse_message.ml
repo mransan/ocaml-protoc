@@ -132,4 +132,23 @@ let () =
   | exception exn -> print_endline @@ Printexc.to_string exn ; assert false 
 
 let () = 
+  let s = "
+  message M {
+    oneof { 
+      int32 i1 = 1; 
+      int32 i2 = 2; 
+    }
+  }
+  "
+  in 
+  match parse Pbparser.message_ s with 
+  | _ -> assert false 
+  | exception exn -> 
+    let s = Printexc.to_string exn  in 
+    assert ("Missing oneof name" = s) 
+
+let () = 
+  print_endline "Parse Message ... Ok"
+
+let () = 
   print_endline "Parse Message ... Ok"
