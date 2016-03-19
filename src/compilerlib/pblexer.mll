@@ -45,6 +45,9 @@ let keywords = create_hashtable 50 [
   "extensions" , EXTENSIONS;
   "extend"     , EXTEND;
   "syntax"     , SYNTAX;
+  "public"     , PUBLIC;
+  "to"         , TO;
+  "max"        , MAX;
 ]
 
 let resolve_identifier ident = 
@@ -70,7 +73,7 @@ let string_eof     = String_eof
 let update_loc lexbuf =
   let pos = lexbuf.Lexing.lex_curr_p in
   lexbuf.Lexing.lex_curr_p <- Lexing.({ pos with
-    pos_lnum = 1;
+    pos_lnum = pos.pos_lnum + 1;
     pos_bol = pos.pos_cnum;
   })
 

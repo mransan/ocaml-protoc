@@ -80,6 +80,7 @@ type error =
   | Missing_semicolon_for_enum_value of string
   | Invalid_enum_specification of string 
   | Missing_one_of_name 
+  | Parsing_error of string * int * string 
   | Syntax_error of Location.t 
 
 
@@ -132,6 +133,9 @@ let prepare_error = function
 
   | Missing_one_of_name -> 
     P.sprintf "Missing oneof name"
+
+  | Parsing_error (file_name, line, detail) -> 
+    Printf.sprintf "File %s, line %i:\n%s" file_name line detail 
 
   | Syntax_error loc -> 
     let line    = loc.Location.loc_start.Lexing.pos_lnum in
@@ -198,6 +202,9 @@ let invalid_enum_specification enum_name =
 
 let missing_one_of_name () = 
   raise (Compilation_error Missing_one_of_name)
+
+let parsing_error file_name line detail = 
+  raise (Compilation_error (Parsing_error (file_name, line, detail)))
 
 let syntax_error loc = 
   raise (Compilation_error (Syntax_error loc)) 
