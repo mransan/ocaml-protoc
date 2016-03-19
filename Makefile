@@ -85,24 +85,20 @@ LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmi
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.annot
 LIB_INSTALL  +=$(OCAMLOPTIONS_HINC)/ocamloptions.proto 
 
-LIB_INSTALL_BYTE  =$(LIB_INSTALL)
-LIB_INSTALL_BYTE +=$(LIB_BUILD)/pbrt.cmo
-LIB_INSTALL_BYTE +=$(LIB_BUILD)/pbrt.cma 
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmo
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cma 
 
-LIB_INSTALL_NATIVE  = $(LIB_INSTALL_BYTE)
-LIB_INSTALL_NATIVE  +=$(LIB_BUILD)/pbrt.cmx
-LIB_INSTALL_NATIVE  +=$(LIB_BUILD)/pbrt.cmt
-LIB_INSTALL_NATIVE  +=$(LIB_BUILD)/pbrt.cmxa 
-LIB_INSTALL_NATIVE  +=$(LIB_BUILD)/pbrt.cmxs
-LIB_INSTALL_NATIVE  +=$(LIB_BUILD)/pbrt.a
+LIB_INSTALL  +=-optional  
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmx
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmt
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxa 
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxs
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.a
 
 # we do not specify the dependency on target lib.byte/lib.native
 # since we assume the caller (ie opam) will do it. (See opam file). 
-lib.install.byte:  
-	ocamlfind install ocaml-protoc $(LIB_INSTALL_BYTE)
-
-lib.install.native:  
-	ocamlfind install ocaml-protoc $(LIB_INSTALL_NATIVE)
+lib.install:  
+	ocamlfind install ocaml-protoc $(LIB_INSTALL)
 
 lib.uninstall:
 	ocamlfind remove ocaml-protoc

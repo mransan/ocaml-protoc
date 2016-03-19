@@ -17,8 +17,7 @@ build: [
   [make "bin.native"] { ocaml-native }
 ]
 install: [
-  [make "lib.install.byte"   ] {!ocaml-native} 
-  [make "lib.install.native" ] { ocaml-native}
+  [make "lib.install" ]
   [make "bin.install" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
 ]
 remove:  [make "uninstall" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
