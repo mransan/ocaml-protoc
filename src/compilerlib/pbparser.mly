@@ -36,6 +36,7 @@
 %token PACKAGE
 
 %token IMPORT
+%token PUBLIC
 
 %token OPTION
 
@@ -44,6 +45,9 @@
 %token EXTEND
 
 %token SYNTAX 
+
+%token TO
+%token MAX
 
 %token RBRACE
 %token LBRACE
@@ -136,12 +140,9 @@ syntax:
   | SYNTAX EQUAL STRING semicolon { $3 }
 
 import:
-  | IMPORT STRING semicolon { Pbpt_util.import $2} 
-  | IMPORT IDENT STRING semicolon { 
-    if $2 <> "public" 
-    then raise @@ Exception.invalid_import_qualifier () 
-    else Pbpt_util.import ~public:() $3
-  } 
+  | IMPORT STRING semicolon         { Pbpt_util.import $2} 
+  | IMPORT PUBLIC STRING semicolon  { Pbpt_util.import ~public:() $3 }
+  | IMPORT IDENT STRING semicolon   { Exception.invalid_import_qualifier () } 
 
 package_declaration :
   | PACKAGE IDENT semicolon {$2}  
@@ -187,15 +188,8 @@ extension_range_list :
 
 extension_range :
   | INT            { Pbpt_util.extension_range_single_number $1} 
-  | INT IDENT INT  { 
-    if $2 = "to"
-    then Pbpt_util.extension_range_range $1 (`Number $3) 
-    else failwith "Invalid exension range"}
-  | INT IDENT IDENT{ 
-    if $2 = "to" && $3 = "max" 
-    then Pbpt_util.extension_range_range $1 `Max 
-    else failwith "Invalid extension range"
-  }
+  | INT TO INT     { Pbpt_util.extension_range_range $1 (`Number $3) } 
+  | INT TO MAX     { Pbpt_util.extension_range_range $1 `Max } 
 
 oneof :
   | ONE_OF IDENT LBRACE oneof_field_list rbrace { 
@@ -234,11 +228,14 @@ field_name :
   | ENUM      {"enum"}
   | PACKAGE   {"package"}
   | IMPORT    {"import"}
+  | PUBLIC    {"public"}
   | OPTION    {"option"}
   | EXTENSIONS{"extensions"}
   | EXTEND    {"extend"}
   | SYNTAX    {"syntax"}
   | MESSAGE   {"message"}
+  | TO        {"to"}
+  | MAX       {"max"}
 
 label :
   | REQUIRED { `Required }  

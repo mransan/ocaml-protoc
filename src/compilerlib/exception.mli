@@ -81,4 +81,6 @@ val invalid_enum_specification : string -> 'a
 
 val missing_one_of_name : unit -> 'a 
 
+val parsing_error : string -> int -> string -> 'a  
+
 val syntax_error : Location.t -> 'a 
