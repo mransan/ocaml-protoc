@@ -4,7 +4,6 @@ version: "0.1.2"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
 authors:[
   "Maxime Ransan <maxime.ransan@gmail.com>"
-  "Peter Zotov <whitequark@whitequark.org>"
 ]
 homepage: "https://github.com/mransan/ocaml-protoc"
 bug-reports:"https://github.com/mransan/ocaml-protoc/issues"
