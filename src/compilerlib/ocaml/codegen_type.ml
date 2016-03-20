@@ -7,14 +7,13 @@ open Codegen_util
 let type_decl_of_and = function | Some _ -> "and" | None -> "type" 
 
 let gen_type_record ?mutable_ ?and_ {T.record_name; fields } sc = 
-  let field_prefix = match mutable_ with
-    | None    -> (fun _ -> "") 
-    | Some () -> (function 
-      | T.Repeated_field -> "" 
-        (* Pbrt.Repeated_field.t is already a mutable data type. 
-         *)
-      | _ -> "mutable "
-    ) 
+  
+  let field_prefix type_qualifier field_mutable = 
+    match field_mutable, type_qualifier, mutable_ with
+    | true , _                , _       -> "mutable "
+    | false, T.Repeated_field , _       -> ""
+    | false, _                , Some () -> "mutable "
+    | false, _                , None    -> ""
   in
 
   let type_name = match mutable_ with  
@@ -24,9 +23,9 @@ let gen_type_record ?mutable_ ?and_ {T.record_name; fields } sc =
 
   F.line sc @@ sp "%s %s = {" (type_decl_of_and and_) type_name ;
   F.scope sc (fun sc -> 
-    List.iter (fun {T.field_name; field_type; type_qualifier; _ } -> 
+    List.iter (fun {T.field_name; field_type; type_qualifier; mutable_; _ } -> 
       let type_name = string_of_field_type ~type_qualifier field_type in 
-      F.line sc @@ sp "%s%s : %s;" (field_prefix type_qualifier) field_name type_name 
+      F.line sc @@ sp "%s%s : %s;" (field_prefix type_qualifier mutable_) field_name type_name 
     ) fields;
   ); 
   F.line sc "}"
