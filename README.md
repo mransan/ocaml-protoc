@@ -44,10 +44,10 @@ The following OCaml code will get generated after running `ocaml-protoc -ml_out 
 (** {2 Types} *)
 
 type person = {
-  mutable name : string;
-  mutable id : int32;
-  mutable email : string option;
-  mutable phone : string list;
+  name : string;
+  id : int32;
+  email : string option;
+  phone : string list;
 }
 
 
