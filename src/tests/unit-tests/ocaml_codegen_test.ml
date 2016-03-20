@@ -26,12 +26,20 @@ let () =
   }) in
 
   let s = {|type test = {
+  v1 : int;
+  v2 : string option;
+  v3 : other;
+}
+
+and test_mutable = {
   mutable v1 : int;
   mutable v2 : string option;
   mutable v3 : other;
 }|} in 
+
   let sc = Fmt.empty_scope () in 
-  Codegen_type.gen_struct (Ocaml_types.{module_ = "A"; spec = Record r}) sc; 
+  ignore @@ Codegen_type.gen_struct (Ocaml_types.{module_ = "A"; spec = Record r}) sc; 
+  print_endline @@ Fmt.print sc;
   assert(s = (Fmt.print sc));
   ()
 

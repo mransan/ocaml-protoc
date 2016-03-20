@@ -28,7 +28,13 @@ let gen_default_field field_name field_type field_default =
   | _ -> E.invalid_default_value 
     ~field_name ~info:"invalid default type" ()
 
-let gen_default_record  ?and_ {T.record_name; fields } sc = 
+let gen_default_record  ?mutable_ ?and_ {T.record_name; fields } sc = 
+
+  let record_name = match mutable_  with
+    | None -> record_name 
+    | Some () -> Codegen_util.mutable_record_name record_name 
+  in 
+
   L.log "gen_pp, record_name: %s\n" record_name; 
 
   F.line sc @@ sp "%s default_%s () : %s = {" (let_decl_of_and and_) record_name record_name;
@@ -95,7 +101,12 @@ let gen_default_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; }
 
 let gen_struct ?and_ t sc = 
   let (), has_encoded = match t with 
-    | {T.spec = T.Record r  } -> gen_default_record ?and_ r sc, true 
+    | {T.spec = T.Record r  } ->
+      (
+        gen_default_record ?and_ r sc; 
+        F.empty_line sc;
+        gen_default_record ~mutable_:() ~and_:() r sc
+      ), true 
     | {T.spec = T.Variant v } -> (match v.T.variant_encoding with
       | T.Standalone -> gen_default_variant ?and_ v sc, true
       | T.Inlined_within_message -> (), false

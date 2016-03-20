@@ -90,9 +90,11 @@ let gen_decode_record ?and_ {T.record_name; fields} sc =
     ()
   in 
 
+  let mutable_record_name = Codegen_util.mutable_record_name record_name in 
+
   F.line sc @@ sp "%s decode_%s d =" (let_decl_of_and and_) record_name; 
   F.scope sc (fun sc -> 
-    F.line sc @@ sp "let v = default_%s () in" record_name; 
+    F.line sc @@ sp "let v = default_%s () in" mutable_record_name;
     F.line sc "let rec loop () = "; 
     F.scope sc (fun sc -> 
       F.line sc "match Pbrt.Decoder.key d with";
@@ -117,7 +119,8 @@ let gen_decode_record ?and_ {T.record_name; fields} sc =
     ); 
     F.line sc "in"; 
     F.line sc "loop ();";
-    F.line sc "v"; 
+    F.line sc @@ sp "let v:%s = Obj.magic v in" record_name; 
+    F.line sc "v";
   )
 
 let gen_decode_variant ?and_ {T.variant_name; variant_constructors; variant_encoding = _ } sc = 

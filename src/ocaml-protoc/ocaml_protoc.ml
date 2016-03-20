@@ -112,7 +112,7 @@ let compile include_dirs proto_file_name =
       
       let ic     = open_in file_name in 
       let lexbuf = Lexing.from_channel ic in 
-      let pos    = lexbuf.lex_curr_p in 
+      let pos    = lexbuf.Lexing.lex_curr_p in 
       lexbuf.Lexing.lex_curr_p <- Lexing.({pos with
         pos_fname = file_name; }); 
       let proto  = 
@@ -198,6 +198,8 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
   in
 
   let sc = Fmt.empty_scope () in 
+  Fmt.line sc "[@@@ocaml.warning \"-30\"]";
+  Fmt.empty_line sc;
   gen otypes  sc (List.map (fun m -> 
     let module C = (val m:Codegen.S) in 
     C.gen_struct, None
