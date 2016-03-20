@@ -112,12 +112,14 @@ let compile include_dirs proto_file_name =
       
       let ic     = open_in file_name in 
       let lexbuf = Lexing.from_channel ic in 
+      let pos    = lexbuf.lex_curr_p in 
+      lexbuf.Lexing.lex_curr_p <- Lexing.({pos with
+        pos_fname = file_name; }); 
       let proto  = 
         try 
           Pbparser.proto_ Pblexer.lexer lexbuf 
         with exn -> 
-          let line  = lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum in 
-          Exception.parsing_error file_name line (Printexc.to_string exn) 
+          raise (Exception.add_loc (Loc.from_lexbuf lexbuf) exn)
       in  
       close_in ic; 
       let pbtt_msgs = acc @ Pbtt_util.compile_proto_p1 file_name proto in 

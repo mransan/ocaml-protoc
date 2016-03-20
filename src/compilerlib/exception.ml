@@ -72,16 +72,18 @@ type error =
     (** When a default value type type does not match the field type *)
   | Unsupported_field_type of unsupported_field_type 
   | Programatic_error of programmatic_error 
-  | Invalid_import_qualifier 
+  | Invalid_import_qualifier of Loc.t  
   | Invalid_file_name of string  
   | Import_file_not_found of string 
   | Invalid_message_declaration of string 
   | Invalid_packed_option of string 
-  | Missing_semicolon_for_enum_value of string
-  | Invalid_enum_specification of string 
-  | Missing_one_of_name 
+  | Missing_semicolon_for_enum_value of string * Loc.t
+  | Invalid_enum_specification of string * Loc.t 
+  | Missing_one_of_name of Loc.t 
+  | Invalid_field_label of Loc.t 
+  | Missing_field_label of Loc.t 
   | Parsing_error of string * int * string 
-  | Syntax_error of Location.t 
+  | Syntax_error
 
 
 exception Compilation_error of error  
@@ -109,8 +111,8 @@ let prepare_error = function
   | Programatic_error e -> 
     P.sprintf "programmatic error: %s" (string_of_programmatic_error e)
 
-  | Invalid_import_qualifier ->
-    "Invalid import qualified, only 'public' supported"
+  | Invalid_import_qualifier loc ->
+    P.sprintf "%sInvalid import qualified, only 'public' supported" (Loc.to_string loc) 
 
   | Invalid_file_name file_name -> 
     P.sprintf 
@@ -128,22 +130,44 @@ let prepare_error = function
   | Invalid_packed_option field_name ->
     P.sprintf "Invalid packed option for field: %s" field_name
 
-  | Missing_semicolon_for_enum_value enum_value -> 
-    P.sprintf "Missing semicolon for enum value: %s" enum_value
+  | Missing_semicolon_for_enum_value (enum_value, loc)-> 
+    P.sprintf "%sMissing semicolon for enum value: %s" (Loc.to_string loc) enum_value
 
-  | Missing_one_of_name -> 
-    P.sprintf "Missing oneof name"
+  | Missing_one_of_name loc -> 
+    P.sprintf "%sMissing oneof name" (Loc.to_string loc) 
+
+  | Invalid_field_label loc -> 
+    P.sprintf "%sInvalid field label. [required|repeated|optional] expected" (Loc.to_string loc) 
+  
+  | Missing_field_label loc -> 
+    P.sprintf "%sMissing field label. [required|repeated|optional] expected" (Loc.to_string loc) 
 
   | Parsing_error (file_name, line, detail) -> 
     Printf.sprintf "File %s, line %i:\n%s" file_name line detail 
 
-  | Syntax_error loc -> 
-    let line    = loc.Location.loc_start.Lexing.pos_lnum in
-    P.sprintf "Syntax error at line: %i" line  
+  | Syntax_error -> 
+    P.sprintf "Syntax error"
 
-  | Invalid_enum_specification enum_name -> 
+  | Invalid_enum_specification (enum_name, loc) -> 
     P.sprintf 
-      "Missing enum specification (<identifier> = <id>;) for enum value: %s" enum_name
+      "%sMissing enum specification (<identifier> = <id>;) for enum value: %s"
+      (Loc.to_string loc) enum_name
+
+
+let add_loc loc exn  = 
+  match exn with 
+  | Compilation_error (Missing_one_of_name _ ) -> exn 
+  | Compilation_error (Invalid_field_label _ ) -> exn 
+  | Compilation_error (Missing_field_label _ ) -> exn 
+  | Compilation_error (Invalid_import_qualifier _ ) -> exn 
+  | Compilation_error (Missing_semicolon_for_enum_value _ ) -> exn 
+  | Compilation_error (Invalid_enum_specification _ ) -> exn 
+  | _ -> (
+    let file_name = Util.option_default "" (Loc.file_name loc) in 
+    let line      = Loc.line loc in 
+    let detail    = Printexc.to_string exn in  
+    Compilation_error (Parsing_error (file_name, line, detail))
+  )
 
 let () =
   Printexc.register_printer (fun exn ->
@@ -182,8 +206,8 @@ let import_file_not_found file_name =
 let programmatic_error e = 
   raise (Compilation_error (Programatic_error e)) 
 
-let invalid_import_qualifier () = 
-  raise (Compilation_error Invalid_import_qualifier)
+let invalid_import_qualifier loc  = 
+  raise (Compilation_error (Invalid_import_qualifier loc))
 
 let invalid_file_name file_name = 
   raise (Compilation_error (Invalid_file_name file_name)) 
@@ -194,17 +218,24 @@ let invalid_message_declaration s =
 let invalid_packed_option field_name = 
   raise (Compilation_error (Invalid_packed_option field_name)) 
 
-let missing_semicolon_for_enum_value enum_value = 
-  raise (Compilation_error (Missing_semicolon_for_enum_value enum_value))
+let missing_semicolon_for_enum_value enum_value loc = 
+  raise (Compilation_error (Missing_semicolon_for_enum_value (enum_value, loc)))
 
-let invalid_enum_specification enum_name = 
-  raise (Compilation_error (Invalid_enum_specification enum_name))
+let invalid_enum_specification enum_name loc = 
+  raise (Compilation_error (Invalid_enum_specification (enum_name, loc)))
 
-let missing_one_of_name () = 
-  raise (Compilation_error Missing_one_of_name)
+let missing_one_of_name loc = 
+  raise (Compilation_error (Missing_one_of_name loc))
+
+let invalid_field_label loc = 
+  raise (Compilation_error (Invalid_field_label loc))
+
+let missing_field_label loc = 
+  raise (Compilation_error (Missing_field_label loc))
 
 let parsing_error file_name line detail = 
   raise (Compilation_error (Parsing_error (file_name, line, detail)))
 
-let syntax_error loc = 
-  raise (Compilation_error (Syntax_error loc)) 
+let syntax_error () = 
+  raise (Compilation_error Syntax_error) 
+

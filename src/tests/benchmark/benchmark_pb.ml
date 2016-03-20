@@ -1,48 +1,3 @@
-module F = Format 
-
-let pp_unit fmt () = 
-  F.pp_print_string fmt "()"
-
-let pp_int = 
-  F.pp_print_int 
-
-let pp_float = 
-  F.pp_print_float 
-
-let pp_bool = 
-  F.pp_print_bool 
-
-let pp_int32 fmt i = 
-  F.pp_print_string fmt (Int32.to_string i)  
-
-let pp_int64 fmt i = 
-  F.pp_print_string fmt (Int64.to_string i)  
-
-let pp_string fmt s = 
-  F.fprintf fmt "\"%a\"" F.pp_print_string s
-
-let pp_bytes fmt b = 
-  pp_string fmt (Bytes.to_string b) 
-
-let pp_option pp_f fmt = function
-  | None   -> F.fprintf fmt "@[None@]"
-  | Some x -> F.fprintf fmt "@[Some(%a)@]" pp_f x 
-
-let pp_list pp_element fmt l = 
-  let rec pp_i fmt = function
-    | [h]  -> Format.fprintf fmt "%a" pp_element h
-    | h::t ->
-      Format.fprintf fmt "%a;@,%a" pp_element h pp_i t
-    | []   -> ()
-  in
-  F.fprintf fmt "@[<v 1>[%a@,@]]" pp_i l 
-
-let pp_equal field_name pp_val fmt val_ = 
-  F.fprintf fmt "@,@[<h>%s = %a;@]" field_name pp_val val_ 
-
-let pp_brk pp_record (fmt:F.formatter) r : unit = 
-  F.fprintf fmt "@[<v>{%a@,@]}" pp_record r  
-
 type test_type =
   | Encode of int
   | Decode
@@ -419,104 +374,104 @@ let rec encode_int_packed_repeated (v:int_packed_repeated) encoder =
 
 let rec pp_test_type fmt (v:test_type) =
   match v with
-  | Encode x -> F.fprintf fmt "@[Encode(%a)@]" pp_int x
-  | Decode  -> F.fprintf fmt "Decode"
+  | Encode x -> Format.fprintf fmt "@[Encode(%a)@]" Pbrt.Pp.pp_int x
+  | Decode  -> Format.fprintf fmt "Decode"
 
 let rec pp_test_id fmt (v:test_id) =
   match v with
-  | Int32_list -> F.fprintf fmt "Int32_list"
-  | Int_list -> F.fprintf fmt "Int_list"
-  | Int_repeated -> F.fprintf fmt "Int_repeated"
-  | Int_packed_repeated -> F.fprintf fmt "Int_packed_repeated"
+  | Int32_list -> Format.fprintf fmt "Int32_list"
+  | Int_list -> Format.fprintf fmt "Int_list"
+  | Int_repeated -> Format.fprintf fmt "Int_repeated"
+  | Int_packed_repeated -> Format.fprintf fmt "Int_packed_repeated"
 
 let rec pp_test_request fmt (v:test_request) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "type_" pp_test_type fmt v.type_;
-    pp_equal "file_name" pp_string fmt v.file_name;
-    pp_equal "test_id" pp_test_id fmt v.test_id;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "type_" pp_test_type fmt v.type_;
+    Pbrt.Pp.pp_record_field "file_name" Pbrt.Pp.pp_string fmt v.file_name;
+    Pbrt.Pp.pp_record_field "test_id" pp_test_id fmt v.test_id;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_test_requests fmt (v:test_requests) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "requests" (pp_list pp_test_requests) fmt v.requests;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "requests" (Pbrt.Pp.pp_list pp_test_requests) fmt v.requests;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_encode_data fmt (v:encode_data) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "creation_time" pp_float fmt v.creation_time;
-    pp_equal "encode_time" pp_float fmt v.encode_time;
-    pp_equal "to_file_time" pp_float fmt v.to_file_time;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "creation_time" Pbrt.Pp.pp_float fmt v.creation_time;
+    Pbrt.Pp.pp_record_field "encode_time" Pbrt.Pp.pp_float fmt v.encode_time;
+    Pbrt.Pp.pp_record_field "to_file_time" Pbrt.Pp.pp_float fmt v.to_file_time;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_decode_data fmt (v:decode_data) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "from_file_time" pp_float fmt v.from_file_time;
-    pp_equal "decode_time" pp_float fmt v.decode_time;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "from_file_time" Pbrt.Pp.pp_float fmt v.from_file_time;
+    Pbrt.Pp.pp_record_field "decode_time" Pbrt.Pp.pp_float fmt v.decode_time;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_test_response_data fmt (v:test_response_data) =
   match v with
-  | Encode x -> F.fprintf fmt "@[Encode(%a)@]" pp_encode_data x
-  | Decode x -> F.fprintf fmt "@[Decode(%a)@]" pp_decode_data x
+  | Encode x -> Format.fprintf fmt "@[Encode(%a)@]" pp_encode_data x
+  | Decode x -> Format.fprintf fmt "@[Decode(%a)@]" pp_decode_data x
 
 and pp_test_response fmt (v:test_response) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "difficulty_size" pp_int fmt v.difficulty_size;
-    pp_equal "test_id" pp_test_id fmt v.test_id;
-    pp_equal "data" pp_test_response_data fmt v.data;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "difficulty_size" Pbrt.Pp.pp_int fmt v.difficulty_size;
+    Pbrt.Pp.pp_record_field "test_id" pp_test_id fmt v.test_id;
+    Pbrt.Pp.pp_record_field "data" pp_test_response_data fmt v.data;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_test_responses fmt (v:test_responses) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "responses" (pp_list pp_test_responses) fmt v.responses;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "responses" (Pbrt.Pp.pp_list pp_test_responses) fmt v.responses;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_int32_list fmt (v:int32_list) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "int32_list" (pp_list pp_int32) fmt v.int32_list;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "int32_list" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.int32_list;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_int_list fmt (v:int_list) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "int_list" (pp_list pp_int) fmt v.int_list;
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "int_list" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int) fmt v.int_list;
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_int_repeated fmt (v:int_repeated) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "int_repeated" (pp_list pp_int) fmt (Pbrt.Repeated_field.to_list v.int_repeated);
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "int_repeated" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int) fmt (Pbrt.Repeated_field.to_list v.int_repeated);
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_int_packed_repeated fmt (v:int_packed_repeated) = 
   let pp_i fmt () =
-    F.pp_open_vbox fmt 1;
-    pp_equal "int_packed_repeated" (pp_list pp_int) fmt (Pbrt.Repeated_field.to_list v.int_packed_repeated);
-    F.pp_close_box fmt ()
+    Format.pp_open_vbox fmt 1;
+    Pbrt.Pp.pp_record_field "int_packed_repeated" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int) fmt (Pbrt.Repeated_field.to_list v.int_packed_repeated);
+    Format.pp_close_box fmt ()
   in
-  pp_brk pp_i fmt ()
+  Pbrt.Pp.pp_brk pp_i fmt ()

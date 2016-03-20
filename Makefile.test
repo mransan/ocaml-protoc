@@ -135,7 +135,7 @@ example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte b
 	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
 	$(OCB) -I src/examples src/examples/example$*.native
 
-all-examples: example01.native example02.native example03.native
+all-examples: example01.native example02.native example03.native example04.native
 
 it: bin.native
 	$(OCB) ./src/unit-tests/pbrt_array.native

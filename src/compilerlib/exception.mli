@@ -38,6 +38,9 @@ type error
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
 
+
+val add_loc : Loc.t -> exn  -> exn 
+
 (** {2 Raise Functions} *)
 
 val unresolved_type : 
@@ -67,7 +70,7 @@ val import_file_not_found : string -> 'a
 
 val programmatic_error : programmatic_error -> 'a
 
-val invalid_import_qualifier : unit -> 'a
+val invalid_import_qualifier : Loc.t -> 'a
 
 val invalid_file_name : string -> 'a 
 
@@ -75,12 +78,16 @@ val invalid_message_declaration : string -> 'a
 
 val invalid_packed_option : string -> 'a 
 
-val missing_semicolon_for_enum_value : string -> 'a 
+val missing_semicolon_for_enum_value : string -> Loc.t -> 'a 
 
-val invalid_enum_specification : string -> 'a 
+val invalid_enum_specification : string -> Loc.t -> 'a 
 
-val missing_one_of_name : unit -> 'a 
+val missing_one_of_name : Loc.t -> 'a 
+
+val invalid_field_label : Loc.t -> 'a 
+
+val missing_field_label : Loc.t -> 'a 
 
 val parsing_error : string -> int -> string -> 'a  
 
-val syntax_error : Location.t -> 'a 
+val syntax_error : unit  -> 'a 
