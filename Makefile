@@ -1,7 +1,7 @@
 # OCamlbuild configuration
 #
 OCB_INC   = -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
-OCB_FLAGS = -use-ocamlfind -pkgs compiler-libs.common,ppx_deriving_protobuf.runtime 
+OCB_FLAGS = -use-ocamlfind -pkgs ppx_deriving_protobuf.runtime 
 OCB       = ocamlbuild $(OCB_FLAGS) $(OCB_INC)
 
 ifeq "$(shell ocamlc -config | grep os_type)" "os_type: Win32"

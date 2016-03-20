@@ -104,18 +104,23 @@
 
 %%
 
+/*(* The following symbol are for internal testing only *) */ 
+
 field_options_   : field_options EOF {$1}  
 normal_field_    : normal_field  EOF {$1}
 enum_value_      : enum_value    EOF {$1}
 enum_            : enum          EOF {$1}
 oneof_           : oneof         EOF {$1} 
 message_         : message       EOF {$1} 
-proto_           : proto         EOF {$1} 
 import_          : import        EOF {$1} 
 file_option_     : file_option   EOF {$1} 
 extension_range_list_ : extension_range_list EOF {$1}
 extension_       : extension    EOF {$1}
 extend_          : extend       EOF {$1}
+
+/* (* Main protobuf symbol *) */
+
+proto_           : proto         EOF {$1} 
 
 proto:
   | syntax proto_content {Pbpt_util.proto ~syntax:$1 ~proto:$2 ()}
@@ -142,7 +147,7 @@ syntax:
 import:
   | IMPORT STRING semicolon         { Pbpt_util.import $2} 
   | IMPORT PUBLIC STRING semicolon  { Pbpt_util.import ~public:() $3 }
-  | IMPORT IDENT STRING semicolon   { Exception.invalid_import_qualifier $1 } 
+  | IMPORT IDENT STRING semicolon   { Exception.invalid_import_qualifier $1 } /*HT*/ 
 
 package_declaration :
   | PACKAGE IDENT semicolon {snd $2}  
@@ -165,7 +170,7 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
-  | error        { Exception.syntax_error (Location.rhs_loc 1)}
+  | error        { Exception.syntax_error ()}
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {
@@ -218,6 +223,12 @@ normal_field :
   | label IDENT field_name EQUAL INT semicolon { 
     Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
   } 
+  | IDENT field_name EQUAL INT field_options semicolon { 
+    Exception.missing_field_label (fst $1) 
+  }
+  | IDENT field_name EQUAL INT semicolon { 
+    Exception.missing_field_label (fst $1) 
+  }
 
 field_name :
   | IDENT     {snd $1}
@@ -241,17 +252,18 @@ label :
   | REQUIRED { `Required }  
   | REPEATED { `Repeated }
   | OPTIONAL { `Optional }
+  | IDENT    { Exception.invalid_field_label (fst $1) } /* HT */
 
 field_options : 
   | LBRACKET field_option_list RBRACKET { $2 }; 
-  | LBRACKET RBRACKET { [] }; 
+  | LBRACKET RBRACKET                   { [] }; 
 
 field_option_list : 
   | field_option                          { [$1] } 
   | field_option COMMA field_option_list  { $1::$3 }
 
 field_option :
-  | IDENT EQUAL constant { (snd $1, $3) } 
+  | IDENT EQUAL constant               { (snd $1, $3) } 
   | LPAREN IDENT RPAREN EQUAL constant { (snd $2, $5)} 
 
 file_option_identifier_item :
@@ -286,12 +298,12 @@ enum_values:
 enum_value : 
   | IDENT EQUAL INT semicolon  { Pbpt_util.enum_value ~int_value:$3 (snd $1) } 
   | IDENT EQUAL INT { 
-    Exception.missing_semicolon_for_enum_value (snd $1) 
+    Exception.missing_semicolon_for_enum_value (snd $1) (fst $1) 
   }
-  | IDENT EQUAL INT COMMA { Exception.invalid_enum_specification (snd $1) }
-  | IDENT COMMA           { Exception.invalid_enum_specification (snd $1) }
-  | IDENT SEMICOLON       { Exception.invalid_enum_specification (snd $1) }
-  | IDENT                 { Exception.invalid_enum_specification (snd $1) }
+  | IDENT EQUAL INT COMMA { Exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT COMMA           { Exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT SEMICOLON       { Exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT                 { Exception.invalid_enum_specification (snd $1) (fst $1)}
 
 semicolon:
   | SEMICOLON           {()} 
