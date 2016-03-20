@@ -13,24 +13,24 @@ type test_id =
   | Int_packed_repeated 
 
 type test_request = {
-  mutable type_ : test_type;
-  mutable file_name : string;
-  mutable test_id : test_id;
+  type_ : test_type;
+  file_name : string;
+  test_id : test_id;
 }
 
 type test_requests = {
-  mutable requests : test_requests list;
+  requests : test_requests list;
 }
 
 type encode_data = {
-  mutable creation_time : float;
-  mutable encode_time : float;
-  mutable to_file_time : float;
+  creation_time : float;
+  encode_time : float;
+  to_file_time : float;
 }
 
 type decode_data = {
-  mutable from_file_time : float;
-  mutable decode_time : float;
+  from_file_time : float;
+  decode_time : float;
 }
 
 type test_response_data =
@@ -38,21 +38,21 @@ type test_response_data =
   | Decode of decode_data
 
 and test_response = {
-  mutable difficulty_size : int;
-  mutable test_id : test_id;
-  mutable data : test_response_data;
+  difficulty_size : int;
+  test_id : test_id;
+  data : test_response_data;
 }
 
 type test_responses = {
-  mutable responses : test_responses list;
+  responses : test_responses list;
 }
 
 type int32_list = {
-  mutable int32_list : int32 list;
+  int32_list : int32 list;
 }
 
 type int_list = {
-  mutable int_list : int list;
+  int_list : int list;
 }
 
 type int_repeated = {
