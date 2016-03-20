@@ -2,6 +2,7 @@ let () =
   let r = Ocaml_types.({
     record_name = "test";
     fields = [ {
+      mutable_ = false;
       field_type = Int; 
       field_name = "v1"; 
       type_qualifier = No_qualifier;
@@ -9,6 +10,7 @@ let () =
         packed = false; default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false}
       )
     }; {
+      mutable_ = false;
       field_type = String; 
       field_name = "v2"; 
       type_qualifier = Option;
@@ -16,6 +18,10 @@ let () =
         packed = false; default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes}
       )
     };{
+      (* Make sure the mutable_ is respected in the OCaml 
+         codegen
+       *)
+      mutable_ = true;
       field_type = User_defined_type {type_name = "other"; module_ = None; }; 
       field_name = "v3"; 
       type_qualifier = No_qualifier;
@@ -28,7 +34,7 @@ let () =
   let s = {|type test = {
   v1 : int;
   v2 : string option;
-  v3 : other;
+  mutable v3 : other;
 }
 
 and test_mutable = {

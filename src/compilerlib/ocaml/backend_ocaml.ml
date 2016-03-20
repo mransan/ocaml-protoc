@@ -189,6 +189,12 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
 
   let ocaml_type = Pbtt_util.field_option field "ocaml_type" in 
 
+  let mutable_ = match Pbtt_util.field_option field "ocaml_mutable"  with
+    | Some (Pbpt.Constant_bool v) -> v 
+    | Some _ -> Exception.invalid_mutable_option field_name 
+    | None -> false 
+  in 
+
   let field_encoding = Encoding_util.encoding_of_field_type all_types field in 
 
   let field_type = match encoding_type, ocaml_type with
@@ -224,6 +230,7 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     OCaml_types.field_name; 
     OCaml_types.type_qualifier; 
     OCaml_types.encoding_type = f field_encoding ; 
+    OCaml_types.mutable_; 
   }
 
 let compile_oneof all_types file_name message_scope outer_message_name variant_encoding {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
@@ -290,6 +297,7 @@ let compile_message
           field_name =  record_field_name f.Pbtt.oneof_name;
           type_qualifier = No_qualifier;
           encoding_type = One_of variant; 
+          mutable_ = false; 
         }) in 
         ((OCaml_types.{module_; spec = Variant variant})::variants, field::fields) 
       )) ([], []) message_body in 

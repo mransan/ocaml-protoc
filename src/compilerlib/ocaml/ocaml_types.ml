@@ -58,6 +58,7 @@ type 'a afield = {
   field_name : field_name; 
   type_qualifier : type_qualifier; 
   encoding_type : 'a;
+  mutable_ : bool;
 }
 
 type variant_encoding = 

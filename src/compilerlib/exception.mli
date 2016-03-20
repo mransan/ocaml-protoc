@@ -82,6 +82,8 @@ val missing_semicolon_for_enum_value : string -> Loc.t -> 'a
 
 val invalid_enum_specification : string -> Loc.t -> 'a 
 
+val invalid_mutable_option : string -> 'a
+
 val missing_one_of_name : Loc.t -> 'a 
 
 val invalid_field_label : Loc.t -> 'a 

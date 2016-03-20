@@ -79,6 +79,7 @@ type error =
   | Invalid_packed_option of string 
   | Missing_semicolon_for_enum_value of string * Loc.t
   | Invalid_enum_specification of string * Loc.t 
+  | Invalid_mutable_option of string 
   | Missing_one_of_name of Loc.t 
   | Invalid_field_label of Loc.t 
   | Missing_field_label of Loc.t 
@@ -152,6 +153,9 @@ let prepare_error = function
     P.sprintf 
       "%sMissing enum specification (<identifier> = <id>;) for enum value: %s"
       (Loc.to_string loc) enum_name
+  
+  | Invalid_mutable_option field_name -> 
+    P.sprintf "Invalid mutable option for field %s" field_name 
 
 
 let add_loc loc exn  = 
@@ -223,6 +227,9 @@ let missing_semicolon_for_enum_value enum_value loc =
 
 let invalid_enum_specification enum_name loc = 
   raise (Compilation_error (Invalid_enum_specification (enum_name, loc)))
+  
+let invalid_mutable_option field_name = 
+  raise (Compilation_error (Invalid_mutable_option field_name))
 
 let missing_one_of_name loc = 
   raise (Compilation_error (Missing_one_of_name loc))

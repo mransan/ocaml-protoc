@@ -2,7 +2,7 @@
 
 In order to make the OCaml code generated more OCaml friendly several extensions are being introduced. 
 
-### OCaml type 
+#### OCaml type : `(ocaml_type)`
 
 For int type, `ocaml-protoc` generates either `int32` or `int64` depending on the encoding size. This is to ensure by default 
 correct behavior without any assumption on:
@@ -28,9 +28,42 @@ The generated type will now be:
 
 ```OCaml
 type person = {
-  mutable name : string;
-  mutable id : int;
-  mutable email : string option;
-  mutable phone : string list;
+  name : string;
+  id : int;
+  email : string option;
+  phone : string list;
 }
+```
+
+#### Mutable field : `(ocaml_mutable)`
+
+By default generated record field are immutable. `ocaml-protoc` support a custom boolean field option: `(ocaml_mutable)` to indicate that the field should be mutable in OCaml. 
+
+For instance the following `.proto` file:
+```Javascript
+message m {
+  required int32 f = 1 [(ocaml_mutable) = true];
+```
+Will generate the following OCaml type:
+```OCaml
+type m = {
+  mutable f : int32; 
+}
+```
+
+#### Repeated_field type : `(ocaml_container)`
+
+By default a protobuf repeated field generates a list type; for better performance the runtime library `pbrt.cmxa` contains a dedicated `deque` type called `Repeated_field.t`. This type is optimized for append and therefore will speed the decoding of the protobuf message significantly. (You can check the [benchmark](doc/benchmark.md) section for more details. 
+
+By using the `(ocaml_container) = repeated_field` the .proto file author can indicate to `ocaml-protoc` to use the `Pbrt.Repeated_field.t` type. 
+
+For instance the following `.proto` file:
+```Javascript
+message m {
+  repeated int32 f = 1 [(ocaml_container) = repeated_field];
+```
+Will generate:
+```OCaml
+type m = {
+  f : int32 Repeated_field.t; 
 ```

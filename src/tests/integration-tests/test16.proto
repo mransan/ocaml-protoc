@@ -1,0 +1,8 @@
+import "ocamloptions.proto";
+
+message m {
+    required int32 f1 = 1; 
+    required int32 f2 = 2 [(ocaml_mutable) = false]; 
+    required int32 f3 = 3 [(ocaml_mutable) = true]; 
+    repeated int32 f4 = 4 [(ocaml_mutable) = true, (ocaml_container) = repeated_field]; 
+}
