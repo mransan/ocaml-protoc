@@ -72,14 +72,14 @@ type error =
     (** When a default value type type does not match the field type *)
   | Unsupported_field_type of unsupported_field_type 
   | Programatic_error of programmatic_error 
-  | Invalid_import_qualifier 
+  | Invalid_import_qualifier of Loc.t  
   | Invalid_file_name of string  
   | Import_file_not_found of string 
   | Invalid_message_declaration of string 
   | Invalid_packed_option of string 
   | Missing_semicolon_for_enum_value of string
   | Invalid_enum_specification of string 
-  | Missing_one_of_name 
+  | Missing_one_of_name of Loc.t 
   | Parsing_error of string * int * string 
   | Syntax_error of Location.t 
 
@@ -109,8 +109,8 @@ let prepare_error = function
   | Programatic_error e -> 
     P.sprintf "programmatic error: %s" (string_of_programmatic_error e)
 
-  | Invalid_import_qualifier ->
-    "Invalid import qualified, only 'public' supported"
+  | Invalid_import_qualifier loc ->
+    P.sprintf "%sInvalid import qualified, only 'public' supported" (Loc.to_string loc) 
 
   | Invalid_file_name file_name -> 
     P.sprintf 
@@ -131,8 +131,8 @@ let prepare_error = function
   | Missing_semicolon_for_enum_value enum_value -> 
     P.sprintf "Missing semicolon for enum value: %s" enum_value
 
-  | Missing_one_of_name -> 
-    P.sprintf "Missing oneof name"
+  | Missing_one_of_name loc -> 
+    P.sprintf "%sMissing oneof name" (Loc.to_string loc) 
 
   | Parsing_error (file_name, line, detail) -> 
     Printf.sprintf "File %s, line %i:\n%s" file_name line detail 
@@ -144,6 +144,18 @@ let prepare_error = function
   | Invalid_enum_specification enum_name -> 
     P.sprintf 
       "Missing enum specification (<identifier> = <id>;) for enum value: %s" enum_name
+
+
+let add_loc loc exn  = 
+  match exn with 
+  | Compilation_error (Missing_one_of_name _ ) -> exn 
+  | Compilation_error (Invalid_import_qualifier _ ) -> exn 
+  | _ -> (
+    let file_name = Util.option_default "" (Loc.file_name loc) in 
+    let line      = Loc.line loc in 
+    let detail    = Printexc.to_string exn in  
+    Compilation_error (Parsing_error (file_name, line, detail))
+  )
 
 let () =
   Printexc.register_printer (fun exn ->
@@ -182,8 +194,8 @@ let import_file_not_found file_name =
 let programmatic_error e = 
   raise (Compilation_error (Programatic_error e)) 
 
-let invalid_import_qualifier () = 
-  raise (Compilation_error Invalid_import_qualifier)
+let invalid_import_qualifier loc  = 
+  raise (Compilation_error (Invalid_import_qualifier loc))
 
 let invalid_file_name file_name = 
   raise (Compilation_error (Invalid_file_name file_name)) 
@@ -200,8 +212,8 @@ let missing_semicolon_for_enum_value enum_value =
 let invalid_enum_specification enum_name = 
   raise (Compilation_error (Invalid_enum_specification enum_name))
 
-let missing_one_of_name () = 
-  raise (Compilation_error Missing_one_of_name)
+let missing_one_of_name loc = 
+  raise (Compilation_error (Missing_one_of_name loc))
 
 let parsing_error file_name line detail = 
   raise (Compilation_error (Parsing_error (file_name, line, detail)))

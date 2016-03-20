@@ -27,7 +27,7 @@
 %token OPTIONAL
 %token REPEATED
 
-%token ONE_OF
+%token <Loc.t> ONE_OF
 
 %token MESSAGE
 
@@ -35,7 +35,7 @@
 
 %token PACKAGE
 
-%token IMPORT
+%token <Loc.t> IMPORT
 %token PUBLIC
 
 %token OPTION
@@ -63,7 +63,7 @@
 %token <string> STRING 
 %token <int>    INT
 %token <float>  FLOAT
-%token <string> IDENT
+%token <Loc.t * string> IDENT
 %token EOF
 
 %start field_options_
@@ -142,17 +142,17 @@ syntax:
 import:
   | IMPORT STRING semicolon         { Pbpt_util.import $2} 
   | IMPORT PUBLIC STRING semicolon  { Pbpt_util.import ~public:() $3 }
-  | IMPORT IDENT STRING semicolon   { Exception.invalid_import_qualifier () } 
+  | IMPORT IDENT STRING semicolon   { Exception.invalid_import_qualifier $1 } 
 
 package_declaration :
-  | PACKAGE IDENT semicolon {$2}  
+  | PACKAGE IDENT semicolon {snd $2}  
 
 message : 
   | MESSAGE IDENT LBRACE message_body_content_list rbrace { 
-    Pbpt_util.message ~content:$4 $2
+    Pbpt_util.message ~content:$4 (snd $2)
   } 
   | MESSAGE IDENT LBRACE rbrace { 
-    Pbpt_util.message ~content:[]  $2
+    Pbpt_util.message ~content:[]  (snd $2)
   } 
 
 message_body_content_list:
@@ -169,10 +169,10 @@ message_body_content :
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {
-    Pbpt_util.extend $2 $4 
+    Pbpt_util.extend (snd $2) $4 
   }
   | EXTEND IDENT LBRACE rbrace {
-    Pbpt_util.extend $2 [] 
+    Pbpt_util.extend (snd $2) [] 
   }
 
 normal_field_list :
@@ -193,10 +193,10 @@ extension_range :
 
 oneof :
   | ONE_OF IDENT LBRACE oneof_field_list rbrace { 
-    Pbpt_util.oneof ~fields:$4 $2 
+    Pbpt_util.oneof ~fields:$4 (snd $2) 
   }  
   | ONE_OF LBRACE oneof_field_list rbrace { 
-    Exception.missing_one_of_name ()
+    Exception.missing_one_of_name $1
   }  
 
 oneof_field_list :
@@ -205,22 +205,22 @@ oneof_field_list :
 
 oneof_field : 
   | IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.oneof_field ~type_:$1 ~number:$4 ~options:$5 $2  
+    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 ~options:$5 $2  
   } 
   | IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.oneof_field ~type_:$1 ~number:$4 $2  
+    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 $2  
   } 
 
 normal_field : 
   | label IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 ~options:$6 $3
+    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 ~options:$6 $3
   } 
   | label IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 $3 
+    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
   } 
 
 field_name :
-  | IDENT     {$1}
+  | IDENT     {snd $1}
   | REQUIRED  {"required"}
   | OPTIONAL  {"optional"}
   | REPEATED  {"repeated"}
@@ -251,16 +251,16 @@ field_option_list :
   | field_option COMMA field_option_list  { $1::$3 }
 
 field_option :
-  | IDENT EQUAL constant { ($1, $3) } 
-  | LPAREN IDENT RPAREN EQUAL constant { ($2, $5)} 
+  | IDENT EQUAL constant { (snd $1, $3) } 
+  | LPAREN IDENT RPAREN EQUAL constant { (snd $2, $5)} 
 
 file_option_identifier_item :
-  | IDENT                   {$1}
-  | LBRACE IDENT RBRACE     {$2}
+  | IDENT                   {snd $1}
+  | LBRACE IDENT RBRACE     {snd $2}
 
 file_option_identifier : 
   | file_option_identifier_item    {$1}
-  | file_option_identifier IDENT   {$1 ^ $2}
+  | file_option_identifier IDENT   {$1 ^ (snd $2)}
 
 file_option :
   | OPTION file_option_identifier EQUAL constant semicolon { ($2, $4) }
@@ -269,7 +269,7 @@ constant :
   | INT        { Pbpt.Constant_int $1 }
   | FLOAT      { Pbpt.Constant_float $1 }
   | IDENT      { 
-    match $1 with 
+    match (snd $1) with 
     | "true"   -> Pbpt.Constant_bool true 
     | "false"  -> Pbpt.Constant_bool false 
     | litteral -> Pbpt.Constant_litteral litteral 
@@ -277,21 +277,21 @@ constant :
   | STRING     { Pbpt.Constant_string $1 }; 
 
 enum:
-  | ENUM IDENT LBRACE enum_values rbrace {Pbpt_util.enum ~enum_values:$4 $2 } 
+  | ENUM IDENT LBRACE enum_values rbrace {Pbpt_util.enum ~enum_values:$4 (snd $2) } 
 
 enum_values:
   |                              { [] }
   | enum_value enum_values       { $1::$2 }; 
 
 enum_value : 
-  | IDENT EQUAL INT semicolon  { Pbpt_util.enum_value ~int_value:$3 $1 } 
+  | IDENT EQUAL INT semicolon  { Pbpt_util.enum_value ~int_value:$3 (snd $1) } 
   | IDENT EQUAL INT { 
-    Exception.missing_semicolon_for_enum_value $1 
+    Exception.missing_semicolon_for_enum_value (snd $1) 
   }
-  | IDENT EQUAL INT COMMA { Exception.invalid_enum_specification $1 }
-  | IDENT COMMA           { Exception.invalid_enum_specification $1 }
-  | IDENT SEMICOLON       { Exception.invalid_enum_specification $1 }
-  | IDENT                 { Exception.invalid_enum_specification $1 }
+  | IDENT EQUAL INT COMMA { Exception.invalid_enum_specification (snd $1) }
+  | IDENT COMMA           { Exception.invalid_enum_specification (snd $1) }
+  | IDENT SEMICOLON       { Exception.invalid_enum_specification (snd $1) }
+  | IDENT                 { Exception.invalid_enum_specification (snd $1) }
 
 semicolon:
   | SEMICOLON           {()} 

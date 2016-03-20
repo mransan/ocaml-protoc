@@ -32,27 +32,25 @@ let create_hashtable size init =
   ) init;
   tbl
 
-let keywords = create_hashtable 50 [
-  "message"    , MESSAGE; 
-  "required"   , REQUIRED; 
-  "optional"   , OPTIONAL; 
-  "repeated"   , REPEATED;
-  "oneof"      , ONE_OF;
-  "enum"       , ENUM;
-  "package"    , PACKAGE;
-  "import"     , IMPORT;
-  "option"     , OPTION;
-  "extensions" , EXTENSIONS;
-  "extend"     , EXTEND;
-  "syntax"     , SYNTAX;
-  "public"     , PUBLIC;
-  "to"         , TO;
-  "max"        , MAX;
-]
 
-let resolve_identifier ident = 
-  try Hashtbl.find keywords ident 
-  with | Not_found -> IDENT ident 
+let resolve_identifier loc ident = 
+  match ident, loc with 
+  | "message"    , _   -> MESSAGE 
+  | "required"   , _   -> REQUIRED 
+  | "optional"   , _   -> OPTIONAL 
+  | "repeated"   , _   -> REPEATED
+  | "oneof"      , loc -> ONE_OF loc
+  | "enum"       , _   -> ENUM
+  | "package"    , _   -> PACKAGE
+  | "import"     , loc -> IMPORT loc 
+  | "option"     , _   -> OPTION
+  | "extensions" , _   -> EXTENSIONS
+  | "extend"     , _   -> EXTEND
+  | "syntax"     , _   -> SYNTAX
+  | "public"     , _   -> PUBLIC
+  | "to"         , _   -> TO
+  | "max"        , _   -> MAX
+  | x            , loc -> IDENT (loc, ident) 
 
 type comment =
   | Comment_value of string  
@@ -126,7 +124,7 @@ rule lexer = parse
   | inf_litteral  { FLOAT nan }
   | newline       { update_loc lexbuf; lexer lexbuf }
   | blank         { lexer lexbuf }
-  | full_ident    { resolve_identifier (Lexing.lexeme lexbuf) }
+  | full_ident    { resolve_identifier (Loc.from_lexbuf lexbuf) (Lexing.lexeme lexbuf) }
   | eof           { EOF }
   | _             { failwith @@ Printf.sprintf "Unknown character found %s" @@
   Lexing.lexeme lexbuf}  

@@ -131,6 +131,7 @@ let () =
   | exception E.Compilation_error _ -> ()
   | exception exn -> print_endline @@ Printexc.to_string exn ; assert false 
 
+  (* 
 let () = 
   let s = "
   message M {
@@ -146,6 +147,7 @@ let () =
   | exception exn -> 
     let s = Printexc.to_string exn  in 
     assert ("Missing oneof name" = s) 
+*)
 
 let () = 
   print_endline "Parse Message ... Ok"
