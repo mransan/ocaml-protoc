@@ -45,3 +45,4 @@ let caml_file_name_of_proto_file_name proto =
   else 
     String.concat "_" @@ List.rev @@ ("pb" :: (List.tl splitted)) 
 
+let mutable_record_name s = s ^ "_mutable" 

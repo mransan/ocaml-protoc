@@ -1,3 +1,5 @@
+[@@@ocaml.warning "-30"]
+
 type test_type =
   | Encode of int
   | Decode
@@ -9,22 +11,43 @@ type test_id =
   | Int_packed_repeated 
 
 type test_request = {
+  type_ : test_type;
+  file_name : string;
+  test_id : test_id;
+}
+
+and test_request_mutable = {
   mutable type_ : test_type;
   mutable file_name : string;
   mutable test_id : test_id;
 }
 
 type test_requests = {
+  requests : test_requests list;
+}
+
+and test_requests_mutable = {
   mutable requests : test_requests list;
 }
 
 type encode_data = {
+  creation_time : float;
+  encode_time : float;
+  to_file_time : float;
+}
+
+and encode_data_mutable = {
   mutable creation_time : float;
   mutable encode_time : float;
   mutable to_file_time : float;
 }
 
 type decode_data = {
+  from_file_time : float;
+  decode_time : float;
+}
+
+and decode_data_mutable = {
   mutable from_file_time : float;
   mutable decode_time : float;
 }
@@ -34,20 +57,38 @@ type test_response_data =
   | Decode of decode_data
 
 and test_response = {
+  difficulty_size : int;
+  test_id : test_id;
+  data : test_response_data;
+}
+
+and test_response_mutable = {
   mutable difficulty_size : int;
   mutable test_id : test_id;
   mutable data : test_response_data;
 }
 
 type test_responses = {
+  responses : test_responses list;
+}
+
+and test_responses_mutable = {
   mutable responses : test_responses list;
 }
 
 type int32_list = {
+  int32_list : int32 list;
+}
+
+and int32_list_mutable = {
   mutable int32_list : int32 list;
 }
 
 type int_list = {
+  int_list : int list;
+}
+
+and int_list_mutable = {
   mutable int_list : int list;
 }
 
@@ -55,7 +96,15 @@ type int_repeated = {
   int_repeated : int Pbrt.Repeated_field.t;
 }
 
+and int_repeated_mutable = {
+  int_repeated : int Pbrt.Repeated_field.t;
+}
+
 type int_packed_repeated = {
+  int_packed_repeated : int Pbrt.Repeated_field.t;
+}
+
+and int_packed_repeated_mutable = {
   int_packed_repeated : int Pbrt.Repeated_field.t;
 }
 
@@ -69,7 +118,17 @@ let rec default_test_request () : test_request = {
   test_id = default_test_id ();
 }
 
+and default_test_request_mutable () : test_request_mutable = {
+  type_ = default_test_type ();
+  file_name = "";
+  test_id = default_test_id ();
+}
+
 let rec default_test_requests () : test_requests = {
+  requests = [];
+}
+
+and default_test_requests_mutable () : test_requests_mutable = {
   requests = [];
 }
 
@@ -79,7 +138,18 @@ let rec default_encode_data () : encode_data = {
   to_file_time = 0.;
 }
 
+and default_encode_data_mutable () : encode_data_mutable = {
+  creation_time = 0.;
+  encode_time = 0.;
+  to_file_time = 0.;
+}
+
 let rec default_decode_data () : decode_data = {
+  from_file_time = 0.;
+  decode_time = 0.;
+}
+
+and default_decode_data_mutable () : decode_data_mutable = {
   from_file_time = 0.;
   decode_time = 0.;
 }
@@ -91,7 +161,17 @@ let rec default_test_response () : test_response = {
   data = Encode (default_encode_data ());
 }
 
+and default_test_response_mutable () : test_response_mutable = {
+  difficulty_size = 0;
+  test_id = default_test_id ();
+  data = Encode (default_encode_data ());
+}
+
 let rec default_test_responses () : test_responses = {
+  responses = [];
+}
+
+and default_test_responses_mutable () : test_responses_mutable = {
   responses = [];
 }
 
@@ -99,7 +179,15 @@ let rec default_int32_list () : int32_list = {
   int32_list = [];
 }
 
+and default_int32_list_mutable () : int32_list_mutable = {
+  int32_list = [];
+}
+
 let rec default_int_list () : int_list = {
+  int_list = [];
+}
+
+and default_int_list_mutable () : int_list_mutable = {
   int_list = [];
 }
 
@@ -107,7 +195,15 @@ let rec default_int_repeated () : int_repeated = {
   int_repeated = Pbrt.Repeated_field.make (0);
 }
 
+and default_int_repeated_mutable () : int_repeated_mutable = {
+  int_repeated = Pbrt.Repeated_field.make (0);
+}
+
 let rec default_int_packed_repeated () : int_packed_repeated = {
+  int_packed_repeated = Pbrt.Repeated_field.make (0);
+}
+
+and default_int_packed_repeated_mutable () : int_packed_repeated_mutable = {
   int_packed_repeated = Pbrt.Repeated_field.make (0);
 }
 
@@ -135,7 +231,7 @@ let rec decode_test_id d =
   | _ -> failwith "Unknown value for enum test_id"
 
 let rec decode_test_request d =
-  let v = default_test_request () in
+  let v = default_test_request_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -146,10 +242,11 @@ let rec decode_test_request d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:test_request = Obj.magic v in
   v
 
 let rec decode_test_requests d =
-  let v = default_test_requests () in
+  let v = default_test_requests_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -159,10 +256,11 @@ let rec decode_test_requests d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:test_requests = Obj.magic v in
   v
 
 let rec decode_encode_data d =
-  let v = default_encode_data () in
+  let v = default_encode_data_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -173,10 +271,11 @@ let rec decode_encode_data d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:encode_data = Obj.magic v in
   v
 
 let rec decode_decode_data d =
-  let v = default_decode_data () in
+  let v = default_decode_data_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -186,11 +285,12 @@ let rec decode_decode_data d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:decode_data = Obj.magic v in
   v
 
 
 let rec decode_test_response d =
-  let v = default_test_response () in
+  let v = default_test_response_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -202,10 +302,11 @@ let rec decode_test_response d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:test_response = Obj.magic v in
   v
 
 let rec decode_test_responses d =
-  let v = default_test_responses () in
+  let v = default_test_responses_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -215,10 +316,11 @@ let rec decode_test_responses d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:test_responses = Obj.magic v in
   v
 
 let rec decode_int32_list d =
-  let v = default_int32_list () in
+  let v = default_int32_list_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -228,10 +330,11 @@ let rec decode_int32_list d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:int32_list = Obj.magic v in
   v
 
 let rec decode_int_list d =
-  let v = default_int_list () in
+  let v = default_int_list_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -241,10 +344,11 @@ let rec decode_int_list d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:int_list = Obj.magic v in
   v
 
 let rec decode_int_repeated d =
-  let v = default_int_repeated () in
+  let v = default_int_repeated_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -253,10 +357,11 @@ let rec decode_int_repeated d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:int_repeated = Obj.magic v in
   v
 
 let rec decode_int_packed_repeated d =
-  let v = default_int_packed_repeated () in
+  let v = default_int_packed_repeated_mutable () in
   let rec loop () = 
     match Pbrt.Decoder.key d with
     | None -> (
@@ -265,6 +370,7 @@ let rec decode_int_packed_repeated d =
     | Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()
   in
   loop ();
+  let v:int_packed_repeated = Obj.magic v in
   v
 
 let rec encode_test_type (v:test_type) encoder = 

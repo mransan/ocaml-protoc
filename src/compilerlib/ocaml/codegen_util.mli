@@ -21,6 +21,13 @@ val function_name_of_user_defined : string -> Ocaml_types.user_defined_type -> s
  *)
 
 val caml_file_name_of_proto_file_name : string -> string
-(* [caml_file_name_of_proto_file_name filename] returns the OCaml file name from
-   the protobuf file name
+(** [caml_file_name_of_proto_file_name filename] returns the OCaml file name from
+    the protobuf file name
  *)
+
+val mutable_record_name : string -> string 
+(** [mutable_record_name record_name] returns the type name of the `mutable`
+    type name. We use mutable types when decoding for better performance, 
+    this function encapsulate the nameing convention for this additional
+    type. 
+ *) 
