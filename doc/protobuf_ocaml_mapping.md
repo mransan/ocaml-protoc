@@ -123,8 +123,8 @@ Will compile to the following OCaml type:
 
 ```OCaml
 type int_list_cons = {
-  mutable value : int;
-  mutable next : int_list;
+  value : int;
+  next : int_list;
 }
 
 and int_list =
@@ -194,13 +194,13 @@ Willl generate:
 
 ```OCaml
 type ma_mb = {
-  mutable bfield : int32;
+  bfield : int32;
 }
 
 (* ... *)
 
 type ma = {
-  mutable bfield : ma_mb;
+  bfield : ma_mb;
 }
 ```
 
