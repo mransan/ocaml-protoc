@@ -131,6 +131,7 @@ val compile_message_p2:
 
 val compile_message_p1 : 
   string -> 
+  Pbpt.file_option list ->
   Pbtt.type_scope -> 
   Pbpt.message ->
   Pbtt.unresolved Pbtt.proto

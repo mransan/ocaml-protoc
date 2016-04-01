@@ -4,7 +4,7 @@ module F = Fmt
 
 open Codegen_util
 
-let type_decl_of_and = function | Some _ -> "and" | None -> "type" 
+let type_decl_of_and = function | Some () -> "and" | None -> "type" 
 
 let gen_type_record ?mutable_ ?and_ {T.record_name; fields } sc = 
   

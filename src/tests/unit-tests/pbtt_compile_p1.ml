@@ -3,6 +3,8 @@ let file_name = "a.proto"
 let parse f s  = 
   f Pblexer.lexer (Lexing.from_string s)
   
+let file_options = []
+
 let () = 
   let s = "
   message TestM { 
@@ -14,7 +16,7 @@ let () =
   }"
   in 
   let m = parse Pbparser.message_ s in 
-  let all_types = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope m in 
+  let all_types = Pbtt_util.compile_message_p1 file_name file_options Pbtt_util.empty_scope m in 
   assert (2 =List.length all_types); 
   match List.nth all_types 0 with 
   | {Pbtt.file_name; scope; spec = Pbtt.Enum {
@@ -59,7 +61,7 @@ let () =
   }"
   in 
   let ast  = parse Pbparser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 file_name Pbtt_util.empty_scope ast in  
+  let all_messages = Pbtt_util.compile_message_p1 file_name file_options Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 1);
   begin
   match List.hd all_messages with
@@ -85,7 +87,7 @@ let () =
   }"
   in 
   let ast  = parse Pbparser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in  
+  let all_messages = Pbtt_util.compile_message_p1 "a.proto" file_options Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 2);
   match List.hd all_messages with
   | {Pbtt.file_name; scope; spec = Pbtt.Message {
@@ -122,7 +124,7 @@ let () =
   }"
   in 
   let ast  = parse Pbparser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope ast in  
+  let all_messages = Pbtt_util.compile_message_p1 "a.proto" file_options Pbtt_util.empty_scope ast in  
   assert (List.length all_messages = 1);
   match List.hd all_messages with
   | {Pbtt.file_name; scope; spec = Pbtt.Message {
@@ -154,7 +156,7 @@ let () =
   }
   " in 
   let ast = parse Pbparser.message_ s in 
-  let all_messages = Pbtt_util.compile_message_p1 "a.proto" Pbtt_util.empty_scope  ast in 
+  let all_messages = Pbtt_util.compile_message_p1 "a.proto" file_options Pbtt_util.empty_scope  ast in 
   assert (6 = List.length all_messages); 
   let filtered = Pbtt_util.find_all_types_in_field_scope all_messages [] in 
   assert (1 = List.length filtered);

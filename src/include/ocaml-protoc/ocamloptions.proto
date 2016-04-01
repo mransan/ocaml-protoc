@@ -14,5 +14,7 @@ extend google.protobuf.FieldOptions {
     optional bool ocaml_mutable             = 100004;
 }
 
-
-
+extend google.protobuf.FileOptions {
+    optional OCamlType int32_type = 100002;
+    optional OCamlType int64_type = 100003;
+}

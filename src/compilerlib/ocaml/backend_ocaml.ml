@@ -178,7 +178,7 @@ let user_defined_type_of_id all_types file_name i =
         then OCaml_types.(User_defined_type {module_ = None; type_name}) 
         else OCaml_types.(User_defined_type {module_ = Some field_type_module; type_name}) 
 
-let compile_field ?as_constructor all_types f type_qualifier file_name field = 
+let compile_field ?as_constructor file_options all_types f type_qualifier file_name field = 
   let field_name = Pbtt_util.field_name field in 
   let encoding_type = Pbtt_util.field_type field in 
 
@@ -187,7 +187,20 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     | None   -> record_field_name field_name 
   in 
 
-  let ocaml_type = Pbtt_util.field_option field "ocaml_type" in 
+  let ocaml_type = match Pbtt_util.field_option field "ocaml_type" with
+    | Some (Pbpt.Constant_litteral "int_t") -> `Int_t
+    | _ -> `None  
+  in 
+
+  let int32_type = match Pbpt_util.file_option file_options "int32_type" with
+    | Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int 
+    | _ -> OCaml_types.Int32
+  in 
+  
+  let int64_type = match Pbpt_util.file_option file_options "int64_type" with
+    | Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int 
+    | _ -> OCaml_types.Int64
+  in 
 
   let mutable_ = match Pbtt_util.field_option field "ocaml_mutable"  with
     | Some (Pbpt.Constant_bool v) -> v 
@@ -200,22 +213,22 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
   let field_type = match encoding_type, ocaml_type with
     | Pbtt.Field_type_double, _ -> OCaml_types.Float
     | Pbtt.Field_type_float, _ ->  OCaml_types.Float
-    | Pbtt.Field_type_int32, Some (Pbpt.Constant_litteral "int_t") ->  OCaml_types.Int
-    | Pbtt.Field_type_int64, Some (Pbpt.Constant_litteral "int_t") ->  OCaml_types.Int
-    | Pbtt.Field_type_uint32, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
-    | Pbtt.Field_type_uint64, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
-    | Pbtt.Field_type_sint32, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
-    | Pbtt.Field_type_sint64, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
-    | Pbtt.Field_type_fixed32, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
-    | Pbtt.Field_type_fixed64, Some (Pbpt.Constant_litteral "int_t") -> OCaml_types.Int
-    | Pbtt.Field_type_int32, _ ->  OCaml_types.Int32
-    | Pbtt.Field_type_int64, _ ->  OCaml_types.Int64
-    | Pbtt.Field_type_uint32, _ -> OCaml_types.Int32
-    | Pbtt.Field_type_uint64, _ -> OCaml_types.Int64
-    | Pbtt.Field_type_sint32, _ -> OCaml_types.Int32
-    | Pbtt.Field_type_sint64, _ -> OCaml_types.Int64
-    | Pbtt.Field_type_fixed32, _ -> OCaml_types.Int32
-    | Pbtt.Field_type_fixed64, _ -> OCaml_types.Int64
+    | Pbtt.Field_type_int32, `Int_t ->  OCaml_types.Int
+    | Pbtt.Field_type_int64, `Int_t ->  OCaml_types.Int
+    | Pbtt.Field_type_uint32, `Int_t -> OCaml_types.Int
+    | Pbtt.Field_type_uint64, `Int_t -> OCaml_types.Int
+    | Pbtt.Field_type_sint32, `Int_t -> OCaml_types.Int
+    | Pbtt.Field_type_sint64, `Int_t -> OCaml_types.Int
+    | Pbtt.Field_type_fixed32, `Int_t -> OCaml_types.Int
+    | Pbtt.Field_type_fixed64, `Int_t -> OCaml_types.Int
+    | Pbtt.Field_type_int32, _ ->  int32_type
+    | Pbtt.Field_type_int64, _ ->  int64_type
+    | Pbtt.Field_type_uint32, _ -> int32_type
+    | Pbtt.Field_type_uint64, _ -> int64_type
+    | Pbtt.Field_type_sint32, _ -> int32_type
+    | Pbtt.Field_type_sint64, _ -> int64_type
+    | Pbtt.Field_type_fixed32, _ -> int32_type
+    | Pbtt.Field_type_fixed64, _ -> int64_type
     | Pbtt.Field_type_sfixed32, _ -> 
         E.unsupported_field_type ~field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
     | Pbtt.Field_type_sfixed64, _ -> 
@@ -233,13 +246,13 @@ let compile_field ?as_constructor all_types f type_qualifier file_name field =
     OCaml_types.mutable_; 
   }
 
-let compile_oneof all_types file_name message_scope outer_message_name variant_encoding {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
+let compile_oneof file_options all_types file_name message_scope outer_message_name variant_encoding {Pbtt.oneof_name ; Pbtt.oneof_fields } = 
   let {Pbtt.message_names; _ } = message_scope in 
   let variant_name = match variant_encoding with
     | OCaml_types.Inlined_within_message -> type_name (message_names @ [outer_message_name]) oneof_name 
     | OCaml_types.Standalone -> type_name (message_names @ [outer_message_name]) "" in 
   let variant_constructors = List.map (fun field -> 
-    compile_field ~as_constructor:() all_types (fun x -> x) OCaml_types.No_qualifier file_name field 
+    compile_field ~as_constructor:() file_options all_types (fun x -> x) OCaml_types.No_qualifier file_name field 
   ) oneof_fields in 
   OCaml_types.({
     variant_name; 
@@ -248,6 +261,7 @@ let compile_oneof all_types file_name message_scope outer_message_name variant_e
   })
 
 let compile_message  
+  (file_options: Pbpt.file_option list)
   (all_types: Pbtt.resolved Pbtt.proto) 
   (file_name:string) 
   (scope:Pbtt.type_scope) 
@@ -275,7 +289,7 @@ let compile_message
   | Pbtt.Message_oneof_field f :: [] -> (
     [OCaml_types.({
       module_; 
-      spec = Variant (compile_oneof all_types file_name scope message_name Standalone f);  
+      spec = Variant (compile_oneof file_options all_types file_name scope message_name Standalone f);  
     })]
   ) 
   | _ -> 
@@ -288,10 +302,10 @@ let compile_message
           | `Repeated , Some (Pbpt.Constant_litteral "repeated_field") -> OCaml_types.Repeated_field 
           | `Repeated , _    -> OCaml_types.List
         in 
-        (variants, (compile_field all_types (fun x -> OCaml_types.Regular_field x) type_qualifier file_name f)::fields)
+        (variants, (compile_field file_options all_types (fun x -> OCaml_types.Regular_field x) type_qualifier file_name f)::fields)
       )
       | Pbtt.Message_oneof_field f -> (
-        let variant = compile_oneof all_types file_name scope message_name OCaml_types.Inlined_within_message f in 
+        let variant = compile_oneof file_options all_types file_name scope message_name OCaml_types.Inlined_within_message f in 
         let field   = OCaml_types.({
           field_type =  User_defined_type {type_name = variant.variant_name; module_ = None}; 
           field_name =  record_field_name f.Pbtt.oneof_name;
@@ -323,6 +337,8 @@ let compile_enum file_name scope {Pbtt.enum_name; Pbtt.enum_values; } =
   }})
 
 let compile all_types = function 
-  | {Pbtt.spec = Pbtt.Message m ; file_name; scope; _ } -> compile_message all_types file_name scope m 
-  | {Pbtt.spec = Pbtt.Enum    e ; file_name; scope; _ } -> [compile_enum file_name scope e] 
+  | {Pbtt.spec = Pbtt.Message m ; file_name; file_options; scope; _ } -> 
+    compile_message file_options all_types file_name scope m 
+  | {Pbtt.spec = Pbtt.Enum    e ; file_name; scope; _ } -> 
+    [compile_enum file_name scope e] 
 
