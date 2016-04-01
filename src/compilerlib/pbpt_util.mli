@@ -107,3 +107,8 @@ val proto:
 (** {2 Miscellaneous functionality } *)
 
 val message_printer :?level:int -> Pbpt.message -> unit 
+
+val file_option : Pbpt.file_option list -> string -> Pbpt.constant option 
+(** [file_option file_options name] return [Some file_option] for the given
+    [name]
+ *)

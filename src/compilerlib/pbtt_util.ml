@@ -243,21 +243,22 @@ let rec list_assoc2 x = function
   | (a,b)::l -> if compare b x = 0 then a else list_assoc2 x l
 
 (** type creation function *)
-let type_of_spec file_name id scope spec = { 
+let type_of_spec file_name file_options id scope spec = { 
   Pbtt.id; 
   Pbtt.scope;
   Pbtt.file_name;
+  Pbtt.file_options;
   Pbtt.spec; 
 }
 
 (** compile a [Pbpt] enum to a [Pbtt] type *) 
-let compile_enum_p1 file_name scope {Pbpt.enum_id; enum_name; enum_values } : 'a Pbtt.proto_type =  
+let compile_enum_p1 file_name file_options scope {Pbpt.enum_id; enum_name; enum_values } : 'a Pbtt.proto_type =  
   let enum_values = List.map (fun enum_value -> {
     Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
     Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
   }) enum_values in 
 
-  type_of_spec file_name enum_id scope (Pbtt.Enum {
+  type_of_spec file_name file_options enum_id scope (Pbtt.Enum {
     Pbtt.enum_name;
     Pbtt.enum_values
   })
@@ -265,7 +266,7 @@ let compile_enum_p1 file_name scope {Pbpt.enum_id; enum_name; enum_values } : 'a
 (** compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
     defined more than one type). 
   *)
-let rec compile_message_p1 file_name message_scope ({
+let rec compile_message_p1 file_name file_options message_scope ({
   Pbpt.id;
   Pbpt.message_name; 
   Pbpt.message_body; 
@@ -284,13 +285,13 @@ let rec compile_message_p1 file_name message_scope ({
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
         (field :: message_body, extensions, all_types)
     | Pbpt.Message_sub m -> 
-        let all_sub_types = compile_message_p1 file_name sub_scope m in 
+        let all_sub_types = compile_message_p1 file_name file_options sub_scope m in 
         (message_body,  extensions, all_types @ all_sub_types)
     | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
         (
           message_body,  
           extensions, 
-          all_types @ [compile_enum_p1 file_name sub_scope enum]
+          all_types @ [compile_enum_p1 file_name file_options sub_scope enum]
         )
     | Pbpt.Message_extension extension_ranges -> 
         (message_body,  extensions @ extension_ranges , all_types)
@@ -324,19 +325,19 @@ let rec compile_message_p1 file_name message_scope ({
        List.fold_left validate_duplicate number_index oneof_fields
   ) [] message_body ;  
 
-  all_sub @ [type_of_spec file_name id message_scope Pbtt.(Message {
+  all_sub @ [type_of_spec file_name file_options id message_scope Pbtt.(Message {
     extensions; 
     message_name; 
     message_body;
   })] 
 
-let compile_proto_p1 file_name {Pbpt.package; messages; enums; _ } =  
+let compile_proto_p1 file_name {Pbpt.package; messages; enums; file_options; _ } =  
   let scope = scope_of_package package in 
   let pbtt_msgs = List.fold_right (fun e pbtt_msgs -> 
-    (compile_enum_p1 file_name scope e) :: pbtt_msgs 
+    (compile_enum_p1 file_name file_options scope e) :: pbtt_msgs 
   ) enums [] in
   List.fold_left (fun pbtt_msgs pbpt_msg -> 
-    pbtt_msgs @ compile_message_p1 file_name scope pbpt_msg
+    pbtt_msgs @ compile_message_p1 file_name file_options scope pbpt_msg
   ) pbtt_msgs messages 
 
 let type_scope_of_type {Pbtt.scope; _ } = scope 
@@ -449,14 +450,16 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
 
 let compile_proto_p2 all_types t = 
   match t with 
-  | {Pbtt.file_name; id; scope; spec = Pbtt.Message  m } -> {
+  | {Pbtt.file_name; file_options; id; scope; spec = Pbtt.Message  m } -> {
     Pbtt.file_name; 
+    Pbtt.file_options;
     Pbtt.scope;
     Pbtt.id; 
     Pbtt.spec = Pbtt.Message (compile_message_p2 all_types scope m) 
   }
-  | {Pbtt.file_name; id; scope; spec = (Pbtt.Enum _ ) as spec ; } ->  { 
+  | {Pbtt.file_name; file_options; id; scope; spec = (Pbtt.Enum _ ) as spec ; } ->  { 
     Pbtt.file_name; 
+    Pbtt.file_options; 
     Pbtt.id;
     Pbtt.scope;
     Pbtt.spec; 

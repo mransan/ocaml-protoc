@@ -168,3 +168,7 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
   in 
   proto 
    
+let file_option (file_options:Pbpt.file_option list) (name:string) =
+  match List.assoc name file_options with
+  | x -> Some x 
+  | exception Not_found -> None  

@@ -268,7 +268,7 @@ field_option :
 
 file_option_identifier_item :
   | IDENT                   {snd $1}
-  | LBRACE IDENT RBRACE     {snd $2}
+  | LPAREN IDENT RPAREN     {snd $2}
 
 file_option_identifier : 
   | file_option_identifier_item    {$1}

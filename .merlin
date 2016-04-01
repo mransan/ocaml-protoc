@@ -1,0 +1,11 @@
+S src/
+S src/compilerlib/
+S src/compilerlib/ocaml
+S src/runtime
+
+B _build/src/
+B _build/src/compilerlib/
+B _build/src/compilerlib/ocaml
+B _build/src/runtime
+
+PKG ppx_deriving_protobuf.runtime

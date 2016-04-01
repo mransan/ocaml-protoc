@@ -154,6 +154,7 @@ type 'a proto_type  = {
   scope : type_scope;
   id :  int; 
   file_name : string; 
+  file_options : Pbpt.file_option list;
   spec : 'a proto_type_spec;
 }
 

@@ -1,0 +1,21 @@
+import "ocamloptions.proto";
+
+option (int32_type) = int_t;
+option (int64_type) = int_t;
+
+message m {
+    message i {
+        required int32 i1 = 1;
+        required int64 i2 = 2;
+    }
+
+    required i     m1 = 1;
+    required int32 m2 = 2;
+    required int64 m3 = 3;
+
+    oneof o {
+
+        int32 m4 = 4;
+        int64 m5 = 5;
+    }
+}
