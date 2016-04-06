@@ -10,7 +10,7 @@ let constructor_name s =
   String.capitalize @@ String.lowercase s 
 
 let gen_encode_field_key sc {T.field_number; T.payload_kind; T.packed; _ } = 
-  F.line sc @@ sp "Pbrt.Toder.key (%i, Pbrt.%s) encoder; " 
+  F.line sc @@ sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
       field_number (constructor_name @@ Codegen_util.string_of_payload_kind payload_kind packed)
 
 let gen_encode_field sc v_name field_encoding field_type = 
@@ -25,16 +25,16 @@ let gen_encode_field sc v_name field_encoding field_type =
   | T.User_defined_type t, false -> 
     let f_name = function_name_of_user_defined "encode" t in 
     if nested 
-    then F.line sc @@ sp "Pbrt.Toder.nested (%s %s) encoder;" f_name v_name 
+    then F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name v_name 
     else F.line sc @@ sp "%s %s encoder;" f_name v_name 
   | T.User_defined_type _, true -> 
     E.invalid_packed_option v_name 
   | T.Unit, false -> 
-    F.line sc "Pbrt.Toder.empty_nested encoder;" 
+    F.line sc "Pbrt.Encoder.empty_nested encoder;" 
   | T.Unit , true -> 
     E.invalid_packed_option v_name
   | _, _ ->  
-    let rt = Backend_ocaml_static.runtime_function (`Tode, payload_kind, field_type) in 
+    let rt = Backend_ocaml_static.runtime_function (`Encode, payload_kind, field_type) in 
     F.line sc @@ sp "%s %s encoder;" rt v_name
 
 let gen_encode_record ?and_ {T.record_name; fields } sc = 
@@ -43,7 +43,6 @@ let gen_encode_record ?and_ {T.record_name; fields } sc =
   F.line sc @@ sp "%s encode_%s (v:%s) encoder = " (let_decl_of_and and_) record_name record_name;
   F.scope sc (fun sc -> 
     List.iter (fun field -> 
-
       let {
         T.encoding = record_field_encoding; 
         field_type; 
@@ -91,7 +90,7 @@ let gen_encode_record ?and_ {T.record_name; fields } sc =
         )
         | T.List, true -> (
           gen_encode_field_key sc field_encoding;
-          F.line sc "Pbrt.Toder.nested (fun encoder ->";
+          F.line sc "Pbrt.Encoder.nested (fun encoder ->";
           F.scope sc (fun sc -> 
             F.line sc "List.iter (fun x -> ";
             F.scope sc (fun sc -> 
@@ -103,7 +102,7 @@ let gen_encode_record ?and_ {T.record_name; fields } sc =
         )
         | T.Repeated_field , true -> (
           gen_encode_field_key sc field_encoding;
-          F.line sc "Pbrt.Toder.nested (fun encoder ->";
+          F.line sc "Pbrt.Encoder.nested (fun encoder ->";
           F.scope sc (fun sc -> 
             F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
             F.scope sc (fun sc -> 
@@ -161,8 +160,8 @@ let gen_encode_const_variant ?and_ {T.cvariant_name; T.cvariant_constructors; } 
     List.iter (fun (name, value) -> 
       F.line sc (
         if value > 0 
-        then sp "| %s -> Pbrt.Toder.int_as_varint %i encoder" name value
-        else sp "| %s -> Pbrt.Toder.int_as_varint (%i) encoder" name value
+        then sp "| %s -> Pbrt.Encoder.int_as_varint %i encoder" name value
+        else sp "| %s -> Pbrt.Encoder.int_as_varint (%i) encoder" name value
       )
     ) cvariant_constructors; 
   )
@@ -181,7 +180,7 @@ let gen_struct ?and_ t sc  =
 
 let gen_sig ?and_ t sc = 
   let f type_name = 
-    F.line sc @@ sp "val encode_%s : %s -> Pbrt.Toder.t -> unit" type_name type_name;
+    F.line sc @@ sp "val encode_%s : %s -> Pbrt.Encoder.t -> unit" type_name type_name;
     F.line sc @@ sp "(** [encode_%s v encoder] encodes [v] with the given [encoder] *)" type_name; 
   in 
   let (), has_encoded = match t with 
