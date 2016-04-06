@@ -1,5 +1,4 @@
 
-module Eu = Encoding_util 
 
 let file_options = []
 
@@ -100,17 +99,17 @@ let () =
     record_name = "m"; 
     fields = [
       {mutable_ = false; field_type = Int32; field_name = "v1"; type_qualifier = No_qualifier;
-      encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 1; nested = false;  payload_kind = Encoding_util.Varint false})};
+      encoding = Regular_field { packed = false; default = None; field_number = 1; nested = false;  payload_kind = Varint false}};
       {mutable_ = false; field_type = String; field_name = "v2"; type_qualifier = No_qualifier;
-      encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes})};
+      encoding = Regular_field { packed = false; default = None; field_number = 2; nested = false; payload_kind = Bytes}};
       {mutable_ = false; field_type = Bool; field_name = "v3"; type_qualifier = Option; 
-      encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 3; nested = false; payload_kind = Encoding_util.Varint false})};
+      encoding = Regular_field { packed = false; default = None; field_number = 3; nested = false; payload_kind = Varint false}};
       {mutable_ = false; field_type = Float; field_name = "v4"; type_qualifier = Option;
-      encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 4; nested = false; payload_kind = Encoding_util.Bits32})};
+      encoding = Regular_field { packed = false; default = None; field_number = 4; nested = false; payload_kind = Bits32}};
       {mutable_ = false; field_type = Float; field_name = "v5"; type_qualifier = Option;
-      encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 5; nested = false; payload_kind = Encoding_util.Bits64})};
+      encoding = Regular_field { packed = false; default = None; field_number = 5; nested = false; payload_kind = Bits64}};
       {mutable_ = false; field_type = Bytes; field_name = "v6"; type_qualifier = No_qualifier;
-      encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 6; nested = false; payload_kind = Encoding_util.Bytes})};
+      encoding = Regular_field { packed = false; default = None; field_number = 6; nested = false; payload_kind = Bytes}};
     ];
   }}) = List.hd ocaml_types);
   () 
@@ -135,7 +134,7 @@ let () =
       record_name = "m1_m2"; 
       fields = [
         {mutable_ = false; field_type = Int32; field_name = "m21"; type_qualifier = No_qualifier;
-         encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
+         encoding = Regular_field { packed = false; default = None; field_number = 1; nested = false; payload_kind = Varint false}};
       ];
     }}) = List.nth ocaml_types 0);
   assert(
@@ -145,9 +144,9 @@ let () =
       record_name = "m1"; 
       fields = [
         {mutable_ = false; field_type = Int32; field_name = "m11"; type_qualifier = No_qualifier;
-         encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
+         encoding = Regular_field { packed = false; default = None; field_number = 1; nested = false; payload_kind = Varint false}};
          {mutable_ = false; field_type = User_defined_type {type_name = "m1_m2"; module_ = None; } ; field_name = "sub"; type_qualifier = No_qualifier;
-        encoding_type = Regular_field Eu.({ packed = false; default = None; field_number = 2; nested = true; payload_kind = Encoding_util.Bytes})};
+        encoding = Regular_field { packed = false; default = None; field_number = 2; nested = true; payload_kind = Bytes}};
       ];
     }}) = List.nth ocaml_types 1);
   () 
@@ -170,9 +169,9 @@ let () =
       variant_name  = "m1_o1"; 
       variant_constructors = [
         {mutable_ = false; field_type = Int32; field_name = "Intv"; type_qualifier = No_qualifier;
-        encoding_type = Eu.({ packed = false; default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false})};
+        encoding = { packed = false; default = None; field_number = 1; nested = false; payload_kind = Varint false}};
         {mutable_ = false; field_type = String; field_name = "Stringv"; type_qualifier = No_qualifier;
-         encoding_type = Eu.({ packed = false; default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes})};
+         encoding = { packed = false; default = None; field_number = 2; nested = false; payload_kind = Bytes}};
       ];
       variant_encoding = Inlined_within_message;
     }) in
@@ -184,9 +183,9 @@ let () =
       record_name = "m1"; 
       fields = [
         {mutable_ = false; field_type = User_defined_type {type_name = "m1_o1"; module_ = None; } ; field_name = "o1"; type_qualifier = No_qualifier;
-        encoding_type = One_of variant};
+        encoding = One_of variant};
         {mutable_ = false; field_type = Int32; field_name = "v1"; type_qualifier = No_qualifier;
-         encoding_type = Regular_field Eu.({ packed = false; default = None; Encoding_util.field_number = 3; nested = false; payload_kind = Encoding_util.Varint false})};
+         encoding = Regular_field { packed = false; default = None; field_number = 3; nested = false; payload_kind = Varint false}};
       ];
   }}) = List.nth ocaml_types 1);
   () 

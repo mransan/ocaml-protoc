@@ -6,16 +6,16 @@ let () =
       field_type = Int; 
       field_name = "v1"; 
       type_qualifier = No_qualifier;
-      encoding_type = Regular_field Encoding_util.({ 
-        packed = false; default = None; field_number = 1; nested = false; payload_kind = Encoding_util.Varint false}
+      encoding = Regular_field ({ 
+        packed = false; default = None; field_number = 1; nested = false; payload_kind = Varint false}
       )
     }; {
       mutable_ = false;
       field_type = String; 
       field_name = "v2"; 
       type_qualifier = Option;
-      encoding_type = Regular_field Encoding_util. ({ 
-        packed = false; default = None; field_number = 2; nested = false; payload_kind = Encoding_util.Bytes}
+      encoding = Regular_field  ({ 
+        packed = false; default = None; field_number = 2; nested = false; payload_kind = Bytes}
       )
     };{
       (* Make sure the mutable_ is respected in the OCaml 
@@ -25,8 +25,8 @@ let () =
       field_type = User_defined_type {type_name = "other"; module_ = None; }; 
       field_name = "v3"; 
       type_qualifier = No_qualifier;
-      encoding_type = Regular_field Encoding_util.({ 
-        packed = false; default = None; field_number = 3; nested = true ; payload_kind = Encoding_util.Bytes}
+      encoding = Regular_field ({ 
+        packed = false; default = None; field_number = 3; nested = true ; payload_kind = Bytes}
       )
     };];
   }) in

@@ -178,6 +178,42 @@ let user_defined_type_of_id all_types file_name i =
         then OCaml_types.(User_defined_type {module_ = None; type_name}) 
         else OCaml_types.(User_defined_type {module_ = Some field_type_module; type_name}) 
 
+let encoding_of_field_type all_types (field:(Pbtt.resolved, 'a) Pbtt.field) = 
+
+  let packed = match Pbtt_util.field_option field "packed" with 
+    | Some (Pbpt.Constant_bool x) -> x 
+    | Some _ -> E.invalid_packed_option (Pbtt_util.field_name field)  
+    | None -> false 
+  in 
+
+  let pk, nested = match Pbtt_util.field_type field with 
+    | Pbtt.Field_type_double  -> (Ocaml_types.Bits64,false)
+    | Pbtt.Field_type_float  -> (Ocaml_types.Bits32 ,false)
+    | Pbtt.Field_type_int32  -> (Ocaml_types.Varint false,false)
+    | Pbtt.Field_type_int64  -> (Ocaml_types.Varint false,false)
+    | Pbtt.Field_type_uint32  -> (Ocaml_types.Varint false,false)
+    | Pbtt.Field_type_uint64 -> (Ocaml_types.Varint false,false)
+    | Pbtt.Field_type_sint32  -> (Ocaml_types.Varint true,false)
+    | Pbtt.Field_type_sint64  -> (Ocaml_types.Varint true ,false)
+    | Pbtt.Field_type_fixed32  -> (Ocaml_types.Bits32,false)
+    | Pbtt.Field_type_fixed64  -> (Ocaml_types.Bits64,false)
+    | Pbtt.Field_type_sfixed32  -> (Ocaml_types.Bits32,false)
+    | Pbtt.Field_type_sfixed64 -> (Ocaml_types.Bits64,false)
+    | Pbtt.Field_type_bool  -> (Ocaml_types.Varint false ,false)
+    | Pbtt.Field_type_string  -> (Ocaml_types.Bytes,false)
+    | Pbtt.Field_type_bytes  -> (Ocaml_types.Bytes,false)
+    | Pbtt.Field_type_type id -> 
+      match Pbtt_util.type_of_id all_types id with 
+      | {Pbtt.spec = Pbtt.Enum    {Pbtt.enum_name; _ } ;Pbtt.file_name; _ }   -> (Ocaml_types.Varint false, false)
+      | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ } ;Pbtt.file_name; _} -> (Ocaml_types.Bytes, true)
+  in Ocaml_types.({
+    payload_kind = pk;
+    nested; 
+    field_number = Pbtt_util.field_number field;
+    default = Pbtt_util.field_default field;
+    packed;
+  })
+
 let compile_field ?as_constructor file_options all_types f type_qualifier file_name field = 
   let field_name = Pbtt_util.field_name field in 
   let encoding_type = Pbtt_util.field_type field in 
@@ -208,7 +244,7 @@ let compile_field ?as_constructor file_options all_types f type_qualifier file_n
     | None -> false 
   in 
 
-  let field_encoding = Encoding_util.encoding_of_field_type all_types field in 
+  let field_encoding = encoding_of_field_type all_types field in 
 
   let field_type = match encoding_type, ocaml_type with
     | Pbtt.Field_type_double, _ -> OCaml_types.Float
@@ -242,7 +278,7 @@ let compile_field ?as_constructor file_options all_types f type_qualifier file_n
     OCaml_types.field_type; 
     OCaml_types.field_name; 
     OCaml_types.type_qualifier; 
-    OCaml_types.encoding_type = f field_encoding ; 
+    OCaml_types.encoding = f field_encoding ; 
     OCaml_types.mutable_; 
   }
 
@@ -310,7 +346,7 @@ let compile_message
           field_type =  User_defined_type {type_name = variant.variant_name; module_ = None}; 
           field_name =  record_field_name f.Pbtt.oneof_name;
           type_qualifier = No_qualifier;
-          encoding_type = One_of variant; 
+          encoding = One_of variant; 
           mutable_ = false; 
         }) in 
         ((OCaml_types.{module_; spec = Variant variant})::variants, field::fields) 

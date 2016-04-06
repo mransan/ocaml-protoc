@@ -20,10 +20,16 @@ let gen_pp_record  ?and_ {T.record_name; fields } sc =
     F.scope sc (fun sc -> 
       F.line sc "Format.pp_open_vbox fmt 1;";
       List.iter (fun field -> 
-        let {T.field_type; field_name; type_qualifier ; encoding_type} = field in 
+
+        let {
+          T.field_type; 
+          field_name; 
+          type_qualifier ; 
+          encoding = record_field_encoding} = field in 
+
         let x:string = sp "v.%s" field_name in 
-        match encoding_type with 
-        | T.Regular_field encoding_type -> ( 
+        match record_field_encoding with 
+        | T.Regular_field _ -> ( 
           let field_string_of = gen_pp_field field_type in 
           match type_qualifier with
           | T.No_qualifier -> 
@@ -62,7 +68,7 @@ let gen_pp_variant ?and_ {T.variant_name; T.variant_constructors; T.variant_enco
   F.line sc @@ sp "%s pp_%s fmt (v:%s) =" (let_decl_of_and and_) variant_name variant_name;
   F.scope sc (fun sc -> 
     F.line sc "match v with";
-    List.iter (fun {T.encoding_type; field_type; field_name; type_qualifier= _ } ->
+    List.iter (fun {T.field_type; field_name; _ } ->
       let field_string_of = gen_pp_field field_type in 
       match field_type with
       | T.Unit -> 
