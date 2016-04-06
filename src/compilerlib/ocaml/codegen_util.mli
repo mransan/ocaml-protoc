@@ -31,3 +31,9 @@ val mutable_record_name : string -> string
     this function encapsulate the nameing convention for this additional
     type. 
  *) 
+
+val string_of_payload_kind : ?capitalize:unit -> Ocaml_types.payload_kind -> bool -> string 
+(** [string_of_payload_kind ~capitalize:() payload_kind packed] will return the
+    string corresponding to the payload kind. 
+ *)
+

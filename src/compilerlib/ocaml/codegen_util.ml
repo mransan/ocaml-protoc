@@ -46,3 +46,18 @@ let caml_file_name_of_proto_file_name proto =
     String.concat "_" @@ List.rev @@ ("pb" :: (List.tl splitted)) 
 
 let mutable_record_name s = s ^ "_mutable" 
+
+let string_of_payload_kind ?capitalize payload_kind packed = 
+  let s = match payload_kind,  packed with
+  | Ocaml_types.Varint _ , false -> "varint"
+  | Ocaml_types.Bits32   , false -> "bits32"
+  | Ocaml_types.Bits64   , false -> "bits64"
+  | Ocaml_types.Bytes    , _ -> "bytes"
+  | Ocaml_types.Varint _ , true 
+  | Ocaml_types.Bits32   , true
+  | Ocaml_types.Bits64   , true  -> "bytes"
+  in 
+  match capitalize with
+  | None -> s 
+  | Some () -> String.capitalize s 
+

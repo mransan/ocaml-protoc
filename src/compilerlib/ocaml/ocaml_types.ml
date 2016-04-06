@@ -25,6 +25,21 @@
 
 (** Generated OCaml type for protobuf messages *) 
 
+type payload_kind = 
+  | Varint of bool (** zigzag *)  
+  | Bits32
+  | Bits64
+  | Bytes 
+
+type field_encoding = {
+  field_number : int; 
+  payload_kind : payload_kind; 
+  nested : bool;
+  default: Pbpt.constant option;
+  packed: bool; (**
+  https://developers.google.com/protocol-buffers/docs/encoding#packed *)
+}
+
 type user_defined_type = {
   module_ : string option; 
   type_name : string; 
@@ -57,7 +72,7 @@ type 'a afield = {
   field_type : field_type; 
   field_name : field_name; 
   type_qualifier : type_qualifier; 
-  encoding_type : 'a;
+  encoding : 'a;
   mutable_ : bool;
 }
 
@@ -79,7 +94,7 @@ type variant_encoding =
 
 type variant = {
   variant_name : string; 
-  variant_constructors : Encoding_util.field_encoding afield list; 
+  variant_constructors : field_encoding afield list; 
   variant_encoding : variant_encoding; 
 }
 
@@ -89,7 +104,7 @@ type const_variant = {
 }
 
 type record_encoding_type = 
-  | Regular_field of Encoding_util.field_encoding
+  | Regular_field of field_encoding
   | One_of        of variant  
 
 type record = {

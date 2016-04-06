@@ -1,6 +1,5 @@
 
 module T   = Ocaml_types 
-module Enc = Encoding_util
 module E   = Exception 
 module F   = Fmt
 
@@ -35,8 +34,8 @@ let gen_decode_record ?and_ {T.record_name; fields} sc =
    *)
 
   let process_regular_field sc field field_encoding =   
-    let {T.encoding_type; T.field_type; T.field_name; T.type_qualifier;} = field in 
-    let {Enc.field_number; payload_kind; nested; packed} = field_encoding in 
+    let {T.encoding ; T.field_type; T.field_name; T.type_qualifier;} = field in 
+    let {T.field_number; payload_kind; nested; packed} = field_encoding in 
     let f = decode_field_f field_type payload_kind nested in 
     let has_assignment, rhs = match type_qualifier, packed with
       | T.No_qualifier, false -> true, sp "(%s)" f  
@@ -47,28 +46,31 @@ let gen_decode_record ?and_ {T.record_name; fields} sc =
       | T.Repeated_field, true  -> false, sp "(Pbrt.Decoder.packed_fold (fun () d -> Pbrt.Repeated_field.add (%s) v.%s) () d)" f field_name
       | _ , true -> E.invalid_packed_option field_name 
     in
+    let payload_kind_string = 
+      Codegen_util.string_of_payload_kind ~capitalize:() payload_kind packed in
+
     if has_assignment
     then 
       F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; loop ()"
-        field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind packed) field_name rhs
+        field_number  payload_kind_string field_name rhs
     else 
       F.line sc @@ sp "| Some (%i, Pbrt.%s) -> %s; loop ()"
-        field_number (Enc.string_of_payload_kind ~capitalize:() payload_kind packed) rhs
+        field_number payload_kind_string rhs
       
   in 
 
   let process_one_of sc field variant = 
-    let {T.encoding_type; T.field_type; T.field_name; T.type_qualifier;} = field in 
+    let {T.encoding; T.field_type; T.field_name; T.type_qualifier;} = field in 
     let {T.variant_name;variant_constructors;variant_encoding = _ } = variant in 
     List.iter (fun field ->
       let {
-        T.encoding_type = {Enc.field_number; payload_kind; nested; packed} ;
+        T.encoding = {T.field_number; payload_kind; nested; packed} ;
         T.field_type; 
         T.field_name = constructor_name; 
         T.type_qualifier = _ ;
       } = field in 
       let f = decode_field_f field_type payload_kind nested in 
-      let payload_kind = Enc.string_of_payload_kind ~capitalize:() payload_kind packed in 
+      let payload_kind = Codegen_util.string_of_payload_kind ~capitalize:() payload_kind packed in 
       match field_type with
       | T.Unit -> (
         F.line sc @@ sp "| Some (%i, Pbrt.%s) -> v.%s <- %s; %s ; loop ()"
@@ -106,8 +108,7 @@ let gen_decode_record ?and_ {T.record_name; fields} sc =
       );
       F.line sc ")";
       List.iter (fun field -> 
-        let {T.encoding_type; _ } = field in 
-        match encoding_type with 
+        match field.T.encoding with 
         | T.Regular_field field_encoding -> 
             process_regular_field sc field field_encoding 
         | T.One_of ({T.variant_encoding = T.Inlined_within_message; _} as variant)  -> 
@@ -126,8 +127,8 @@ let gen_decode_record ?and_ {T.record_name; fields} sc =
 let gen_decode_variant ?and_ {T.variant_name; variant_constructors; variant_encoding = _ } sc = 
 
   let process_ctor sc ctor = 
-    let {T.encoding_type; field_type; field_name; type_qualifier = _  } = ctor in  
-    let {Enc.field_number; Enc.nested; Enc.payload_kind; _  } = encoding_type in 
+    let {T.encoding; field_type; field_name; type_qualifier = _  } = ctor in  
+    let {T.field_number; T.nested; T.payload_kind; _  } = encoding in 
     match field_type with 
     | T.User_defined_type t -> 
       let f_name = function_name_of_user_defined "decode" t in

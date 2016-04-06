@@ -2,7 +2,6 @@ module T = Ocaml_types
 module F = Fmt 
 module E = Exception 
 module L = Logger 
-module Enc = Encoding_util
 
 open Codegen_util
 
@@ -42,33 +41,39 @@ let gen_default_record  ?mutable_ ?and_ {T.record_name; fields } sc =
     List.iter (fun field -> 
       L.log "gen_pp field_name: %s\n" field.T.field_name;
      
-      let { T.field_type; field_name; type_qualifier ; encoding_type } = field in 
-      match encoding_type with 
-      | T.Regular_field encoding_type -> ( 
-        let field_default_of = gen_default_field field_name field_type encoding_type.Enc.default in 
+      let {T.field_type; field_name; type_qualifier ; encoding = record_encoding} = field in 
+      match record_encoding with 
+      | T.Regular_field field_encoding -> ( 
+        let field_default_of = gen_default_field field_name field_type field_encoding.T.default in 
         match type_qualifier with
+
         | T.No_qualifier -> 
           F.line sc @@ sp "%s = %s;" field_name field_default_of; 
+
         | T.Option -> (
-          match encoding_type.Enc.default with
+          match field_encoding.T.default with
           | None -> F.line sc @@ sp "%s = None;" field_name
           | Some _ -> 
             F.line sc @@ sp "%s = Some (%s);" field_name field_default_of; 
         )  
+
         | T.List -> 
           F.line sc @@ sp "%s = [];" field_name; 
+
         | T.Repeated_field  -> 
           F.line sc @@ sp "%s = Pbrt.Repeated_field.make (%s);" field_name field_default_of ; 
       )
+
       | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Inlined_within_message} -> (
         match variant_constructors with
         | []     -> failwith "programmatic TODO error" 
-        | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
+        | {T.field_type; field_name = constructor_name ; encoding = field_encoding; _ } :: _ ->
           match field_type with 
           | T.Unit -> F.line sc @@ sp "%s = %s;" field_name constructor_name 
           | _ -> (
+            let default = field_encoding.T.default in 
             F.line sc @@ sp "%s = %s (%s);" 
-              field_name constructor_name (gen_default_field field_name field_type encoding_type.Encoding_util.default)  
+              field_name constructor_name (gen_default_field field_name field_type default)  
           )
       ) (* one of        *)
       | T.One_of {T.variant_constructors; variant_name = _; T.variant_encoding = T.Standalone} -> (
@@ -81,13 +86,13 @@ let gen_default_record  ?mutable_ ?and_ {T.record_name; fields } sc =
 let gen_default_variant ?and_ {T.variant_name; T.variant_constructors ; T.variant_encoding = _ } sc = 
   match variant_constructors with
   | []     -> failwith "programmatic TODO error" 
-  | {T.field_type; field_name = constructor_name ; encoding_type; _ } :: _ ->
+  | {T.field_type; field_name = constructor_name ; encoding; _ } :: _ ->
     let decl = let_decl_of_and and_ in 
     match field_type with
     | T.Unit -> 
       F.line sc @@ sp "%s default_%s () : %s = %s" decl variant_name variant_name constructor_name 
     |  _ -> 
-      let default_field = gen_default_field variant_name field_type encoding_type.Encoding_util.default in
+      let default_field = gen_default_field variant_name field_type encoding.T.default in
       F.line sc @@ sp "%s default_%s () : %s = %s (%s)" 
          decl variant_name variant_name constructor_name default_field 
 
