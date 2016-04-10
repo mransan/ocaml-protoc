@@ -258,17 +258,13 @@ let compile_map ({
         Pbpt.field_options = [];
       }
     in
-    let message_body =
+    let content =
       [
         Pbpt.Message_field key_field;
         Pbpt.Message_field value_field;
       ]
     in
-    {
-      Pbpt.id = -1;
-      Pbpt.message_name = map_type_name;
-      Pbpt.message_body;
-    }
+    Pbpt_util.message ~content map_type_name
   in
   let field_parsed =
     {

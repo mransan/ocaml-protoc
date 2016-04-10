@@ -138,6 +138,8 @@ val compile_message_p1 :
 
 val compile_oneof_p1: Pbpt.oneof -> Pbtt.unresolved Pbtt.oneof
 
+val compile_field_p1: 'a Pbpt.field -> (Pbtt.unresolved, 'a ) Pbtt.field 
+
 val find_all_types_in_field_scope : 
   'a Pbtt.proto -> 
   Pbtt.field_scope-> 
