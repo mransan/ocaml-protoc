@@ -33,14 +33,21 @@ val field :
   ?options:Pbpt.field_options ->
   label:Pbpt.field_label-> 
   number:int -> 
-  type_:Pbpt.type_ -> 
+  type_:string -> 
   string -> 
   Pbpt.field_label Pbpt.field
+
+val map :
+  number:int -> 
+  key_type:string -> 
+  value_type:string -> 
+  string -> 
+  Pbpt.map
 
 val oneof_field : 
   ?options:Pbpt.field_options ->
   number:int -> 
-  type_:Pbpt.type_ -> 
+  type_:string -> 
   string -> 
   Pbpt.oneof_label Pbpt.field
 
@@ -51,6 +58,10 @@ val oneof :
 
 val message_body_field : 
   Pbpt.field_label Pbpt.field  -> 
+  Pbpt.message_body_content  
+
+val message_body_map_field : 
+  Pbpt.map ->
   Pbpt.message_body_content  
 
 val message_body_oneof_field  : 

@@ -52,10 +52,6 @@ type field_label = [
   | `Repeated 
 ]
 
-type type_ =
-  | Map of string * string
-  | Ident of string
-
 type oneof_label = [ `Oneof ] 
 
 (** message field. 
@@ -69,8 +65,15 @@ type 'a field = {
   field_name : string; 
   field_number : int; 
   field_label : 'a ; 
-  field_type : type_;
+  field_type : string;
   field_options : field_options; 
+}
+
+type map = {
+  map_name : string;
+  map_number : int;
+  map_key_type : string;
+  map_value_type : string;
 }
 
 (** oneof entity *)
@@ -105,6 +108,7 @@ type extension_range =
   *)
 type message_body_content = 
   | Message_field of field_label field 
+  | Message_map_field of map
   | Message_oneof_field of oneof 
   | Message_sub of message 
   | Message_enum of enum 

@@ -31,6 +31,13 @@ let field ?options:(options =[]) ~label ~number ~type_ name = {
   Pbpt.field_options = options;
 } 
 
+let map ~number ~key_type ~value_type name = {
+  Pbpt.map_name = name;
+  Pbpt.map_number = number;
+  Pbpt.map_key_type = key_type;
+  Pbpt.map_value_type = value_type;
+}
+
 let oneof_field ?options:(options =[]) ~number ~type_ name = {
   Pbpt.field_name = name; 
   Pbpt.field_number = number;
@@ -70,6 +77,7 @@ let extension_range_range from to_ =
   Pbpt.Extension_range (from, to_)
 
 let message_body_field field =  Pbpt.Message_field field  
+let message_body_map_field field = Pbpt.Message_map_field field
 let message_body_oneof_field field =  Pbpt.Message_oneof_field   field  
 let message_body_sub message  =  Pbpt.Message_sub message 
 let message_body_enum enum = Pbpt.Message_enum enum

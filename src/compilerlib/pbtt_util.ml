@@ -214,88 +214,81 @@ let compile_field_p1 ({
     Pbpt.field_type;
     Pbpt.field_options;
   } as field_parsed) = 
-  
-  match field_type with
-  | Pbpt.Ident field_type ->
-    let field_type    = field_type_of_string field_type in 
-    let field_default = get_default field_name field_options field_type in 
-    {
-      Pbtt.field_parsed;
-      Pbtt.field_type;
-      Pbtt.field_default;
-      Pbtt.field_options;
-    }, None
-  | Pbpt.Map (field_type_key, field_type_value) ->
-    let map_type_name = Printf.sprintf "Map_%s_%s" field_type_key field_type_value in
-    let field_type =
-      Pbtt.Field_type_type
-        {
-          Pbtt.scope = [];
-          Pbtt.type_name = map_type_name;
-          Pbtt.from_root = false;
-        }
-    in
-    let map_type =
-      let key_field =
-        {
-          Pbpt.field_name = "key";
-          Pbpt.field_number = 1;
-          Pbpt.field_label = `Required;
-          Pbpt.field_type = Pbpt.Ident field_type_key;
-          Pbpt.field_options = [];
-        }
-      in
-      let value_field =
-        {
-          Pbpt.field_name = "value";
-          Pbpt.field_number = 2;
-          Pbpt.field_label = `Required;
-          Pbpt.field_type = Pbpt.Ident field_type_value;
-          Pbpt.field_options = [];
-        }
-      in
-      let message_body =
-        [
-          Pbpt.Message_field key_field;
-          Pbpt.Message_field value_field;
-        ]
-      in
+  let field_type    = field_type_of_string field_type in 
+  let field_default = get_default field_name field_options field_type in 
+  {
+    Pbtt.field_parsed;
+    Pbtt.field_type;
+    Pbtt.field_default;
+    Pbtt.field_options;
+  }
+
+let compile_map ({
+    Pbpt.map_name;
+    Pbpt.map_number;
+    Pbpt.map_key_type;
+    Pbpt.map_value_type;
+  }) = 
+  let map_type_name = Printf.sprintf "Map_%s_%s" map_key_type map_value_type in
+  let field_type =
+    Pbtt.Field_type_type
       {
-        Pbpt.id = -1;
-        Pbpt.message_name = map_type_name;
-        Pbpt.message_body;
+        Pbtt.scope = [];
+        Pbtt.type_name = map_type_name;
+        Pbtt.from_root = false;
+      }
+  in
+  let map_type =
+    let key_field =
+      {
+        Pbpt.field_name = "key";
+        Pbpt.field_number = 1;
+        Pbpt.field_label = `Required;
+        Pbpt.field_type = map_key_type;
+        Pbpt.field_options = [];
       }
     in
+    let value_field =
+      {
+        Pbpt.field_name = "value";
+        Pbpt.field_number = 2;
+        Pbpt.field_label = `Required;
+        Pbpt.field_type = map_value_type;
+        Pbpt.field_options = [];
+      }
+    in
+    let message_body =
+      [
+        Pbpt.Message_field key_field;
+        Pbpt.Message_field value_field;
+      ]
+    in
     {
-      Pbtt.field_parsed = { field_parsed with Pbpt.field_label = `Repeated }; 
-      Pbtt.field_type;
-      Pbtt.field_default = None;
-      Pbtt.field_options;
-    }, Some map_type
+      Pbpt.id = -1;
+      Pbpt.message_name = map_type_name;
+      Pbpt.message_body;
+    }
+  in
+  let field_parsed =
+    {
+      Pbpt.field_name = map_name;
+      Pbpt.field_number = map_number;
+      Pbpt.field_label = `Repeated;
+      Pbpt.field_type = map_type_name;
+      Pbpt.field_options = [];
+    }
+  in
+  {
+    Pbtt.field_parsed;
+    Pbtt.field_type;
+    Pbtt.field_default = None;
+    Pbtt.field_options = [];
+  }, map_type
 
 let compile_oneof_p1 ({
     Pbpt.oneof_name; 
     Pbpt.oneof_fields;
   }) = 
-  let compile_field_p1 ({
-      Pbpt.field_name;
-      Pbpt.field_number = _ ;
-      Pbpt.field_label  = _ ;
-      Pbpt.field_type;
-      Pbpt.field_options;
-    } as field_parsed) = 
-    match field_type with
-    | Pbpt.Ident field_type ->
-      let field_type    = field_type_of_string field_type in 
-      let field_default = get_default field_name field_options field_type in 
-      {
-        Pbtt.field_parsed;
-        Pbtt.field_type;
-        Pbtt.field_default;
-        Pbtt.field_options;
-      }
-    | Pbpt.Map _ -> assert false
-  in
   {
     Pbtt.oneof_name; 
     Pbtt.oneof_fields = List.map compile_field_p1 oneof_fields; 
@@ -346,15 +339,13 @@ let rec compile_message_p1 file_name file_options message_scope ({
 
   let message_body, extensions, all_sub = List.fold_left (fun (message_body, extensions, all_types) -> function  
     | Pbpt.Message_field f -> 
-        let field, additional_types = compile_field_p1 f in
+        let field = Pbtt.Message_field (compile_field_p1 f) in
+        (field  :: message_body, extensions, all_types)
+    | Pbpt.Message_map_field m ->
+        let field, extra_type = compile_map m in
         let field = Pbtt.Message_field field in
-        let additional_types =
-          match additional_types with
-          | None -> []
-          | Some additional_types ->
-            compile_message_p1 file_name file_options sub_scope additional_types
-        in
-        (field  :: message_body, extensions, all_types @ additional_types)
+        let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
+        (field  :: message_body, extensions, all_types @ extra_types)
     | Pbpt.Message_oneof_field o -> 
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
         (field :: message_body, extensions, all_types)

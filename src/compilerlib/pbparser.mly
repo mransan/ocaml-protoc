@@ -168,6 +168,7 @@ message_body_content_list:
 
 message_body_content :
   | normal_field { Pbpt_util.message_body_field  $1 }
+  | map          { Pbpt_util.message_body_map_field $1 }
   | oneof        { Pbpt_util.message_body_oneof_field $1 }
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
@@ -210,24 +211,25 @@ oneof_field_list :
   |                                     { []   }
   | oneof_field oneof_field_list        { $1::$2 } 
 
-type_ :
-  | MAP LANGLEB IDENT COMMA IDENT RANGLEB { Pbpt.Map (snd $3, snd $5) }
-  | IDENT { Pbpt.Ident (snd $1) }
-
 oneof_field : 
-  | type_ field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.oneof_field ~type_:$1 ~number:$4 ~options:$5 $2  
+  | IDENT field_name EQUAL INT field_options semicolon { 
+    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 ~options:$5 $2  
   } 
-  | type_ field_name EQUAL INT semicolon { 
-    Pbpt_util.oneof_field ~type_:$1 ~number:$4 $2  
+  | IDENT field_name EQUAL INT semicolon { 
+    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 $2  
   } 
+
+map :
+  | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT semicolon {
+    Pbpt_util.map ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+  }
 
 normal_field : 
-  | label type_ field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 ~options:$6 $3
+  | label IDENT field_name EQUAL INT field_options semicolon { 
+    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 ~options:$6 $3
   } 
-  | label type_ field_name EQUAL INT semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 $3 
+  | label IDENT field_name EQUAL INT semicolon { 
+    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
   } 
   | IDENT field_name EQUAL INT field_options semicolon { 
     Exception.missing_field_label (fst $1)
