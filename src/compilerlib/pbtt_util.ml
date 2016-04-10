@@ -267,7 +267,7 @@ let compile_field_p1 ({
       }
     in
     {
-      Pbtt.field_parsed; 
+      Pbtt.field_parsed = { field_parsed with Pbpt.field_label = `Repeated }; 
       Pbtt.field_type;
       Pbtt.field_default = None;
       Pbtt.field_options;
@@ -277,10 +277,28 @@ let compile_oneof_p1 ({
     Pbpt.oneof_name; 
     Pbpt.oneof_fields;
   }) = 
-  
+  let compile_field_p1 ({
+      Pbpt.field_name;
+      Pbpt.field_number = _ ;
+      Pbpt.field_label  = _ ;
+      Pbpt.field_type;
+      Pbpt.field_options;
+    } as field_parsed) = 
+    match field_type with
+    | Pbpt.Ident field_type ->
+      let field_type    = field_type_of_string field_type in 
+      let field_default = get_default field_name field_options field_type in 
+      {
+        Pbtt.field_parsed;
+        Pbtt.field_type;
+        Pbtt.field_default;
+        Pbtt.field_options;
+      }
+    | Pbpt.Map _ -> assert false
+  in
   {
     Pbtt.oneof_name; 
-    Pbtt.oneof_fields = List.map (fun f -> fst (compile_field_p1 f)) oneof_fields; 
+    Pbtt.oneof_fields = List.map compile_field_p1 oneof_fields; 
   }
   
 let not_found f : bool = 
