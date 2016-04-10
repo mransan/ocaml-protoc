@@ -214,6 +214,7 @@ let compile_field_p1 ({
     Pbpt.field_type;
     Pbpt.field_options;
   } as field_parsed) = 
+
   let field_type    = field_type_of_string field_type in 
   let field_default = get_default field_name field_options field_type in 
   {
@@ -228,7 +229,7 @@ let compile_map ({
     Pbpt.map_number;
     Pbpt.map_key_type;
     Pbpt.map_value_type;
-  }) = 
+  }) =
   let map_type_name = Printf.sprintf "Map_%s_%s" map_key_type map_value_type in
   let field_type =
     Pbtt.Field_type_type
@@ -339,7 +340,7 @@ let rec compile_message_p1 file_name file_options message_scope ({
 
   let message_body, extensions, all_sub = List.fold_left (fun (message_body, extensions, all_types) -> function  
     | Pbpt.Message_field f -> 
-        let field = Pbtt.Message_field (compile_field_p1 f) in
+        let field = Pbtt.Message_field (compile_field_p1 f) in 
         (field  :: message_body, extensions, all_types)
     | Pbpt.Message_map_field m ->
         let field, extra_type = compile_map m in

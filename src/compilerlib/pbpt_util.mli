@@ -38,10 +38,10 @@ val field :
   Pbpt.field_label Pbpt.field
 
 val map :
-  number:int -> 
-  key_type:string -> 
-  value_type:string -> 
-  string -> 
+  number:int ->
+  key_type:string ->
+  value_type:string ->
+  string ->
   Pbpt.map
 
 val oneof_field : 

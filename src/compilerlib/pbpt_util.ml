@@ -117,6 +117,8 @@ let rec message_printer ?level:(level = 0) {
   List.iter (function 
     | Pbpt.Message_field {Pbpt.field_name; _ } -> 
         prefix (); Printf.printf "- field [%s]\n" field_name
+    | Pbpt.Message_map_field {Pbpt.map_name; _ } -> 
+        prefix (); Printf.printf "- map [%s]\n" map_name
     | Pbpt.Message_oneof_field {Pbpt.oneof_name ; _ } ->
         prefix (); Printf.printf "- one of field [%s]\n" oneof_name
     | Pbpt.Message_enum {Pbpt.enum_name; _ } ->

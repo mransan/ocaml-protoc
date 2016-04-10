@@ -65,7 +65,7 @@ type 'a field = {
   field_name : string; 
   field_number : int; 
   field_label : 'a ; 
-  field_type : string;
+  field_type : string; 
   field_options : field_options; 
 }
 

@@ -13,7 +13,7 @@ let () =
     } = parse Pbparser.normal_field_ s in 
     assert (field_name = "x"); 
     assert (field_label = `Optional); 
-    assert (field_type = Pbpt.Ident "int32"); 
+    assert (field_type = "int32"); 
     assert (field_number = 1); 
     assert (List.length field_options = 1)
   in
@@ -31,7 +31,7 @@ let () =
   } = parse Pbparser.normal_field_ "optional .M1 x = 1;" in 
   assert (field_name = "x"); 
   assert (field_label = `Optional); 
-  assert (field_type = Pbpt.Ident ".M1"); 
+  assert (field_type = ".M1"); 
   assert (field_number = 1); 
   assert (List.length field_options = 0)
 
@@ -51,7 +51,7 @@ let () =
       Pbpt.field_options; 
     } = List.nth oneof_fields 0 in 
     assert (field_name = "name"); 
-    assert (field_type = Pbpt.Ident "string"); 
+    assert (field_type = "string"); 
     assert (field_number= 4); 
     assert (List.length field_options = 0); 
     let {
@@ -61,7 +61,7 @@ let () =
       Pbpt.field_options; 
     } = List.nth oneof_fields 1 in 
     assert (field_name = "sub_message"); 
-    assert (field_type = Pbpt.Ident "SubMessage"); 
+    assert (field_type = "SubMessage"); 
     assert (field_number= 9); 
     assert (List.length field_options = 1); 
     ()
