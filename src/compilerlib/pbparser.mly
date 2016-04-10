@@ -49,6 +49,8 @@
 %token TO
 %token MAX
 
+%token MAP
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -208,26 +210,30 @@ oneof_field_list :
   |                                     { []   }
   | oneof_field oneof_field_list        { $1::$2 } 
 
+type_ :
+  | MAP LANGLEB IDENT COMMA IDENT RANGLEB { Pbpt.Map (snd $3, snd $5) }
+  | IDENT { Pbpt.Ident (snd $1) }
+
 oneof_field : 
-  | IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 ~options:$5 $2  
+  | type_ field_name EQUAL INT field_options semicolon { 
+    Pbpt_util.oneof_field ~type_:$1 ~number:$4 ~options:$5 $2  
   } 
-  | IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 $2  
+  | type_ field_name EQUAL INT semicolon { 
+    Pbpt_util.oneof_field ~type_:$1 ~number:$4 $2  
   } 
 
 normal_field : 
-  | label IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 ~options:$6 $3
+  | label type_ field_name EQUAL INT field_options semicolon { 
+    Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 ~options:$6 $3
   } 
-  | label IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
+  | label type_ field_name EQUAL INT semicolon { 
+    Pbpt_util.field ~label:$1 ~type_:$2 ~number:$5 $3 
   } 
   | IDENT field_name EQUAL INT field_options semicolon { 
-    Exception.missing_field_label (fst $1) 
+    Exception.missing_field_label (fst $1)
   }
   | IDENT field_name EQUAL INT semicolon { 
-    Exception.missing_field_label (fst $1) 
+    Exception.missing_field_label (fst $1)
   }
 
 field_name :

@@ -52,6 +52,10 @@ type field_label = [
   | `Repeated 
 ]
 
+type type_ =
+  | Map of string * string
+  | Ident of string
+
 type oneof_label = [ `Oneof ] 
 
 (** message field. 
@@ -65,7 +69,7 @@ type 'a field = {
   field_name : string; 
   field_number : int; 
   field_label : 'a ; 
-  field_type : string; 
+  field_type : type_;
   field_options : field_options; 
 }
 

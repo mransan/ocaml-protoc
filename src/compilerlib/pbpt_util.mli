@@ -33,14 +33,14 @@ val field :
   ?options:Pbpt.field_options ->
   label:Pbpt.field_label-> 
   number:int -> 
-  type_:string -> 
+  type_:Pbpt.type_ -> 
   string -> 
   Pbpt.field_label Pbpt.field
 
 val oneof_field : 
   ?options:Pbpt.field_options ->
   number:int -> 
-  type_:string -> 
+  type_:Pbpt.type_ -> 
   string -> 
   Pbpt.oneof_label Pbpt.field
 
