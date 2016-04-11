@@ -1,3 +1,7 @@
+(* TODO Resurect or Delete *)
+
+(* 
+
 let () = 
   let r = Ocaml_types.({
     record_name = "test";
@@ -51,3 +55,5 @@ and test_mutable = {
 
 let () = 
   print_endline "OCaml Codegen Test ... Ok"
+
+*)

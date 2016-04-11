@@ -56,6 +56,8 @@ module Decoder : sig
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
+  val map_entry : t -> decode_key:(t -> 'a) -> decode_value:(t -> 'b) -> ('a * 'b) 
+
   val empty_nested : t -> unit 
   (** [empty_nested d] skips an empty message of 0 length.
       If reading the message would exhaust input of [d], raises
@@ -179,6 +181,13 @@ module Encoder : sig
 
   val nested    : (t -> unit) -> t -> unit
   (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
+  
+  val map_entry : 
+    encode_key:('a -> t -> unit) -> 
+    encode_value:('b -> t-> unit ) -> 
+    (('a * payload_kind) * ('b * payload_kind)) -> 
+    t ->
+    unit 
 
   val empty_nested : t -> unit 
   (** [nested f e] encodes a zero length empty message *)
@@ -341,6 +350,8 @@ module Pp : sig
   (** [pp_list f fmt l] formats a list value [l] using [f] formatter on each
       of the elements.
    *)
+  
+  val pp_associative_list :(formatter -> 'a -> unit) -> (formatter -> 'b -> unit) -> formatter -> ('a * 'b) list -> unit 
   
   val pp_record_field : string -> (formatter -> 'a -> unit) -> formatter -> 'a -> unit
   (** [pp_record_field label_name fmt field_value] formats a record [field_value] with

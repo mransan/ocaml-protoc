@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -65,7 +66,11 @@ void protobuf_AddDesc_ocamloptions_2eproto() {
     "ocaml_type\022\035.google.protobuf.FieldOption"
     "s\030\242\215\006 \001(\0162\n.OCamlType:I\n\017ocaml_container"
     "\022\035.google.protobuf.FieldOptions\030\243\215\006 \001(\0162"
-    "\017.OCamlContainer", 256);
+    "\017.OCamlContainer:6\n\rocaml_mutable\022\035.goog"
+    "le.protobuf.FieldOptions\030\244\215\006 \001(\010:>\n\nint3"
+    "2_type\022\034.google.protobuf.FileOptions\030\242\215\006"
+    " \001(\0162\n.OCamlType:>\n\nint64_type\022\034.google."
+    "protobuf.FileOptions\030\243\215\006 \001(\0162\n.OCamlType", 440);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "ocamloptions.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::ExtensionSet::RegisterEnumExtension(
@@ -76,6 +81,17 @@ void protobuf_AddDesc_ocamloptions_2eproto() {
     &::google::protobuf::FieldOptions::default_instance(),
     100003, 14, false, false,
     &::OCamlContainer_IsValid);
+  ::google::protobuf::internal::ExtensionSet::RegisterExtension(
+    &::google::protobuf::FieldOptions::default_instance(),
+    100004, 8, false, false);
+  ::google::protobuf::internal::ExtensionSet::RegisterEnumExtension(
+    &::google::protobuf::FileOptions::default_instance(),
+    100002, 14, false, false,
+    &::OCamlType_IsValid);
+  ::google::protobuf::internal::ExtensionSet::RegisterEnumExtension(
+    &::google::protobuf::FileOptions::default_instance(),
+    100003, 14, false, false,
+    &::OCamlType_IsValid);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_ocamloptions_2eproto);
 }
 
@@ -117,6 +133,15 @@ bool OCamlContainer_IsValid(int value) {
 ::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FieldOptions,
     ::google::protobuf::internal::EnumTypeTraits< ::OCamlContainer, ::OCamlContainer_IsValid>, 14, false >
   ocaml_container(kOcamlContainerFieldNumber, static_cast< ::OCamlContainer >(1));
+::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FieldOptions,
+    ::google::protobuf::internal::PrimitiveTypeTraits< bool >, 8, false >
+  ocaml_mutable(kOcamlMutableFieldNumber, false);
+::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FileOptions,
+    ::google::protobuf::internal::EnumTypeTraits< ::OCamlType, ::OCamlType_IsValid>, 14, false >
+  int32_type(kInt32TypeFieldNumber, static_cast< ::OCamlType >(1));
+::google::protobuf::internal::ExtensionIdentifier< ::google::protobuf::FileOptions,
+    ::google::protobuf::internal::EnumTypeTraits< ::OCamlType, ::OCamlType_IsValid>, 14, false >
+  int64_type(kInt64TypeFieldNumber, static_cast< ::OCamlType >(1));
 
 // @@protoc_insertion_point(namespace_scope)
 

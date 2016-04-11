@@ -1,0 +1,26 @@
+message Maps {
+
+    message MessageValue {
+      required string mv_field = 1;
+    }
+
+    enum EnumValue {
+      EV_1 = 0;
+      EV_2 = 2;
+    }
+
+    message OneOfValue {
+      oneof t {
+        string ov_field1 = 1;
+        int32  ov_field2 = 2;
+      }
+    }
+
+    map<string, string> string_to_string          = 1;
+    map<string, int32>  string_to_int             = 2;
+    map<int32, int32> int_to_int                  = 3;
+    // map<int32, string> int_to_string              = 4;
+    map<int32, MessageValue> int_to_message_value = 5;
+    map<int32, EnumValue> int_to_enum_value       = 6;
+    map<int32, OneOfValue> int_to_oneof_value     = 7;
+}

@@ -53,12 +53,12 @@ type duplicate_field_number = {
 }
 
 type invalid_default_value = {
-  field_name: string; 
+  field_name: string option; 
   info: string; 
 }
 
 type unsupported_field_type = {
-  field_name: string; 
+  field_name: string option; 
   field_type: string; 
   backend_name:string;
 }
@@ -79,7 +79,7 @@ type error =
   | Invalid_packed_option of string 
   | Missing_semicolon_for_enum_value of string * Loc.t
   | Invalid_enum_specification of string * Loc.t 
-  | Invalid_mutable_option of string 
+  | Invalid_mutable_option of string option  
   | Missing_one_of_name of Loc.t 
   | Invalid_field_label of Loc.t 
   | Missing_field_label of Loc.t 
@@ -103,11 +103,11 @@ let prepare_error = function
 
   | Invalid_default_value {field_name; info}  -> 
     P.sprintf "invalid default value for field name:%s (info: %s)"
-      field_name info
+      (Util.option_default "" field_name) info
 
   | Unsupported_field_type {field_name; field_type; backend_name} -> 
     P.sprintf "unsupported field type for field name:%s with type:%s in bakend: %s"
-      field_name field_type backend_name
+      (Util.option_default "" field_name) field_type backend_name
 
   | Programatic_error e -> 
     P.sprintf "programmatic error: %s" (string_of_programmatic_error e)
@@ -155,7 +155,8 @@ let prepare_error = function
       (Loc.to_string loc) enum_name
   
   | Invalid_mutable_option field_name -> 
-    P.sprintf "Invalid mutable option for field %s" field_name 
+    P.sprintf "Invalid mutable option for field %s" (Util.option_default ""
+    field_name) 
 
 
 let add_loc loc exn  = 
@@ -194,10 +195,10 @@ let duplicated_field_number ~field_name ~previous_field_name ~message_name  () =
     message_name;
   }))
 
-let invalid_default_value ~field_name ~info () = 
+let invalid_default_value ?field_name ~info () = 
   raise (Compilation_error (Invalid_default_value {field_name; info} ))
 
-let unsupported_field_type ~field_name ~field_type ~backend_name () = 
+let unsupported_field_type ?field_name ~field_type ~backend_name () = 
   raise (Compilation_error (Unsupported_field_type {
     field_name;
     field_type;
@@ -228,7 +229,7 @@ let missing_semicolon_for_enum_value enum_value loc =
 let invalid_enum_specification enum_name loc = 
   raise (Compilation_error (Invalid_enum_specification (enum_name, loc)))
   
-let invalid_mutable_option field_name = 
+let invalid_mutable_option ?field_name () = 
   raise (Compilation_error (Invalid_mutable_option field_name))
 
 let missing_one_of_name loc = 
