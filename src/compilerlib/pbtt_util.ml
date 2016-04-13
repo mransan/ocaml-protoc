@@ -214,7 +214,7 @@ let compile_field_p1 ({
     Pbpt.field_type;
     Pbpt.field_options;
   } as field_parsed) = 
-  
+
   let field_type    = field_type_of_string field_type in 
   let field_default = get_default field_name field_options field_type in 
   {
@@ -224,11 +224,68 @@ let compile_field_p1 ({
     Pbtt.field_options;
   }
 
+let compile_map ({
+    Pbpt.map_name;
+    Pbpt.map_number;
+    Pbpt.map_key_type;
+    Pbpt.map_value_type;
+  }) =
+  let map_type_name = Printf.sprintf "Map_%s_%s" map_key_type map_value_type in
+  let field_type =
+    Pbtt.Field_type_type
+      {
+        Pbtt.scope = [];
+        Pbtt.type_name = map_type_name;
+        Pbtt.from_root = false;
+      }
+  in
+  let map_type =
+    let key_field =
+      {
+        Pbpt.field_name = "key";
+        Pbpt.field_number = 1;
+        Pbpt.field_label = `Required;
+        Pbpt.field_type = map_key_type;
+        Pbpt.field_options = [];
+      }
+    in
+    let value_field =
+      {
+        Pbpt.field_name = "value";
+        Pbpt.field_number = 2;
+        Pbpt.field_label = `Required;
+        Pbpt.field_type = map_value_type;
+        Pbpt.field_options = [];
+      }
+    in
+    let content =
+      [
+        Pbpt.Message_field key_field;
+        Pbpt.Message_field value_field;
+      ]
+    in
+    Pbpt_util.message ~content map_type_name
+  in
+  let field_parsed =
+    {
+      Pbpt.field_name = map_name;
+      Pbpt.field_number = map_number;
+      Pbpt.field_label = `Repeated;
+      Pbpt.field_type = map_type_name;
+      Pbpt.field_options = [];
+    }
+  in
+  {
+    Pbtt.field_parsed;
+    Pbtt.field_type;
+    Pbtt.field_default = None;
+    Pbtt.field_options = [];
+  }, map_type
+
 let compile_oneof_p1 ({
     Pbpt.oneof_name; 
     Pbpt.oneof_fields;
   }) = 
-  
   {
     Pbtt.oneof_name; 
     Pbtt.oneof_fields = List.map compile_field_p1 oneof_fields; 
@@ -281,6 +338,11 @@ let rec compile_message_p1 file_name file_options message_scope ({
     | Pbpt.Message_field f -> 
         let field = Pbtt.Message_field (compile_field_p1 f) in 
         (field  :: message_body, extensions, all_types)
+    | Pbpt.Message_map_field m ->
+        let field, extra_type = compile_map m in
+        let field = Pbtt.Message_field field in
+        let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
+        (field  :: message_body, extensions, all_types @ extra_types)
     | Pbpt.Message_oneof_field o -> 
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
         (field :: message_body, extensions, all_types)

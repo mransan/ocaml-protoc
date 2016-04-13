@@ -50,6 +50,7 @@ let resolve_identifier loc ident =
   | "public"     , _   -> PUBLIC
   | "to"         , _   -> TO
   | "max"        , _   -> MAX
+  | "map"        , _   -> MAP
   | x            , loc -> IDENT (loc, ident) 
 
 type comment =

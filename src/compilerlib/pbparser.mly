@@ -49,6 +49,8 @@
 %token TO
 %token MAX
 
+%token MAP
+
 %token RBRACE
 %token LBRACE
 %token RBRACKET
@@ -166,6 +168,7 @@ message_body_content_list:
 
 message_body_content :
   | normal_field { Pbpt_util.message_body_field  $1 }
+  | map          { Pbpt_util.message_body_map_field $1 }
   | oneof        { Pbpt_util.message_body_oneof_field $1 }
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
@@ -215,6 +218,11 @@ oneof_field :
   | IDENT field_name EQUAL INT semicolon { 
     Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 $2  
   } 
+
+map :
+  | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT semicolon {
+    Pbpt_util.map ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+  }
 
 normal_field : 
   | label IDENT field_name EQUAL INT field_options semicolon { 

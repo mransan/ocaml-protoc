@@ -69,6 +69,13 @@ type 'a field = {
   field_options : field_options; 
 }
 
+type map = {
+  map_name : string;
+  map_number : int;
+  map_key_type : string;
+  map_value_type : string;
+}
+
 (** oneof entity *)
 type oneof = {
   oneof_name : string; 
@@ -101,6 +108,7 @@ type extension_range =
   *)
 type message_body_content = 
   | Message_field of field_label field 
+  | Message_map_field of map
   | Message_oneof_field of oneof 
   | Message_sub of message 
   | Message_enum of enum 
