@@ -67,7 +67,7 @@ let parse_args () =
   let anon_fun  = (fun proto_file -> 
     proto_file_name := proto_file
   )  in 
-  let usage = "protobufo.tsk -out <file_name> <file_name>.proto" in  
+  let usage = "ocaml-protoc -ml_out <output_directory> <file_name>.proto" in
   Arg.parse cmd_line_args anon_fun usage;
   (if !proto_file_name = ""
    then failwith "Missing protobuf file name from command line argument"); 
