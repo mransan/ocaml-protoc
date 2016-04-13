@@ -113,6 +113,13 @@ type 'a oneof = {
   oneof_fields : ('a, Pbpt.oneof_label) field list; 
 }
 
+type 'a map = {
+  map_name : string;
+  map_number : int;
+  map_key_type : 'a field_type;
+  map_value_type : 'a field_type;
+}
+
 (** type scope 
     
     The scope of a type (message or enum) is defined by the package (defined in the 
@@ -129,6 +136,7 @@ type type_scope = {
 type 'a message_body_content = 
   | Message_field       of ('a, Pbpt.field_label) field 
   | Message_oneof_field of 'a oneof 
+  | Message_map_field   of 'a map
 
 and 'a message = {
   extensions : Pbpt.extension_range list;

@@ -41,10 +41,15 @@ let field_label {Pbtt.field_parsed = {Pbpt.field_label; _ }; _ } =
 
 let field_default {Pbtt.field_default; _ } = field_default 
 
-let field_option {Pbtt.field_options; _ } option_name = 
+let field_options {Pbtt.field_options; _ } = field_options 
+
+let find_field_option field_options option_name = 
   match List.assoc option_name field_options with
   | x -> Some x 
   | exception Not_found -> None  
+
+let field_option {Pbtt.field_options; _ } option_name = 
+  find_field_option field_options option_name 
   
 let empty_scope  = { 
   Pbtt.packages = []; 
@@ -224,63 +229,19 @@ let compile_field_p1 ({
     Pbtt.field_options;
   }
 
-let compile_map ({
+let compile_map_p1 ({
     Pbpt.map_name;
     Pbpt.map_number;
     Pbpt.map_key_type;
     Pbpt.map_value_type;
-  }) =
-  let map_type_name = Printf.sprintf "Map_%s_%s" map_key_type map_value_type in
-  let field_type =
-    Pbtt.Field_type_type
-      {
-        Pbtt.scope = [];
-        Pbtt.type_name = map_type_name;
-        Pbtt.from_root = false;
-      }
-  in
-  let map_type =
-    let key_field =
-      {
-        Pbpt.field_name = "key";
-        Pbpt.field_number = 1;
-        Pbpt.field_label = `Required;
-        Pbpt.field_type = map_key_type;
-        Pbpt.field_options = [];
-      }
-    in
-    let value_field =
-      {
-        Pbpt.field_name = "value";
-        Pbpt.field_number = 2;
-        Pbpt.field_label = `Required;
-        Pbpt.field_type = map_value_type;
-        Pbpt.field_options = [];
-      }
-    in
-    let content =
-      [
-        Pbpt.Message_field key_field;
-        Pbpt.Message_field value_field;
-      ]
-    in
-    Pbpt_util.message ~content map_type_name
-  in
-  let field_parsed =
-    {
-      Pbpt.field_name = map_name;
-      Pbpt.field_number = map_number;
-      Pbpt.field_label = `Repeated;
-      Pbpt.field_type = map_type_name;
-      Pbpt.field_options = [];
-    }
-  in
-  {
-    Pbtt.field_parsed;
-    Pbtt.field_type;
-    Pbtt.field_default = None;
-    Pbtt.field_options = [];
-  }, map_type
+  }) = 
+
+  Pbtt.({
+    map_name; 
+    map_number;
+    map_key_type = field_type_of_string map_key_type;
+    map_value_type = field_type_of_string map_value_type;
+  })
 
 let compile_oneof_p1 ({
     Pbpt.oneof_name; 
@@ -339,10 +300,12 @@ let rec compile_message_p1 file_name file_options message_scope ({
         let field = Pbtt.Message_field (compile_field_p1 f) in 
         (field  :: message_body, extensions, all_types)
     | Pbpt.Message_map_field m ->
-        let field, extra_type = compile_map m in
+        let field = Pbtt.Message_map_field (compile_map_p1 m) in
+        (* 
         let field = Pbtt.Message_field field in
         let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
-        (field  :: message_body, extensions, all_types @ extra_types)
+        *)
+        (field  :: message_body, extensions, all_types) 
     | Pbpt.Message_oneof_field o -> 
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
         (field :: message_body, extensions, all_types)
@@ -385,6 +348,7 @@ let rec compile_message_p1 file_name file_options message_scope ({
     | Pbtt.Message_field f -> validate_duplicate number_index f
     | Pbtt.Message_oneof_field {Pbtt.oneof_fields; _ } ->
        List.fold_left validate_duplicate number_index oneof_fields
+    (* TODO: add support for map *) | _ -> number_index 
   ) [] message_body ;  
 
   all_sub @ [type_of_spec file_name file_options id message_scope Pbtt.(Message {
@@ -419,6 +383,7 @@ let find_all_types_in_field_scope all_types (scope:Pbtt.field_scope) =
     let dec_scope = packages @ message_names in 
     dec_scope = scope
   ) all_types
+
 
 let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
   Pbtt.message_name; 
@@ -464,10 +429,9 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
       List.rev @@ loop [] message_scope 
   in 
     
-  let compile_field_p2 message_name field = 
-    let field_name = field_name field in 
+  let compile_field_p2 field_name field_type = 
     L.log "[pbtt] field_name: %s\n" field_name; 
-    match field.Pbtt.field_type with 
+    match field_type with 
     | Pbtt.Field_type_type ({Pbtt.scope; type_name; from_root} as unresolved) -> ( 
 
       L.endline @@ "[pbtt] " ^ string_of_unresolved unresolved ; 
@@ -495,17 +459,39 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
   in
 
   let message_body = List.fold_left (fun message_body  -> function
-    | Pbtt.Message_field field ->
-      let field      = {field with Pbtt.field_type = compile_field_p2 message_name field} in  
+
+    | Pbtt.Message_field field->
+      let field_name = field_name field in 
+      let field_type = field_type field in  
+      let field      = {field with Pbtt.field_type = compile_field_p2 field_name field_type} in  
       let field      = {field with Pbtt.field_default = compile_default_p2 types field} in  
       Pbtt.Message_field field :: message_body
+
     | Pbtt.Message_oneof_field ({Pbtt.oneof_fields; _ } as oneof )  -> 
       let oneof_fields = List.fold_left (fun oneof_fields field -> 
-        let field_type = compile_field_p2 message_name field in  
+        let field_name = field_name field in
+        let field_type = field_type field in 
+        let field_type = compile_field_p2 field_name field_type in  
         {field with Pbtt.field_type }:: oneof_fields 
       ) [] oneof_fields in  
       let oneof_fields = List.rev oneof_fields in 
       Pbtt.Message_oneof_field {oneof with Pbtt.oneof_fields } :: message_body 
+
+    | Pbtt.Message_map_field map -> 
+      let {Pbtt.map_name; map_number; map_key_type; map_value_type; } = map in 
+      let map_key_type = compile_field_p2 map_name map_key_type in 
+        (* TODO: add validation about the key type which in protobuf is limited 
+         * to basic types. 
+         *) 
+      let map_value_type = compile_field_p2 map_name map_value_type in 
+      let resolved_map   = Pbtt.(Message_map_field  {
+        map_name;
+        map_number;
+        map_key_type;
+        map_value_type;
+      }) in 
+      resolved_map :: message_body 
+       
   ) [] message_body in 
   let message_body = List.rev message_body in 
   {message with Pbtt.message_body; }
@@ -536,13 +522,21 @@ let node_of_proto_type = function
         | Pbtt.Field_type_type x -> [x]
         | _                      -> []
       )
+
       | Pbtt.Message_oneof_field {Pbtt.oneof_fields; _ } -> 
-          List.flatten @@ List.map (fun {Pbtt.field_type; _ } -> (
-           match field_type with
-           | Pbtt.Field_type_type x -> [x]
-           | _ -> []
-          )
-          ) oneof_fields  
+        List.flatten @@ List.map (fun {Pbtt.field_type; _ } -> (
+         match field_type with
+         | Pbtt.Field_type_type x -> [x]
+         | _ -> []
+        )
+        ) oneof_fields  
+
+      | Pbtt.Message_map_field {Pbtt.map_value_type; _ } -> 
+         begin match map_value_type with
+         | Pbtt.Field_type_type x -> [x]
+         | _ -> []
+         end
+
     ) message_body in 
     Graph.create_node id sub
 

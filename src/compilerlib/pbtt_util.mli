@@ -49,6 +49,10 @@ val field_label  : ('a, 'b)  Pbtt.field -> 'b
 val field_default : ('a, 'b)  Pbtt.field -> Pbpt.constant option
 (** [field_default field] returns the default value of [field] *)
 
+val field_options : ('a, 'b) Pbtt.field -> Pbpt.field_options
+
+val find_field_option : Pbpt.field_options -> string -> Pbpt.constant option 
+
 val field_option : ('a, 'b) Pbtt.field -> string -> Pbpt.constant option
 (** [field_option field option_name] returns the constant associated with 
     [option_name]. If the fields options does not contain [option_name] [None]

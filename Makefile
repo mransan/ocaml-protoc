@@ -18,15 +18,12 @@ BENCHMARK_DIR         = src/tests/benchmark
 GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
 OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
 
-.PHONY: clean default
+.PHONY: clean clean.gen default
 
 default:
 	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)
 	
-clean:
-	$(OCB) -clean
-	rm -f *.data
-	rm -f $(INTEGRATION_TESTS_DIR)/*.tsk  
+clean.gen:
 	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.cc
 	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.h
 	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml
@@ -35,6 +32,11 @@ clean:
 	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.mli
 	rm -f src/examples/*_pb.ml
 	rm -f src/examples/*_pb.mli
+
+clean: clean.gen
+	$(OCB) -clean
+	rm -f *.data
+	rm -f $(INTEGRATION_TESTS_DIR)/*.tsk  
 
 ###################
 # ---- BUILD ---- # 

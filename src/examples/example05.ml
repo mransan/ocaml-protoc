@@ -6,7 +6,7 @@ let () =
     id = 1234l;
     email = Some "jdoe@example.com";
     phone = ["123-456-7890"];
-    details = [ { Example05_pb.key = "foo"; value = "bar" } ];
+    details = [ ("foo", "bar"); ]; 
   }) in
 
   (* Create a Protobuf encoder and encode value *)

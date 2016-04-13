@@ -39,6 +39,27 @@ module Decoder = struct
 
   let nested = Protobuf.Decoder.nested 
 
+  let map_entry d ~decode_key ~decode_value = 
+    let d = nested d in 
+
+    let key_v = ref None in 
+    let value_v = ref None in 
+    
+    let rec loop () =
+      match key d with
+      | None -> ()
+      | Some (1, _)  -> key_v := Some (decode_key d); loop () 
+      | Some (2, _)  -> value_v := Some (decode_value d); loop ()
+      | Some (n, pk) -> (
+        skip d pk; 
+        loop ()
+      )
+    in 
+    loop (); 
+    match !key_v, !value_v with 
+    | Some key, Some value -> (key, value)
+    | _ -> failwith "Missing key or value for map entry"
+
   let empty_nested d =
     let len = Protobuf.Decoder.varint d in
     if len <> 0L
@@ -106,6 +127,14 @@ module Encoder = struct
   let key = Protobuf.Encoder.key
 
   let nested = Protobuf.Encoder.nested
+  
+  let map_entry ~encode_key ~encode_value ((key_value, key_pk), (value_value, value_pk)) t = 
+    nested (fun t -> 
+      key (1, key_pk) t; 
+      encode_key key_value t;
+      key (2, value_pk) t; 
+      encode_value value_value t; 
+    ) t 
   
   let empty_nested e = 
     Protobuf.Encoder.varint 0L e
@@ -337,11 +366,20 @@ module Pp = struct
       | []   -> ()
     in
     F.fprintf fmt "@[<v 1>[%a@,@]]" pp_i l 
+
+  let pp_associative_list pp_key pp_value fmt l = 
+    let pp_element fmt (k, v) = 
+      F.fprintf fmt "(%a, %a)" pp_key k pp_value v 
+    in
+    pp_list pp_element fmt l 
+
   
   let pp_record_field field_name pp_val fmt val_ = 
     F.fprintf fmt "@,@[<h>%s = %a;@]" field_name pp_val val_ 
   
   let pp_brk pp_record (fmt:F.formatter) r : unit = 
     F.fprintf fmt "@[<v>{%a@,@]}" pp_record r  
+
+
   
 end (* Pp *)

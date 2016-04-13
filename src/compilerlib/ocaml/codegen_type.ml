@@ -6,50 +6,67 @@ open Codegen_util
 
 let type_decl_of_and = function | Some () -> "and" | None -> "type" 
 
-let gen_type_record ?mutable_ ?and_ {T.record_name; fields } sc = 
+let gen_type_record ?mutable_ ?and_ {T.r_name; r_fields } sc = 
+
+  let mutable_ = match mutable_ with
+    | Some () -> true
+    | None    -> false 
+  in 
   
-  let field_prefix type_qualifier field_mutable = 
-    match field_mutable, type_qualifier, mutable_ with
-    | true , _                , _       -> "mutable "
-    | false, T.Repeated_field , _       -> ""
-    | false, _                , Some () -> "mutable "
-    | false, _                , None    -> ""
+  let field_prefix field_type field_mutable = 
+    if field_mutable 
+    then "mutable"
+    else match field_type with
+      | T.Rft_required _ 
+      | T.Rft_optional _ 
+      | T.Rft_variant_field _ -> if mutable_ then  "mutable " else ""
+      | T.Rft_repeated_field (rt, _, _, _, _) -> begin match rt with
+        | T.Rt_repeated_field -> ""
+        | T.Rt_list -> if mutable_ then "mutable " else ""
+      end 
+      | T.Rft_associative_field (at, _, _, _) -> begin match at with
+        | T.At_list -> if mutable_ then "mutable " else ""
+      end 
   in
 
-  let type_name = match mutable_ with  
-    | None -> record_name 
-    | Some () -> Codegen_util.mutable_record_name record_name 
+  let r_name = 
+    if mutable_ 
+    then Codegen_util.mutable_record_name r_name 
+    else r_name 
   in 
 
-  F.line sc @@ sp "%s %s = {" (type_decl_of_and and_) type_name ;
+  F.line sc @@ sp "%s %s = {" (type_decl_of_and and_) r_name;
   F.scope sc (fun sc -> 
-    List.iter (fun {T.field_name; field_type; type_qualifier; mutable_; _ } -> 
-      let type_name = string_of_field_type ~type_qualifier field_type in 
-      F.line sc @@ sp "%s%s : %s;" (field_prefix type_qualifier mutable_) field_name type_name 
-    ) fields;
+    List.iter (fun {T.rf_label; rf_field_type; rf_mutable;} ->  
+      let prefix = field_prefix rf_field_type rf_mutable in 
+      let type_string = Codegen_util.string_of_record_field_type rf_field_type in 
+      F.line sc @@ sp "%s%s : %s;" prefix rf_label type_string 
+    ) r_fields;
   ); 
   F.line sc "}"
 
 let gen_type_variant ?and_ variant sc =  
-  let {T.variant_name; variant_constructors; variant_encoding = _ } = variant in
-  F.line sc @@ sp "%s %s =" (type_decl_of_and and_) variant_name; 
+  let {T.v_name; v_constructors; } = variant in
+
+  F.line sc @@ sp "%s %s =" (type_decl_of_and and_) v_name; 
+
   F.scope sc (fun sc -> 
-    List.iter (fun {T.field_name; field_type; type_qualifier; _ } -> 
-      match field_type with
-      | T.Unit -> F.line sc @@ sp "| %s" field_name 
-      | _ -> (
-        let type_name = string_of_field_type ~type_qualifier field_type in 
-         F.line sc @@ sp "| %s of %s" field_name type_name
+    List.iter (fun {T.vc_constructor; vc_field_type; _} ->
+      match vc_field_type with
+      | T.Vct_nullary -> F.line sc @@ sp "| %s" vc_constructor
+      | T.Vct_non_nullary_constructor  field_type -> (
+        let type_string = string_of_field_type field_type in 
+        F.line sc @@ sp "| %s of %s" vc_constructor type_string 
       )
-    ) variant_constructors;
+    ) v_constructors;
   )
 
-let gen_type_const_variant ?and_ {T.cvariant_name; cvariant_constructors } sc = 
-  F.line sc @@ sp "%s %s =" (type_decl_of_and and_) cvariant_name; 
+let gen_type_const_variant ?and_ {T.cv_name; cv_constructors} sc = 
+  F.line sc @@ sp "%s %s =" (type_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     List.iter (fun (name, _ ) -> 
       F.line sc @@ sp "| %s " name
-    ) cvariant_constructors;
+    ) cv_constructors;
   )
 
 let gen_struct ?and_ t scope = 
