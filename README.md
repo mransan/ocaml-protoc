@@ -10,20 +10,21 @@ A [protobuf](https://developers.google.com/protocol-buffers/) compiler for OCaml
 * [Protobuf extensions](doc/ocaml_extensions.md)
 * [Benchmarking](doc/benchmarking.md)
 
-
 ### Introduction 
 
 `ocaml-protoc` compiles [protobuf message files](https://developers.google.com/protocol-buffers/docs/proto) into 
 [OCaml modules](http://caml.inria.fr/pub/docs/manual-ocaml/moduleexamples.html). Each message/enum/oneof protobuf type 
-will have a corresponding OCaml type along with the following functions:
+has a corresponding OCaml type along with the following functions:
 * `encode_<type>` : encode the generated type to `bytes` following protobuf specification
 * `decode_<type>` : decode the generated type from `bytes` following protobuf specification
 * `default_<type>` : default value honoring [protobuf default attributes](https://developers.google.com/protocol-buffers/docs/proto#optional) or [protobuf version 3 default rules](https://developers.google.com/protocol-buffers/docs/proto3#default) 
 * `pp_<type>` : pretty print of the OCaml type
 
-The compiler relies on a runtime library `pbrt` which itself is implemented using the same runtime library as [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf/) for low level encoding/decoding. OCaml users have now 2 complementary options to choose from when looking for a protobuf serialization:
-* If the application is mainly OCaml then `ppx_deriving_protobuf` is usually the best tool. Developers leverage the OCaml type system as a schema definition and require minimum effort to support serialization. 
-* If the serialized data is shared across multiple languages or as a server interface then the `.proto` file is a good language independent type definition. `ocaml-protoc` is then more likely a better option guaranteeing that the generated type will conform to the schema definition when being serialized.
+The compiler relies on a runtime library `pbrt` which is itself implemented using the same runtime library as [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf/) for low level encoding/decoding. 
+
+OCaml users have now 2 complementary options to choose for protobuf serialization:
+* If your application is mainly OCaml then `ppx_deriving_protobuf` is usually the best tool. You can leverage the OCaml type system as a schema definition and minimum setup is required to support serialization.
+* If your application is using multiple languages and you are leveraging `Protobuf` as a language-independent data specification, then  `ocaml-protoc` is likely a more suitable option. `ocaml-protoc` guarantees that the generated OCaml types conform to the protobuf specifications.
 
 ### A simple example
 
@@ -154,14 +155,11 @@ Here are the steps to build the example above where the source are in `src/examp
 ```Bash
 # Generate the OCaml protobuf module 
 ocaml-protoc -ml_out ./ example01.proto
-
-# Compile the example including the ocaml protobuf runtime (pbrt.cmxa) and it's dependencies.
-ocamlfind ocamlopt -linkpkg  -package ocaml-protoc tmp_pb.mli tmp_pb.ml main.ml
 ```
 
-Alternatively if you are using `findlib`:
+When using `findlib`:
 ```Bash
-ocamlfind ocamlopt -linkpkg -package ppx_deriving_prototub.runtime -package ocaml-protoc \
+ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
   -o example01 \
   example01_pb.mli example01_pb.ml example01.ml
 ```
