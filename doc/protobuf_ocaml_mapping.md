@@ -12,7 +12,8 @@ This page describes how the mapping between protobuf type system and OCaml is do
 * [Package](#package) 
 * [Extensions](#extensions)
 * [Nested Types](#nested-types)
-* [Maps Groups Services](#maps-groups-services)
+* [Maps](#maps)
+* [Groups Services](#maps-groups-services)
  
 ##### [Basic Types](https://developers.google.com/protocol-buffers/docs/proto#scalar)
 
@@ -204,9 +205,41 @@ type ma = {
 }
 ```
 
-##### Maps Groups Services
+##### [Maps](https://developers.google.com/protocol-buffers/docs/proto#maps)
 
-[Maps](https://developers.google.com/protocol-buffers/docs/proto#maps), 
+Maps is fully supported in `ocaml-protoc` and the OCaml type to represent an associative container can be configurable with a field option. 
+
+By default a `map<a, b> = 1` Protobuf field will generate an OCaml list: `('a * 'b) list`. When setting the `(ocaml_container) = hashtbl` in the `.proto` file then it will generate `('a, 'b) Hashtbl.t`. 
+
+**example 1 (default):**
+```Javascript
+message M {
+  map<string, string> s2s = 1;
+}
+```
+will generate 
+```OCaml
+type m = {
+  s2s : (string * string) list;
+}
+```
+**example 2 (Hashtbl.t):**
+```Javascript
+message M {
+  map<string, string> s2s = 1 [(ocaml_container) = hashtbl];
+}
+```
+will generate 
+```OCaml
+type m = {
+  s2s : (string, string) Hashtbl.t;
+}
+```
+
+> Thanks to [Laurent Mazare](https://github.com/LaurentMazare) for the initial implementation of map fields.
+
+##### Groups and  Services
+
 [Groups](https://developers.google.com/protocol-buffers/docs/proto#groups) and 
 [Services](https://developers.google.com/protocol-buffers/docs/proto#services) are currently **NOT** supported. 
 
