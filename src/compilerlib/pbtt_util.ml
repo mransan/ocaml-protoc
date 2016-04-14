@@ -234,6 +234,7 @@ let compile_map_p1 ({
     Pbpt.map_number;
     Pbpt.map_key_type;
     Pbpt.map_value_type;
+    Pbpt.map_options;
   }) = 
 
   Pbtt.({
@@ -241,6 +242,7 @@ let compile_map_p1 ({
     map_number;
     map_key_type = field_type_of_string map_key_type;
     map_value_type = field_type_of_string map_value_type;
+    map_options;
   })
 
 let compile_oneof_p1 ({
@@ -478,7 +480,12 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
       Pbtt.Message_oneof_field {oneof with Pbtt.oneof_fields } :: message_body 
 
     | Pbtt.Message_map_field map -> 
-      let {Pbtt.map_name; map_number; map_key_type; map_value_type; } = map in 
+      let {
+        Pbtt.map_name; 
+        map_number; 
+        map_key_type; 
+        map_value_type; 
+        map_options; } = map in 
       let map_key_type = compile_field_p2 map_name map_key_type in 
         (* TODO: add validation about the key type which in protobuf is limited 
          * to basic types. 
@@ -489,6 +496,7 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
         map_number;
         map_key_type;
         map_value_type;
+        map_options;
       }) in 
       resolved_map :: message_body 
        

@@ -75,7 +75,7 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
       ) 
     | T.Rt_repeated_field, false -> (
       process_field_common sc encoding_number (string_of_nonpacked_pk pk) (fun sc -> 
-        F.line sc @@ sp "Pbrt.Repeated_field.add (%s) v.%s; " rf_label (decode_field_f field_type pk); 
+        F.line sc @@ sp "Pbrt.Repeated_field.add (%s) v.%s; " (decode_field_f field_type pk) rf_label; 
       ) 
     ) 
     | T.Rt_list, true -> (

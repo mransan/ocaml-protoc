@@ -15,7 +15,7 @@ let gen_type_record ?mutable_ ?and_ {T.r_name; r_fields } sc =
   
   let field_prefix field_type field_mutable = 
     if field_mutable 
-    then "mutable"
+    then "mutable "
     else match field_type with
       | T.Rft_required _ 
       | T.Rft_optional _ 

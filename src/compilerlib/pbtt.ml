@@ -118,6 +118,7 @@ type 'a map = {
   map_number : int;
   map_key_type : 'a field_type;
   map_value_type : 'a field_type;
+  map_options : Pbpt.field_options;
 }
 
 (** type scope 

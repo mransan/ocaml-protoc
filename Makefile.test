@@ -50,7 +50,7 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_INSTALL = /usr/local
+PB_INSTALL = ../../install/build
 PB_HINC    = $(PB_INSTALL)/include/
 PB_LINC    = $(PB_INSTALL)/lib/
 PROTOC     = $(PB_INSTALL)/bin/protoc 
@@ -99,7 +99,7 @@ testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/tes
 .PHONY: integration
 
 integration: test01 test02 test05 test06 test07 test08 test09 test10 \
-	         test11 test12 test13 test14 test15 testCompat test18 
+	         test11 test12 test13 test14 test15 test17 test17 testCompat 
 
 #
 # Google Unittest 

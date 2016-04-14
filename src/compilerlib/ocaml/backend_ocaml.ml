@@ -262,8 +262,8 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
   | Pbtt.Field_type_type id, _ -> 
     user_defined_type_of_id all_types file_name id
 
-let is_mutable ?field_name field = 
-  match Pbtt_util.field_option field "ocaml_mutable"  with
+let is_mutable ?field_name field_options = 
+  match Pbtt_util.find_field_option field_options "ocaml_mutable"  with
   | Some (Pbpt.Constant_bool v) -> v 
   | Some _ -> Exception.invalid_mutable_option ?field_name () 
   | None -> false
@@ -351,7 +351,7 @@ let compile_message
 
         let field_default = Pbtt_util.field_default field in 
 
-        let mutable_  = is_mutable ~field_name field in 
+        let mutable_  = is_mutable ~field_name field_options in 
 
         let record_field_type = match Pbtt_util.field_label field with
           | `Required -> OCaml_types.Rft_required (field_type, encoding_number, pk, field_default) 
@@ -398,20 +398,18 @@ let compile_message
       ) (* Message_oneof_field *)
       
       | Pbtt.Message_map_field mf -> (
-        let {Pbtt.map_name; map_number; map_key_type; map_value_type} = mf in 
-
-        let field_options = [] in 
-          (* TODO feature
-           * Currently the field option of a map field is not being parsed at all. This 
-           * enhancement should essentially propage from the parser all the way down 
-           * to here. 
-           *)
+        let {
+          Pbtt.map_name; 
+          map_number; 
+          map_key_type; 
+          map_value_type; 
+          map_options} = mf in 
 
         let key_type = compile_field_type 
           ~field_name:(Printf.sprintf "key of %s" map_name)
           all_types 
           file_options 
-          field_options 
+          map_options
           file_name
           map_key_type in  
 
@@ -426,7 +424,7 @@ let compile_message
           ~field_name:(Printf.sprintf "value of %s" map_name)
           all_types 
           file_options 
-          field_options 
+          map_options
           file_name
           map_value_type in  
         
@@ -439,11 +437,7 @@ let compile_message
         let record_field = OCaml_types.({
           rf_label = label_name_of_field_name map_name; 
           rf_field_type = record_field_type;
-          rf_mutable = false; 
-            (* TODO feature: 
-             * Once the field options are supported for map field then
-             * we should be able to populate this value correctly. 
-             *)
+          rf_mutable = is_mutable ~field_name:map_name map_options;
         }) in 
 
         (variants, record_field::fields) 

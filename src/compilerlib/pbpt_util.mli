@@ -38,6 +38,7 @@ val field :
   Pbpt.field_label Pbpt.field
 
 val map :
+  ?options:Pbpt.field_options ->
   number:int ->
   key_type:string ->
   value_type:string ->
