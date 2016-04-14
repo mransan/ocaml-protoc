@@ -12,21 +12,25 @@ let gen_type_record ?mutable_ ?and_ {T.r_name; r_fields } sc =
     | Some () -> true
     | None    -> false 
   in 
-  
+
+  let is_imperative_type = function
+    | T.Rft_required _ 
+    | T.Rft_optional _ 
+    | T.Rft_variant_field _ 
+    | T.Rft_repeated_field (T.Rt_list, _, _, _, _) 
+    | T.Rft_associative_field (T.At_list, _, _, _) -> false 
+
+    | T.Rft_repeated_field (T.Rt_repeated_field,_, _, _, _) 
+    | T.Rft_associative_field (T.At_hashtable, _, _, _) -> true
+  in
+    
   let field_prefix field_type field_mutable = 
     if field_mutable 
     then "mutable "
-    else match field_type with
-      | T.Rft_required _ 
-      | T.Rft_optional _ 
-      | T.Rft_variant_field _ -> if mutable_ then  "mutable " else ""
-      | T.Rft_repeated_field (rt, _, _, _, _) -> begin match rt with
-        | T.Rt_repeated_field -> ""
-        | T.Rt_list -> if mutable_ then "mutable " else ""
-      end 
-      | T.Rft_associative_field (at, _, _, _) -> begin match at with
-        | T.At_list -> if mutable_ then "mutable " else ""
-      end 
+    else 
+      if is_imperative_type field_type 
+      then "" 
+      else if mutable_ then "mutable " else ""
   in
 
   let r_name = 

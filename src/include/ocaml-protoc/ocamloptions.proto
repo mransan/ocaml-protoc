@@ -6,6 +6,7 @@ enum OCamlType {
 
 enum OCamlContainer {
     repeated_field = 1;
+    hashtbl = 2;
 }
 
 extend google.protobuf.FieldOptions {

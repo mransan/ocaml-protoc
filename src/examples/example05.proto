@@ -4,5 +4,5 @@ message Person {
     required int32 id = 2;
     optional string email = 3;
     repeated string phone = 4;
-    map<string, string> details = 5;
+    map<string, string> details = 5 [(ocaml_container) = hashtbl];
 }

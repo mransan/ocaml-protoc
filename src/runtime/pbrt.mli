@@ -353,6 +353,8 @@ module Pp : sig
   
   val pp_associative_list :(formatter -> 'a -> unit) -> (formatter -> 'b -> unit) -> formatter -> ('a * 'b) list -> unit 
   
+  val pp_hastable : (formatter -> 'a -> unit) -> (formatter -> 'b -> unit) -> formatter -> ('a, 'b) Hashtbl.t -> unit 
+  
   val pp_record_field : string -> (formatter -> 'a -> unit) -> formatter -> 'a -> unit
   (** [pp_record_field label_name fmt field_value] formats a record [field_value] with
       [label_name]

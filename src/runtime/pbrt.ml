@@ -373,6 +373,11 @@ module Pp = struct
     in
     pp_list pp_element fmt l 
 
+  let pp_hastable pp_key pp_value fmt h = 
+    let l = Hashtbl.fold (fun a b l -> 
+      (a, b)::l
+    ) h [] in  
+    pp_associative_list pp_key pp_value fmt l 
   
   let pp_record_field field_name pp_val fmt val_ = 
     F.fprintf fmt "@,@[<h>%s = %a;@]" field_name pp_val val_ 

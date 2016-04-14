@@ -67,3 +67,20 @@ Will generate:
 type m = {
   f : int32 Repeated_field.t; 
 ```
+
+#### Hashtbl : `(ocaml_container)`
+
+By default a protobuf `map<a, b>` field is mapped to an associative list in OCaml. This mapping can be overriden by using the `(ocaml_container)` field option and setting it to `hashtbl` value. 
+
+For instance:
+```Javascript
+message M {
+  map<string, string> s2s = 1 [(ocaml_container) = hashtbl];
+}
+```
+Will generate:
+```OCaml
+type m = {
+  s2s : (string, string) Hashtbl.t;
+}
+```

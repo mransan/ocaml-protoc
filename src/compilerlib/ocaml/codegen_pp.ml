@@ -68,12 +68,16 @@ let gen_pp_record  ?and_ {T.r_name; r_fields} sc =
             rf_label ("pp_" ^ v_name) var_name
         ) (* Rft_variant_field *)
 
-        | T.Rft_associative_field (T.At_list, _, (key_type,_), (value_type, _)) -> (
+        | T.Rft_associative_field (at, _, (key_type,_), (value_type, _)) -> (
 
+          let pp_runtime_function = match at with
+            | T.At_list -> "pp_associative_list"
+            | T.At_hashtable -> "pp_hastable"
+          in
           let pp_key = gen_pp_field (T.Ft_basic_type key_type) in 
           let pp_value = gen_pp_field value_type in 
-          F.line sc @@ sp "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_associative_list %s %s) fmt %s;"
-            rf_label pp_key pp_value var_name  
+          F.line sc @@ sp "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.%s %s %s) fmt %s;"
+            rf_label pp_runtime_function pp_key pp_value var_name  
         ) (* Associative_list *)
 
       ) r_fields; 

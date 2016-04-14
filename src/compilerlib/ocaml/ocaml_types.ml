@@ -59,8 +59,8 @@ type default_value = Pbpt.constant option
 
 type associative_type  = 
   | At_list
+  | At_hashtable
   (* Future work can include the following OCaml associative containers
-  | Al_hashtable
   | Al_map
   *)
 
@@ -80,9 +80,9 @@ type record_field_type =
   | Rft_repeated_field  of (repeated_type* field_type * encoding_number * payload_kind * is_packed)  
 
   | Rft_associative_field of (associative_type           * 
-                            encoding_number            * 
-                           (basic_type * payload_kind) * 
-                           (field_type * payload_kind))
+                              encoding_number            * 
+                             (basic_type * payload_kind) * 
+                             (field_type * payload_kind))
 
   | Rft_variant_field     of variant 
 
