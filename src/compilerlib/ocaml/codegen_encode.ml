@@ -140,7 +140,7 @@ let gen_encode_record ?and_ {T.r_name; r_fields } sc =
         );
         F.line sc ");"
       ) 
-      | T.Rft_associative_field (_, encoding_number, (key_type, key_pk), (value_type, value_pk)) -> (
+      | T.Rft_associative_field (at, encoding_number, (key_type, key_pk), (value_type, value_pk)) -> (
         F.line sc @@ sp "let encode_key = %s in" (encode_basic_type key_type key_pk);
         F.line sc "let encode_value = (fun x encoder ->";
         F.scope sc (fun sc -> 
@@ -148,7 +148,14 @@ let gen_encode_record ?and_ {T.r_name; r_fields } sc =
         );
         F.line sc ") in";
 
-        F.line sc "List.iter (fun (k, v) ->"; 
+        begin match at with
+        | T.At_list -> (
+           F.line sc "List.iter (fun (k, v) ->"; 
+        )
+        | T.At_hashtable -> (
+          F.line sc "Hashtbl.iter (fun k v ->";
+        )
+        end; 
         F.scope sc (fun sc ->
           gen_encode_field_key sc encoding_number T.Pk_bytes false;
           F.line sc @@ sp "let map_entry = (k, Pbrt.%s), (v, Pbrt.%s) in"

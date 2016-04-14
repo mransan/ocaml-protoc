@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -61,16 +60,17 @@ void protobuf_AddDesc_ocamloptions_2eproto() {
   ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\022ocamloptions.proto\032 google/protobuf/de"
-    "scriptor.proto*\026\n\tOCamlType\022\t\n\005int_t\020\001*$"
-    "\n\016OCamlContainer\022\022\n\016repeated_field\020\001:\?\n\n"
-    "ocaml_type\022\035.google.protobuf.FieldOption"
-    "s\030\242\215\006 \001(\0162\n.OCamlType:I\n\017ocaml_container"
-    "\022\035.google.protobuf.FieldOptions\030\243\215\006 \001(\0162"
-    "\017.OCamlContainer:6\n\rocaml_mutable\022\035.goog"
-    "le.protobuf.FieldOptions\030\244\215\006 \001(\010:>\n\nint3"
-    "2_type\022\034.google.protobuf.FileOptions\030\242\215\006"
-    " \001(\0162\n.OCamlType:>\n\nint64_type\022\034.google."
-    "protobuf.FileOptions\030\243\215\006 \001(\0162\n.OCamlType", 440);
+    "scriptor.proto*\026\n\tOCamlType\022\t\n\005int_t\020\001*1"
+    "\n\016OCamlContainer\022\022\n\016repeated_field\020\001\022\013\n\007"
+    "hashtbl\020\002:\?\n\nocaml_type\022\035.google.protobu"
+    "f.FieldOptions\030\242\215\006 \001(\0162\n.OCamlType:I\n\017oc"
+    "aml_container\022\035.google.protobuf.FieldOpt"
+    "ions\030\243\215\006 \001(\0162\017.OCamlContainer:6\n\rocaml_m"
+    "utable\022\035.google.protobuf.FieldOptions\030\244\215"
+    "\006 \001(\010:>\n\nint32_type\022\034.google.protobuf.Fi"
+    "leOptions\030\242\215\006 \001(\0162\n.OCamlType:>\n\nint64_t"
+    "ype\022\034.google.protobuf.FileOptions\030\243\215\006 \001("
+    "\0162\n.OCamlType", 453);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "ocamloptions.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::ExtensionSet::RegisterEnumExtension(
@@ -121,6 +121,7 @@ const ::google::protobuf::EnumDescriptor* OCamlContainer_descriptor() {
 bool OCamlContainer_IsValid(int value) {
   switch(value) {
     case 1:
+    case 2:
       return true;
     default:
       return false;

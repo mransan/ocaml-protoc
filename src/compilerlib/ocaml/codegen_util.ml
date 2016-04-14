@@ -29,6 +29,7 @@ let string_of_repeated_type = function
 
 let string_of_associative_type = function
   | T.At_list -> "list"
+  | T.At_hashtable -> "Hashtbl.t"
 
 let string_of_record_field_type = function
   | T.Rft_required (field_type, _, _, _) -> 
@@ -37,11 +38,16 @@ let string_of_record_field_type = function
       (string_of_field_type field_type) ^ " option"
   | T.Rft_repeated_field (rt, field_type, _, _,_) -> 
       (string_of_field_type field_type) ^ " " ^ (string_of_repeated_type rt)
-  | T.Rft_associative_field (at, _, (key_type, _), (value_type, _)) -> 
+  | T.Rft_associative_field (T.At_list, _, (key_type, _), (value_type, _)) -> 
       Printf.sprintf "(%s * %s) %s" 
         (string_of_basic_type key_type)
         (string_of_field_type value_type) 
-        (string_of_associative_type at) 
+        (string_of_associative_type T.At_list) 
+  | T.Rft_associative_field (T.At_hashtable, _, (key_type, _), (value_type, _)) -> 
+      Printf.sprintf "(%s, %s) %s" 
+        (string_of_basic_type key_type)
+        (string_of_field_type value_type) 
+        (string_of_associative_type T.At_hashtable) 
   | T.Rft_variant_field {T.v_name; _ } -> v_name
  
 (** [function_name_of_user_defined prefix user_defined] returns the function

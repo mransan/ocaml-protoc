@@ -95,7 +95,7 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
     ) 
   in
 
-  let process_associative_field sc rf_label (_, encoding_number, (key_type, key_pk), (value_type, value_pk)) = 
+  let process_associative_field sc rf_label (at, encoding_number, (key_type, key_pk), (value_type, value_pk)) = 
     let decode_key_f   = decode_basic_type key_type key_pk in 
       (* Because key can never be nested we can assign the decoding function 
        * directly rather wrapping up in a closure like for the value 
@@ -113,12 +113,23 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
         F.line sc @@ decode_field_f value_type value_pk;
       ); 
       F.line sc ") in"; 
-      F.line sc @@ sp "v.%s <- (" rf_label; 
-      F.scope sc (fun sc -> 
-        F.line sc @@ sp "(Pbrt.Decoder.map_entry d ~decode_key:%s ~decode_value)::v.%s;"
-          decode_key_f  rf_label
-      ); 
-      F.line sc ");" 
+      let decode_expression = 
+        sp "(Pbrt.Decoder.map_entry d ~decode_key:%s ~decode_value)" decode_key_f in
+
+      begin match at with
+      | T.At_list -> ( 
+        F.line sc @@ sp "v.%s <- (" rf_label; 
+        F.scope sc (fun sc -> 
+          F.line sc @@ sp "%s::v.%s;"
+            decode_expression rf_label
+        ); 
+        F.line sc ");" 
+      )
+      | T.At_hashtable -> (
+        F.line sc @@ sp "let a, b = %s in" decode_expression;
+        F.line sc @@ sp "Hashtbl.add v.%s a b;" rf_label;
+      )
+      end;
     )
   in
 

@@ -63,6 +63,11 @@ let record_field_default_info record_field : (string * string * string) =
     | T.Rft_associative_field (at, _, _, _) -> 
       begin match at with
       | T.At_list -> "[]"
+      | T.At_hashtable -> "Hashtbl.create 128"
+        (* TODO 
+         * This initial value could be configurable either via 
+         * the default function or via a protobuf option.
+         *)
       end
     | T.Rft_variant_field {T.v_name; v_constructors} -> 
        begin match v_constructors with

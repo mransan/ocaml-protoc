@@ -1,12 +1,16 @@
 let () =
   (* Create OCaml value of generated type *)
 
+  let details = Hashtbl.create 100 in 
+  Hashtbl.add details "foo" "bar"; 
+  Hashtbl.add details "blah" "blah";
+
   let person = Example05_pb.({
     name = "John Doe";
     id = 1234l;
     email = Some "jdoe@example.com";
     phone = ["123-456-7890"];
-    details = [ ("foo", "bar"); ]; 
+    details;
   }) in
 
   (* Create a Protobuf encoder and encode value *)

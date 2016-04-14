@@ -267,6 +267,12 @@ let is_mutable ?field_name field_options =
   | Some (Pbpt.Constant_bool v) -> v 
   | Some _ -> Exception.invalid_mutable_option ?field_name () 
   | None -> false
+            
+let ocaml_container field_options = 
+  match Pbtt_util.find_field_option field_options "ocaml_container" with
+  | None -> None 
+  | Some (Pbpt.Constant_litteral container_name) -> Some container_name
+  | Some _ -> None
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_options file_name oneof_field = 
 
@@ -357,9 +363,9 @@ let compile_message
           | `Required -> OCaml_types.Rft_required (field_type, encoding_number, pk, field_default) 
           | `Optional -> OCaml_types.Rft_optional (field_type, encoding_number, pk, field_default) 
           | `Repeated -> 
-            let repeated_type = begin match Pbtt_util.field_option field "ocaml_container" with
+            let repeated_type = begin match ocaml_container field_options with 
               | None -> OCaml_types.Rt_list 
-              | Some (Pbpt.Constant_litteral "repeated_field") -> OCaml_types.Rt_repeated_field 
+              | Some "repeated_field" -> OCaml_types.Rt_repeated_field 
               | Some _ -> failwith "Invalid ocaml_container attribute value" 
             end in 
             OCaml_types.Rft_repeated_field (repeated_type, field_type, encoding_number, pk, packed) 
@@ -429,9 +435,15 @@ let compile_message
           map_value_type in  
         
         let value_pk = encoding_info_of_field_type all_types map_value_type in 
+            
+        let associative_type = match ocaml_container map_options with 
+          | None -> OCaml_types.At_list 
+          | Some "hashtbl" -> OCaml_types.At_hashtable
+          | Some _ -> failwith "Invalid ocaml_container attribute value for map" 
+        in 
 
         let record_field_type = OCaml_types.(Rft_associative_field 
-          (At_list, map_number, (key_type, key_pk), (value_type, value_pk)) 
+          (associative_type, map_number, (key_type, key_pk), (value_type, value_pk)) 
         ) in 
 
         let record_field = OCaml_types.({
