@@ -74,6 +74,7 @@ type map = {
   map_number : int;
   map_key_type : string;
   map_value_type : string;
+  map_options : field_options;
 }
 
 (** oneof entity *)

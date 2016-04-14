@@ -31,11 +31,12 @@ let field ?options:(options =[]) ~label ~number ~type_ name = {
   Pbpt.field_options = options;
 } 
 
-let map ~number ~key_type ~value_type name = {
+let map ?options:(map_options = []) ~number ~key_type ~value_type name = {
   Pbpt.map_name = name;
   Pbpt.map_number = number;
   Pbpt.map_key_type = key_type;
   Pbpt.map_value_type = value_type;
+  Pbpt.map_options;
 }
 
 let oneof_field ?options:(options =[]) ~number ~type_ name = {

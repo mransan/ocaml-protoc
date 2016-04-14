@@ -223,6 +223,9 @@ map :
   | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT semicolon {
     Pbpt_util.map ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
   }
+  | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT field_options semicolon {
+    Pbpt_util.map ~options:$10 ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+  }
 
 normal_field : 
   | label IDENT field_name EQUAL INT field_options semicolon { 
@@ -255,6 +258,7 @@ field_name :
   | MESSAGE   {"message"}
   | TO        {"to"}
   | MAX       {"max"}
+  | MAP       {"map"}
 
 label :
   | REQUIRED { `Required }  

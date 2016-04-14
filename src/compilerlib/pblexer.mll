@@ -52,6 +52,11 @@ let resolve_identifier loc ident =
   | "max"        , _   -> MAX
   | "map"        , _   -> MAP
   | x            , loc -> IDENT (loc, ident) 
+  (* Note than when updating the list of keywords, 
+   * the [field_name] rule in pbparser.mly should 
+   * also be updated to allow field name of the 
+   * keyword.
+   *)
 
 type comment =
   | Comment_value of string  
