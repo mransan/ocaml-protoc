@@ -1,0 +1,5 @@
+import "ocamloptions.proto";
+
+message Hash {
+    map<string, string> t = 1 [(ocaml_mutable) = true, (ocaml_container) = hashtbl];
+}

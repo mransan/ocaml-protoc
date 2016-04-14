@@ -24,14 +24,11 @@ default:
 	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)
 	
 clean.gen:
-	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.cc
-	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.h
-	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml
-	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.mli
-	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.ml
-	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.mli
-	rm -f src/examples/*_pb.ml
-	rm -f src/examples/*_pb.mli
+	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.*
+	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml*
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.ml*
+	rm -f $(OCAMLOPTIONS_HINC)/*.pb.*
+	rm -f src/examples/*_pb.ml*
 
 clean: clean.gen
 	$(OCB) -clean
