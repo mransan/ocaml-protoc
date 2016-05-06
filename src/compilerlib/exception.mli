@@ -74,8 +74,6 @@ val invalid_import_qualifier : Loc.t -> 'a
 
 val invalid_file_name : string -> 'a 
 
-val invalid_message_declaration : string -> 'a 
-
 val invalid_packed_option : string -> 'a 
 
 val missing_semicolon_for_enum_value : string -> Loc.t -> 'a 
@@ -89,7 +87,5 @@ val missing_one_of_name : Loc.t -> 'a
 val invalid_field_label : Loc.t -> 'a 
 
 val missing_field_label : Loc.t -> 'a 
-
-val parsing_error : string -> int -> string -> 'a  
 
 val syntax_error : unit  -> 'a 

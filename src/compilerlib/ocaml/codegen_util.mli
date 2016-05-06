@@ -10,15 +10,8 @@ val let_decl_of_and : 'a option -> string
 
 val string_of_record_field_type : Ocaml_types.record_field_type -> string 
 
-val string_of_basic_type : Ocaml_types.basic_type -> string 
-
 val string_of_field_type : Ocaml_types.field_type -> string 
 
-(*
-val string_of_field_type :?type_qualifier:Ocaml_types.type_qualifier -> Ocaml_types.field_type  -> string 
-(** [string_of_field_type ~qualifier type] returns the string for OCaml type. *) 
-*)
- 
 val function_name_of_user_defined : string -> Ocaml_types.user_defined_type -> string
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`. 

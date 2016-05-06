@@ -3,8 +3,6 @@ type t = {
   line : int; 
 } 
 
-let make ?file_name line = { file_name; line } 
-
 let from_lexbuf lexbuf = 
   let file_name = match lexbuf.Lexing.lex_curr_p.Lexing.pos_fname with
     | "" -> None
