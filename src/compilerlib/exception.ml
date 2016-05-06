@@ -75,7 +75,6 @@ type error =
   | Invalid_import_qualifier of Loc.t  
   | Invalid_file_name of string  
   | Import_file_not_found of string 
-  | Invalid_message_declaration of string 
   | Invalid_packed_option of string 
   | Missing_semicolon_for_enum_value of string * Loc.t
   | Invalid_enum_specification of string * Loc.t 
@@ -124,9 +123,6 @@ let prepare_error = function
     P.sprintf 
       ("File: %s, " ^^ 
        "could not be found.") file_name  
-
-  | Invalid_message_declaration s -> 
-    P.sprintf "Invalid message declaration : %s" s
 
   | Invalid_packed_option field_name ->
     P.sprintf "Invalid packed option for field: %s" field_name
@@ -217,9 +213,6 @@ let invalid_import_qualifier loc  =
 let invalid_file_name file_name = 
   raise (Compilation_error (Invalid_file_name file_name)) 
 
-let invalid_message_declaration s = 
-  raise (Compilation_error (Invalid_message_declaration s))
-
 let invalid_packed_option field_name = 
   raise (Compilation_error (Invalid_packed_option field_name)) 
 
@@ -240,9 +233,6 @@ let invalid_field_label loc =
 
 let missing_field_label loc = 
   raise (Compilation_error (Missing_field_label loc))
-
-let parsing_error file_name line detail = 
-  raise (Compilation_error (Parsing_error (file_name, line, detail)))
 
 let syntax_error () = 
   raise (Compilation_error Syntax_error) 

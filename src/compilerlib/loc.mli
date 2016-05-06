@@ -5,9 +5,6 @@ type t
 
 (** {2 Creators} *)
 
-val make : ?file_name:string -> int -> t 
-(** [make ~file_name line] create a location at [file_name] and [line] *) 
-
 val from_lexbuf : Lexing.lexbuf -> t 
 (** [from_lexbuf lexbuf] create a location from the current lexbuf location *)
 
