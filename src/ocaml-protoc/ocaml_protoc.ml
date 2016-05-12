@@ -168,7 +168,7 @@ let all_code_gen = [
 ]
   
 
-let generate_code sig_oc struct_oc otypes proto_file_name = 
+let generate_code otypes proto_file_name = 
   (* -- `.ml` file -- *)
 
   let gen otypes sc (fs:(codegen_f*string option) list)  = 
@@ -205,7 +205,7 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
     C.gen_struct, None
   ) all_code_gen);
 
-  output_string struct_oc (Fmt.print sc);
+  let struct_string = (Fmt.print sc) in 
 
   (* -- `.mli` file -- *)
 
@@ -217,8 +217,8 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
     C.gen_sig, Some C.ocamldoc_title
   ) all_code_gen);
 
-  output_string sig_oc (Fmt.print sc);
-  ()
+  let sig_string = Fmt.print sc in
+  (sig_string, struct_string)
 
 let () = 
 
@@ -234,7 +234,9 @@ let () =
 
   try
     let otypes = compile include_dirs proto_file_name in 
-    generate_code sig_oc struct_oc otypes proto_file_name;
+    let sig_string, struct_string = generate_code otypes proto_file_name in 
+    output_string sig_oc sig_string; 
+    output_string struct_oc struct_string;
     close_file_channels ();
     List.iter (fun file_name ->
       Printf.printf "Generated %s\n" file_name; 
