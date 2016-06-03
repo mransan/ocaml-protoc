@@ -128,7 +128,7 @@ let gen_struct ?and_ t sc =
 let gen_sig ?and_ t sc = 
   let f type_name =  
     F.line sc @@ sp "val pp_%s : Format.formatter -> %s -> unit " type_name type_name;
-    F.line sc @@ sp "(** [pp_%s v] formats v] *)" type_name;
+    F.line sc @@ sp "(** [pp_%s v] formats v *)" type_name;
   in 
   begin
     match t with 
