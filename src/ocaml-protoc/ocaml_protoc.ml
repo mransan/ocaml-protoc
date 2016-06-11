@@ -198,7 +198,7 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
   in
 
   let sc = Fmt.empty_scope () in 
-  Fmt.line sc "[@@@ocaml.warning \"-30\"]";
+  Fmt.line sc "[@@@ocaml.warning \"-27-30-39\"]";
   Fmt.empty_line sc;
   gen otypes  sc (List.map (fun m -> 
     let module C = (val m:Codegen.S) in 
