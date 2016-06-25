@@ -172,7 +172,7 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
         | T.Rft_associative_field x-> process_associative_field sc rf_label x 
         | T.Rft_variant_field x -> process_variant_field sc rf_label x 
       ) r_fields; 
-      F.line sc "| Some (n, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()";
+      F.line sc "| Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind; loop ()";
     ); 
     F.line sc "in"; 
     F.line sc "loop ();";
