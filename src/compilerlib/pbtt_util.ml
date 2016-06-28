@@ -297,37 +297,59 @@ let rec compile_message_p1 file_name file_options message_scope ({
     Pbtt.message_names = message_names @ [message_name] 
   } in 
 
-  let message_body, extensions, options, all_sub = List.fold_left (fun (message_body, extensions, options, all_types) -> function  
+  let module Acc = struct 
+    (* Ad-hoc module for the "large" accumulated data during the 
+       fold_left below. 
+     *)
+
+    type ('a, 'b, 'c, 'd) t = {
+      message_body : 'a list; 
+      extensions : 'b list; 
+      options : 'c list; 
+      all_types: 'd list; 
+    } 
+
+    let empty = { 
+      message_body = []; 
+      extensions = []; 
+      options = []; 
+      all_types = []; 
+    } 
+  end  in 
+
+  let acc = List.fold_left (fun ({Acc.message_body; extensions; options; all_types} as acc) -> function  
     | Pbpt.Message_field f -> 
         let field = Pbtt.Message_field (compile_field_p1 f) in 
-        (field  :: message_body, extensions, options, all_types)
+        {acc with Acc.message_body = field :: message_body} 
+
     | Pbpt.Message_map_field m ->
         let field = Pbtt.Message_map_field (compile_map_p1 m) in
         (* 
         let field = Pbtt.Message_field field in
         let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
         *)
-        (field  :: message_body, extensions, options, all_types) 
+        {acc with Acc.message_body = field  :: message_body} 
+
     | Pbpt.Message_oneof_field o -> 
         let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
-        (field :: message_body, extensions, options, all_types)
+        {acc with Acc.message_body = field  :: message_body} 
+
     | Pbpt.Message_sub m -> 
         let all_sub_types = compile_message_p1 file_name file_options sub_scope m in 
-        (message_body,  extensions, options, all_types @ all_sub_types)
+        {acc with Acc.all_types = all_types @ all_sub_types} 
+
     | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
-        (
-          message_body,  
-          extensions, 
-          options,
-          all_types @ [compile_enum_p1 file_name file_options sub_scope enum]
-        )
+        {acc with Acc.all_types = all_types @ [compile_enum_p1 file_name file_options sub_scope enum]}
+
     | Pbpt.Message_extension extension_ranges -> 
-        (message_body,  extensions @ extension_ranges , options, all_types)
+        {acc with Acc.extensions = extensions @ extension_ranges }
+
     | Pbpt.Message_option message_option -> 
-        (message_body, extensions, message_option::options, all_types)
-  ) ([], [], [], []) message_body in
+        {acc with Acc.options = message_option::options} 
+
+  ) Acc.empty message_body in
   
-  let message_body = List.rev message_body in 
+  let message_body = List.rev acc.Acc.message_body in 
   
   (* Both field name and field number must be unique 
      within a message scope. This includes the field in a 
@@ -356,9 +378,9 @@ let rec compile_message_p1 file_name file_options message_scope ({
     (* TODO: add support for map *) | _ -> number_index 
   ) [] message_body ;  
 
-  all_sub @ [type_of_spec file_name file_options id message_scope Pbtt.(Message {
-    extensions; 
-    options;
+  acc.Acc.all_types @ [type_of_spec file_name file_options id message_scope Pbtt.(Message {
+    extensions = acc.Acc.extensions; 
+    options = acc.Acc.options;
     message_name; 
     message_body;
   })] 
