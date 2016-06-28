@@ -6,18 +6,24 @@ let () =
   let s =" 
   ENUM1 = 1;
   " in 
-  let ev = parse Pbparser.enum_value_ s in 
-  assert("ENUM1" = ev.Pbpt.enum_value_name);
-  assert(1       = ev.Pbpt.enum_value_int);
+  begin match parse Pbparser.enum_value_ s with
+  | Pbpt.Enum_value ev -> 
+    assert("ENUM1" = ev.Pbpt.enum_value_name);
+    assert(1       = ev.Pbpt.enum_value_int)
+  | _ -> assert(false)
+  end; 
   ()
 
 let () = 
   let s =" 
   BLAH_12_BLAH = -99999; ;
   " in 
-  let ev = parse Pbparser.enum_value_ s in 
-  assert("BLAH_12_BLAH" = ev.Pbpt.enum_value_name);
-  assert((-99999) = ev.Pbpt.enum_value_int);
+  begin match parse Pbparser.enum_value_ s with
+  | Pbpt.Enum_value ev -> 
+    assert("BLAH_12_BLAH" = ev.Pbpt.enum_value_name);
+    assert((-99999) = ev.Pbpt.enum_value_int);
+  | _ -> assert(false)
+  end; 
   ()
 
 let () = 
@@ -31,9 +37,9 @@ let () =
   let ev2 = Pbpt_util.enum_value ~int_value:2 "EV2" in 
   let e   = parse Pbparser.enum_ s in 
   assert("Test" = e.Pbpt.enum_name); 
-  assert(2 = List.length e.Pbpt.enum_values);
-  assert(ev1 = List.nth e.Pbpt.enum_values 0); 
-  assert(ev2 = List.nth e.Pbpt.enum_values 1); 
+  assert(2 = List.length e.Pbpt.enum_body);
+  assert(ev1 = List.nth e.Pbpt.enum_body 0); 
+  assert(ev2 = List.nth e.Pbpt.enum_body 1); 
   ()
 
 let () = 

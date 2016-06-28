@@ -49,11 +49,11 @@ let () =
   match List.hd message_body with 
   | Pbpt.Message_enum {
       Pbpt.enum_name;
-      Pbpt.enum_values; 
+      Pbpt.enum_body; 
       Pbpt.enum_id = _; 
     } -> ( 
     assert ("TestE" = enum_name); 
-    assert (2 = List.length enum_values);
+    assert (2 = List.length enum_body);
     ()) 
   | _ -> (assert false : unit) ; 
   ()
