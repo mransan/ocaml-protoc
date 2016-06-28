@@ -24,3 +24,7 @@ extend google.protobuf.FileOptions {
 extend google.protobuf.MessageOptions {
     optional string ocaml_type_ppx  = 100002;
 }
+
+extend google.protobuf.EnumOptions {
+    optional string ocaml_enum_ppx  = 100002;
+}

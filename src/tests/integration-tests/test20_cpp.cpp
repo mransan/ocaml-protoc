@@ -9,7 +9,7 @@ M create_m() {
     M m;
     m.set_f1(1); 
     m.mutable_f2()->set_sub_f1(2);
-    m.set_f3(M_E_EONE);
+    m.set_f3(EONE);
     return m;
 }
 

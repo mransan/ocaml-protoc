@@ -54,17 +54,19 @@ let oneof ~fields name = {
 
 let message_counter = ref 0
 
-let enum_value ~int_value name = { 
-  Pbpt.enum_value_name = name; 
-  Pbpt.enum_value_int = int_value; 
-}
+let enum_value ~int_value name = Pbpt.(Enum_value { 
+  enum_value_name = name; 
+  enum_value_int = int_value; 
+})
 
-let enum ?enum_values:(enum_values = []) enum_name =
+let enum_option option_ = Pbpt.Enum_option option_ 
+
+let enum ?enum_body:(enum_body= []) enum_name =
   incr message_counter; 
   {
     Pbpt.enum_id  = !message_counter; 
     Pbpt.enum_name; 
-    Pbpt.enum_values; 
+    Pbpt.enum_body; 
   } 
 
 let extension_range_single_number number = 
