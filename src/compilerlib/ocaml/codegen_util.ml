@@ -85,5 +85,5 @@ let string_of_payload_kind ?capitalize payload_kind packed =
   in 
   match capitalize with
   | None -> s 
-  | Some () -> String.capitalize s 
+  | Some () -> String.capitalize s [@@ocaml.warning "-3"] 
 

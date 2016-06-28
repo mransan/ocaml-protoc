@@ -66,6 +66,10 @@ val type_of_id : 'a Pbtt.proto -> int -> 'a Pbtt.proto_type
 
 val string_of_message : int -> Pbtt.type_scope -> 'a Pbtt.message -> string 
 
+val message_option : 'a Pbtt.message -> string -> Pbpt.constant option 
+
+val enum_option : Pbtt.enum -> string -> Pbpt.constant option 
+
 (** {2 Accessor for Pbtt.type *) 
 
 val type_id_of_type : 'a Pbtt.proto_type -> int 
@@ -134,6 +138,7 @@ val compile_message_p2:
   Pbtt.resolved Pbtt.message 
 
 val compile_message_p1 : 
+  ?parent_options:Pbpt.message_option list ->
   string -> 
   Pbpt.file_option list ->
   Pbtt.type_scope -> 

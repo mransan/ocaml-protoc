@@ -126,4 +126,5 @@ and type_spec =
 type type_ = {
   module_ : string; (* For now limit to a single module *)  
   spec : type_spec; 
+  type_level_ppx_extension : string option; 
 }

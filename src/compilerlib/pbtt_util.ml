@@ -79,6 +79,16 @@ let string_of_message id scope {Pbtt.message_name; message_body} =
     message_name
     (List.length message_body)
 
+let message_option {Pbtt.message_options; _ } option_name = 
+  match List.assoc option_name message_options with 
+  | cst -> Some cst 
+  | exception Not_found -> None 
+
+let enum_option {Pbtt.enum_options; _ } option_name = 
+  match List.assoc option_name enum_options with 
+  | cst -> Some cst 
+  | exception Not_found -> None 
+
 let scope_of_package = function
   | Some s -> {empty_scope with 
     Pbtt.packages = List.rev @@ Util.rev_split_by_char '.' s
@@ -272,7 +282,13 @@ let type_of_spec file_name file_options id scope spec = {
 }
 
 (** compile a [Pbpt] enum to a [Pbtt] type *) 
-let compile_enum_p1 file_name file_options scope {Pbpt.enum_id; enum_name; enum_values } : 'a Pbtt.proto_type =  
+let compile_enum_p1 
+  ?parent_options:(parent_options = []) 
+  file_name 
+  file_options 
+  scope 
+  {Pbpt.enum_id; enum_name; enum_values } : 'a Pbtt.proto_type =  
+
   let enum_values = List.map (fun enum_value -> {
     Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
     Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
@@ -280,17 +296,19 @@ let compile_enum_p1 file_name file_options scope {Pbpt.enum_id; enum_name; enum_
 
   type_of_spec file_name file_options enum_id scope (Pbtt.Enum {
     Pbtt.enum_name;
-    Pbtt.enum_values
+    Pbtt.enum_values;
+    Pbtt.enum_options = parent_options; 
   })
 
 (** compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
     defined more than one type). 
   *)
-let rec compile_message_p1 file_name file_options message_scope ({
-  Pbpt.id;
-  Pbpt.message_name; 
-  Pbpt.message_body; 
-})  = 
+let rec compile_message_p1 
+  ?parent_options:(parent_options = []) 
+  file_name 
+  file_options 
+  message_scope 
+  ({ Pbpt.id; Pbpt.message_name; Pbpt.message_body; })  = 
   
   let {Pbtt.message_names; _ } = message_scope in  
   let sub_scope = {message_scope with 
@@ -309,10 +327,10 @@ let rec compile_message_p1 file_name file_options message_scope ({
       all_types: 'd list; 
     } 
 
-    let empty = { 
+    let e0 parent_options = { 
       message_body = []; 
       extensions = []; 
-      options = []; 
+      options = parent_options; 
       all_types = []; 
     } 
   end  in 
@@ -335,11 +353,13 @@ let rec compile_message_p1 file_name file_options message_scope ({
         {acc with Acc.message_body = field  :: message_body} 
 
     | Pbpt.Message_sub m -> 
-        let all_sub_types = compile_message_p1 file_name file_options sub_scope m in 
+        let parent_options = options in 
+        let all_sub_types = compile_message_p1 ~parent_options file_name file_options sub_scope m in 
         {acc with Acc.all_types = all_types @ all_sub_types} 
 
     | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
-        {acc with Acc.all_types = all_types @ [compile_enum_p1 file_name file_options sub_scope enum]}
+        let parent_options = options in 
+        {acc with Acc.all_types = all_types @ [compile_enum_p1 ~parent_options file_name file_options sub_scope enum]}
 
     | Pbpt.Message_extension extension_ranges -> 
         {acc with Acc.extensions = extensions @ extension_ranges }
@@ -347,7 +367,7 @@ let rec compile_message_p1 file_name file_options message_scope ({
     | Pbpt.Message_option message_option -> 
         {acc with Acc.options = message_option::options} 
 
-  ) Acc.empty message_body in
+  ) (Acc.e0 parent_options) message_body in
   
   let message_body = List.rev acc.Acc.message_body in 
   
@@ -380,7 +400,7 @@ let rec compile_message_p1 file_name file_options message_scope ({
 
   acc.Acc.all_types @ [type_of_spec file_name file_options id message_scope Pbtt.(Message {
     extensions = acc.Acc.extensions; 
-    options = acc.Acc.options;
+    message_options = acc.Acc.options;
     message_name; 
     message_body;
   })] 

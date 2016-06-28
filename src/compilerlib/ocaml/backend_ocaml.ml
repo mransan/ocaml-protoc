@@ -124,7 +124,8 @@ let constructor_name s =
   |> List.rev
   |> String.concat "_"
   |> String.lowercase 
-  |> String.capitalize
+  |> String.capitalize [@@ocaml.warning "-3"] 
+
 
 let module_name = constructor_name 
 
@@ -133,7 +134,7 @@ let label_name_of_field_name s =
   |> List.rev
   |> String.concat "_"
   |> String.lowercase 
-  |> fix_ocaml_keyword_conflict 
+  |> fix_ocaml_keyword_conflict [@@ocaml.warning "-3"] 
 
 let module_of_file_name file_name = 
   let file_name = Filename.basename file_name in 
@@ -149,7 +150,7 @@ let type_name message_scope name =
     rev_split_by_naming_convention s
     |> List.rev 
     |> List.map String.lowercase 
-  ) all_names in 
+  ) all_names [@@ocaml.warning "-3"]  in 
   let all_names = List.flatten all_names in 
 
   match all_names with 
@@ -312,6 +313,11 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_opt
   OCaml_types.({v_name; v_constructors})
   
 
+let type_level_ppx_extension message_name = function 
+  | None -> None
+  | Some Pbpt.Constant_string s -> Some s 
+  | _ -> E.invalid_ppx_extension_option message_name 
+
 let compile_message  
   (file_options: Pbpt.file_option list)
   (all_types: Pbtt.resolved Pbtt.proto) 
@@ -328,8 +334,11 @@ let compile_message
   let {Pbtt.message_name; Pbtt.message_body;} = message in 
 
   let {Pbtt.message_names; _ } = scope in  
-  
 
+  let type_level_ppx_extension = 
+    type_level_ppx_extension message_name @@ Pbtt_util.message_option message "ocaml_type_ppx" 
+  in
+  
   (* In case a message is only made of a `one of` field then we 
      generate a only a variant rather than both a variant and a message with 
      a single field. This is an optimization which makes the generated
@@ -341,7 +350,7 @@ let compile_message
   | Pbtt.Message_oneof_field f :: [] -> (
     let outer_message_names = message_names @ [message_name] in 
     let variant = variant_of_oneof ~outer_message_names all_types file_options file_name f in
-    [OCaml_types.({ module_; spec = Variant variant;})]
+    [OCaml_types.({module_; spec = Variant variant;type_level_ppx_extension})]
   ) 
 
   | _ -> 
@@ -402,7 +411,7 @@ let compile_message
           rf_field_type = Rft_variant_field variant; 
         }) in 
         
-        let variants = OCaml_types.({ module_; spec = Variant variant;})::variants in 
+        let variants = OCaml_types.({module_; spec = Variant variant; type_level_ppx_extension})::variants in 
 
         let fields   = record_field::fields in 
 
@@ -473,22 +482,28 @@ let compile_message
     let type_ = OCaml_types.({
       module_; 
       spec = Record record;
+      type_level_ppx_extension;
     }) in 
 
     List.rev (type_ :: variants)  
 
-let compile_enum file_name scope {Pbtt.enum_name; Pbtt.enum_values; } = 
+let compile_enum file_name scope ({Pbtt.enum_name; Pbtt.enum_values; enum_options; } as enum)  = 
   let module_ = module_of_file_name file_name in 
   let {Pbtt.message_names; Pbtt.packages = _ } = scope in 
   let cv_constructors = List.map (fun {Pbtt.enum_value_name; Pbtt.enum_value_int} -> 
     (constructor_name enum_value_name,  enum_value_int)
   ) enum_values in 
+  let type_level_ppx_extension = 
+    type_level_ppx_extension enum_name @@ Pbtt_util.enum_option enum "ocaml_type_ppx" 
+  in
   OCaml_types.({
     module_; 
     spec = Const_variant {
       cv_name = type_name message_names enum_name; 
       cv_constructors;
-  }})
+    };
+    type_level_ppx_extension; 
+  })
 
 let compile all_types = function 
   | {Pbtt.spec = Pbtt.Message m ; file_name; file_options; scope; _ } -> 
