@@ -90,10 +90,14 @@ type enum_value = {
   enum_value_int : int;
 }
 
+type enum_body_content =
+  | Enum_value of enum_value
+  | Enum_option of option_
+
 type enum = {
   enum_id  : int; 
   enum_name : string; 
-  enum_values : enum_value list; 
+  enum_body : enum_body_content list; 
 } 
 
 type extension_range_to = 

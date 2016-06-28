@@ -75,7 +75,7 @@
 %type <Pbpt.field_label Pbpt.field> normal_field_
 
 %start enum_value_ 
-%type <Pbpt.enum_value> enum_value_
+%type <Pbpt.enum_body_content> enum_value_
 
 %start enum_
 %type <Pbpt.enum> enum_
@@ -115,7 +115,7 @@ enum_            : enum          EOF {$1}
 oneof_           : oneof         EOF {$1} 
 message_         : message       EOF {$1} 
 import_          : import        EOF {$1} 
-option_          : option   EOF {$1} 
+option_          : option        EOF {$1} 
 extension_range_list_ : extension_range_list EOF {$1}
 extension_       : extension    EOF {$1}
 extend_          : extend       EOF {$1}
@@ -265,7 +265,6 @@ label :
   | REQUIRED { `Required }  
   | REPEATED { `Repeated }
   | OPTIONAL { `Optional }
-  | IDENT    { Exception.invalid_field_label (fst $1) } /* HT */
 
 field_options : 
   | LBRACKET field_option_list RBRACKET { $2 }; 
@@ -302,11 +301,15 @@ constant :
   | STRING     { Pbpt.Constant_string $1 }; 
 
 enum:
-  | ENUM IDENT LBRACE enum_values rbrace {Pbpt_util.enum ~enum_values:$4 (snd $2) } 
+  | ENUM IDENT LBRACE enum_values rbrace { Pbpt_util.enum ~enum_body:$4 (snd $2) } 
 
 enum_values:
-  |                              { [] }
-  | enum_value enum_values       { $1::$2 }; 
+  |                                { [] }
+  | enum_body_content enum_values  { $1::$2 }
+
+enum_body_content :
+  | option     { Pbpt_util.enum_option $1 }
+  | enum_value { $1 }
 
 enum_value : 
   | IDENT EQUAL INT semicolon  { Pbpt_util.enum_value ~int_value:$3 (snd $1) } 

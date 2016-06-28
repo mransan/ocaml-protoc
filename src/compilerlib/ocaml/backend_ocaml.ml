@@ -494,7 +494,7 @@ let compile_enum file_name scope ({Pbtt.enum_name; Pbtt.enum_values; enum_option
     (constructor_name enum_value_name,  enum_value_int)
   ) enum_values in 
   let type_level_ppx_extension = 
-    type_level_ppx_extension enum_name @@ Pbtt_util.enum_option enum "ocaml_type_ppx" 
+    type_level_ppx_extension enum_name @@ Pbtt_util.enum_option enum "ocaml_enum_ppx" 
   in
   OCaml_types.({
     module_; 

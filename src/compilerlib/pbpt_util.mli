@@ -72,10 +72,14 @@ val message_body_oneof_field  :
 val enum_value :
   int_value:int -> 
   string -> 
-  Pbpt.enum_value 
+  Pbpt.enum_body_content
+
+val enum_option :
+  Pbpt.option_ -> 
+  Pbpt.enum_body_content
 
 val enum : 
-  ?enum_values:Pbpt.enum_value list -> 
+  ?enum_body:Pbpt.enum_body_content list -> 
   string -> 
   Pbpt.enum 
 

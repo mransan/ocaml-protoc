@@ -287,17 +287,22 @@ let compile_enum_p1
   file_name 
   file_options 
   scope 
-  {Pbpt.enum_id; enum_name; enum_values } : 'a Pbtt.proto_type =  
+  {Pbpt.enum_id; enum_name; enum_body} : 'a Pbtt.proto_type =  
 
-  let enum_values = List.map (fun enum_value -> {
-    Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
-    Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
-  }) enum_values in 
+  let enum_values, enum_options = List.fold_left (fun (enum_values, enum_options) -> function 
+    | Pbpt.Enum_value enum_value -> ({
+      Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
+      Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
+    } :: enum_values, enum_options) 
+
+    | Pbpt.Enum_option enum_option -> (enum_values, enum_option::enum_options)
+
+  ) ([], []) enum_body in 
 
   type_of_spec file_name file_options enum_id scope (Pbtt.Enum {
     Pbtt.enum_name;
-    Pbtt.enum_values;
-    Pbtt.enum_options = parent_options; 
+    Pbtt.enum_values = List.rev enum_values;
+    Pbtt.enum_options = (List.rev enum_options) @ parent_options; 
   })
 
 (** compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
@@ -333,39 +338,39 @@ let rec compile_message_p1
       options = parent_options; 
       all_types = []; 
     } 
-  end  in 
+  end  in
 
   let acc = List.fold_left (fun ({Acc.message_body; extensions; options; all_types} as acc) -> function  
     | Pbpt.Message_field f -> 
-        let field = Pbtt.Message_field (compile_field_p1 f) in 
-        {acc with Acc.message_body = field :: message_body} 
+      let field = Pbtt.Message_field (compile_field_p1 f) in 
+      {acc with Acc.message_body = field :: message_body} 
 
     | Pbpt.Message_map_field m ->
-        let field = Pbtt.Message_map_field (compile_map_p1 m) in
-        (* 
-        let field = Pbtt.Message_field field in
-        let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
-        *)
-        {acc with Acc.message_body = field  :: message_body} 
+      let field = Pbtt.Message_map_field (compile_map_p1 m) in
+      (* 
+      let field = Pbtt.Message_field field in
+      let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
+      *)
+      {acc with Acc.message_body = field :: message_body} 
 
     | Pbpt.Message_oneof_field o -> 
-        let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
-        {acc with Acc.message_body = field  :: message_body} 
+      let field = Pbtt.Message_oneof_field (compile_oneof_p1 o) in 
+      {acc with Acc.message_body = field  :: message_body} 
 
     | Pbpt.Message_sub m -> 
-        let parent_options = options in 
-        let all_sub_types = compile_message_p1 ~parent_options file_name file_options sub_scope m in 
-        {acc with Acc.all_types = all_types @ all_sub_types} 
+      let parent_options = options in 
+      let all_sub_types = compile_message_p1 ~parent_options file_name file_options sub_scope m in 
+      {acc with Acc.all_types = all_types @ all_sub_types} 
 
     | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
-        let parent_options = options in 
-        {acc with Acc.all_types = all_types @ [compile_enum_p1 ~parent_options file_name file_options sub_scope enum]}
+      let parent_options = options in 
+      {acc with Acc.all_types = all_types @ [compile_enum_p1 ~parent_options file_name file_options sub_scope enum]}
 
     | Pbpt.Message_extension extension_ranges -> 
-        {acc with Acc.extensions = extensions @ extension_ranges }
+      {acc with Acc.extensions = extensions @ extension_ranges }
 
     | Pbpt.Message_option message_option -> 
-        {acc with Acc.options = message_option::options} 
+      {acc with Acc.options = message_option::options} 
 
   ) (Acc.e0 parent_options) message_body in
   
