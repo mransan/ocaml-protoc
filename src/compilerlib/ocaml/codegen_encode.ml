@@ -6,8 +6,8 @@ module L = Logger
 
 open Codegen_util
 
-let constructor_name s =
-  String.capitalize @@ String.lowercase s 
+let constructor_name s = 
+  (String.capitalize @@ String.lowercase s) [@@ocaml.warning "-3"] 
 
 let gen_encode_field_key sc number pk is_packed = 
   F.line sc @@ sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 

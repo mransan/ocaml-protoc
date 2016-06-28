@@ -80,7 +80,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
  
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
-	$(OCB) -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
+	$(OCB) -pkg ppx_deriving.show -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
 
 test%: bin.native bin.byte \
 	   $(INTEGRATION_TESTS_DIR)/test%_ml.native \
@@ -102,7 +102,7 @@ testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/tes
 
 integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 	         test11 test12 test13 test14 test15 test16 test17 test18 \
-			 test19 testCompat 
+			 test19 test20 testCompat 
 
 #
 # Google Unittest 

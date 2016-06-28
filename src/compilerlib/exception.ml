@@ -83,6 +83,7 @@ type error =
   | Invalid_field_label of Loc.t 
   | Missing_field_label of Loc.t 
   | Parsing_error of string * int * string 
+  | Invalid_ppx_extension_option of string 
   | Syntax_error
 
 
@@ -153,6 +154,9 @@ let prepare_error = function
   | Invalid_mutable_option field_name -> 
     P.sprintf "Invalid mutable option for field %s" (Util.option_default ""
     field_name) 
+  
+  | Invalid_ppx_extension_option message_name -> 
+    P.sprintf "Invalid ppx extension value for message: %s, string expected" message_name
 
 
 let add_loc loc exn  = 
@@ -233,6 +237,9 @@ let invalid_field_label loc =
 
 let missing_field_label loc = 
   raise (Compilation_error (Missing_field_label loc))
+  
+let invalid_ppx_extension_option message_name = 
+  raise (Compilation_error (Invalid_ppx_extension_option message_name)) 
 
 let syntax_error () = 
   raise (Compilation_error Syntax_error) 

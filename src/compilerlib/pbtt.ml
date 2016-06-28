@@ -141,7 +141,7 @@ type 'a message_body_content =
 
 and 'a message = {
   extensions : Pbpt.extension_range list;
-  options : Pbpt.message_option list;
+  message_options : Pbpt.message_option list;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
@@ -154,6 +154,7 @@ type enum_value = {
 type enum = {
   enum_name : string; 
   enum_values: enum_value list; 
+  enum_options : Pbpt.message_option list; 
 }
 
 type 'a proto_type_spec = 

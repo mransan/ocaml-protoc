@@ -88,4 +88,6 @@ val invalid_field_label : Loc.t -> 'a
 
 val missing_field_label : Loc.t -> 'a 
 
+val invalid_ppx_extension_option : string -> 'a 
+
 val syntax_error : unit  -> 'a 

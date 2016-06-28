@@ -73,16 +73,28 @@ let gen_type_const_variant ?and_ {T.cv_name; cv_constructors} sc =
     ) cv_constructors;
   )
 
+let print_ppx_extension {T.type_level_ppx_extension; _ } sc = 
+  match type_level_ppx_extension with
+  | None -> () 
+  | Some ppx_content -> F.line sc @@ sp "[%s]" ppx_content
+
 let gen_struct ?and_ t scope = 
   begin
     match t with 
     | {T.spec = T.Record r; _ } -> (
       gen_type_record  ?and_ r scope; 
+      print_ppx_extension t scope; 
       F.empty_line scope;
       gen_type_record ~mutable_:() ~and_:() r scope 
     ) 
-    | {T.spec = T.Variant v; _ } -> gen_type_variant  ?and_ v scope  
-    | {T.spec = T.Const_variant v; _ } -> gen_type_const_variant ?and_ v scope 
+
+    | {T.spec = T.Variant v; _ } -> 
+      gen_type_variant  ?and_ v scope;  
+      print_ppx_extension t scope; 
+
+    | {T.spec = T.Const_variant v; _ } -> 
+      gen_type_const_variant ?and_ v scope; 
+      print_ppx_extension t scope; 
   end; 
   true
 
@@ -95,6 +107,7 @@ let gen_sig ?and_ t scope =
     | {T.spec = T.Variant v; _ } -> gen_type_variant  ?and_ v scope  
     | {T.spec = T.Const_variant v; _ } -> gen_type_const_variant ?and_ v scope 
   end; 
+  print_ppx_extension t scope; 
   true
 
 let ocamldoc_title = "Types"
