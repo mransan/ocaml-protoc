@@ -16,6 +16,11 @@ extend google.protobuf.FieldOptions {
 }
 
 extend google.protobuf.FileOptions {
-    optional OCamlType int32_type = 100002;
-    optional OCamlType int64_type = 100003;
+    optional OCamlType int32_type   = 100002;
+    optional OCamlType int64_type   = 100003;
+    optional string ocaml_file_ppx  = 100004;
+}
+
+extend google.protobuf.MessageOptions {
+    optional string ocaml_type_ppx  = 100002;
 }

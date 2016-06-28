@@ -92,8 +92,8 @@
 %start import_ 
 %type <Pbpt.import> import_
 
-%start file_option_
-%type <Pbpt.file_option> file_option_
+%start option_
+%type <Pbpt.file_option> option_
 
 %start extension_range_list_
 %type <Pbpt.extension_range list> extension_range_list_
@@ -115,7 +115,7 @@ enum_            : enum          EOF {$1}
 oneof_           : oneof         EOF {$1} 
 message_         : message       EOF {$1} 
 import_          : import        EOF {$1} 
-file_option_     : file_option   EOF {$1} 
+option_          : option   EOF {$1} 
 extension_range_list_ : extension_range_list EOF {$1}
 extension_       : extension    EOF {$1}
 extend_          : extend       EOF {$1}
@@ -130,14 +130,14 @@ proto:
 
 proto_content:
   | import              {Pbpt_util.proto ~import:$1  ()}
-  | file_option         {Pbpt_util.proto ~file_option:$1  ()}
+  | option              {Pbpt_util.proto ~file_option:$1  ()}
   | package_declaration {Pbpt_util.proto ~package:$1 ()}
   | message             {Pbpt_util.proto ~message:$1 ()}
   | enum                {Pbpt_util.proto ~enum:$1 ()}
   | extend              {Pbpt_util.proto ~extend:$1 ()}
 
   | import              proto {Pbpt_util.proto ~import:$1  ~proto:$2 ()}
-  | file_option         proto {Pbpt_util.proto ~file_option:$1  ~proto:$2 ()}
+  | option              proto {Pbpt_util.proto ~file_option:$1  ~proto:$2 ()}
   | package_declaration proto {Pbpt_util.proto ~package:$1 ~proto:$2 ()}
   | message             proto {Pbpt_util.proto ~message:$1 ~proto:$2 ()}
   | enum                proto {Pbpt_util.proto ~enum:$1 ~proto:$2 ()}
@@ -173,6 +173,7 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
+  | option       { Pbpt_util.message_body_option $1 }
   | error        { Exception.syntax_error ()}
 
 extend : 
@@ -278,16 +279,16 @@ field_option :
   | IDENT EQUAL constant               { (snd $1, $3) } 
   | LPAREN IDENT RPAREN EQUAL constant { (snd $2, $5)} 
 
-file_option_identifier_item :
+option_identifier_item :
   | IDENT                   {snd $1}
   | LPAREN IDENT RPAREN     {snd $2}
 
-file_option_identifier : 
-  | file_option_identifier_item    {$1}
-  | file_option_identifier IDENT   {$1 ^ (snd $2)}
+option_identifier : 
+  | option_identifier_item    {$1}
+  | option_identifier IDENT   {$1 ^ (snd $2)}
 
-file_option :
-  | OPTION file_option_identifier EQUAL constant semicolon { ($2, $4) }
+option :
+  | OPTION option_identifier EQUAL constant semicolon { ($2, $4) }
 
 constant : 
   | INT        { Pbpt.Constant_int $1 }

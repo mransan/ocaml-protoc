@@ -141,6 +141,7 @@ type 'a message_body_content =
 
 and 'a message = {
   extensions : Pbpt.extension_range list;
+  options : Pbpt.message_option list;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
