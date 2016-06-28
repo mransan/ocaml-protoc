@@ -83,6 +83,7 @@ let message_body_oneof_field field =  Pbpt.Message_oneof_field   field
 let message_body_sub message  =  Pbpt.Message_sub message 
 let message_body_enum enum = Pbpt.Message_enum enum
 let message_body_extension extension_ranges = Pbpt.Message_extension extension_ranges 
+let message_body_option option_ = Pbpt.Message_option option_ 
 
 let message ~content message_name = 
   incr message_counter;

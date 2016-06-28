@@ -38,11 +38,13 @@ type constant =
 
     [required int32 my_field = [default=1]]
   *) 
-type field_option = string * constant 
+type option_ = string * constant 
 
-type field_options = field_option list 
+type field_options = option_ list 
 
-type file_option = field_option 
+type file_option = option_
+
+type message_option = option_ 
 
 (** A field property defining its occurence
  *)
@@ -114,6 +116,7 @@ type message_body_content =
   | Message_sub of message 
   | Message_enum of enum 
   | Message_extension of extension_range list 
+  | Message_option of message_option 
 
 (** Message entity. 
  

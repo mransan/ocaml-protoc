@@ -1,5 +1,5 @@
 let parse s  = 
-  Pbparser.file_option_ Pblexer.lexer (Lexing.from_string s)
+  Pbparser.option_ Pblexer.lexer (Lexing.from_string s)
 
 let parse_proto s  = 
   Pbparser.proto_ Pblexer.lexer (Lexing.from_string s)

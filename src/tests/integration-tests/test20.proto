@@ -1,0 +1,8 @@
+import "ocamloptions.proto";
+
+option (ocaml_file_ppx) = "@@@file_level_ppx"; 
+
+message M {
+    option (ocaml_type_ppx) = "@@type_level_ppx"; 
+    required int32 f = 1;
+}
