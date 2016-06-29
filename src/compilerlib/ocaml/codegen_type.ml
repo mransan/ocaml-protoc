@@ -76,7 +76,7 @@ let gen_type_const_variant ?and_ {T.cv_name; cv_constructors} sc =
 let print_ppx_extension {T.type_level_ppx_extension; _ } sc = 
   match type_level_ppx_extension with
   | None -> () 
-  | Some ppx_content -> F.line sc @@ sp "[%s]" ppx_content
+  | Some ppx_content -> F.line sc @@ sp "[@@%s]" ppx_content
 
 let gen_struct ?and_ t scope = 
   begin

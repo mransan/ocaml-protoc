@@ -1,13 +1,14 @@
 import "ocamloptions.proto";
 
+option (ocaml_file_ppx) = "file_level_ppx"; 
+option (ocaml_all_types_ppx) = "deriving show";
+
 enum E {
-  option (ocaml_enum_ppx) = "deriving show"; 
   EONE = 1; 
   ETWO = 2;
 }
 
 message M {
-  option (ocaml_type_ppx) = "deriving show"; 
   required int32 f1 = 1;
   message Sub {
     required int32 sub_f1 = 1;

@@ -311,12 +311,38 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_opt
     | Some () -> type_name outer_message_names oneof_field.Pbtt.oneof_name
   in
   OCaml_types.({v_name; v_constructors})
-  
 
-let type_level_ppx_extension message_name = function 
+(*
+ * Notes on type level PPX extension handling. 
+ * 
+ * ocaml-protoc supports 2 custom options for defining type level ppx extensions. 
+ * a) message option called ocaml_type_ppx
+ * b) file option called ocaml_all_types_ppx 
+ *
+ * 'ocaml_type_ppx' has priority over 'ocaml_all_types_ppx' extension. This means
+ * that if a message contains 'ocaml_type_ppx' extension then the associated string
+ * will be used for the OCaml generated type ppx extension. 
+ *
+ * 'ocaml_all_types_ppx' is a file option which is a convenient workflow when the 
+ * ppx extensions are the same for all types. (Most likely the case). 
+ *
+ *)
+
+(* utility function to return the string value from a sring option
+ *)
+let string_of_string_option message_name = function 
   | None -> None
   | Some Pbpt.Constant_string s -> Some s 
   | _ -> E.invalid_ppx_extension_option message_name 
+  
+(* utility function to implement the priority logic defined in the notes above. 
+ *)
+let process_all_types_ppx_extension file_name file_options type_level_ppx_extension = 
+  match type_level_ppx_extension with
+  | Some x -> Some x 
+  | None -> 
+    Pbpt_util.file_option file_options "ocaml_all_types_ppx" 
+    |> string_of_string_option file_name
 
 let compile_message  
   (file_options: Pbpt.file_option list)
@@ -336,7 +362,9 @@ let compile_message
   let {Pbtt.message_names; _ } = scope in  
 
   let type_level_ppx_extension = 
-    type_level_ppx_extension message_name @@ Pbtt_util.message_option message "ocaml_type_ppx" 
+    Pbtt_util.message_option message "ocaml_type_ppx" 
+    |> string_of_string_option message_name  
+    |> process_all_types_ppx_extension file_name file_options 
   in
   
   (* In case a message is only made of a `one of` field then we 
@@ -487,15 +515,20 @@ let compile_message
 
     List.rev (type_ :: variants)  
 
-let compile_enum file_name scope ({Pbtt.enum_name; Pbtt.enum_values; enum_options; } as enum)  = 
+let compile_enum file_options file_name scope ({Pbtt.enum_name; Pbtt.enum_values; enum_options; } as enum)  = 
   let module_ = module_of_file_name file_name in 
   let {Pbtt.message_names; Pbtt.packages = _ } = scope in 
+
   let cv_constructors = List.map (fun {Pbtt.enum_value_name; Pbtt.enum_value_int} -> 
     (constructor_name enum_value_name,  enum_value_int)
   ) enum_values in 
+
   let type_level_ppx_extension = 
-    type_level_ppx_extension enum_name @@ Pbtt_util.enum_option enum "ocaml_enum_ppx" 
+    Pbtt_util.enum_option enum "ocaml_enum_ppx" 
+    |> string_of_string_option enum_name 
+    |> process_all_types_ppx_extension file_name file_options 
   in
+
   OCaml_types.({
     module_; 
     spec = Const_variant {
@@ -508,6 +541,6 @@ let compile_enum file_name scope ({Pbtt.enum_name; Pbtt.enum_values; enum_option
 let compile all_types = function 
   | {Pbtt.spec = Pbtt.Message m ; file_name; file_options; scope; _ } -> 
     compile_message file_options all_types file_name scope m 
-  | {Pbtt.spec = Pbtt.Enum    e ; file_name; scope; _ } -> 
-    [compile_enum file_name scope e] 
+  | {Pbtt.spec = Pbtt.Enum    e ; file_name; scope; file_options } -> 
+    [compile_enum file_options file_name scope e] 
 

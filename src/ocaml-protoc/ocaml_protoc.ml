@@ -101,9 +101,12 @@ let parse_args () =
 (* -- main -- *)
 
 let compile include_dirs proto_file_name = 
+
   let rec loop acc = function
     | None -> acc 
     | Some file_name -> 
+
+      let pbtt_msgs, files_options = acc in 
 
       let file_name = match imported_filename include_dirs file_name with
         | Some file_name -> file_name 
@@ -114,7 +117,8 @@ let compile include_dirs proto_file_name =
       let lexbuf = Lexing.from_channel ic in 
       let pos    = lexbuf.Lexing.lex_curr_p in 
       lexbuf.Lexing.lex_curr_p <- Lexing.({pos with
-        pos_fname = file_name; }); 
+        pos_fname = file_name; 
+      }); 
       let proto  = 
         try 
           Pbparser.proto_ Pblexer.lexer lexbuf 
@@ -122,14 +126,16 @@ let compile include_dirs proto_file_name =
           raise (Exception.add_loc (Loc.from_lexbuf lexbuf) exn)
       in  
       close_in ic; 
-      let pbtt_msgs = acc @ Pbtt_util.compile_proto_p1 file_name proto in 
-      let pbtt_msgs = List.fold_left (fun pbtt_msgs {Pbpt.file_name; _ } -> 
-        loop pbtt_msgs (Some file_name) 
-      ) pbtt_msgs proto.Pbpt.imports in 
-      pbtt_msgs 
+      let files_options = (file_name, proto.Pbpt.file_options) :: files_options in 
+      let pbtt_msgs = pbtt_msgs @ Pbtt_util.compile_proto_p1 file_name proto in 
+
+      let acc = (pbtt_msgs, files_options) in 
+      List.fold_left (fun acc {Pbpt.file_name; _ } -> 
+        loop acc (Some file_name) 
+      ) acc proto.Pbpt.imports 
   in 
 
-  let pbtt_msgs = loop [] (Some proto_file_name) in  
+  let pbtt_msgs, files_options = loop ([], []) (Some proto_file_name) in  
 
   List.iter (function 
     | {Pbtt.spec = Pbtt.Message  msg; id; scope; _  }   -> L.endline @@ Pbtt_util.string_of_message id scope msg
@@ -138,14 +144,20 @@ let compile include_dirs proto_file_name =
 
   let pbtt_msgs = List.map (Pbtt_util.compile_proto_p2 pbtt_msgs) pbtt_msgs in 
 
-  (* -- OCaml Backend -- *)
-
   let grouped_proto = List.rev @@ Pbtt_util.group pbtt_msgs in 
+
+  (*
+   * Only get the types which are part of the given protofile (compilation unit)
+   *)
 
   let grouped_proto = List.filter (function
     | {Pbtt.file_name; _ }::_ when file_name = proto_file_name -> true 
     | _ -> false
   ) grouped_proto in 
+
+  let proto_file_options = List.assoc proto_file_name files_options in  
+  
+  (* -- OCaml Backend -- *)
 
   let module BO = Backend_ocaml in 
 
@@ -154,7 +166,7 @@ let compile include_dirs proto_file_name =
     l :: otypes
   ) [] grouped_proto  in 
 
-  otypes
+  (otypes, proto_file_options)
 
 type codegen_f = ?and_:unit -> Ocaml_types.type_ -> Fmt.scope -> bool 
 
@@ -168,8 +180,18 @@ let all_code_gen = [
 ]
   
 
-let generate_code sig_oc struct_oc otypes proto_file_name = 
-  (* -- `.ml` file -- *)
+let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name = 
+
+  (* 
+   * File level ppx extension (ie @@@ type of ppx) 
+   *)
+
+  let print_ppx sc = 
+    match Pbpt_util.file_option proto_file_options "ocaml_file_ppx" with
+    | None -> () 
+    | Some Pbpt.Constant_string s -> Fmt.line sc @@ Printf.sprintf "[@@@%s]" s
+    | _ -> E.invalid_ppx_extension_option proto_file_name  
+  in 
 
   let gen otypes sc (fs:(codegen_f*string option) list)  = 
     List.iter (fun ((f:codegen_f), ocamldoc_title)-> 
@@ -196,9 +218,12 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
       ) otypes 
     ) fs 
   in
+  
+  (* -- `.ml` file -- *)
 
   let sc = Fmt.empty_scope () in 
   Fmt.line sc "[@@@ocaml.warning \"-27-30-39\"]";
+  print_ppx sc; 
   Fmt.empty_line sc;
   gen otypes  sc (List.map (fun m -> 
     let module C = (val m:Codegen.S) in 
@@ -212,6 +237,8 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
   let sc = Fmt.empty_scope () in 
   Fmt.line sc @@ 
     Codegen_util.sp "(** %s Generated Types and Encoding *)" (Filename.basename proto_file_name); 
+  Fmt.empty_line sc; 
+  print_ppx sc; 
   gen otypes  sc (List.map (fun m -> 
     let module C = (val m:Codegen.S) in 
     C.gen_sig, Some C.ocamldoc_title
@@ -222,7 +249,14 @@ let generate_code sig_oc struct_oc otypes proto_file_name =
 
 let () = 
 
-  let proto_file_name, include_dirs, sig_oc, struct_oc, enable_debugging, generated_files = parse_args () in 
+  let (
+    proto_file_name, 
+    include_dirs, 
+    sig_oc, 
+    struct_oc, 
+    enable_debugging, 
+    generated_files
+  ) = parse_args () in 
 
   if enable_debugging
   then L.setup_from_out_channel stdout;
@@ -233,8 +267,8 @@ let () =
   in 
 
   try
-    let otypes = compile include_dirs proto_file_name in 
-    generate_code sig_oc struct_oc otypes proto_file_name;
+    let otypes, proto_file_options = compile include_dirs proto_file_name in 
+    generate_code sig_oc struct_oc otypes proto_file_options proto_file_name;
     close_file_channels ();
     List.iter (fun file_name ->
       Printf.printf "Generated %s\n" file_name; 
