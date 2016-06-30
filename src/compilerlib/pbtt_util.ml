@@ -289,21 +289,23 @@ let compile_enum_p1
   scope 
   {Pbpt.enum_id; enum_name; enum_body} : 'a Pbtt.proto_type =  
 
-  let enum_values, enum_options = List.fold_left (fun (enum_values, enum_options) -> function 
-    | Pbpt.Enum_value enum_value -> ({
-      Pbtt.enum_value_name = enum_value.Pbpt.enum_value_name;
-      Pbtt.enum_value_int = enum_value.Pbpt.enum_value_int;
-    } :: enum_values, enum_options) 
+  let rec aux enum_values enum_options = function
+    | [] -> 
+      type_of_spec file_name file_options enum_id scope (Pbtt.Enum {
+        Pbtt.enum_name;
+        Pbtt.enum_values = List.rev enum_values;
+        Pbtt.enum_options = (List.rev enum_options) @ parent_options; 
+      })
 
-    | Pbpt.Enum_option enum_option -> (enum_values, enum_option::enum_options)
+    | (Pbpt.Enum_value {Pbpt.enum_value_name; enum_value_int})::tl -> 
+      let enum_value = Pbtt.({enum_value_name; enum_value_int}) in 
+      aux (enum_value::enum_values) enum_options tl 
 
-  ) ([], []) enum_body in 
+    | (Pbpt.Enum_option enum_option)::tl -> 
+      aux enum_values (enum_option::enum_options) tl 
+  in
+  aux [] [] enum_body
 
-  type_of_spec file_name file_options enum_id scope (Pbtt.Enum {
-    Pbtt.enum_name;
-    Pbtt.enum_values = List.rev enum_values;
-    Pbtt.enum_options = (List.rev enum_options) @ parent_options; 
-  })
 
 (** compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
     defined more than one type). 
@@ -511,16 +513,18 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
     | field_type -> map_field_type field_type
   in
 
-  let message_body = List.fold_left (fun message_body  -> function
 
-    | Pbtt.Message_field field->
+  let rec aux message_body = function
+    | [] -> {message with Pbtt.message_body = List.rev message_body} 
+
+    | (Pbtt.Message_field field)::tl -> 
       let field_name = field_name field in 
       let field_type = field_type field in  
       let field      = {field with Pbtt.field_type = compile_field_p2 field_name field_type} in  
       let field      = {field with Pbtt.field_default = compile_default_p2 types field} in  
-      Pbtt.Message_field field :: message_body
+      aux (Pbtt.Message_field field :: message_body) tl 
 
-    | Pbtt.Message_oneof_field ({Pbtt.oneof_fields; _ } as oneof )  -> 
+    | (Pbtt.Message_oneof_field ({Pbtt.oneof_fields; _ } as oneof))::tl -> 
       let oneof_fields = List.fold_left (fun oneof_fields field -> 
         let field_name = field_name field in
         let field_type = field_type field in 
@@ -528,9 +532,9 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
         {field with Pbtt.field_type }:: oneof_fields 
       ) [] oneof_fields in  
       let oneof_fields = List.rev oneof_fields in 
-      Pbtt.Message_oneof_field {oneof with Pbtt.oneof_fields } :: message_body 
+      aux (Pbtt.Message_oneof_field {oneof with Pbtt.oneof_fields } :: message_body) tl 
 
-    | Pbtt.Message_map_field map -> 
+    | (Pbtt.Message_map_field map)::tl -> 
       let {
         Pbtt.map_name; 
         map_number; 
@@ -548,15 +552,13 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
         map_key_type;
         map_value_type;
         map_options;
-      }) in 
-      resolved_map :: message_body 
-       
-  ) [] message_body in 
-  let message_body = List.rev message_body in 
-  {message with Pbtt.message_body; }
+      }) in
+      aux (resolved_map :: message_body) tl 
+  in 
+  aux [] message_body 
 
-let compile_proto_p2 all_types t = 
-  match t with 
+
+let compile_proto_p2 all_types = function
   | {Pbtt.file_name; file_options; id; scope; spec = Pbtt.Message  m } -> {
     Pbtt.file_name; 
     Pbtt.file_options;
