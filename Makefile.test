@@ -78,7 +78,13 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 
 %_pb.ml %_pb.mli : %.proto bin.byte bin.native
 	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
- 
+
+# Specialization of the above command is required for test01 since we add the extra 
+# cmd line argument "-ocaml_all_types_ppx" to test the override of custom file options from the 
+# cmd line. 
+$(INTEGRATION_TESTS_DIR)/test01_pb.ml $(INTEGRATION_TESTS_DIR)/test01_pb.mli : $(INTEGRATION_TESTS_DIR)/test01.proto bin.byte bin.native
+	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -ocaml_all_types_ppx "deriving show" -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
+
 %_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -pkg ppx_deriving.show -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
 

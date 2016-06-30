@@ -25,6 +25,79 @@
 
 module L = Logger 
 module E = Exception
+
+(* [ocaml-protoc] provides the ability to override all the custom protobuf file options 
+ * defined in src/include/ocaml-protoc/ocamloptions.proto as command line arguments. 
+ *
+ * This module implements the bridge functionality between the 2 mechanism; command line options
+ * are converted to file options and appended there. 
+ *)
+module File_options = struct
+
+  type t = {
+    mutable int32_type : string option;
+    mutable int64_type : string option; 
+    mutable ocaml_file_ppx : string option; 
+    mutable ocaml_all_types_ppx : string option;  
+  } 
+  (** all file options supported... this needs to be kept in sync with
+   * src/include/ocaml-protoc/ocamloptions.proto
+   *)
+
+  let make () = {
+    int32_type = None; 
+    int64_type = None; 
+    ocaml_file_ppx = None; 
+    ocaml_all_types_ppx = None; 
+  }  
+
+  (** Compute the command line arguments for be used with the Arg module. 
+   *)
+  let cmd_line_args t = [
+    (
+      "-int32_type", 
+      Arg.String (function  
+        | "int_t" -> t.int32_type <- Some "int_t" 
+        | x -> failwith @@ Printf.sprintf "Invalid int32_type value %s" x
+      ),
+      "int32_type file option"
+    );
+    (
+      "-int64_type", 
+      Arg.String (function  
+        | "int_t" -> t.int64_type <- Some "int_t" 
+        | x -> failwith @@ Printf.sprintf "Invalid int64_type value %s" x
+      ),
+      "int64_type file option"
+    );
+    (
+      "-ocaml_file_ppx",
+      Arg.String (fun s -> t.ocaml_file_ppx <- Some s), 
+      "ocaml_file_ppx file option"
+    );
+    (
+      "-ocaml_all_types_ppx",
+      Arg.String (fun s -> t.ocaml_all_types_ppx<- Some s), 
+      "ocaml_all_types_ppx file option"
+    );
+  ]  
+
+  (** Converts the command line values to Parse Tree file options
+    *) 
+  let to_file_options {int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx; } = 
+
+    let map x f l = 
+      match x with 
+      | None -> l 
+      | Some x -> (f x) :: l 
+    in 
+    []
+    |> map int32_type (fun s -> ("int32_type", Pbpt.Constant_litteral s))
+    |> map int64_type (fun s -> ("int64_type", Pbpt.Constant_litteral s))
+    |> map ocaml_file_ppx (fun s -> ("ocaml_file_ppx", Pbpt.Constant_string s))
+    |> map ocaml_all_types_ppx (fun s -> ("ocaml_all_types_ppx", Pbpt.Constant_string s))
+
+end 
   
 let caml_file_name_of_proto_file_name = Codegen_util.caml_file_name_of_proto_file_name 
 
@@ -58,12 +131,13 @@ let parse_args () =
     include_dirs := dir :: (!include_dirs)
   ) in 
   let ml_out          = ref "" in 
+  let cmd_line_files_options  = File_options.make () in 
    
   let cmd_line_args = [
     ("-debug"  , Arg.Set debug               , "enable debugging");  
     ("-I"      , Arg.String include_dirs_spec, "include directories");  
     ("-ml_out" , Arg.Set_string  ml_out      , "output directory");  
-  ] in 
+  ] @ File_options.cmd_line_args cmd_line_files_options in 
   let anon_fun  = (fun proto_file -> 
     proto_file_name := proto_file
   )  in 
@@ -95,12 +169,12 @@ let parse_args () =
       open_out ml_file_name, ml_file_name :: generated_files 
   in
 
-  (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug, generated_files)  
+  (!proto_file_name, !include_dirs, sig_oc, struct_oc, !debug, generated_files, cmd_line_files_options)  
 
 
 (* -- main -- *)
 
-let compile include_dirs proto_file_name = 
+let compile cmd_line_files_options include_dirs proto_file_name = 
 
   let rec loop acc = function
     | None -> acc 
@@ -125,6 +199,7 @@ let compile include_dirs proto_file_name =
         with exn -> 
           raise (Exception.add_loc (Loc.from_lexbuf lexbuf) exn)
       in  
+      let proto = {proto with Pbpt.file_options = cmd_line_files_options @ proto.Pbpt.file_options} in 
       close_in ic; 
       let files_options = (file_name, proto.Pbpt.file_options) :: files_options in 
       let pbtt_msgs = pbtt_msgs @ Pbtt_util.compile_proto_p1 file_name proto in 
@@ -255,7 +330,8 @@ let () =
     sig_oc, 
     struct_oc, 
     enable_debugging, 
-    generated_files
+    generated_files,
+    cmd_line_files_options
   ) = parse_args () in 
 
   if enable_debugging
@@ -267,7 +343,8 @@ let () =
   in 
 
   try
-    let otypes, proto_file_options = compile include_dirs proto_file_name in 
+    let cmd_line_files_options = File_options.to_file_options cmd_line_files_options in 
+    let otypes, proto_file_options = compile cmd_line_files_options include_dirs proto_file_name in 
     generate_code sig_oc struct_oc otypes proto_file_options proto_file_name;
     close_file_channels ();
     List.iter (fun file_name ->
