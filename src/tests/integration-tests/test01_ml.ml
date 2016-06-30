@@ -32,6 +32,9 @@ let decode_ref_data () = T.({
   }) 
 
 let () = 
+  Printf.printf "Show is working: %s\n" @@ T.show_couple (decode_ref_data ())
+
+let () = 
 
   let mode   = Test_util.parse_args () in 
 
