@@ -150,7 +150,7 @@ let type_name message_scope name =
     rev_split_by_naming_convention s
     |> List.rev 
     |> List.map String.lowercase 
-  ) all_names [@@ocaml.warning "-3"]  in 
+  ) all_names [@ocaml.warning "-3"]  in 
   let all_names = List.flatten all_names in 
 
   match all_names with 
