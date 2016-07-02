@@ -1,4 +1,4 @@
-version = "0.1.2"
+version = "0.1.4"
 description = "Runtime support for ocaml-protoc"
 requires = "ppx_deriving_protobuf.runtime"
 archive(byte) = "pbrt.cma"
