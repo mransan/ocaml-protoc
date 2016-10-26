@@ -31,15 +31,11 @@ type programmatic_error =
   | Invalid_string_split 
   | Unexpected_field_type 
   | No_type_found_for_id 
-  | One_of_should_be_inlined_in_message
 
 type error
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
-
-
-val add_loc : Loc.t -> exn  -> exn 
 
 (** {2 Raise Functions} *)
 
@@ -84,10 +80,12 @@ val invalid_mutable_option : ?field_name:string -> unit -> 'a
 
 val missing_one_of_name : Loc.t -> 'a 
 
-val invalid_field_label : Loc.t -> 'a 
-
 val missing_field_label : Loc.t -> 'a 
 
 val invalid_ppx_extension_option : string -> 'a 
 
-val syntax_error : unit  -> 'a 
+val ocamlyacc_parsing_error : Loc.t -> 'a 
+
+val protoc_parsing_error : error -> Loc.t -> 'a 
+
+val unknown_parsing_error : string -> Loc.t -> 'a 

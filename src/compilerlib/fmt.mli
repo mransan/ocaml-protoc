@@ -1,5 +1,8 @@
 (** Formatting utilities for code generation *)
 
+(* TODO: add a little example of how to use this module as well
+ * as a unit test for it *)
+
 (** {2 types} *) 
 
 type scope 

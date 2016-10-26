@@ -33,10 +33,6 @@ val rev_split_by_char : char -> string -> string list
     extension will be the head of the returned list. 
  *)
 
-val concat : string list -> string 
-(** [concat l] concatenate a string list without delimited between the given string
- *)
-
 val pop_last : 'a list -> 'a list 
 (** [pop_last l] removes the last element from the list *)
 
@@ -46,16 +42,32 @@ val apply_until : ('a -> 'b option) -> 'a list -> 'b option
     If [f] returns [None] then [None] is returned. 
  *)
 
-val is_list_empty : 'a list -> bool
-(** [is_list_empty l] returns true is the list is empty, false otherwise *)
-
 val string_of_string_list : string list -> string 
 (** [string_of_string_list l] returns a debug string of [l] *)
 
 val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a 
 (** [string_fold_lefti f e0 s] will fold over each string character *)
 
-val option_default : 'a -> 'a option -> 'a 
-(** [option_default x o] returns [x] is [o] is [None] otherwise [y] when [o] is
-    [Some y]. 
- *)
+
+module Option : sig 
+
+  val default : 'a -> 'a option -> 'a 
+  (** [option_default x o] returns [x] is [o] is [None] otherwise [y] when [o] is
+      [Some y]. 
+   *)
+  
+  val min_value : 'a option -> 'a option -> 'a option
+  (** [min_value x y] returns the min value of the x and y if x and y are of 
+      the form [Some _]. If [x] or [y] is [None] then [Invalid_argument]
+      exception is raised *)
+  
+  val eq_value : 'a option -> 'a option -> bool
+  (** [eq_value x y] returns [true] if both [x] and [y] are of 
+      the form [Some _]. If [x] or [y] is [None] then [Invalid_argument]
+      exception is raised *)
+
+  val string_of_option : ('a -> string) -> 'a option -> string 
+  (** [string_of_option f x] returns string representation of [x] using 
+      [f] when [x] is of the form [Some _]. *)
+
+end (* Option *)

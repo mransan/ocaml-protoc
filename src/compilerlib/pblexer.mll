@@ -25,14 +25,6 @@
 {
 open Pbparser 
 
-let create_hashtable size init =
-  let tbl = Hashtbl.create size in
-  List.iter (fun (key, data) -> 
-    Hashtbl.add tbl key data
-  ) init;
-  tbl
-
-
 let resolve_identifier loc ident = 
   match ident, loc with 
   | "message"    , _   -> MESSAGE 

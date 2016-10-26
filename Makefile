@@ -18,7 +18,7 @@ BENCHMARK_DIR         = src/tests/benchmark
 GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
 OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
 
-.PHONY: clean clean.gen default
+.PHONY: bin.native bin.byte clean clean.gen default
 
 default:
 	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)
@@ -48,15 +48,17 @@ lib.native:
 lib.byte:
 	$(OCB) pbrt.cma
 
-# ocaml-protoc native executable 
-bin.native: 
+ocaml_protoc.native:
 	$(OCB) ocaml_protoc.native
-	mv ocaml_protoc.native ocaml-protoc$(EXE)
+
+# ocaml-protoc native executable 
+bin.native: ocaml_protoc.native 
+	cp ocaml_protoc.native ocaml-protoc$(EXE)
 
 # ocaml-protoc byte executable
 bin.byte:
 	$(OCB) ocaml_protoc.byte
-	mv ocaml_protoc.byte ocaml-protoc$(EXE)
+	cp ocaml_protoc.byte ocaml-protoc$(EXE)
 
 ####################
 # ---- INSTALL---- # 
@@ -82,14 +84,17 @@ LIB_BUILD     =_build/src/runtime
 LIB_INSTALL   = META 
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmi 
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.annot
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.mli
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmx
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmt
+LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmti
+
 LIB_INSTALL  +=$(OCAMLOPTIONS_HINC)/ocamloptions.proto 
 
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmo
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cma 
 
 LIB_INSTALL  +=-optional  
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmx
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmt
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxa 
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxs
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.a

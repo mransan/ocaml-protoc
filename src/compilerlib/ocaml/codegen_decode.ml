@@ -1,4 +1,3 @@
-
 module T   = Ocaml_types 
 module E   = Exception 
 module F   = Fmt
@@ -11,24 +10,22 @@ let decode_basic_type bt pk =
 let decode_field_f field_type pk = 
   match field_type with 
   | T.Ft_user_defined_type t -> 
-      let f_name = Codegen_util.function_name_of_user_defined "decode" t in
-      if t.T.udt_nested 
-      then (f_name ^ " (Pbrt.Decoder.nested d)")
-      else (f_name ^ " d") 
+    let f_name = Codegen_util.function_name_of_user_defined "decode" t in
+    if t.T.udt_nested 
+    then (f_name ^ " (Pbrt.Decoder.nested d)")
+    else (f_name ^ " d") 
   | T.Ft_unit -> 
       "Pbrt.Decoder.empty_nested d"
   | T.Ft_basic_type bt -> (decode_basic_type bt pk) ^ " d" 
 
 let gen_decode_record ?and_ {T.r_name; r_fields} sc = 
 
-
   let string_of_nonpacked_pk pk = 
     Codegen_util.string_of_payload_kind ~capitalize:() pk false 
   in 
 
   (* return the variable name used for keeping track if a required 
-   * field has been set during decoding. 
-   *)
+   * field has been set during decoding.  *)
   let is_set_variable_name rf_label = 
     sp "%s_is_set" rf_label 
   in
@@ -42,7 +39,9 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
     F.line sc ")";
     F.line sc @@ sp "| Some (%i, pk) -> raise (" encoding_number;
     F.scope sc (fun sc ->
-      F.line sc @@ sp "Protobuf.Decoder.Failure (Protobuf.Decoder.Unexpected_payload (%s, pk))" 
+      F.line sc @@ sp 
+        ("Protobuf.Decoder.Failure " ^^ 
+         "(Protobuf.Decoder.Unexpected_payload (%s, pk))") 
         (sp "\"Message(%s), field(%i)\"" r_name encoding_number)
     );
     F.line sc ")"
