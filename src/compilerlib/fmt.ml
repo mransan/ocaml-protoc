@@ -45,20 +45,17 @@ let scope scope f =
   f sub_scope; 
   scope.items <- (Scope sub_scope)::scope.items  
 
-let indentation_prefix = function 
-  | 0 -> ""
-  | 1 -> "  "
-  | 2 -> "    "
-  | 3 -> "      "
-  | 4 -> "        "
-  | 5 -> "          "
-  | 6 -> "            "
-  | 7 -> "              "
-  | 8 -> "                "
-  | n -> (String.make n ' ')
+let indentation_prefix =
+  let h = Hashtbl.create 16 in 
+  fun n ->  
+    match Hashtbl.find h n with 
+    | s -> s 
+    | exception Not_found -> 
+      let s = String.make (2 * n) ' ' in 
+      Hashtbl.add h n s; 
+      s
 
 let print scope = 
-
   let rec loop acc i = function
     | (Line s)::tl -> 
       loop ((indentation_prefix i ^ s)::acc) i tl  

@@ -13,9 +13,6 @@ let from_lexbuf lexbuf =
 
   {file_name; line} 
 
-let file_name {file_name; _ } = file_name 
-
-let line {line; _ } = line 
-
 let to_string {file_name; line} = 
-  Printf.sprintf "File %s, line %i:\n" (Util.option_default "" file_name) line 
+  Printf.sprintf "%s:%i:0: " (Util.Option.default "" file_name) line 
+(* standard compilation error format *)

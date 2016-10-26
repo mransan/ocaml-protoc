@@ -129,6 +129,7 @@ let () =
   match parse Pbparser.message_ s with 
   | _ -> assert false 
   | exception E.Compilation_error _ -> ()
+  | exception Parsing.Parse_error -> ()
   | exception exn -> print_endline @@ Printexc.to_string exn ; assert false 
 
   (* 

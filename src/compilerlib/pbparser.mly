@@ -95,15 +95,6 @@
 %start option_
 %type <Pbpt.file_option> option_
 
-%start extension_range_list_
-%type <Pbpt.extension_range list> extension_range_list_
-
-%start extension_
-%type <Pbpt.extension_range list> extension_
-
-%start extend_
-%type <Pbpt.extend> extend_
-
 %%
 
 /*(* The following symbol are for internal testing only *) */ 
@@ -116,9 +107,6 @@ oneof_           : oneof         EOF {$1}
 message_         : message       EOF {$1} 
 import_          : import        EOF {$1} 
 option_          : option        EOF {$1} 
-extension_range_list_ : extension_range_list EOF {$1}
-extension_       : extension    EOF {$1}
-extend_          : extend       EOF {$1}
 
 /* (* Main protobuf symbol *) */
 
@@ -174,7 +162,6 @@ message_body_content :
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
   | option       { Pbpt_util.message_body_option $1 }
-  | error        { Exception.syntax_error ()}
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {

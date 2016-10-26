@@ -194,12 +194,19 @@ let compile cmd_line_files_options include_dirs proto_file_name =
         pos_fname = file_name; 
       }); 
       let proto  = 
-        try 
-          Pbparser.proto_ Pblexer.lexer lexbuf 
-        with exn -> 
-          raise (Exception.add_loc (Loc.from_lexbuf lexbuf) exn)
+        try Pbparser.proto_ Pblexer.lexer lexbuf 
+        with 
+        | Parsing.Parse_error -> 
+          Exception.ocamlyacc_parsing_error (Loc.from_lexbuf lexbuf) 
+        | Exception.Compilation_error e -> 
+          Exception.protoc_parsing_error e (Loc.from_lexbuf lexbuf)
+        | exn -> 
+          let detail = Printexc.to_string exn in 
+          Exception.unknown_parsing_error detail (Loc.from_lexbuf lexbuf)
       in  
-      let proto = {proto with Pbpt.file_options = cmd_line_files_options @ proto.Pbpt.file_options} in 
+      let proto = {proto with 
+        Pbpt.file_options = cmd_line_files_options @ proto.Pbpt.file_options
+      } in 
       close_in ic; 
       let files_options = (file_name, proto.Pbpt.file_options) :: files_options in 
       let pbtt_msgs = pbtt_msgs @ Pbtt_util.compile_proto_p1 file_name proto in 
@@ -356,4 +363,5 @@ let () =
     List.iter (fun file_name ->
       Sys.remove file_name
     ) generated_files; 
-    (raise exn : unit)
+    Printf.eprintf "%s\n" (Printexc.to_string exn);
+    exit 1

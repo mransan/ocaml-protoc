@@ -33,9 +33,6 @@ let rev_split_by_char c s =
   in 
   loop 0 []
   
-(** [concat l] concatenate a string list *)
-let concat = String.concat ""
-
 let rec pop_last = function 
   | [] -> failwith "Invalid argument [] for pop_last"
   | hd::[] -> []
@@ -48,8 +45,6 @@ let rec apply_until f = function
     | x    -> x
   )  
 
-let is_list_empty = function | [] -> true | _ -> false 
-
 let string_of_string_list l = 
   Printf.sprintf "[%s]" (String.concat "," l)
 
@@ -61,7 +56,31 @@ let string_fold_lefti f e0 s =
   in 
   loop e0 0 
 
-let option_default x = function
-  | Some y -> y 
-  | None -> x 
+module Option = struct 
+
+  let default x = function
+    | Some y -> y 
+    | None -> x 
+
+  let some v = Some v 
+  
+  let min_value x y = 
+    match x, y with 
+    | None   , None 
+    | Some _ , None 
+    | None   , Some _ -> invalid_arg "Util.Option.min_value"
+    | Some x , Some y -> some @@ min x y  
+
+  let eq_value x y = 
+    match x, y with
+    | None   , None 
+    | Some _ , None 
+    | None   , Some _ -> invalid_arg "Util.Option.eq_value"
+    | Some x , Some y -> x = y
+
+  let string_of_option f = function 
+    | None -> "None"
+    | Some x -> Printf.sprintf "Some(%s)" (f x)
+
+end (* Option *)
 
