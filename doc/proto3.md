@@ -88,3 +88,9 @@ For instance:
 
 This function can then be called in the main function of the 
 compiler (src/ocaml-protoc/ocaml_protoc.ml).
+
+4. Add support for `reserved` syntax 
+
+Looks like compilier `.proto` files are now using this field. 
+a) Accept the syntax but do not perform any checks
+b) Add checks

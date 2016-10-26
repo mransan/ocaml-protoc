@@ -76,7 +76,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 %.pb.cc: %.proto
 	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) $<
 
-%_pb.ml %_pb.mli : ocaml_protoc.native bin.native %.proto bin.byte bin.native
+%_pb.ml %_pb.mli : %.proto bin.byte bin.native
 	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
 
 # Specialization of the above command is required for test01 since we add the extra 
