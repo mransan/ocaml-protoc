@@ -55,7 +55,7 @@ re-encoding. This feature is removed and unknown field are dropped during decodi
 
 Here are in chronological order the various work items to implement:
 
-1. Bug fix for proto2 
+1. Bug fix for proto2 - **done** 
 
 As mentioned previously `ocaml-protoc` does not throw an exception if 
 a required field is not send on the wire. 

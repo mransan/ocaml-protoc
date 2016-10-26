@@ -3,11 +3,14 @@
 #include <test_util.h>
 
 #include <iostream>
+#include <cassert>
 
 T create_test_m13() {
     T m;
     {
         m.mutable_p2()->mutable_sub_empty();
+        m.mutable_p2()->mutable_empty();
+        assert(m.mutable_p2()->has_empty());
     }
     {
         EmptyOrIntList* p1 = m.mutable_p1(); 
