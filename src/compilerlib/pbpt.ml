@@ -120,6 +120,7 @@ type message_body_content =
   | Message_sub of message 
   | Message_enum of enum 
   | Message_extension of extension_range list 
+  | Message_reserved of extension_range list 
   | Message_option of message_option 
 
 (** Message entity. 

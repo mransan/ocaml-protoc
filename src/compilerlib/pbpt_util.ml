@@ -84,7 +84,10 @@ let message_body_map_field field = Pbpt.Message_map_field field
 let message_body_oneof_field field =  Pbpt.Message_oneof_field   field  
 let message_body_sub message  =  Pbpt.Message_sub message 
 let message_body_enum enum = Pbpt.Message_enum enum
-let message_body_extension extension_ranges = Pbpt.Message_extension extension_ranges 
+let message_body_extension extension_ranges = 
+  Pbpt.Message_extension extension_ranges 
+let message_body_reserved extension_ranges = 
+  Pbpt.Message_extension extension_ranges 
 let message_body_option option_ = Pbpt.Message_option option_ 
 
 let message ~content message_name = 
@@ -129,12 +132,13 @@ let rec message_printer ?level:(level = 0) {
         prefix (); Printf.printf "- enum type [%s]\n" enum_name 
     | Pbpt.Message_sub m -> message_printer ~level:(level + 2) m
     | Pbpt.Message_extension _ -> () 
+    | Pbpt.Message_reserved _ -> () 
     | Pbpt.Message_option _ -> ()
   ) message_body 
 
 let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend () = 
 
-  let {Pbpt.messages; imports; file_options; enums; extends; _ } as proto = match proto with 
+  let proto = match proto with 
     | None -> Pbpt.({
       syntax;
       imports = [];
@@ -146,6 +150,13 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
     }) 
     | Some proto -> proto
   in 
+  
+  let {
+    Pbpt.messages; 
+    imports; 
+    file_options; 
+    enums; 
+    extends; _ } = proto in 
   
   let proto = match syntax with 
     | None   -> proto

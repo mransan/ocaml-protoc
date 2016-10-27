@@ -99,6 +99,10 @@ val message_body_extension:
   Pbpt.extension_range list  -> 
   Pbpt.message_body_content
 
+val message_body_reserved: 
+  Pbpt.extension_range list  -> 
+  Pbpt.message_body_content
+
 val message_body_option : 
   Pbpt.message_option -> 
   Pbpt.message_body_content
