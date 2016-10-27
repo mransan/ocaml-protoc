@@ -44,6 +44,8 @@
 
 %token EXTEND
 
+%token RESERVED
+
 %token SYNTAX 
 
 %token TO
@@ -95,6 +97,15 @@
 %start option_
 %type <Pbpt.file_option> option_
 
+%start extension_range_list_ 
+%type <Pbpt.extension_range list> extension_range_list_ 
+
+%start extension_
+%type <Pbpt.extension_range list> extension_
+
+%start reserved_
+%type <Pbpt.extension_range list> reserved_
+
 %%
 
 /*(* The following symbol are for internal testing only *) */ 
@@ -107,6 +118,9 @@ oneof_           : oneof         EOF {$1}
 message_         : message       EOF {$1} 
 import_          : import        EOF {$1} 
 option_          : option        EOF {$1} 
+extension_range_list_ : extension_range_list EOF {$1}
+extension_       : extension     EOF {$1}
+reserved_        : reserved      EOF {$1}
 
 /* (* Main protobuf symbol *) */
 
@@ -161,6 +175,7 @@ message_body_content :
   | message      { Pbpt_util.message_body_sub $1 }
   | enum         { Pbpt_util.message_body_enum $1 }
   | extension    { Pbpt_util.message_body_extension $1 }
+  | reserved     { Pbpt_util.message_body_reserved $1 }
   | option       { Pbpt_util.message_body_option $1 }
 
 extend : 
@@ -177,6 +192,10 @@ normal_field_list :
 
 extension : 
   | EXTENSIONS extension_range_list semicolon {$2}  
+
+reserved : 
+  | RESERVED extension_range_list semicolon {$2}
+/* TODO: incomplete, reserved field can also be defined by field names */
 
 extension_range_list : 
   | extension_range                            {$1 :: []}
@@ -242,6 +261,7 @@ field_name :
   | OPTION    {"option"}
   | EXTENSIONS{"extensions"}
   | EXTEND    {"extend"}
+  | RESERVED  {"reserved"}
   | SYNTAX    {"syntax"}
   | MESSAGE   {"message"}
   | TO        {"to"}

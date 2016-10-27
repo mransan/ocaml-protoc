@@ -18,7 +18,7 @@ BENCHMARK_DIR         = src/tests/benchmark
 GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
 OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
 
-.PHONY: bin.native bin.byte clean clean.gen default
+.PHONY: ocaml_protoc.native bin.native bin.byte clean clean.gen default
 
 default:
 	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)

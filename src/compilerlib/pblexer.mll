@@ -43,6 +43,7 @@ let resolve_identifier loc ident =
   | "to"         , _   -> TO
   | "max"        , _   -> MAX
   | "map"        , _   -> MAP
+  | "reserved"   , _   -> RESERVED
   | x            , loc -> IDENT (loc, ident) 
   (* Note than when updating the list of keywords, 
    * the [field_name] rule in pbparser.mly should 

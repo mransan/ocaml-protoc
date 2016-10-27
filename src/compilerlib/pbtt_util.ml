@@ -370,6 +370,9 @@ let rec compile_message_p1
 
     | Pbpt.Message_extension extension_ranges -> 
       {acc with Acc.extensions = extensions @ extension_ranges }
+    
+    | Pbpt.Message_reserved _ -> acc 
+      (* TODO add support for checking reserved fields *) 
 
     | Pbpt.Message_option message_option -> 
       {acc with Acc.options = message_option::options} 
