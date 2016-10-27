@@ -119,22 +119,23 @@ let gen_pp_const_variant ?and_ {T.cv_name; T.cv_constructors; } sc =
 let gen_struct ?and_ t sc = 
   begin 
     match t with
-    | {T.spec = T.Record r  } -> gen_pp_record ?and_ r sc
-    | {T.spec = T.Variant v } -> gen_pp_variant ?and_ v sc
-    | {T.spec = T.Const_variant v } -> gen_pp_const_variant ?and_ v sc
+    | {T.spec = T.Record r; _} -> gen_pp_record ?and_ r sc
+    | {T.spec = T.Variant v; _ } -> gen_pp_variant ?and_ v sc
+    | {T.spec = T.Const_variant v; _} -> gen_pp_const_variant ?and_ v sc
   end; 
   true
 
 let gen_sig ?and_ t sc = 
+  let _ = and_ in
   let f type_name =  
     F.line sc @@ sp "val pp_%s : Format.formatter -> %s -> unit " type_name type_name;
     F.line sc @@ sp "(** [pp_%s v] formats v *)" type_name;
   in 
   begin
     match t with 
-    | {T.spec = T.Record {T.r_name; _ } } -> f r_name
-    | {T.spec = T.Variant v } -> f v.T.v_name
-    | {T.spec = T.Const_variant {T.cv_name; _ ; } } -> f cv_name
+    | {T.spec = T.Record {T.r_name; _}; _} -> f r_name
+    | {T.spec = T.Variant v; _} -> f v.T.v_name
+    | {T.spec = T.Const_variant {T.cv_name; _}; _} -> f cv_name
   end;
   true
 

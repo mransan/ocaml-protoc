@@ -26,7 +26,6 @@
 (** Logging functionality allow printing debugging information
  *)
 
-
 val setup_from_out_channel : out_channel -> unit 
 (** [setup_from_out_channel oc] will configure the logger to print all 
     logging statement to [oc]. 

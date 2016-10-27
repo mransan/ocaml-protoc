@@ -114,7 +114,7 @@ let gen_encode_record ?and_ {T.r_name; r_fields } sc =
           F.line sc") encoder;";
         ) 
       ) 
-      | T.Rft_variant_field {T.v_name; v_constructors; } -> (
+      | T.Rft_variant_field {T.v_constructors; _} -> (
         F.line sc  "(";
         F.scope sc (fun sc -> 
           F.line sc @@ sp "match v.%s with" rf_label;
@@ -211,23 +211,26 @@ let gen_encode_const_variant ?and_ {T.cv_name; T.cv_constructors; } sc =
   )
 
 let gen_struct ?and_ t sc  = 
-  let (), has_encoded = match t with 
-    | {T.spec = T.Record r } -> gen_encode_record  ?and_ r sc, true
-    | {T.spec = T.Variant v } -> gen_encode_variant ?and_ v sc, true 
-    | {T.spec = T.Const_variant v } ->
+  let (), has_encoded = 
+    match t with 
+    | {T.spec = T.Record r; _ } -> gen_encode_record  ?and_ r sc, true
+    | {T.spec = T.Variant v; _ } -> gen_encode_variant ?and_ v sc, true 
+    | {T.spec = T.Const_variant v; _ } ->
       gen_encode_const_variant ?and_ v sc, true
   in 
   has_encoded
 
 let gen_sig ?and_ t sc = 
+  let _ = and_ in
   let f type_name = 
     F.line sc @@ sp "val encode_%s : %s -> Pbrt.Encoder.t -> unit" type_name type_name;
     F.line sc @@ sp "(** [encode_%s v encoder] encodes [v] with the given [encoder] *)" type_name; 
   in 
-  let (), has_encoded = match t with 
-    | {T.spec = T.Record {T.r_name; _ } }-> f r_name, true
-    | {T.spec = T.Variant v } -> f v.T.v_name, true 
-    | {T.spec = T.Const_variant {T.cv_name; _ } } -> f cv_name, true
+  let (), has_encoded = 
+    match t with 
+    | {T.spec = T.Record {T.r_name; _ }; _}-> f r_name, true
+    | {T.spec = T.Variant v; _ } -> f v.T.v_name, true 
+    | {T.spec = T.Const_variant {T.cv_name; _ }; _ } -> f cv_name, true
   in
   has_encoded
 

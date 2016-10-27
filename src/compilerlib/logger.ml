@@ -33,5 +33,4 @@ let log (x:('a, out_channel, unit) format) =
   | None    -> Printf.ifprintf stdout x 
   | Some oc -> Printf.fprintf  oc     x 
 
-
 let endline s = log "%s\n" s 

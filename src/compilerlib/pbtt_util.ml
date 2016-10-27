@@ -72,7 +72,8 @@ let string_of_type_scope {Pbtt.packages; message_names}  =
     (Util.string_of_string_list packages)
     (Util.string_of_string_list message_names) 
 
-let string_of_message id scope {Pbtt.message_name; message_body} = 
+let string_of_message id scope message = 
+  let {Pbtt.message_name; message_body; _} = message in  
   Printf.sprintf "message: {id:%i, message_scope:%s, name:%s, field nb:%i}" 
     id 
     (string_of_type_scope scope) 
@@ -217,21 +218,20 @@ let compile_default_p2 all_types field =
     )
   )
 
-let get_default field_name field_options field_type = 
+let get_default field_options = 
   match List.assoc "default" field_options with
-  | constant -> Some constant (* (compile_default field_name constant field_type) *)
+  | constant -> Some constant 
   | exception Not_found -> None 
 
-let compile_field_p1 ({
-    Pbpt.field_name;
-    Pbpt.field_number = _ ;
-    Pbpt.field_label  = _ ;
-    Pbpt.field_type;
-    Pbpt.field_options;
-  } as field_parsed) = 
+let compile_field_p1 field_parsed =
 
-  let field_type    = field_type_of_string field_type in 
-  let field_default = get_default field_name field_options field_type in 
+  let {
+    Pbpt.field_type;
+    Pbpt.field_options;_
+  } = field_parsed in
+
+  let field_type = field_type_of_string field_type in 
+  let field_default = get_default field_options in 
   {
     Pbtt.field_parsed;
     Pbtt.field_type;
@@ -239,13 +239,14 @@ let compile_field_p1 ({
     Pbtt.field_options;
   }
 
-let compile_map_p1 ({
+let compile_map_p1 map_parsed = 
+  let {
     Pbpt.map_name;
     Pbpt.map_number;
     Pbpt.map_key_type;
     Pbpt.map_value_type;
     Pbpt.map_options;
-  }) = 
+  } = map_parsed in 
 
   Pbtt.({
     map_name; 
@@ -255,10 +256,9 @@ let compile_map_p1 ({
     map_options;
   })
 
-let compile_oneof_p1 ({
-    Pbpt.oneof_name; 
-    Pbpt.oneof_fields;
-  }) = 
+let compile_oneof_p1 oneof_parsed = 
+  let {Pbpt.oneof_name; Pbpt.oneof_fields} = oneof_parsed in   
+
   {
     Pbtt.oneof_name; 
     Pbtt.oneof_fields = List.map compile_field_p1 oneof_fields; 
@@ -272,8 +272,7 @@ let rec list_assoc2 x = function
     [] -> raise Not_found
   | (a,b)::l -> if compare b x = 0 then a else list_assoc2 x l
 
-(** type creation function *)
-let type_of_spec file_name file_options id scope spec = { 
+let make_proto_type ~file_name ~file_options ~id ~scope ~spec = { 
   Pbtt.id; 
   Pbtt.scope;
   Pbtt.file_name;
@@ -281,17 +280,16 @@ let type_of_spec file_name file_options id scope spec = {
   Pbtt.spec; 
 }
 
-(** compile a [Pbpt] enum to a [Pbtt] type *) 
+(* compile a [Pbpt] enum to a [Pbtt] type *) 
 let compile_enum_p1 
-  ?parent_options:(parent_options = []) 
-  file_name 
-  file_options 
-  scope 
-  {Pbpt.enum_id; enum_name; enum_body} : 'a Pbtt.proto_type =  
+    ?parent_options:(parent_options = []) file_name 
+    file_options scope parsed_enum =
+   
+  let {Pbpt.enum_id; enum_name; enum_body}  = parsed_enum in
 
   let rec aux enum_values enum_options = function
     | [] -> 
-      type_of_spec file_name file_options enum_id scope (Pbtt.Enum {
+      make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec:(Pbtt.Enum {
         Pbtt.enum_name;
         Pbtt.enum_values = List.rev enum_values;
         Pbtt.enum_options = (List.rev enum_options) @ parent_options; 
@@ -306,16 +304,13 @@ let compile_enum_p1
   in
   aux [] [] enum_body
 
-
-(** compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
-    defined more than one type). 
-  *)
+(* compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
+ * defined more than one type).  *)
 let rec compile_message_p1 
-  ?parent_options:(parent_options = []) 
-  file_name 
-  file_options 
-  message_scope 
-  ({ Pbpt.id; Pbpt.message_name; Pbpt.message_body; })  = 
+    ?parent_options:(parent_options = []) file_name file_options 
+    message_scope parsed_message = 
+    
+  let {Pbpt.id; Pbpt.message_name; Pbpt.message_body} = parsed_message in
   
   let {Pbtt.message_names; _ } = message_scope in  
   let sub_scope = {message_scope with 
@@ -342,17 +337,22 @@ let rec compile_message_p1
     } 
   end  in
 
-  let acc = List.fold_left (fun ({Acc.message_body; extensions; options; all_types} as acc) -> function  
+  let acc = List.fold_left (fun acc field ->
+
+    let {
+      Acc.message_body; 
+      extensions; 
+      options; 
+      all_types
+    } = acc in 
+
+    match field with 
     | Pbpt.Message_field f -> 
       let field = Pbtt.Message_field (compile_field_p1 f) in 
       {acc with Acc.message_body = field :: message_body} 
 
     | Pbpt.Message_map_field m ->
       let field = Pbtt.Message_map_field (compile_map_p1 m) in
-      (* 
-      let field = Pbtt.Message_field field in
-      let extra_types = compile_message_p1 file_name file_options sub_scope extra_type in
-      *)
       {acc with Acc.message_body = field :: message_body} 
 
     | Pbpt.Message_oneof_field o -> 
@@ -364,9 +364,12 @@ let rec compile_message_p1
       let all_sub_types = compile_message_p1 ~parent_options file_name file_options sub_scope m in 
       {acc with Acc.all_types = all_types @ all_sub_types} 
 
-    | Pbpt.Message_enum ({Pbpt.enum_id; _ } as enum)-> 
+    | Pbpt.Message_enum parsed_enum-> 
       let parent_options = options in 
-      {acc with Acc.all_types = all_types @ [compile_enum_p1 ~parent_options file_name file_options sub_scope enum]}
+      let enum = compile_enum_p1 
+          ~parent_options file_name file_options sub_scope parsed_enum
+      in
+      {acc with Acc.all_types = all_types @ [enum]}
 
     | Pbpt.Message_extension extension_ranges -> 
       {acc with Acc.extensions = extensions @ extension_ranges }
@@ -382,16 +385,13 @@ let rec compile_message_p1
   let message_body = List.rev acc.Acc.message_body in 
   
   (* Both field name and field number must be unique 
-     within a message scope. This includes the field in a 
-     oneof field inside the message. 
-
-     This function verifies this constrain and raises
-     the corresponding Duplicated_field_number exception in 
-     case it is violated. 
-  *)
-  let validate_duplicate (number_index:(int*string) list) field = 
-    let number = field_number field in 
-    let name   = field_name   field in 
+   * within a message scope. This includes the field in a 
+   * oneof field inside the message. 
+   *
+   * This function verifies this constrain and raises
+   * the corresponding Duplicated_field_number exception in 
+   * case it is violated. *)
+  let validate_duplicate (number_index:(int*string) list) name number = 
     if not_found (fun () -> ignore @@ List.assoc  number number_index) && 
        not_found (fun () -> ignore @@ list_assoc2 name   number_index)
     then 
@@ -401,19 +401,34 @@ let rec compile_message_p1
         ~field_name:name ~previous_field_name:"" ~message_name ()
   in
 
+  let validate_duplicate_field number_index field = 
+    let number = field_number field in 
+    let name = field_name field in 
+    validate_duplicate number_index name number
+  in
+
   ignore @@ List.fold_left (fun number_index -> function 
-    | Pbtt.Message_field f -> validate_duplicate number_index f
+    | Pbtt.Message_field field -> validate_duplicate_field number_index field
+
     | Pbtt.Message_oneof_field {Pbtt.oneof_fields; _ } ->
-       List.fold_left validate_duplicate number_index oneof_fields
-    (* TODO: add support for map *) | _ -> number_index 
+       List.fold_left validate_duplicate_field number_index oneof_fields
+
+    | Pbtt.Message_map_field m -> 
+      let {Pbtt.map_name; map_number; _} = m in 
+      validate_duplicate number_index map_name map_number
+
   ) [] message_body ;  
 
-  acc.Acc.all_types @ [type_of_spec file_name file_options id message_scope Pbtt.(Message {
+  let spec = Pbtt.(Message {
     extensions = acc.Acc.extensions; 
     message_options = acc.Acc.options;
     message_name; 
     message_body;
-  })] 
+  }) in
+
+  acc.Acc.all_types @ [
+    make_proto_type ~file_name ~file_options ~id ~scope:message_scope ~spec 
+  ] 
 
 let compile_proto_p1 file_name {Pbpt.package; messages; enums; file_options; _ } =  
   let scope = scope_of_package package in 
@@ -427,31 +442,29 @@ let compile_proto_p1 file_name {Pbpt.package; messages; enums; file_options; _ }
 let type_scope_of_type {Pbtt.scope; _ } = scope 
 
 let is_empty_message = function 
-  | {Pbtt.spec = Pbtt.Message {Pbtt.message_body;_} } -> 
+  | {Pbtt.spec = Pbtt.Message {Pbtt.message_body;_}; _} -> 
     0 = List.length message_body 
   | _ -> false
 
 let type_name_of_type = function
-  | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ } } -> enum_name 
-  | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ } } -> message_name
+  | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ }; _} -> enum_name 
+  | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ }; _} -> message_name
 
 let find_all_types_in_field_scope all_types (scope:Pbtt.field_scope) = 
   List.filter (fun t -> 
-    let {Pbtt.packages; Pbtt.message_names; } = type_scope_of_type t in 
-    let dec_scope = packages @ message_names in 
-    dec_scope = scope
+    let {Pbtt.packages; Pbtt.message_names;_} = type_scope_of_type t in 
+    let flatten_type_scope = packages @ message_names in 
+    flatten_type_scope = scope
   ) all_types
 
+let compile_message_p2 types scope message = 
 
-let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
-  Pbtt.message_name; 
-  Pbtt.message_body} as message)  = 
+  let {Pbtt.packages; Pbtt.message_names; }  = scope in 
+  let {Pbtt.message_name; Pbtt.message_body; _ } = message in 
 
   (* stringify the message scope so that it can 
-     be used with the field scope. 
-     
-     see `Note on scoping` in the README.md file
-   *)
+   * be used with the field scope. 
+   * see `Note on scoping` in the README.md file *)
   let message_scope = packages @ message_names @ [message_name] in 
 
   let process_field_in_scope types scope type_name = 
@@ -560,21 +573,20 @@ let compile_message_p2 types {Pbtt.packages; Pbtt.message_names; } ({
   in 
   aux [] message_body 
 
-
 let compile_proto_p2 all_types = function
   | {Pbtt.file_name; file_options; id; scope; spec = Pbtt.Message  m } -> {
     Pbtt.file_name; 
-    Pbtt.file_options;
-    Pbtt.scope;
-    Pbtt.id; 
-    Pbtt.spec = Pbtt.Message (compile_message_p2 all_types scope m) 
+    file_options;
+    scope;
+    id; 
+    spec = Pbtt.Message (compile_message_p2 all_types scope m) 
   }
   | {Pbtt.file_name; file_options; id; scope; spec = (Pbtt.Enum _ ) as spec ; } ->  { 
     Pbtt.file_name; 
-    Pbtt.file_options; 
-    Pbtt.id;
-    Pbtt.scope;
-    Pbtt.spec; 
+    file_options; 
+    id;
+    scope;
+    spec; 
   } 
 
 let node_of_proto_type = function 

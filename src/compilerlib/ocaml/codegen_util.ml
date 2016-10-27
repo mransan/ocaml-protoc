@@ -15,8 +15,10 @@ let string_of_basic_type = function
   | T.Bt_bool   -> "bool"
 
 let string_of_user_defined = function 
-  | {T.udt_module = None; T.udt_type_name} -> udt_type_name 
-  | {T.udt_module = Some module_; T.udt_type_name} -> module_ ^ "." ^ udt_type_name 
+  | {T.udt_module = None; T.udt_type_name; _ } -> 
+    udt_type_name 
+  | {T.udt_module = Some module_; T.udt_type_name; _ } -> 
+    module_ ^ "." ^ udt_type_name 
 
 let string_of_field_type = function 
   | T.Ft_unit -> "unit"
@@ -58,9 +60,9 @@ let string_of_record_field_type = function
     user defined field type. 
  *)
 let function_name_of_user_defined prefix = function 
-  | {T.udt_module = Some module_; T.udt_type_name} -> 
+  | {T.udt_module = Some module_; T.udt_type_name; _} -> 
     sp "%s.%s_%s" module_ prefix udt_type_name 
-  | {T.udt_module = None; T.udt_type_name} -> 
+  | {T.udt_module = None; T.udt_type_name; _} -> 
     sp "%s_%s" prefix udt_type_name 
 
 let caml_file_name_of_proto_file_name proto = 

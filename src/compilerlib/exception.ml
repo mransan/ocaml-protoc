@@ -78,7 +78,6 @@ type error =
   | Invalid_enum_specification of string * Loc.t 
   | Invalid_mutable_option of string option  
   | Missing_one_of_name of Loc.t 
-  | Invalid_field_label of Loc.t 
   | Missing_field_label of Loc.t 
   | Parsing_error of string * Loc.t
   | Invalid_ppx_extension_option of string 
@@ -126,9 +125,6 @@ let string_of_error = function
   | Missing_one_of_name loc -> 
     P.sprintf "%sMissing oneof name" (Loc.to_string loc) 
 
-  | Invalid_field_label loc -> 
-    P.sprintf "%sInvalid field label. [required|repeated|optional] expected" (Loc.to_string loc) 
-  
   | Missing_field_label loc -> 
     P.sprintf "%sMissing field label. [required|repeated|optional] expected" (Loc.to_string loc) 
 
