@@ -126,7 +126,7 @@ val compile_proto_p2:
   Pbtt.unresolved Pbtt.proto_type -> 
   Pbtt.resolved Pbtt.proto_type
 
-val group: Pbtt.resolved Pbtt.proto -> Pbtt.resolved Pbtt.proto list 
+val group : Pbtt.resolved Pbtt.proto -> Pbtt.resolved Pbtt.proto list 
 (** TODO *)
 
 (** {2 For testing only} *) 

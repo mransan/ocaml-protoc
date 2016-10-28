@@ -208,8 +208,8 @@ let encoding_info_of_field_type all_types field_type =
     | Pbtt.Field_type_bytes      -> Ocaml_types.Pk_bytes
     | Pbtt.Field_type_type id -> 
       begin match Pbtt_util.type_of_id all_types id with 
-      | {Pbtt.spec = Pbtt.Enum    {Pbtt.enum_name; _ } ;Pbtt.file_name; _ }   -> Ocaml_types.Pk_varint false
-      | {Pbtt.spec = Pbtt.Message {Pbtt.message_name; _ } ;Pbtt.file_name; _} -> Ocaml_types.Pk_bytes
+      | {Pbtt.spec = Pbtt.Enum _; _ } -> Ocaml_types.Pk_varint false
+      | {Pbtt.spec = Pbtt.Message _; _} -> Ocaml_types.Pk_bytes
       end 
 
 let encoding_of_field all_types (field:(Pbtt.resolved, 'a) Pbtt.field)  = 
@@ -357,7 +357,7 @@ let compile_message
      it is common with compile_enum
    *)
 
-  let {Pbtt.message_name; Pbtt.message_body;} = message in 
+  let {Pbtt.message_name; Pbtt.message_body;_} = message in 
 
   let {Pbtt.message_names; _ } = scope in  
 
@@ -385,7 +385,11 @@ let compile_message
     let variants, fields = List.fold_left (fun (variants, fields) -> function
       | Pbtt.Message_field field -> (
 
-        let (pk, encoding_number, packed, defaul) = encoding_of_field all_types field in    
+        let (
+          pk, 
+          encoding_number, 
+          packed, _) = encoding_of_field all_types field 
+        in    
 
         let field_name = Pbtt_util.field_name field in 
 
@@ -515,7 +519,9 @@ let compile_message
 
     List.rev (type_ :: variants)  
 
-let compile_enum file_options file_name scope ({Pbtt.enum_name; Pbtt.enum_values; enum_options; } as enum)  = 
+let compile_enum file_options file_name scope enum = 
+
+  let {Pbtt.enum_name; enum_values; _ } = enum in
   let module_ = module_of_file_name file_name in 
   let {Pbtt.message_names; Pbtt.packages = _ } = scope in 
 
@@ -541,6 +547,7 @@ let compile_enum file_options file_name scope ({Pbtt.enum_name; Pbtt.enum_values
 let compile all_types = function 
   | {Pbtt.spec = Pbtt.Message m ; file_name; file_options; scope; _ } -> 
     compile_message file_options all_types file_name scope m 
-  | {Pbtt.spec = Pbtt.Enum    e ; file_name; scope; file_options } -> 
+
+  | {Pbtt.spec = Pbtt.Enum e ; file_name; scope; file_options; _ } -> 
     [compile_enum file_options file_name scope e] 
 

@@ -69,7 +69,7 @@ let record_field_default_info record_field : (string * string * string) =
          * the default function or via a protobuf option.
          *)
       end
-    | T.Rft_variant_field {T.v_name; v_constructors} -> 
+    | T.Rft_variant_field {T.v_constructors; _} -> 
        begin match v_constructors with
        | [] -> assert(false)
        | {T.vc_constructor; vc_field_type; _ }::_ -> 
@@ -139,15 +139,16 @@ let gen_default_const_variant ?and_ {T.cv_name; T.cv_constructors; } sc =
     (let_decl_of_and and_) cv_name first_constructor_name cv_name
 
 let gen_struct ?and_ t sc = 
-  let (), has_encoded = match t with 
-    | {T.spec = T.Record r  } ->
+  let (), has_encoded = 
+    match t with 
+    | {T.spec = T.Record r ; _ } ->
       (
         gen_default_record ?and_ r sc; 
         F.empty_line sc;
         gen_default_record ~mutable_:() ~and_:() r sc
       ), true 
-    | {T.spec = T.Variant v } -> gen_default_variant ?and_ v sc, true 
-    | {T.spec = T.Const_variant v } -> gen_default_const_variant v sc, true
+    | {T.spec = T.Variant v; _ } -> gen_default_variant ?and_ v sc, true 
+    | {T.spec = T.Const_variant v; _ } -> gen_default_const_variant v sc, true
   in
   has_encoded
 
@@ -170,14 +171,16 @@ let gen_sig_record sc {T.r_name; r_fields; } =
 
 
 let gen_sig ?and_ t sc = 
+  let _ = and_ in
   let f type_name =  
     F.line sc @@ sp "val default_%s : unit -> %s" type_name type_name;
     F.line sc @@ sp "(** [default_%s ()] is the default value for type [%s] *)" type_name type_name;
   in 
-  let (), has_encoded = match t with 
-    | {T.spec = T.Record r } -> gen_sig_record sc r, true
-    | {T.spec = T.Variant v } -> f v.T.v_name, true 
-    | {T.spec = T.Const_variant {T.cv_name; _ ; } } -> f cv_name, true
+  let (), has_encoded = 
+    match t with 
+    | {T.spec = T.Record r; _} -> gen_sig_record sc r, true
+    | {T.spec = T.Variant v; _} -> f v.T.v_name, true 
+    | {T.spec = T.Const_variant {T.cv_name; _ ; }; _ } -> f cv_name, true
   in
   has_encoded
 

@@ -35,7 +35,7 @@ let rev_split_by_char c s =
   
 let rec pop_last = function 
   | [] -> failwith "Invalid argument [] for pop_last"
-  | hd::[] -> []
+  | _::[] -> []
   | hd::tl -> hd :: (pop_last tl)
 
 let rec apply_until f = function 

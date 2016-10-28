@@ -2,3 +2,4 @@ true: bin_annot
 true: annot
 true: safe_string
 true: keep_locs
+true: warn(A-4-42-41)
