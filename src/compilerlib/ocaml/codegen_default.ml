@@ -17,7 +17,7 @@ let default_value_of_basic_type ?field_name basic_type field_default =
   | T.Bt_int32 , Some (Pbpt.Constant_int i) -> sp "%il" i
   | T.Bt_int64 , None -> "0L"
   | T.Bt_int64 , Some (Pbpt.Constant_int i) -> sp "%iL" i
-  | T.Bt_bytes , None -> "Bytes.create 64"  
+  | T.Bt_bytes , None -> "Bytes.create 0"  
   | T.Bt_bytes , Some (Pbpt.Constant_string s) -> sp "Bytes.of_string \"%s\"" s  
   | T.Bt_bool  , None -> "false"
   | T.Bt_bool  , Some (Pbpt.Constant_bool b) -> string_of_bool b
@@ -48,6 +48,8 @@ let record_field_default_info record_field : (string * string * string) =
   in
 
   let default_value = match rf_field_type with
+    | T.Rft_nolabel (field_type, _, _) ->
+      dfvft field_type None 
     | T.Rft_required (field_type, _, _, default_value) ->
       dfvft field_type default_value 
     | T.Rft_optional (field_type, _, _, default_value) -> 

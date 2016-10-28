@@ -408,6 +408,7 @@ let compile_message
         let mutable_  = is_mutable ~field_name field_options in 
 
         let record_field_type = match Pbtt_util.field_label field with
+          | `Nolabel -> OCaml_types.Rft_nolabel (field_type, encoding_number, pk)
           | `Required -> OCaml_types.Rft_required (field_type, encoding_number, pk, field_default) 
           | `Optional -> OCaml_types.Rft_optional (field_type, encoding_number, pk, field_default) 
           | `Repeated -> 

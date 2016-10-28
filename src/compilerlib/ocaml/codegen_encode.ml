@@ -52,6 +52,7 @@ let gen_encode_record ?and_ {T.r_name; r_fields } sc =
       let {T.rf_label; rf_field_type; _ } = record_field in  
 
       match rf_field_type with 
+      | T.Rft_nolabel (field_type, encoding_number, pk)
       | T.Rft_required (field_type, encoding_number, pk, _) -> ( 
         let var_name = sp "v.%s" rf_label in 
         gen_encode_field_type ~with_key:() sc var_name encoding_number pk false (* packed *) field_type
