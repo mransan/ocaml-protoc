@@ -13,9 +13,7 @@ let decode_ref_data () =
     | i when i < max_int - (2l* inc) -> (
       loop (i::l) (i + inc)
     )
-    | i -> (
-      l 
-    ) 
+    | _ -> l 
   in 
   { T.l = List.rev @@ loop [] (min_int) } 
 

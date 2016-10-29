@@ -1,6 +1,6 @@
 import "ocamloptions.proto";
 
-option (ocaml_file_ppx) = "file_level_ppx"; 
+option (ocaml_file_ppx) = "ocaml.warning \"-32\""; 
 option (ocaml_all_types_ppx) = "deriving show";
 
 enum E {

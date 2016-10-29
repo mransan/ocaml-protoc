@@ -48,7 +48,7 @@ let () =
       Pbpt.field_name; 
       Pbpt.field_number; 
       Pbpt.field_type; 
-      Pbpt.field_options; 
+      Pbpt.field_options; _ 
     } = List.nth oneof_fields 0 in 
     assert (field_name = "name"); 
     assert (field_type = "string"); 
@@ -58,7 +58,7 @@ let () =
       Pbpt.field_name; 
       Pbpt.field_number; 
       Pbpt.field_type; 
-      Pbpt.field_options; 
+      Pbpt.field_options; _; 
     } = List.nth oneof_fields 1 in 
     assert (field_name = "sub_message"); 
     assert (field_type = "SubMessage"); 
@@ -67,19 +67,19 @@ let () =
     ()
   in
 
-  do_test "
-    oneof foo {
-      string name = 4;
-      SubMessage sub_message = 9 [a=1];
-    }";
+  do_test "\
+    oneof foo {\
+      string name = 4;\
+      SubMessage sub_message = 9 [a=1];\
+    }"; 
 
   (* below test is to check resilience with respect to 
    * semi colon
    *)
-  do_test "
-    oneof foo {
-      string name = 4; ; 
-      SubMessage sub_message = 9 [a=1]; ; ;;
+  do_test "\
+    oneof foo {\
+      string name = 4; ; \
+      SubMessage sub_message = 9 [a=1]; ; ;;\
     }; ;; ";
   ()
 
