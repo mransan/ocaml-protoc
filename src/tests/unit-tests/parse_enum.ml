@@ -3,8 +3,8 @@ module E = Exception
 let parse f s  = 
   f Pblexer.lexer (Lexing.from_string s)
 let () = 
-  let s =" 
-  ENUM1 = 1;
+  let s =" \
+  ENUM1 = 1;\
   " in 
   begin match parse Pbparser.enum_value_ s with
   | Pbpt.Enum_value ev -> 
@@ -15,8 +15,8 @@ let () =
   ()
 
 let () = 
-  let s =" 
-  BLAH_12_BLAH = -99999; ;
+  let s =" \
+  BLAH_12_BLAH = -99999; ;\
   " in 
   begin match parse Pbparser.enum_value_ s with
   | Pbpt.Enum_value ev -> 
@@ -27,11 +27,11 @@ let () =
   ()
 
 let () = 
-  let s =" 
-  enum Test {
-  EV1 = 1;
-  EV2 = 2;
-  }
+  let s =" \
+  enum Test {\
+  EV1 = 1;\
+  EV2 = 2;\
+  }\
   " in 
   let ev1 = Pbpt_util.enum_value ~int_value:1 "EV1" in 
   let ev2 = Pbpt_util.enum_value ~int_value:2 "EV2" in 
@@ -43,14 +43,14 @@ let () =
   ()
 
 let () = 
-  let s =" 
-  enum Test {
-  EV1 = 1
-  EV2 = 2;
-  }
+  let s =" \
+  enum Test {\
+  EV1 = 1\
+  EV2 = 2;\
+  }\
   " in 
   match parse Pbparser.enum_ s with
-  | x -> assert false 
+  | _ -> assert false 
   | exception E.Compilation_error _ -> ()
   | exception exn -> 
     print_endline @@ Printexc.to_string exn; 

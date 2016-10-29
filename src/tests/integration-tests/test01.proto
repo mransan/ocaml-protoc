@@ -1,5 +1,8 @@
 package foo.bar;  
 
+import "ocamloptions.proto";
+option (ocaml_file_ppx) = "ocaml.warning \"-32\""; 
+
 enum Gender {
     Male = 1;
     Female = 2; 

@@ -78,7 +78,7 @@ let () =
 
 let test_failure f = 
   match f() with 
-  | x -> (assert false:unit)
+  | _ -> (assert false:unit)
   | exception (Failure _) -> () 
   | exception (Parsing.Parse_error) -> () 
 
