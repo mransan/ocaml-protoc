@@ -3,17 +3,17 @@ let parse f s  =
   f Pblexer.lexer (Lexing.from_string s)
 
 let () = 
-  let s = "
-  message Outer {
-    required int64 ival = 1;
-    required string sval = 2;
-    
-    message Inner { 
-      required int64 inner_ival = 1;
-      required string inner_sval = 2;
-    } ; // make sure that the ';' is supported.
-    
-    required Inner inner = 3; 
+  let s = "\
+  message Outer {\
+    required int64 ival = 1;\
+    required string sval = 2;\
+    \
+    message Inner { \
+      required int64 inner_ival = 1;\
+      required string inner_sval = 2;\
+    } ; /* make sure that the ';' is supported. */\
+    \
+    required Inner inner = 3; \
   }"
   in 
   (*
@@ -21,20 +21,20 @@ let () =
   *)
   let {
     Pbpt.message_name; 
-    Pbpt.message_body;
+    Pbpt.message_body; _;
   } = parse Pbparser.message_ s in 
   assert (message_name  = "Outer");
   assert (List.length message_body= 4);
   ()
 
 let () = 
-  let s = "
-  message TestM { 
-    enum TestE {
-      TestE_Value1 = 1; 
-      TestE_Value2 = 2; 
-    }
-    required TestE teste_field = 1; 
+  let s = "\
+  message TestM { \
+    enum TestE {\
+      TestE_Value1 = 1; \
+      TestE_Value2 = 2; \
+    }\
+    required TestE teste_field = 1; \
   }"
   in 
   (*
@@ -42,7 +42,7 @@ let () =
   *)
   let {
     Pbpt.message_name; 
-    Pbpt.message_body;
+    Pbpt.message_body; _;
   } = parse Pbparser.message_ s in 
   assert (message_name  = "TestM");
   assert (List.length message_body= 2);
@@ -71,9 +71,9 @@ let () =
 
 
 let () = 
-  let s =" 
-  message M1 {} 
-  message M2 {}
+  let s =" \
+  message M1 {} \
+  message M2 {}\
   " in 
   let proto = parse Pbparser.proto_ s in 
   let messages = proto.Pbpt.messages in 
@@ -83,10 +83,10 @@ let () =
   ()
 
 let () = 
-  let s =" 
-  package my.proto;
-  message M1 {} 
-  message M2 {}
+  let s =" \
+  package my.proto;\
+  message M1 {} \
+  message M2 {}\
   " in 
   let proto = parse Pbparser.proto_ s in 
   assert(None = proto.Pbpt.syntax);
@@ -98,14 +98,14 @@ let () =
   ()
 
 let () = 
-  let s =" 
-  syntax = \"proto2\";
-  import \"blah.proto\";
-  import public \"boom.proto\";
-  package my.proto;
-  message M1 {} 
-  message M2 {}
-  extend  M2 {} 
+  let s =" \
+  syntax = \"proto2\";\
+  import \"blah.proto\";\
+  import public \"boom.proto\";\
+  package my.proto;\
+  message M1 {} \
+  message M2 {}\
+  extend  M2 {} \
   " in 
   let proto = parse Pbparser.proto_ s in 
   assert(Some "proto2"  = proto.Pbpt.syntax);
@@ -120,10 +120,10 @@ let () =
   ()
 
 let () = 
-  let s = "
-  message M {
-    required int32 ival = 1;
-  message M2 {}  message M3 {} message M4 {}
+  let s = "\
+  message M {\
+    required int32 ival = 1;\
+  message M2 {}  message M3 {} message M4 {}\
   "
   in 
   match parse Pbparser.message_ s with 

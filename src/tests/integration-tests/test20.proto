@@ -1,5 +1,7 @@
 import "ocamloptions.proto";
 
+option (ocaml_file_ppx) = "ocaml.warning \"-32\""; 
+
 enum E {
   option (ocaml_enum_ppx) = "deriving show"; 
   EONE = 1; 

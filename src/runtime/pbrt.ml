@@ -50,7 +50,7 @@ module Decoder = struct
       | None -> ()
       | Some (1, _)  -> key_v := Some (decode_key d); loop () 
       | Some (2, _)  -> value_v := Some (decode_value d); loop ()
-      | Some (n, pk) -> (
+      | Some (_, pk) -> (
         skip d pk; 
         loop ()
       )
@@ -251,7 +251,7 @@ module Repeated_field = struct
       f hd
     )
 
-  let iter f {s; i; a; l} = 
+  let iter f {i; a; l; _} = 
     list_rev_iter (fun a -> 
       let len = Array.length a - 1 in 
       for j = 0 to len do
@@ -263,7 +263,7 @@ module Repeated_field = struct
       f (Array.unsafe_get a j)
     done
   
-  let iteri f {s; i; a; l} = 
+  let iteri f {i; a; l; _} = 
     let counter = ref 0 in 
     list_rev_iter (fun a -> 
       let len = Array.length a - 1 in 
@@ -291,7 +291,7 @@ module Repeated_field = struct
     ) 0 l in 
     len + i
 
-  let map_to_array f ({s; i; a; l} as t) = 
+  let map_to_array f t = 
     let len = length t in  
     let dest = Array.make len (f @@ Array.unsafe_get t.a 0) in 
     let index = ref 0 in 
