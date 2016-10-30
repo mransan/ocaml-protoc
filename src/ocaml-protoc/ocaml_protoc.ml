@@ -207,6 +207,7 @@ let compile cmd_line_files_options include_dirs proto_file_name =
       let proto = {proto with 
         Pbpt.file_options = cmd_line_files_options @ proto.Pbpt.file_options
       } in 
+      Pbpt_util.verify_syntax_invariants proto;
       close_in ic; 
       let files_options = (file_name, proto.Pbpt.file_options) :: files_options in 
       let pbtt_msgs = pbtt_msgs @ Pbtt_util.compile_proto_p1 file_name proto in 

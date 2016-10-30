@@ -34,6 +34,7 @@ let string_of_associative_type = function
   | T.At_hashtable -> "Hashtbl.t"
 
 let string_of_record_field_type = function
+  | T.Rft_nolabel (field_type, _, _)
   | T.Rft_required (field_type, _, _, _) -> 
       string_of_field_type field_type
   | T.Rft_optional (field_type, _, _, _) -> 

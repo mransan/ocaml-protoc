@@ -46,6 +46,13 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
     );
     F.line sc ")"
   in
+  
+  let process_nolabel_field sc rf_label (field_type, encoding_number, pk) = 
+    process_field_common sc encoding_number (string_of_nonpacked_pk pk) (fun sc -> 
+      F.line sc @@ sp "v.%s <- %s;" 
+        rf_label (decode_field_f field_type pk); 
+    ) 
+  in
 
   let process_required_field sc rf_label (field_type, encoding_number, pk, _) = 
     process_field_common sc encoding_number (string_of_nonpacked_pk pk) (fun sc -> 
@@ -193,6 +200,7 @@ let gen_decode_record ?and_ {T.r_name; r_fields} sc =
        * .proto file. Unknown fields are ignored. *)
       List.iter (fun {T.rf_label; rf_field_type; _ } -> 
         match rf_field_type with
+        | T.Rft_nolabel x -> process_nolabel_field sc rf_label x 
         | T.Rft_required x -> process_required_field sc rf_label x 
         | T.Rft_optional x -> process_optional_field sc rf_label x 
         | T.Rft_repeated_field x -> process_repeated_field sc rf_label x 

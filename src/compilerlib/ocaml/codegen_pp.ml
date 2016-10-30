@@ -26,6 +26,7 @@ let gen_pp_record  ?and_ {T.r_name; r_fields} sc =
         let var_name = sp "v.%s" rf_label in 
         match rf_field_type with 
 
+        | T.Rft_nolabel (field_type, _, _)
         | T.Rft_required (field_type, _, _, _) -> ( 
           let field_string_of = gen_pp_field field_type in 
           F.line sc @@ sp 

@@ -23,6 +23,8 @@
 
 *)
 
+module E = Exception 
+
 let field ?options:(options =[]) ~label ~number ~type_ name = {
   Pbpt.field_name = name; 
   Pbpt.field_number = number;
@@ -205,3 +207,79 @@ let file_option (file_options:Pbpt.file_option list) (name:string) =
   match List.assoc name file_options with
   | x -> Some x 
   | exception Not_found -> None  
+
+let verify_syntax2 proto = 
+  let {Pbpt.messages; _} = proto in 
+
+  (* make sure there are no `Nolabel` fields in messages *)
+
+  let rec verify_message m  = 
+    let {Pbpt.message_name; message_body; _} = m in 
+
+    List.iter (function
+      | Pbpt.Message_field field -> 
+        let {Pbpt.field_label; field_name; _} = field in
+        begin match field_label with 
+        | `Nolabel -> E.missing_field_label ~field_name ~message_name 
+        | _ -> () 
+        end 
+      | Pbpt.Message_sub m' -> verify_message m'
+      | _ -> ()
+    ) message_body 
+
+  in 
+  List.iter verify_message messages; 
+  ()
+
+let verify_syntax3 proto = 
+  let {Pbpt.messages; enums; _ } = proto in
+  
+  (* make sure there are no `Required` or `Optional`` fields 
+   * in messages *)
+
+  let verify_no_default_field_options field_name message_name field_options = 
+    match List.assoc "default" field_options with
+    | exception Not_found -> () 
+    | _ -> E.default_field_option_not_supported ~field_name ~message_name 
+  in
+
+  let verify_enum ?message_name {Pbpt.enum_name; enum_body; _} = 
+    let rec aux = function
+      | (Pbpt.Enum_option _) :: tl -> aux tl 
+      | (Pbpt.Enum_value {Pbpt.enum_value_int; _}) :: _ ->  
+        if enum_value_int != 0 
+        then E.invalid_first_enum_value_proto3 ?message_name ~enum_name () 
+        else ()
+      | [] -> assert(false)
+    in
+    aux enum_body
+  in
+
+  let rec verify_message m  = 
+    let {Pbpt.message_name; message_body; _} = m in 
+
+    List.iter (function
+      | Pbpt.Message_field field -> 
+        let {Pbpt.field_label; field_name; field_options; _} = field in
+        begin match field_label with 
+        | `Required 
+        | `Optional -> E.invalid_proto3_field_label 
+            ~field_name ~message_name 
+        | _ -> () 
+        end;
+        verify_no_default_field_options field_name message_name field_options 
+      | Pbpt.Message_sub m' -> verify_message m'
+      | Pbpt.Message_enum enum -> verify_enum ~message_name enum 
+      | _ -> ()
+    ) message_body 
+  in 
+  List.iter verify_message messages;
+  List.iter verify_enum enums;
+  ()
+
+let verify_syntax_invariants ({Pbpt.syntax; _} as proto) = 
+  match syntax with
+  | None 
+  | Some "proto2" -> verify_syntax2 proto
+  | Some "proto3" -> verify_syntax3 proto 
+  | Some s -> E.invalid_protobuf_syntax s 

@@ -52,6 +52,7 @@ type field_label = [
   | `Optional 
   | `Required 
   | `Repeated 
+  | `Nolabel  (** proto3 field which replaces required and optional *)
 ]
 
 type oneof_label = [ `Oneof ] 

@@ -14,6 +14,7 @@ let gen_type_record ?mutable_ ?and_ {T.r_name; r_fields } sc =
   in 
 
   let is_imperative_type = function
+    | T.Rft_nolabel _ 
     | T.Rft_required _ 
     | T.Rft_optional _ 
     | T.Rft_variant_field _ 
