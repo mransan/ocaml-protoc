@@ -242,10 +242,10 @@ normal_field :
     Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
   } 
   | IDENT field_name EQUAL INT field_options semicolon { 
-    Exception.missing_field_label (fst $1) 
+    Pbpt_util.field ~label:(`Optional) ~type_:(snd $1) ~number:$4 ~options:$5 $2
   }
   | IDENT field_name EQUAL INT semicolon { 
-    Exception.missing_field_label (fst $1) 
+    Pbpt_util.field ~label:(`Optional) ~type_:(snd $1) ~number:$4 $2 
   }
 
 field_name :
