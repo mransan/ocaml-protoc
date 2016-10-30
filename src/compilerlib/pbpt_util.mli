@@ -128,6 +128,8 @@ val proto:
   unit -> 
   Pbpt.proto
 
+val verify_syntax_invariants : Pbpt.proto -> unit 
+
 (** {2 Miscellaneous functionality } *)
 
 val message_printer :?level:int -> Pbpt.message -> unit 

@@ -78,9 +78,13 @@ type error =
   | Invalid_enum_specification of string * Loc.t 
   | Invalid_mutable_option of string option  
   | Missing_one_of_name of Loc.t 
-  | Missing_field_label of Loc.t 
+  | Missing_field_label of string * string 
   | Parsing_error of string * Loc.t
   | Invalid_ppx_extension_option of string 
+  | Invalid_protobuf_syntax of string 
+  | Invalid_proto3_field_label of string * string 
+  | Default_field_option_not_supported of string * string 
+  | Invalid_first_enum_value_proto3 of string * string option 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -125,8 +129,11 @@ let string_of_error = function
   | Missing_one_of_name loc -> 
     P.sprintf "%sMissing oneof name" (Loc.to_string loc) 
 
-  | Missing_field_label loc -> 
-    P.sprintf "%sMissing field label. [required|repeated|optional] expected" (Loc.to_string loc) 
+  | Missing_field_label (field_name, message_name) -> 
+    P.sprintf 
+      ("Missing field label for field: %s in message: %s. "^^ 
+      "[required|repeated|optional] expected") 
+      field_name message_name  
 
   | Parsing_error (detail, loc) -> 
     Printf.sprintf "%s%s." (Loc.to_string loc) detail
@@ -141,6 +148,29 @@ let string_of_error = function
   
   | Invalid_ppx_extension_option message_name -> 
     P.sprintf "Invalid ppx extension value for message: %s, string expected" message_name
+  
+  | Invalid_protobuf_syntax syntax -> 
+    P.sprintf 
+      "Invalid protobuf syntax: \"%s\", expected \"proto2\" or \"proto3\"" 
+      syntax
+
+  | Invalid_proto3_field_label (field_name, message_name) ->
+    P.sprintf 
+      ("Invalid field label for field: %s in message: %s. " ^^ 
+       "[Required|Optional] are not supported.")
+      field_name message_name
+  
+  | Default_field_option_not_supported (field_name, message_name) -> 
+    P.sprintf 
+      ("Explicit default values are not allowed in proto3. " ^^ 
+       "field name: %s, message name: %s.")
+      field_name message_name
+  
+  | Invalid_first_enum_value_proto3 (enum_name, message_name) -> 
+    P.sprintf 
+      ("The first enum value must be 0 in proto3." ^^ 
+       "enum name: %s, message name: %s.")
+      enum_name (Util.Option.string_of_option (fun x -> x) message_name)
 
 let () =
   Printexc.register_printer (fun exn ->
@@ -200,8 +230,8 @@ let invalid_mutable_option ?field_name () =
 let missing_one_of_name loc = 
   raise (Compilation_error (Missing_one_of_name loc))
 
-let missing_field_label loc = 
-  raise (Compilation_error (Missing_field_label loc))
+let missing_field_label ~field_name ~message_name = 
+  raise (Compilation_error (Missing_field_label (field_name, message_name)))
   
 let invalid_ppx_extension_option message_name = 
   raise (Compilation_error (Invalid_ppx_extension_option message_name)) 
@@ -214,3 +244,18 @@ let protoc_parsing_error e loc =
 
 let unknown_parsing_error detail loc = 
   raise (Compilation_error (Parsing_error (detail, loc)))
+
+let invalid_protobuf_syntax syntax =
+  raise (Compilation_error (Invalid_protobuf_syntax syntax))
+
+let invalid_proto3_field_label ~field_name ~message_name = 
+  raise (Compilation_error (Invalid_proto3_field_label (field_name,
+      message_name)))
+
+let default_field_option_not_supported ~field_name ~message_name = 
+  raise (Compilation_error (Default_field_option_not_supported (field_name,
+      message_name)))
+
+let invalid_first_enum_value_proto3 ?message_name ~enum_name () = 
+  raise (Compilation_error (Invalid_first_enum_value_proto3 (enum_name,
+      message_name)))

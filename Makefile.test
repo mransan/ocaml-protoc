@@ -16,6 +16,7 @@ export CPPFLAGS
 
 # unit test of the ocaml-protoc internals  
 unit-tests: 		
+	$(OCB) $(UNIT_TESTS_DIR)/verify_syntax_invariants.native
 	$(OCB) $(UNIT_TESTS_DIR)/parse_extension_range.native
 	$(OCB) $(UNIT_TESTS_DIR)/parse_field_options.native 
 	$(OCB) $(UNIT_TESTS_DIR)/parse_file_options.native 
@@ -29,6 +30,7 @@ unit-tests:
 	$(OCB) $(UNIT_TESTS_DIR)/ocaml_codegen_test.native
 	$(OCB) $(UNIT_TESTS_DIR)/graph_test.native
 	$(OCB) $(UNIT_TESTS_DIR)/pbrt_array.native
+	export OCAMLRUNPARAM="b" && ./verify_syntax_invariants.native
 	./parse_extension_range.native
 	./parse_field_options.native
 	./parse_file_options.native
@@ -52,7 +54,7 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_INSTALL = /usr/local/
+PB_INSTALL = /Users/maximeransan/Documents/protobuf
 PB_HINC    = $(PB_INSTALL)/include/
 PB_LINC    = $(PB_INSTALL)/lib/
 PROTOC     = $(PB_INSTALL)/bin/protoc 

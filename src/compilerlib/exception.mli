@@ -80,7 +80,7 @@ val invalid_mutable_option : ?field_name:string -> unit -> 'a
 
 val missing_one_of_name : Loc.t -> 'a 
 
-val missing_field_label : Loc.t -> 'a 
+val missing_field_label : field_name:string -> message_name:string -> 'a 
 
 val invalid_ppx_extension_option : string -> 'a 
 
@@ -89,3 +89,21 @@ val ocamlyacc_parsing_error : Loc.t -> 'a
 val protoc_parsing_error : error -> Loc.t -> 'a 
 
 val unknown_parsing_error : string -> Loc.t -> 'a 
+
+val invalid_protobuf_syntax : string -> 'a 
+
+val invalid_proto3_field_label : 
+  field_name:string -> 
+  message_name:string -> 
+  'a 
+
+val default_field_option_not_supported : 
+  field_name:string -> 
+  message_name:string -> 
+  'a 
+
+val invalid_first_enum_value_proto3 :
+  ?message_name:string -> 
+  enum_name:string -> 
+  unit ->
+  'a
