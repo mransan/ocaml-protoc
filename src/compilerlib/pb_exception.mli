@@ -66,29 +66,29 @@ val import_file_not_found : string -> 'a
 
 val programmatic_error : programmatic_error -> 'a
 
-val invalid_import_qualifier : Loc.t -> 'a
+val invalid_import_qualifier : Pb_location.t -> 'a
 
 val invalid_file_name : string -> 'a 
 
 val invalid_packed_option : string -> 'a 
 
-val missing_semicolon_for_enum_value : string -> Loc.t -> 'a 
+val missing_semicolon_for_enum_value : string -> Pb_location.t -> 'a 
 
-val invalid_enum_specification : string -> Loc.t -> 'a 
+val invalid_enum_specification : string -> Pb_location.t -> 'a 
 
 val invalid_mutable_option : ?field_name:string -> unit -> 'a
 
-val missing_one_of_name : Loc.t -> 'a 
+val missing_one_of_name : Pb_location.t -> 'a 
 
 val missing_field_label : field_name:string -> message_name:string -> 'a 
 
 val invalid_ppx_extension_option : string -> 'a 
 
-val ocamlyacc_parsing_error : Loc.t -> 'a 
+val ocamlyacc_parsing_error : Pb_location.t -> 'a 
 
-val protoc_parsing_error : error -> Loc.t -> 'a 
+val protoc_parsing_error : error -> Pb_location.t -> 'a 
 
-val unknown_parsing_error : string -> Loc.t -> 'a 
+val unknown_parsing_error : string -> Pb_location.t -> 'a 
 
 val invalid_protobuf_syntax : string -> 'a 
 

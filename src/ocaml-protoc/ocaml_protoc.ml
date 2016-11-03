@@ -23,8 +23,13 @@
 
 *)
 
-module L = Logger 
-module E = Exception
+module L = Pb_logger 
+module E = Pb_exception
+module Loc = Pb_location
+module Pt = Pb_parsing_parse_tree 
+module Parsing_util = Pb_parsing_util
+module Tt = Pb_typing_type_tree 
+module Typing_util = Pb_typing_util
 
 (* [ocaml-protoc] provides the ability to override all the custom protobuf file options 
  * defined in src/include/ocaml-protoc/ocamloptions.proto as command line arguments. 
@@ -92,10 +97,10 @@ module File_options = struct
       | Some x -> (f x) :: l 
     in 
     []
-    |> map int32_type (fun s -> ("int32_type", Pbpt.Constant_litteral s))
-    |> map int64_type (fun s -> ("int64_type", Pbpt.Constant_litteral s))
-    |> map ocaml_file_ppx (fun s -> ("ocaml_file_ppx", Pbpt.Constant_string s))
-    |> map ocaml_all_types_ppx (fun s -> ("ocaml_all_types_ppx", Pbpt.Constant_string s))
+    |> map int32_type (fun s -> ("int32_type", Pt.Constant_litteral s))
+    |> map int64_type (fun s -> ("int64_type", Pt.Constant_litteral s))
+    |> map ocaml_file_ppx (fun s -> ("ocaml_file_ppx", Pt.Constant_string s))
+    |> map ocaml_all_types_ppx (fun s -> ("ocaml_all_types_ppx", Pt.Constant_string s))
 
 end 
   
@@ -194,47 +199,48 @@ let compile cmd_line_files_options include_dirs proto_file_name =
         pos_fname = file_name; 
       }); 
       let proto  = 
-        try Pbparser.proto_ Pblexer.lexer lexbuf 
+        try Pb_parsing_parser.proto_ Pb_parsing_lexer.lexer lexbuf 
         with 
         | Parsing.Parse_error -> 
-          Exception.ocamlyacc_parsing_error (Loc.from_lexbuf lexbuf) 
-        | Exception.Compilation_error e -> 
-          Exception.protoc_parsing_error e (Loc.from_lexbuf lexbuf)
+          Pb_exception.ocamlyacc_parsing_error (Loc.from_lexbuf lexbuf) 
+        | Pb_exception.Compilation_error e -> 
+          Pb_exception.protoc_parsing_error e (Loc.from_lexbuf lexbuf)
         | exn -> 
           let detail = Printexc.to_string exn in 
-          Exception.unknown_parsing_error detail (Loc.from_lexbuf lexbuf)
+          Pb_exception.unknown_parsing_error detail (Loc.from_lexbuf lexbuf)
       in  
       let proto = {proto with 
-        Pbpt.file_options = cmd_line_files_options @ proto.Pbpt.file_options
+        Pt.file_options = cmd_line_files_options @ proto.Pt.file_options
       } in 
-      Pbpt_util.verify_syntax_invariants proto;
+      Parsing_util.verify_syntax_invariants proto;
       close_in ic; 
-      let files_options = (file_name, proto.Pbpt.file_options) :: files_options in 
-      let pbtt_msgs = pbtt_msgs @ Pbtt_util.compile_proto_p1 file_name proto in 
+      let files_options = (file_name, proto.Pt.file_options) :: files_options in 
+      let pbtt_msgs = pbtt_msgs @ Pb_typing_validation.validate file_name proto in 
 
       let acc = (pbtt_msgs, files_options) in 
-      List.fold_left (fun acc {Pbpt.file_name; _ } -> 
+      List.fold_left (fun acc {Pt.file_name; _ } -> 
         loop acc (Some file_name) 
-      ) acc proto.Pbpt.imports 
+      ) acc proto.Pt.imports 
   in 
 
   let pbtt_msgs, files_options = loop ([], []) (Some proto_file_name) in  
 
   List.iter (function 
-    | {Pbtt.spec = Pbtt.Message  msg; id; scope; _  }   -> L.endline @@ Pbtt_util.string_of_message id scope msg
-    | {Pbtt.spec = Pbtt.Enum {Pbtt.enum_name; _ }; _  } -> L.endline @@ enum_name 
+    | {Tt.spec = Tt.Message  msg; id; scope; _  } -> 
+      L.endline @@ Typing_util.string_of_message id scope msg
+    | {Tt.spec = Tt.Enum {Tt.enum_name; _ }; _  } -> 
+      L.endline @@ enum_name 
   ) pbtt_msgs; 
 
-  let pbtt_msgs = List.map (Pbtt_util.compile_proto_p2 pbtt_msgs) pbtt_msgs in 
-
-  let grouped_proto = List.rev @@ Pbtt_util.group pbtt_msgs in 
+  let pbtt_msgs = Pb_typing_resolution.resolve_types pbtt_msgs in 
+  let grouped_proto = List.rev @@ Pb_typing_recursion.group pbtt_msgs in 
 
   (*
    * Only get the types which are part of the given protofile (compilation unit)
    *)
 
   let grouped_proto = List.filter (function
-    | {Pbtt.file_name; _ }::_ when file_name = proto_file_name -> true 
+    | {Tt.file_name; _ }::_ when file_name = proto_file_name -> true 
     | _ -> false
   ) grouped_proto in 
 
@@ -251,7 +257,7 @@ let compile cmd_line_files_options include_dirs proto_file_name =
 
   (otypes, proto_file_options)
 
-type codegen_f = ?and_:unit -> Ocaml_types.type_ -> Fmt.scope -> bool 
+type codegen_f = ?and_:unit -> Ocaml_types.type_ -> Pb_codegen_formatting.scope -> bool 
 
 
 let all_code_gen = [
@@ -270,9 +276,10 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
    *)
 
   let print_ppx sc = 
-    match Pbpt_util.file_option proto_file_options "ocaml_file_ppx" with
+    match Parsing_util.file_option proto_file_options "ocaml_file_ppx" with
     | None -> () 
-    | Some Pbpt.Constant_string s -> Fmt.line sc @@ Printf.sprintf "[@@@%s]" s
+    | Some Pt.Constant_string s -> 
+      Pb_codegen_formatting.line sc @@ Printf.sprintf "[@@@%s]" s
     | _ -> E.invalid_ppx_extension_option proto_file_name  
   in 
 
@@ -282,9 +289,9 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
         match ocamldoc_title with
         | None -> () 
         | Some ocamldoc_title -> ( 
-            Fmt.empty_line sc;
-            Fmt.line sc @@ Codegen_util.sp "(** {2 %s} *)" ocamldoc_title;  
-            Fmt.empty_line sc;
+            Pb_codegen_formatting.empty_line sc;
+            Pb_codegen_formatting.line sc @@ Codegen_util.sp "(** {2 %s} *)" ocamldoc_title;  
+            Pb_codegen_formatting.empty_line sc;
         )
       end;
 
@@ -294,7 +301,7 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
             then f type_ sc 
             else f ~and_:() type_ sc
           in 
-          Fmt.empty_line sc;
+          Pb_codegen_formatting.empty_line sc;
           first && (not has_encoded) 
         ) true types in 
         ()
@@ -304,30 +311,30 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
   
   (* -- `.ml` file -- *)
 
-  let sc = Fmt.empty_scope () in 
-  Fmt.line sc "[@@@ocaml.warning \"-27-30-39\"]";
+  let sc = Pb_codegen_formatting.empty_scope () in 
+  Pb_codegen_formatting.line sc "[@@@ocaml.warning \"-27-30-39\"]";
   print_ppx sc; 
-  Fmt.empty_line sc;
+  Pb_codegen_formatting.empty_line sc;
   gen otypes  sc (List.map (fun m -> 
     let module C = (val m:Codegen.S) in 
     C.gen_struct, None
   ) all_code_gen);
 
-  output_string struct_oc (Fmt.print sc);
+  output_string struct_oc (Pb_codegen_formatting.print sc);
 
   (* -- `.mli` file -- *)
 
-  let sc = Fmt.empty_scope () in 
-  Fmt.line sc @@ 
+  let sc = Pb_codegen_formatting.empty_scope () in 
+  Pb_codegen_formatting.line sc @@ 
     Codegen_util.sp "(** %s Generated Types and Encoding *)" (Filename.basename proto_file_name); 
-  Fmt.empty_line sc; 
+  Pb_codegen_formatting.empty_line sc; 
   print_ppx sc; 
   gen otypes  sc (List.map (fun m -> 
     let module C = (val m:Codegen.S) in 
     C.gen_sig, Some C.ocamldoc_title
   ) all_code_gen);
 
-  output_string sig_oc (Fmt.print sc);
+  output_string sig_oc (Pb_codegen_formatting.print sc);
   ()
 
 let () = 

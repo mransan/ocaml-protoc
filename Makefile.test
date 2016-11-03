@@ -16,6 +16,8 @@ export CPPFLAGS
 
 # unit test of the ocaml-protoc internals  
 unit-tests: 		
+	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p2.native 
+	$(OCB) $(UNIT_TESTS_DIR)/test_typing.native
 	$(OCB) $(UNIT_TESTS_DIR)/verify_syntax_invariants.native
 	$(OCB) $(UNIT_TESTS_DIR)/parse_message.native 
 	$(OCB) $(UNIT_TESTS_DIR)/parse_extension_range.native
@@ -25,11 +27,11 @@ unit-tests:
 	$(OCB) $(UNIT_TESTS_DIR)/parse_enum.native
 	$(OCB) $(UNIT_TESTS_DIR)/parse_import.native 
 	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p1.native 
-	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p2.native 
 	$(OCB) $(UNIT_TESTS_DIR)/backend_ocaml_test.native
 	$(OCB) $(UNIT_TESTS_DIR)/ocaml_codegen_test.native
 	$(OCB) $(UNIT_TESTS_DIR)/graph_test.native
 	$(OCB) $(UNIT_TESTS_DIR)/pbrt_array.native
+	export OCAMLRUNPARAM="b" && ./test_typing.native
 	export OCAMLRUNPARAM="b" && ./verify_syntax_invariants.native
 	export OCAMLRUNPARAM="b" && ./parse_message.native
 	export OCAMLRUNPARAM="b" && ./parse_extension_range.native
@@ -54,7 +56,7 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_INSTALL = /usr/local
+PB_INSTALL = /Users/maximeransan/Documents/protobuf
 PB_HINC    = $(PB_INSTALL)/include/
 PB_LINC    = $(PB_INSTALL)/lib/
 PROTOC     = $(PB_INSTALL)/bin/protoc 

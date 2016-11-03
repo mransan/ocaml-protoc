@@ -26,6 +26,7 @@
 (** {2 Compilation errors } *)
 
 module P = Printf
+module Loc = Pb_location
 
 type programmatic_error =
   | Invalid_string_split 
@@ -102,11 +103,11 @@ let string_of_error = function
 
   | Invalid_default_value {field_name; info}  -> 
     P.sprintf "invalid default value for field name:%s (info: %s)"
-      (Util.Option.default "" field_name) info
+      (Pb_util.Option.default "" field_name) info
 
   | Unsupported_field_type {field_name; field_type; backend_name} -> 
     P.sprintf "unsupported field type for field name:%s with type:%s in bakend: %s"
-      (Util.Option.default "" field_name) field_type backend_name
+      (Pb_util.Option.default "" field_name) field_type backend_name
 
   | Programatic_error e -> 
     P.sprintf "programmatic error: %s" (string_of_programmatic_error e)
@@ -144,7 +145,7 @@ let string_of_error = function
       (Loc.to_string loc) enum_name
   
   | Invalid_mutable_option field_name -> 
-    P.sprintf "Invalid mutable option for field %s" (Util.Option.default "" field_name) 
+    P.sprintf "Invalid mutable option for field %s" (Pb_util.Option.default "" field_name) 
   
   | Invalid_ppx_extension_option message_name -> 
     P.sprintf "Invalid ppx extension value for message: %s, string expected" message_name
@@ -170,7 +171,7 @@ let string_of_error = function
     P.sprintf 
       ("The first enum value must be 0 in proto3." ^^ 
        "enum name: %s, message name: %s.")
-      enum_name (Util.Option.string_of_option (fun x -> x) message_name)
+      enum_name (Pb_util.Option.string_of_option (fun x -> x) message_name)
 
 let () =
   Printexc.register_printer (fun exn ->

@@ -26,73 +26,71 @@
 (** Type compilation. 
  
     This module is responsible for the typing of the parsed tree. 
-    All field types are eventually resolved. 
+    All field types are eventually resolved_field_type. 
 
     Additionally this module provide convenient function
     to manipulate the typed tree. 
   *)
 
-(** {2 Accessors for Pbtt.field type} *)
+module Pt = Pb_parsing_parse_tree
+module Tt = Pb_typing_type_tree 
 
-val field_name   : ('a, 'b)  Pbtt.field -> string 
+(** {2 Accessors for Tt.field type} *)
+
+val field_name   : ('a, 'b)  Tt.field -> string 
 (** [field_name field] returns the name [field] *)
 
-val field_number : ('a, 'b)  Pbtt.field -> int
+val field_number : ('a, 'b)  Tt.field -> int
 (** [field_number field] returns the number of [field] *)
 
-val field_type   : ('a, 'b)  Pbtt.field -> 'a Pbtt.field_type
+val field_type   : ('a, 'b)  Tt.field -> 'a Tt.field_type
 (** [field_type field] returns the type of [field] *)
 
-val field_label  : ('a, 'b)  Pbtt.field -> 'b 
+val field_label  : ('a, 'b)  Tt.field -> 'b 
 (** [field_label field] returns the label of [field] *)
 
-val field_default : ('a, 'b)  Pbtt.field -> Pbpt.constant option
+val field_default : ('a, 'b)  Tt.field -> Pt.constant option
 (** [field_default field] returns the default value of [field] *)
 
-val field_options : ('a, 'b) Pbtt.field -> Pbpt.field_options
+val field_options : ('a, 'b) Tt.field -> Pt.field_options
 
-val find_field_option : Pbpt.field_options -> string -> Pbpt.constant option 
+val find_field_option : Pt.field_options -> string -> Pt.constant option 
 
-val field_option : ('a, 'b) Pbtt.field -> string -> Pbpt.constant option
+val field_option : ('a, 'b) Tt.field -> string -> Pt.constant option
 (** [field_option field option_name] returns the constant associated with 
     [option_name]. If the fields options does not contain [option_name] [None]
     is returned.
   *)
 
-val type_of_id : 'a Pbtt.proto -> int -> 'a Pbtt.proto_type 
+val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type 
 (** [type_of_id all_types id] returns the type associated with the given id, 
     @raise [Not_found] if the type is not in the all_types. 
   *)
 
-val string_of_message : int -> Pbtt.type_scope -> 'a Pbtt.message -> string 
+val string_of_message : int -> Tt.type_scope -> 'a Tt.message -> string 
 
-val message_option : 'a Pbtt.message -> string -> Pbpt.constant option 
+val message_option : 'a Tt.message -> string -> Pt.constant option 
 
-val enum_option : Pbtt.enum -> string -> Pbpt.constant option 
+val enum_option : Tt.enum -> string -> Pt.constant option 
 
-(** {2 Accessor for Pbtt.type *) 
+(** {2 Accessor for Tt.type *) 
 
-val type_id_of_type : 'a Pbtt.proto_type -> int 
-(** [type_id_of_type t] returns the type unique identifier. *)
-
-val type_name_of_type : 'a Pbtt.proto_type -> string
+val type_name_of_type : 'a Tt.proto_type -> string
 (** [type_name_of_type t] returns the type name (as defined in the message file) 
     of [t].
  *)
 
-val type_scope_of_type : 'a Pbtt.proto_type -> Pbtt.type_scope
+val type_scope_of_type : 'a Tt.proto_type -> Tt.type_scope
 (** [type_scope_of_type t] returns the scope of type [t]. *)
 
-val is_empty_message : 'a Pbtt.proto_type -> bool 
+val is_empty_message : 'a Tt.proto_type -> bool 
 (** [is_empty_message t] returns true if [t] is a message type and 
     has no fields defined. 
  *)
 
 (** {2 Creator} *) 
 
-val empty_scope : Pbtt.type_scope 
-
-val scope_of_package : string option -> Pbtt.type_scope
+val empty_scope : Tt.type_scope 
 
 (** {2 Compilation routines} *) 
 
@@ -100,7 +98,7 @@ val scope_of_package : string option -> Pbtt.type_scope
     {ul 
     {- Phase 1 focuses on flattenning the nested messages and doing a first round
     of type checking for the various message field. The field type will be
-    either matched with a basic type or parsed into the [unresolved] data
+    either matched with a basic type or parsed into the [unresolved_field_type] data
     structure. This step simply verify that the type definition is well formed
     but does not check the field type is pointing to an existing type. }
 
@@ -112,44 +110,3 @@ val scope_of_package : string option -> Pbtt.type_scope
     }
     (** TODO add the grouping phase *)
  *)
-
-val compile_proto_p1  : 
-  string -> 
-  Pbpt.proto ->
-  Pbtt.unresolved Pbtt.proto
-(** [compile_proto_p1 file_name proto] makes a first phase compilation of the 
-    parsed tree. 
- *)
-
-val compile_proto_p2: 
-  Pbtt.unresolved Pbtt.proto -> 
-  Pbtt.unresolved Pbtt.proto_type -> 
-  Pbtt.resolved Pbtt.proto_type
-
-val group : Pbtt.resolved Pbtt.proto -> Pbtt.resolved Pbtt.proto list 
-(** TODO *)
-
-(** {2 For testing only} *) 
-
-val compile_message_p2: 
-  Pbtt.unresolved Pbtt.proto -> 
-  Pbtt.type_scope -> 
-  Pbtt.unresolved Pbtt.message -> 
-  Pbtt.resolved Pbtt.message 
-
-val compile_message_p1 : 
-  ?parent_options:Pbpt.message_option list ->
-  string -> 
-  Pbpt.file_option list ->
-  Pbtt.type_scope -> 
-  Pbpt.message ->
-  Pbtt.unresolved Pbtt.proto
-
-val compile_oneof_p1: Pbpt.oneof -> Pbtt.unresolved Pbtt.oneof
-
-val compile_field_p1: 'a Pbpt.field -> (Pbtt.unresolved, 'a ) Pbtt.field 
-
-val find_all_types_in_field_scope : 
-  'a Pbtt.proto -> 
-  Pbtt.field_scope-> 
-  'a Pbtt.proto

@@ -49,6 +49,9 @@ val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a
 (** [string_fold_lefti f e0 s] will fold over each string character *)
 
 
+val indentation_prefix : int -> string 
+(** [indentation_prefix level] returns a string of [2 * level] spaces *)
+
 module Option : sig 
 
   val default : 'a -> 'a option -> 'a 

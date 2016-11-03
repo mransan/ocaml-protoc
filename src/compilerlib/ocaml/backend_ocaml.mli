@@ -33,9 +33,11 @@
     functionality. 
  *)
 
+module Tt = Pb_typing_type_tree 
+
 (** {2 Compilation } *) 
 
 val compile :
-  Pbtt.resolved Pbtt.proto ->
-  Pbtt.resolved Pbtt.proto_type -> 
+  Tt.resolved_field_type Tt.proto ->
+  Tt.resolved_field_type Tt.proto_type -> 
   Ocaml_types.type_ list 

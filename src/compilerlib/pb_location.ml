@@ -14,5 +14,5 @@ let from_lexbuf lexbuf =
   {file_name; line} 
 
 let to_string {file_name; line} = 
-  Printf.sprintf "%s:%i:0: " (Util.Option.default "" file_name) line 
+  Printf.sprintf "%s:%i:0: " (Pb_util.Option.default "" file_name) line 
 (* standard compilation error format *)
