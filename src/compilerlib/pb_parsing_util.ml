@@ -150,6 +150,7 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
 
   let proto = match proto with 
     | None -> Pt.({
+      proto_file_name = None;
       syntax;
       imports = [];
       package = None; 

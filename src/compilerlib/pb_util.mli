@@ -74,3 +74,5 @@ module Option : sig
       [f] when [x] is of the form [Some _]. *)
 
 end (* Option *)
+
+val read_file : string -> string 

@@ -3,7 +3,6 @@ module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree 
 
 val validate : 
-  string -> 
   Pt.proto ->
   Tt.unresolved_field_type Tt.proto
 (** [validate file_name proto] makes a first phase compilation of the 

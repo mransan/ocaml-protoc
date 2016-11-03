@@ -251,13 +251,15 @@ let rec validate_message
     make_proto_type ~file_name ~file_options ~id ~scope:message_scope ~spec 
   ] 
 
-let validate file_name proto  =  
+let validate proto  =  
   let {
     Pt.package; 
+    Pt.proto_file_name;
     messages; 
     enums; 
     file_options; _; 
   } = proto in 
+  let file_name = Pb_util.Option.default "" proto_file_name in 
   let scope = scope_of_package package in 
   let pbtt_msgs = List.fold_right (fun e pbtt_msgs -> 
     (compile_enum_p1 file_name file_options scope e) :: pbtt_msgs 
