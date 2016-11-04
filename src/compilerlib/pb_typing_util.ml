@@ -86,7 +86,6 @@ let enum_option {Tt.enum_options; _ } option_name =
   | cst -> Some cst 
   | exception Not_found -> None 
 
-
 let type_scope_of_type {Tt.scope; _ } = scope 
 
 let is_empty_message = function 

@@ -1,3 +1,28 @@
+(*
+  The MIT License (MIT)
+  
+  Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+*)
+
 module E = Pb_exception 
 module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree 
@@ -74,6 +99,12 @@ module Types_by_scope = struct
 
 end (* Types_by_scope *)
 
+(* this function returns the type path of a message which is the 
+ * packages followed by the enclosing message names and eventually 
+ * the message name of the given type. 
+ *
+ * If the type is an enum then [Failure] is raised. 
+ * TODO: change [Failure] to a [Pb_exception.Compilation_error] *) 
 let type_path_of_type {Tt.scope; spec; _ } = 
   match spec with
   | Tt.Enum _ -> assert(false) 
@@ -82,16 +113,15 @@ let type_path_of_type {Tt.scope; spec; _ } =
       packages @ message_names @ [message_name] 
   
 (* this function returns all the scope to search for a type starting 
-   by the most innner one first. 
-
-   if [message_scope] = ['Msg1'; 'Msg2'] and [field_scope] = ['Msg3'] then 
-   the following scopes will be returned:
-   [
-     ['Msg1'; 'Msg2'; 'Msg3'];  // This would be the scope of the current msg
-     ['Msg1'; 'Msg3'; ];        // Outer message scope
-     ['Msg3'; ]                 // Top level scope
-   ]
-*)
+ * by the most innner one first. 
+ *
+ * If [message_scope] = ['Msg1'; 'Msg2'] and [field_scope] = ['Msg3'] then 
+ * the following scopes will be returned:
+ * [
+ *   ['Msg1'; 'Msg2'; 'Msg3'];  // This would be the scope of the current msg
+ *   ['Msg1'; 'Msg3'; ];        // Outer message scope
+ *   ['Msg3'; ]                 // Top level scope
+ * ] *)
 let compute_search_type_paths unresolved_field_type message_type_path = 
   let {
     Tt.type_path = type_path; 
@@ -112,8 +142,8 @@ let compute_search_type_paths unresolved_field_type message_type_path =
 (* this function ensure that the default value of the field is correct 
  * with respect to its type when this latter is a builtin one. 
  *
- * in case the default value is invalid then an [Pb_exception.Compilation_error] 
- * is raised. 
+ * in case the default value is invalid then an 
+ * [Pb_exception.Compilation_error] is raised. 
  *
  * Note that this function also does type coersion when the default value 
  * is an int and the builtin type is a float or double. *) 

@@ -23,7 +23,7 @@
 
 *)
 
-(** Protobuffer Parse tree *)
+(** Protobuf Parse tree *)
 
 (** field constant *) 
 type constant = 

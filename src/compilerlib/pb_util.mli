@@ -55,8 +55,8 @@ val indentation_prefix : int -> string
 module Option : sig 
 
   val default : 'a -> 'a option -> 'a 
-  (** [option_default x o] returns [x] is [o] is [None] otherwise [y] when [o] is
-      [Some y]. 
+  (** [option_default x o] returns [x] is [o] is [None] otherwise [y] 
+      when [o] is [Some y]. 
    *)
   
   val min_value : 'a option -> 'a option -> 'a option

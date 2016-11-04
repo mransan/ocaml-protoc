@@ -23,9 +23,10 @@
 
 *)
 
+(** Parse Tree utilities *)
+
 (** This module defines convenient function to create and manipulate
-    the types define in the Ast module.
-  *)
+    the parse tree.  *)
 
 module Pt = Pb_parsing_parse_tree
 

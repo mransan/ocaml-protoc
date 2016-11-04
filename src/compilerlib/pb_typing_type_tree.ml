@@ -125,19 +125,17 @@ type 'a map = {
   map_options : Pt.field_options;
 }
 
-(** type scope 
-    
-    The scope of a type (message or enum) is defined by the package (defined in the 
-    top of the proto file as well as the messages above it since a 
-    message definition can be nested
- *)
+(* type scope 
+ *   
+ * The scope of a type (message or enum) is defined by the package 
+ * (defined in the top of the proto file as well as the messages above 
+ * it since a message definition can be nested *)
 type type_scope = {
   packages : string list; 
   message_names : string list; 
 }
 
-(** item for the message body
- *)
+(** item for the message body *)
 type 'a message_body_content = 
   | Message_field       of ('a, Pt.field_label) field 
   | Message_oneof_field of 'a oneof 

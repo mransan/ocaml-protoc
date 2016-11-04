@@ -23,14 +23,10 @@
 
 *)
 
-(** Type compilation. 
- 
-    This module is responsible for the typing of the parsed tree. 
-    All field types are eventually resolved_field_type. 
+(** Type Tree utilities *)
 
-    Additionally this module provide convenient function
-    to manipulate the typed tree. 
-  *)
+(** This module provides accessor/creator function to facilitate 
+    the manipulation of the type tree. *)
 
 module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree 
@@ -76,8 +72,8 @@ val enum_option : Tt.enum -> string -> Pt.constant option
 (** {2 Accessor for Tt.type *) 
 
 val type_name_of_type : 'a Tt.proto_type -> string
-(** [type_name_of_type t] returns the type name (as defined in the message file) 
-    of [t].
+(** [type_name_of_type t] returns the type name (as defined in the 
+    message file) of [t].
  *)
 
 val type_scope_of_type : 'a Tt.proto_type -> Tt.type_scope
@@ -91,22 +87,3 @@ val is_empty_message : 'a Tt.proto_type -> bool
 (** {2 Creator} *) 
 
 val empty_scope : Tt.type_scope 
-
-(** {2 Compilation routines} *) 
-
-(** Compilation is done in 2 phases. 
-    {ul 
-    {- Phase 1 focuses on flattenning the nested messages and doing a first round
-    of type checking for the various message field. The field type will be
-    either matched with a basic type or parsed into the [unresolved_field_type] data
-    structure. This step simply verify that the type definition is well formed
-    but does not check the field type is pointing to an existing type. }
-
-    {- Phase 2 focuses on type resolution. This phase implement the scoping
-    rules defined in the protocol buffer specification to resolve a field type 
-    to a previously defined message. This phase additionally check that field
-    numbers and field names are unique within a message but this logic should be
-    moved to Phase 1}
-    }
-    (** TODO add the grouping phase *)
- *)

@@ -1,3 +1,28 @@
+(*
+  The MIT License (MIT)
+  
+  Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+*)
+
 module E = Pb_exception 
 module Pt = Pb_parsing_parse_tree 
 module Tt = Pb_typing_type_tree
@@ -87,7 +112,7 @@ let not_found f : bool =
   with | Not_found -> true 
 
 let rec list_assoc2 x = function
-    [] -> raise Not_found
+  | [] -> raise Not_found
   | (a,b)::l -> if compare b x = 0 then a else list_assoc2 x l
 
 let make_proto_type ~file_name ~file_options ~id ~scope ~spec = { 
@@ -204,6 +229,10 @@ let rec validate_message
   ) (Acc.e0 parent_options) message_body in
   
   let message_body = List.rev acc.Acc.message_body in 
+
+  (* TODO: Maybe [validate_duplicate] should be in 
+     [Pb_parsing_util.verify_message] along with 
+     the proto3 invariant. *)
   
   (* Both field name and field number must be unique 
    * within a message scope. This includes the field in a 
@@ -259,11 +288,14 @@ let validate proto  =
     enums; 
     file_options; _; 
   } = proto in 
+
   let file_name = Pb_util.Option.default "" proto_file_name in 
   let scope = scope_of_package package in 
+
   let pbtt_msgs = List.fold_right (fun e pbtt_msgs -> 
     (compile_enum_p1 file_name file_options scope e) :: pbtt_msgs 
   ) enums [] in
+
   List.fold_left (fun pbtt_msgs pbpt_msg -> 
     pbtt_msgs @ validate_message file_name file_options scope pbpt_msg
   ) pbtt_msgs messages 
