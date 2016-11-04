@@ -1,26 +1,27 @@
 module T = Ocaml_types
-module F = Fmt 
-module E = Exception 
-module L = Logger 
+module F = Pb_codegen_formatting 
+module E = Pb_exception 
+module L = Pb_logger 
+module Pt = Pb_parsing_parse_tree
 
 open Codegen_util
 
 let default_value_of_basic_type ?field_name basic_type field_default = 
   match basic_type, field_default with 
   | T.Bt_string, None -> "\"\""
-  | T.Bt_string, Some (Pbpt.Constant_string s) -> sp "\"%s\"" s 
+  | T.Bt_string, Some (Pt.Constant_string s) -> sp "\"%s\"" s 
   | T.Bt_float , None -> "0." 
-  | T.Bt_float , Some (Pbpt.Constant_float f) -> string_of_float f
+  | T.Bt_float , Some (Pt.Constant_float f) -> string_of_float f
   | T.Bt_int   , None -> "0"
-  | T.Bt_int   , Some (Pbpt.Constant_int i) -> string_of_int i
+  | T.Bt_int   , Some (Pt.Constant_int i) -> string_of_int i
   | T.Bt_int32 , None -> "0l"
-  | T.Bt_int32 , Some (Pbpt.Constant_int i) -> sp "%il" i
+  | T.Bt_int32 , Some (Pt.Constant_int i) -> sp "%il" i
   | T.Bt_int64 , None -> "0L"
-  | T.Bt_int64 , Some (Pbpt.Constant_int i) -> sp "%iL" i
+  | T.Bt_int64 , Some (Pt.Constant_int i) -> sp "%iL" i
   | T.Bt_bytes , None -> "Bytes.create 0"  
-  | T.Bt_bytes , Some (Pbpt.Constant_string s) -> sp "Bytes.of_string \"%s\"" s  
+  | T.Bt_bytes , Some (Pt.Constant_string s) -> sp "Bytes.of_string \"%s\"" s  
   | T.Bt_bool  , None -> "false"
-  | T.Bt_bool  , Some (Pbpt.Constant_bool b) -> string_of_bool b
+  | T.Bt_bool  , Some (Pt.Constant_bool b) -> string_of_bool b
   | _ -> E.invalid_default_value 
     ?field_name ~info:"invalid default type" ()
 

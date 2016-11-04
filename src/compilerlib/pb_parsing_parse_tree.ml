@@ -23,7 +23,7 @@
 
 *)
 
-(** Protobuffer Parse tree *)
+(** Protobuf Parse tree *)
 
 (** field constant *) 
 type constant = 
@@ -150,6 +150,7 @@ type import = {
 (** Definition of a protobuffer message file. 
  *)
 type proto = {
+  proto_file_name : string option;
   syntax : string option;
   imports : import list; 
   file_options : file_option list; 

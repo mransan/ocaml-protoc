@@ -1,34 +1,36 @@
 let parse s  = 
-  Pbparser.extension_range_list_ Pblexer.lexer (Lexing.from_string s)
+  Pb_parsing_parser.extension_range_list_ Pb_parsing_lexer.lexer (Lexing.from_string s)
 
 let parse_extension s  = 
-  Pbparser.extension_ Pblexer.lexer (Lexing.from_string s)
+  Pb_parsing_parser.extension_ Pb_parsing_lexer.lexer (Lexing.from_string s)
 
 let parse_reserved s  = 
-  Pbparser.reserved_ Pblexer.lexer (Lexing.from_string s)
+  Pb_parsing_parser.reserved_ Pb_parsing_lexer.lexer (Lexing.from_string s)
+
+module Pt = Pb_parsing_parse_tree
 
 let () = 
   let s ="1" in 
   let ev = parse s in 
-  assert(Pbpt.Extension_single_number 1 = List.hd ev); 
+  assert(Pt.Extension_single_number 1 = List.hd ev); 
   ()
 
 let () = 
   let s ="1 to 2" in 
   let ev = parse s in 
-  assert(Pbpt.Extension_range (1, Pbpt.To_number 2) = List.hd ev); 
+  assert(Pt.Extension_range (1, Pt.To_number 2) = List.hd ev); 
   ()
 
 let () = 
   let s ="1 to -1" in 
   let ev = parse s in 
-  assert(Pbpt.Extension_range (1, Pbpt.To_number (-1)) = List.hd ev); 
+  assert(Pt.Extension_range (1, Pt.To_number (-1)) = List.hd ev); 
   ()
 
 let () = 
   let s ="1 to max" in 
   let ev = parse s in 
-  assert(Pbpt.Extension_range (1, Pbpt.To_max) = List.hd ev); 
+  assert(Pt.Extension_range (1, Pt.To_max) = List.hd ev); 
   ()
 
 let () = 
@@ -37,10 +39,10 @@ let () =
   begin 
     match ev with
     | ev1::ev2::ev3::ev4::[] -> (
-      assert(Pbpt.Extension_single_number 1 = ev1); 
-      assert(Pbpt.Extension_single_number 2 = ev2); 
-      assert(Pbpt.Extension_range (3, Pbpt.To_number 10) = ev3); 
-      assert(Pbpt.Extension_range (11, Pbpt.To_max) = ev4)
+      assert(Pt.Extension_single_number 1 = ev1); 
+      assert(Pt.Extension_single_number 2 = ev2); 
+      assert(Pt.Extension_range (3, Pt.To_number 10) = ev3); 
+      assert(Pt.Extension_range (11, Pt.To_max) = ev4)
     ) 
     | _ -> (assert false: unit)
   end;
@@ -52,10 +54,10 @@ let () =
   begin 
     match ev with
     | ev1::ev2::ev3::ev4::[] -> (
-      assert(Pbpt.Extension_single_number 1 = ev1); 
-      assert(Pbpt.Extension_single_number 2 = ev2); 
-      assert(Pbpt.Extension_range (3, Pbpt.To_number 10) = ev3); 
-      assert(Pbpt.Extension_range (11, Pbpt.To_max) = ev4)
+      assert(Pt.Extension_single_number 1 = ev1); 
+      assert(Pt.Extension_single_number 2 = ev2); 
+      assert(Pt.Extension_range (3, Pt.To_number 10) = ev3); 
+      assert(Pt.Extension_range (11, Pt.To_max) = ev4)
     ) 
     | _ -> (assert false: unit)
   end;
@@ -67,10 +69,10 @@ let () =
   begin 
     match ev with
     | ev1::ev2::ev3::ev4::[] -> (
-      assert(Pbpt.Extension_single_number 1 = ev1); 
-      assert(Pbpt.Extension_single_number 2 = ev2); 
-      assert(Pbpt.Extension_range (3, Pbpt.To_number 10) = ev3); 
-      assert(Pbpt.Extension_range (11, Pbpt.To_max) = ev4)
+      assert(Pt.Extension_single_number 1 = ev1); 
+      assert(Pt.Extension_single_number 2 = ev2); 
+      assert(Pt.Extension_range (3, Pt.To_number 10) = ev3); 
+      assert(Pt.Extension_range (11, Pt.To_max) = ev4)
     ) 
     | _ -> (assert false: unit)
   end;

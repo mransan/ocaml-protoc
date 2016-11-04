@@ -23,7 +23,9 @@
 
 *)
 {
-open Pbparser 
+open Pb_parsing_parser
+
+module Loc = Pb_location 
 
 let resolve_identifier loc ident = 
   match ident, loc with 

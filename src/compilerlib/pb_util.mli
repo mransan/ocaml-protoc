@@ -49,11 +49,14 @@ val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a
 (** [string_fold_lefti f e0 s] will fold over each string character *)
 
 
+val indentation_prefix : int -> string 
+(** [indentation_prefix level] returns a string of [2 * level] spaces *)
+
 module Option : sig 
 
   val default : 'a -> 'a option -> 'a 
-  (** [option_default x o] returns [x] is [o] is [None] otherwise [y] when [o] is
-      [Some y]. 
+  (** [option_default x o] returns [x] is [o] is [None] otherwise [y] 
+      when [o] is [Some y]. 
    *)
   
   val min_value : 'a option -> 'a option -> 'a option
@@ -71,3 +74,5 @@ module Option : sig
       [f] when [x] is of the form [Some _]. *)
 
 end (* Option *)
+
+val read_file : string -> string 

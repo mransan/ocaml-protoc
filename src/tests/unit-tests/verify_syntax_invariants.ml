@@ -1,13 +1,13 @@
-module E = Exception
+module E = Pb_exception
 
 let parse s =
-  Pbparser.proto_ Pblexer.lexer (Lexing.from_string s)
+  Pb_parsing_parser.proto_ Pb_parsing_lexer.lexer (Lexing.from_string s)
 
 (* invalid proto 2 field *) 
 
 let () =
   let proto = parse "message M { string no_label = 1; }" in  
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
@@ -20,7 +20,7 @@ let () =
       string no_label = 1; \
     }" in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
@@ -38,7 +38,7 @@ let () =
       } \
     }" in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> ()
   | exception E.Compilation_error _ -> assert(false)
 
@@ -51,7 +51,7 @@ let () =
       required string no_label = 1; \
     }" in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
@@ -62,7 +62,7 @@ let () =
       required string no_label = 1; \
     }}" in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
@@ -75,7 +75,7 @@ let () =
     message M { } \
     " in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
@@ -86,7 +86,7 @@ let () =
       enum E { EN1 = 1; EN2 = 2; } \
     }" in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> assert(false) 
   | exception E.Compilation_error _ -> () 
   
@@ -100,7 +100,7 @@ let () =
       enum E { EN0 = 0; EN2 = 2; } \
     }" in  
 
-  match Pbpt_util.verify_syntax_invariants proto with
+  match Pb_parsing_util.verify_syntax_invariants proto with
   | () -> () 
   | exception E.Compilation_error _ -> assert(false)
 

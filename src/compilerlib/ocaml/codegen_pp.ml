@@ -1,7 +1,7 @@
 module T = Ocaml_types 
-module F = Fmt
-module L = Logger
-module E = Exception
+module F = Pb_codegen_formatting
+module L = Pb_logger
+module E = Pb_exception
 
 open Codegen_util
 

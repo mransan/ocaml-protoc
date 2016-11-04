@@ -23,46 +23,33 @@
 
 *)
 
-type scope = {
-  mutable items : item list; 
-} 
+(** Type Tree construction and Validation *)
 
-and item = 
-  | Line of string 
-  | Scope of scope 
+(** This module focuses on building the Type tree from the parse tree
+    and provides a number of validation in doing so. 
 
-let empty_scope () = 
-  {items = []} 
+    Not that the field types are not resolved, and the returned type tree is
+    hence of type [unresolved_field_type Pb_typing_type_tree.proto_type]. 
+    The type resolution is done in [Pb_typing_resolution] *)
 
-let line scope s =
-  scope.items <- (Line s)::scope.items  
+module Pt = Pb_parsing_parse_tree 
+module Tt = Pb_typing_type_tree 
 
-let empty_line scope = 
-  line scope "" 
+(** {2 Type tree construction} *) 
 
-let scope scope f = 
-  let sub_scope = empty_scope () in 
-  f sub_scope; 
-  scope.items <- (Scope sub_scope)::scope.items  
+val validate : 
+  Pt.proto ->
+  Tt.unresolved_field_type Tt.proto
+(** [validate file_name proto] makes a first phase compilation of the 
+    parsed tree.  *)
 
-let indentation_prefix =
-  let h = Hashtbl.create 16 in 
-  fun n ->  
-    match Hashtbl.find h n with 
-    | s -> s 
-    | exception Not_found -> 
-      let s = String.make (2 * n) ' ' in 
-      Hashtbl.add h n s; 
-      s
+(** {2 Testing Only} *) 
 
-let print scope = 
-  let rec loop acc i = function
-    | (Line s)::tl -> 
-      loop ((indentation_prefix i ^ s)::acc) i tl  
-    | (Scope {items})::tl -> 
-      let sub = loop [] (i + 1) items in  
-      loop (sub @ acc) i tl  
-    | [] -> acc
-  in 
+val validate_message : 
+  ?parent_options:Pt.message_option list ->
+  string -> 
+  Pt.file_option list ->
+  Tt.type_scope -> 
+  Pt.message ->
+  Tt.unresolved_field_type Tt.proto
 
-  String.concat "\n" @@ loop [] 0 scope.items 

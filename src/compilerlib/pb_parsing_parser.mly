@@ -21,13 +21,14 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
   *)
+
 */
 
 %token REQUIRED
 %token OPTIONAL
 %token REPEATED
 
-%token <Loc.t> ONE_OF
+%token <Pb_location.t> ONE_OF
 
 %token MESSAGE
 
@@ -35,7 +36,7 @@
 
 %token PACKAGE
 
-%token <Loc.t> IMPORT
+%token <Pb_location.t> IMPORT
 %token PUBLIC
 
 %token OPTION
@@ -67,44 +68,44 @@
 %token <string> STRING 
 %token <int>    INT
 %token <float>  FLOAT
-%token <Loc.t * string> IDENT
+%token <Pb_location.t * string> IDENT
 %token EOF
 
 %start field_options_
-%type <Pbpt.field_options> field_options_
+%type <Pb_parsing_parse_tree.field_options> field_options_
 
 %start normal_field_ 
-%type <Pbpt.field_label Pbpt.field> normal_field_
+%type <Pb_parsing_parse_tree.field_label Pb_parsing_parse_tree.field> normal_field_
 
 %start enum_value_ 
-%type <Pbpt.enum_body_content> enum_value_
+%type <Pb_parsing_parse_tree.enum_body_content> enum_value_
 
 %start enum_
-%type <Pbpt.enum> enum_
+%type <Pb_parsing_parse_tree.enum> enum_
 
 %start oneof_
-%type <Pbpt.oneof> oneof_
+%type <Pb_parsing_parse_tree.oneof> oneof_
 
 %start message_
-%type <Pbpt.message> message_
+%type <Pb_parsing_parse_tree.message> message_
 
 %start proto_ 
-%type <Pbpt.proto> proto_
+%type <Pb_parsing_parse_tree.proto> proto_
 
 %start import_ 
-%type <Pbpt.import> import_
+%type <Pb_parsing_parse_tree.import> import_
 
 %start option_
-%type <Pbpt.file_option> option_
+%type <Pb_parsing_parse_tree.file_option> option_
 
 %start extension_range_list_ 
-%type <Pbpt.extension_range list> extension_range_list_ 
+%type <Pb_parsing_parse_tree.extension_range list> extension_range_list_ 
 
 %start extension_
-%type <Pbpt.extension_range list> extension_
+%type <Pb_parsing_parse_tree.extension_range list> extension_
 
 %start reserved_
-%type <Pbpt.extension_range list> reserved_
+%type <Pb_parsing_parse_tree.extension_range list> reserved_
 
 %%
 
@@ -127,41 +128,41 @@ reserved_        : reserved      EOF {$1}
 proto_           : proto         EOF {$1} 
 
 proto:
-  | syntax proto_content {Pbpt_util.proto ~syntax:$1 ~proto:$2 ()}
+  | syntax proto_content {Pb_parsing_util.proto ~syntax:$1 ~proto:$2 ()}
   | proto_content        {$1}
 
 proto_content:
-  | import              {Pbpt_util.proto ~import:$1  ()}
-  | option              {Pbpt_util.proto ~file_option:$1  ()}
-  | package_declaration {Pbpt_util.proto ~package:$1 ()}
-  | message             {Pbpt_util.proto ~message:$1 ()}
-  | enum                {Pbpt_util.proto ~enum:$1 ()}
-  | extend              {Pbpt_util.proto ~extend:$1 ()}
+  | import              {Pb_parsing_util.proto ~import:$1  ()}
+  | option              {Pb_parsing_util.proto ~file_option:$1  ()}
+  | package_declaration {Pb_parsing_util.proto ~package:$1 ()}
+  | message             {Pb_parsing_util.proto ~message:$1 ()}
+  | enum                {Pb_parsing_util.proto ~enum:$1 ()}
+  | extend              {Pb_parsing_util.proto ~extend:$1 ()}
 
-  | import              proto {Pbpt_util.proto ~import:$1  ~proto:$2 ()}
-  | option              proto {Pbpt_util.proto ~file_option:$1  ~proto:$2 ()}
-  | package_declaration proto {Pbpt_util.proto ~package:$1 ~proto:$2 ()}
-  | message             proto {Pbpt_util.proto ~message:$1 ~proto:$2 ()}
-  | enum                proto {Pbpt_util.proto ~enum:$1 ~proto:$2 ()}
-  | extend              proto {Pbpt_util.proto ~extend:$1 ~proto:$2 ()}
+  | import              proto {Pb_parsing_util.proto ~import:$1  ~proto:$2 ()}
+  | option              proto {Pb_parsing_util.proto ~file_option:$1  ~proto:$2 ()}
+  | package_declaration proto {Pb_parsing_util.proto ~package:$1 ~proto:$2 ()}
+  | message             proto {Pb_parsing_util.proto ~message:$1 ~proto:$2 ()}
+  | enum                proto {Pb_parsing_util.proto ~enum:$1 ~proto:$2 ()}
+  | extend              proto {Pb_parsing_util.proto ~extend:$1 ~proto:$2 ()}
 
 syntax:
   | SYNTAX EQUAL STRING semicolon { $3 }
 
 import:
-  | IMPORT STRING semicolon         { Pbpt_util.import $2} 
-  | IMPORT PUBLIC STRING semicolon  { Pbpt_util.import ~public:() $3 }
-  | IMPORT IDENT STRING semicolon   { Exception.invalid_import_qualifier $1 } /*HT*/ 
+  | IMPORT STRING semicolon         { Pb_parsing_util.import $2} 
+  | IMPORT PUBLIC STRING semicolon  { Pb_parsing_util.import ~public:() $3 }
+  | IMPORT IDENT STRING semicolon   { Pb_exception.invalid_import_qualifier $1 } /*HT*/ 
 
 package_declaration :
   | PACKAGE IDENT semicolon {snd $2}  
 
 message : 
   | MESSAGE IDENT LBRACE message_body_content_list rbrace { 
-    Pbpt_util.message ~content:$4 (snd $2)
+    Pb_parsing_util.message ~content:$4 (snd $2)
   } 
   | MESSAGE IDENT LBRACE rbrace { 
-    Pbpt_util.message ~content:[]  (snd $2)
+    Pb_parsing_util.message ~content:[]  (snd $2)
   } 
 
 message_body_content_list:
@@ -169,21 +170,21 @@ message_body_content_list:
   | message_body_content message_body_content_list { $1::$2 }
 
 message_body_content :
-  | normal_field { Pbpt_util.message_body_field  $1 }
-  | map          { Pbpt_util.message_body_map_field $1 }
-  | oneof        { Pbpt_util.message_body_oneof_field $1 }
-  | message      { Pbpt_util.message_body_sub $1 }
-  | enum         { Pbpt_util.message_body_enum $1 }
-  | extension    { Pbpt_util.message_body_extension $1 }
-  | reserved     { Pbpt_util.message_body_reserved $1 }
-  | option       { Pbpt_util.message_body_option $1 }
+  | normal_field { Pb_parsing_util.message_body_field  $1 }
+  | map          { Pb_parsing_util.message_body_map_field $1 }
+  | oneof        { Pb_parsing_util.message_body_oneof_field $1 }
+  | message      { Pb_parsing_util.message_body_sub $1 }
+  | enum         { Pb_parsing_util.message_body_enum $1 }
+  | extension    { Pb_parsing_util.message_body_extension $1 }
+  | reserved     { Pb_parsing_util.message_body_reserved $1 }
+  | option       { Pb_parsing_util.message_body_option $1 }
 
 extend : 
   | EXTEND IDENT LBRACE normal_field_list rbrace {
-    Pbpt_util.extend (snd $2) $4 
+    Pb_parsing_util.extend (snd $2) $4 
   }
   | EXTEND IDENT LBRACE rbrace {
-    Pbpt_util.extend (snd $2) [] 
+    Pb_parsing_util.extend (snd $2) [] 
   }
 
 normal_field_list :
@@ -202,16 +203,16 @@ extension_range_list :
   | extension_range COMMA extension_range_list {$1 :: $3} 
 
 extension_range :
-  | INT            { Pbpt_util.extension_range_single_number $1} 
-  | INT TO INT     { Pbpt_util.extension_range_range $1 (`Number $3) } 
-  | INT TO MAX     { Pbpt_util.extension_range_range $1 `Max } 
+  | INT            { Pb_parsing_util.extension_range_single_number $1} 
+  | INT TO INT     { Pb_parsing_util.extension_range_range $1 (`Number $3) } 
+  | INT TO MAX     { Pb_parsing_util.extension_range_range $1 `Max } 
 
 oneof :
   | ONE_OF IDENT LBRACE oneof_field_list rbrace { 
-    Pbpt_util.oneof ~fields:$4 (snd $2) 
+    Pb_parsing_util.oneof ~fields:$4 (snd $2) 
   }  
   | ONE_OF LBRACE oneof_field_list rbrace { 
-    Exception.missing_one_of_name $1
+    Pb_exception.missing_one_of_name $1
   }  
 
 oneof_field_list :
@@ -220,32 +221,32 @@ oneof_field_list :
 
 oneof_field : 
   | IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 ~options:$5 $2  
+    Pb_parsing_util.oneof_field ~type_:(snd $1) ~number:$4 ~options:$5 $2  
   } 
   | IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.oneof_field ~type_:(snd $1) ~number:$4 $2  
+    Pb_parsing_util.oneof_field ~type_:(snd $1) ~number:$4 $2  
   } 
 
 map :
   | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT semicolon {
-    Pbpt_util.map ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+    Pb_parsing_util.map ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
   }
   | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT field_options semicolon {
-    Pbpt_util.map ~options:$10 ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+    Pb_parsing_util.map ~options:$10 ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
   }
 
 normal_field : 
   | label IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 ~options:$6 $3
+    Pb_parsing_util.field ~label:$1 ~type_:(snd $2) ~number:$5 ~options:$6 $3
   } 
   | label IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
+    Pb_parsing_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
   } 
   | IDENT field_name EQUAL INT field_options semicolon { 
-    Pbpt_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 ~options:$5 $2
+    Pb_parsing_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 ~options:$5 $2
   }
   | IDENT field_name EQUAL INT semicolon { 
-    Pbpt_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 $2
+    Pb_parsing_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 $2
   }
 
 field_name :
@@ -297,36 +298,36 @@ option :
   | OPTION option_identifier EQUAL constant semicolon { ($2, $4) }
 
 constant : 
-  | INT        { Pbpt.Constant_int $1 }
-  | FLOAT      { Pbpt.Constant_float $1 }
+  | INT        { Pb_parsing_parse_tree.Constant_int $1 }
+  | FLOAT      { Pb_parsing_parse_tree.Constant_float $1 }
   | IDENT      { 
     match (snd $1) with 
-    | "true"   -> Pbpt.Constant_bool true 
-    | "false"  -> Pbpt.Constant_bool false 
-    | litteral -> Pbpt.Constant_litteral litteral 
+    | "true"   -> Pb_parsing_parse_tree.Constant_bool true 
+    | "false"  -> Pb_parsing_parse_tree.Constant_bool false 
+    | litteral -> Pb_parsing_parse_tree.Constant_litteral litteral 
   }
-  | STRING     { Pbpt.Constant_string $1 }; 
+  | STRING     { Pb_parsing_parse_tree.Constant_string $1 }; 
 
 enum:
-  | ENUM IDENT LBRACE enum_values rbrace { Pbpt_util.enum ~enum_body:$4 (snd $2) } 
+  | ENUM IDENT LBRACE enum_values rbrace { Pb_parsing_util.enum ~enum_body:$4 (snd $2) } 
 
 enum_values:
   |                                { [] }
   | enum_body_content enum_values  { $1::$2 }
 
 enum_body_content :
-  | option     { Pbpt_util.enum_option $1 }
+  | option     { Pb_parsing_util.enum_option $1 }
   | enum_value { $1 }
 
 enum_value : 
-  | IDENT EQUAL INT semicolon  { Pbpt_util.enum_value ~int_value:$3 (snd $1) } 
+  | IDENT EQUAL INT semicolon  { Pb_parsing_util.enum_value ~int_value:$3 (snd $1) } 
   | IDENT EQUAL INT { 
-    Exception.missing_semicolon_for_enum_value (snd $1) (fst $1) 
+    Pb_exception.missing_semicolon_for_enum_value (snd $1) (fst $1) 
   }
-  | IDENT EQUAL INT COMMA { Exception.invalid_enum_specification (snd $1) (fst $1)}
-  | IDENT COMMA           { Exception.invalid_enum_specification (snd $1) (fst $1)}
-  | IDENT SEMICOLON       { Exception.invalid_enum_specification (snd $1) (fst $1)}
-  | IDENT                 { Exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT EQUAL INT COMMA { Pb_exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT COMMA           { Pb_exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT SEMICOLON       { Pb_exception.invalid_enum_specification (snd $1) (fst $1)}
+  | IDENT                 { Pb_exception.invalid_enum_specification (snd $1) (fst $1)}
 
 semicolon:
   | SEMICOLON           {()} 

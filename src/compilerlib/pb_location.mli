@@ -23,21 +23,19 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
- *)
+(** File Location utilities *)
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
+type t 
+(** Location type *)
 
-    After compilation this module also expose code generation 
-    functionality. 
- *)
+(** {2 Creators} *)
 
-module Tt = Pb_typing_type_tree 
+val from_lexbuf : Lexing.lexbuf -> t 
+(** [from_lexbuf lexbuf] create a location from the current lexbuf location *)
 
-(** {2 Compilation } *) 
+(** {2 Accessors} *) 
 
-val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
+(** {2 Utilities} *)
+
+val to_string : t -> string 
+(** [to_string loc] convert to the compiler error string *) 

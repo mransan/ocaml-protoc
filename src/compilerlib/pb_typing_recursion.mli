@@ -23,21 +23,24 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
- *)
+(** Mutually Recursive Type resolution *) 
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
+(** The protobuf syntax allows the definition of mutually recursive
+    types, however this declaration is implicit (ie no dedicated syntax
+    to group together types which are mutually recursive). 
 
-    After compilation this module also expose code generation 
-    functionality. 
- *)
-
+    OCaml requires mutually recursive types to be defined with an explicit 
+    syntax (using the [and] keyword), therefore it is necessary to 
+    find all the mutually recursive protobuf types. 
+    
+    This module performs the recursion analysis using the Tarjan graph 
+    algorithm to find all the Strongly Connnected Components. *)
+     
 module Tt = Pb_typing_type_tree 
 
-(** {2 Compilation } *) 
-
-val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
+val group : 
+  Tt.resolved_field_type Tt.proto -> 
+  Tt.resolved_field_type Tt.proto list 
+  (** [group types] returns the list of all the mutually recursive group 
+      of types in reverse order of dependency. In other the last group of 
+      types of the returned list don't depend on any other types. *)

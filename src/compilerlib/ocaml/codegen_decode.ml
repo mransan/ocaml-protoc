@@ -1,6 +1,6 @@
 module T   = Ocaml_types 
-module E   = Exception 
-module F   = Fmt
+module E   = Pb_exception 
+module F   = Pb_codegen_formatting
 
 let sp = Codegen_util.sp
 

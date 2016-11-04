@@ -25,6 +25,8 @@
 
 (** Generated OCaml type for protobuf messages *) 
 
+module Pt = Pb_parsing_parse_tree
+
 type payload_kind = 
   | Pk_varint of bool (** zigzag *)  
   | Pk_bits32
@@ -55,7 +57,7 @@ type field_type =
   | Ft_basic_type        of basic_type
   | Ft_user_defined_type of user_defined_type
 
-type default_value = Pbpt.constant option 
+type default_value = Pt.constant option 
 
 type associative_type  = 
   | At_list

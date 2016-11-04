@@ -1,6 +1,6 @@
 
 module T = Ocaml_types
-module F = Fmt
+module F = Pb_codegen_formatting
 
 open Codegen_util
 

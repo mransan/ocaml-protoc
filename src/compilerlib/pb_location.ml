@@ -23,21 +23,21 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
- *)
+type t = {
+  file_name : string option; 
+  line : int; 
+} 
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
+let from_lexbuf lexbuf = 
+  let file_name = match lexbuf.Lexing.lex_curr_p.Lexing.pos_fname with
+    | "" -> None
+    | x  -> Some x 
+  in 
 
-    After compilation this module also expose code generation 
-    functionality. 
- *)
+  let line = lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum in 
 
-module Tt = Pb_typing_type_tree 
+  {file_name; line} 
 
-(** {2 Compilation } *) 
-
-val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
+let to_string {file_name; line} = 
+  Printf.sprintf "%s:%i:0: " (Pb_util.Option.default "" file_name) line 
+(* standard compilation error format *)

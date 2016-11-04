@@ -23,21 +23,24 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
- *)
+(** Typing Compilation Step*) 
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
-
-    After compilation this module also expose code generation 
-    functionality. 
- *)
+(** This module performs the typing step in the compilation process by 
+    doing the following:
+    {ul
+    {- Type tree construction and validation}
+    {- Type resolution}
+    {- Recursion analysis by grouping together all the mutually recursive
+       types.}
+    } *) 
 
 module Tt = Pb_typing_type_tree 
 
-(** {2 Compilation } *) 
+type type_ = Tt.resolved_field_type Tt.proto_type
 
-val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
+val perform_typing :
+  Pb_parsing_parse_tree.proto list -> 
+  type_ list list 
+(** [perform_typing parsed_tree] returned the type tree organized in groups 
+    of fully resolved types. Each group contains all the mutually recursive 
+    types and the type group by reverse dependency order. *) 

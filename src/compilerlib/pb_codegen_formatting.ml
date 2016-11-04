@@ -23,21 +23,36 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
- *)
+type scope = {
+  mutable items : item list; 
+} 
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
+and item = 
+  | Line of string 
+  | Scope of scope 
 
-    After compilation this module also expose code generation 
-    functionality. 
- *)
+let empty_scope () = 
+  {items = []} 
 
-module Tt = Pb_typing_type_tree 
+let line scope s =
+  scope.items <- (Line s)::scope.items  
 
-(** {2 Compilation } *) 
+let empty_line scope = 
+  line scope "" 
 
-val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
+let scope scope f = 
+  let sub_scope = empty_scope () in 
+  f sub_scope; 
+  scope.items <- (Scope sub_scope)::scope.items  
+
+let print scope = 
+  let rec loop acc i = function
+    | (Line s)::tl -> 
+      loop ((Pb_util.indentation_prefix i ^ s)::acc) i tl  
+    | (Scope {items})::tl -> 
+      let sub = loop [] (i + 1) items in  
+      loop (sub @ acc) i tl  
+    | [] -> acc
+  in 
+
+  String.concat "\n" @@ loop [] 0 scope.items 

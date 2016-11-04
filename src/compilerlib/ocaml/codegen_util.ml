@@ -67,7 +67,7 @@ let function_name_of_user_defined prefix = function
     sp "%s_%s" prefix udt_type_name 
 
 let caml_file_name_of_proto_file_name proto = 
-  let splitted = Util.rev_split_by_char '.' proto in 
+  let splitted = Pb_util.rev_split_by_char '.' proto in 
   if List.length splitted < 2 || 
      List.hd splitted <> "proto" 
   then failwith "Proto file has no valid extension"

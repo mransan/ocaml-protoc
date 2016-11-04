@@ -65,7 +65,7 @@ module Tarjan = struct
 
   let rec strong_connect (g:tgraph) sccs stack (index:int) (v:tnode)  = 
   
-    Logger.log "[Graph] processing v [%i], index: %i\n" v.core.id index; 
+    Pb_logger.log "[Graph] processing v [%i], index: %i\n" v.core.id index; 
     
     v.index <- Some index; 
     v.lowlink <- Some index; 
@@ -76,26 +76,26 @@ module Tarjan = struct
       List.fold_left (fun (sccs, stack, index) id -> 
         let (w:tnode)  = Int_map.find id g in 
   
-        Logger.log "[Graph] sub w [%i], w.index: %s\n" 
-          w.core.id (Util.Option.string_of_option string_of_int w.index);
+        Pb_logger.log "[Graph] sub w [%i], w.index: %s\n" 
+          w.core.id (Pb_util.Option.string_of_option string_of_int w.index);
         match w.index with 
         | Some _ -> 
           begin if w.on_stack 
-          then v.lowlink <- Util.Option.min_value v.lowlink w.index end;
+          then v.lowlink <- Pb_util.Option.min_value v.lowlink w.index end;
           (sccs, stack, index) 
         | None ->  
           let sccs, stack, index = strong_connect g sccs stack (index + 1) w in  
-          v.lowlink <- Util.Option.min_value v.lowlink w.lowlink;
+          v.lowlink <- Pb_util.Option.min_value v.lowlink w.lowlink;
           (sccs, stack, index) 
       ) (sccs, stack, index) v.core.sub 
     in 
   
-    Logger.log "[Graph] after sub for v [%i], lowlink: %s, index: %s\n" 
+    Pb_logger.log "[Graph] after sub for v [%i], lowlink: %s, index: %s\n" 
       v.core.id 
-      (Util.Option.string_of_option string_of_int v.lowlink)
-      (Util.Option.string_of_option string_of_int v.index);
+      (Pb_util.Option.string_of_option string_of_int v.lowlink)
+      (Pb_util.Option.string_of_option string_of_int v.index);
   
-    Logger.log "[Graph]   -> stack : %s\n" 
+    Pb_logger.log "[Graph]   -> stack : %s\n" 
       ("[" ^ 
        (String.concat 
          ";" 
@@ -103,7 +103,7 @@ module Tarjan = struct
        ) ^ 
        "]");
 
-    if Util.Option.eq_value v.lowlink v.index 
+    if Pb_util.Option.eq_value v.lowlink v.index 
     then 
       let scc, stack, _ = List.fold_left (fun (scc, stack, splitted) n -> 
         if splitted 

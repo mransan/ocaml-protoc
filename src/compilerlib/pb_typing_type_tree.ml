@@ -23,20 +23,24 @@
 
 *)
 
+module Pt = Pb_parsing_parse_tree
+
 (** Protobuffer Typed tree. 
 
     The typetree type is parametrized to allow for 2 phase compilation. 
  *)
 
-(** scope of the field type when the field is a message type. 
+
+
+(** Scope path of a type used for a message field.
     
     For instance in the following field defintion:
 
     [required foo.bar.Msg1 f = 1]
 
-    The [field_scope] would be [["foo"; "bar"]]
+    The [type_path] would be [["foo"; "bar"]]
   *)
-type field_scope = string list 
+type type_path = string list 
 
 
 (** In the first phase of the compilation 
@@ -56,8 +60,8 @@ type field_scope = string list
       from_root = false
     }
  *)
-type unresolved = {
-  scope     : field_scope; 
+type unresolved_field_type = {
+  type_path : type_path; 
   type_name : string; 
   from_root : bool;  (** from_root indicates that the scope for the type is
                          from the root of the type system. (ie starts with '.')
@@ -67,7 +71,7 @@ type unresolved = {
 (** After phase 2 compilation the field type is resolved to an 
     known message which can be uniquely identified by its id.
   *)
-type resolved = int 
+type resolved_field_type = int 
 
 (** field type. 
     
@@ -101,16 +105,16 @@ type 'a field_type =
     ['b] is for [field_label] to account for both normal and one of fields. 
   *)
 type ('a, 'b) field = {
-  field_parsed : 'b Pbpt.field; 
+  field_parsed : 'b Pt.field; 
   field_type : 'a field_type; 
-  field_default : Pbpt.constant option; 
-  field_options : Pbpt.field_options; 
+  field_default : Pt.constant option; 
+  field_options : Pt.field_options; 
 }
 
 (** oneof definition *)
 type 'a oneof = {
   oneof_name : string; 
-  oneof_fields : ('a, Pbpt.oneof_label) field list; 
+  oneof_fields : ('a, Pt.oneof_label) field list; 
 }
 
 type 'a map = {
@@ -118,30 +122,28 @@ type 'a map = {
   map_number : int;
   map_key_type : 'a field_type;
   map_value_type : 'a field_type;
-  map_options : Pbpt.field_options;
+  map_options : Pt.field_options;
 }
 
-(** type scope 
-    
-    The scope of a type (message or enum) is defined by the package (defined in the 
-    top of the proto file as well as the messages above it since a 
-    message definition can be nested
- *)
+(* type scope 
+ *   
+ * The scope of a type (message or enum) is defined by the package 
+ * (defined in the top of the proto file as well as the messages above 
+ * it since a message definition can be nested *)
 type type_scope = {
   packages : string list; 
   message_names : string list; 
 }
 
-(** item for the message body
- *)
+(** item for the message body *)
 type 'a message_body_content = 
-  | Message_field       of ('a, Pbpt.field_label) field 
+  | Message_field       of ('a, Pt.field_label) field 
   | Message_oneof_field of 'a oneof 
   | Message_map_field   of 'a map
 
 and 'a message = {
-  extensions : Pbpt.extension_range list;
-  message_options : Pbpt.message_option list;
+  extensions : Pt.extension_range list;
+  message_options : Pt.message_option list;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
@@ -154,7 +156,7 @@ type enum_value = {
 type enum = {
   enum_name : string; 
   enum_values: enum_value list; 
-  enum_options : Pbpt.message_option list; 
+  enum_options : Pt.message_option list; 
 }
 
 type 'a proto_type_spec = 
@@ -165,8 +167,9 @@ type 'a proto_type  = {
   scope : type_scope;
   id :  int; 
   file_name : string; 
-  file_options : Pbpt.file_option list;
+  file_options : Pt.file_option list;
   spec : 'a proto_type_spec;
 }
 
 type 'a proto = 'a proto_type list 
+

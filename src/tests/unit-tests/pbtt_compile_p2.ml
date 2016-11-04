@@ -1,6 +1,6 @@
 
 let parse f s  = 
-  f Pblexer.lexer (Lexing.from_string s)
+  f Pb_parsing_lexer.lexer (Lexing.from_string s)
 
 let file_options = [] 
 
@@ -36,28 +36,27 @@ let () =
     required M2 vm2 = 1;\
   }\
   " in 
-  let ast = parse Pbparser.message_ s in 
-  let all_types = Pbtt_util.compile_message_p1 "a.proto" file_options Pbtt_util.empty_scope ast in 
-  ignore @@ List.map (function 
-    | {Pbtt.spec = Pbtt.Message m ; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m
-    | _ -> assert false
-  ) all_types; 
+  let ast = parse Pb_parsing_parser.message_ s in 
+  let all_types = Pb_typing_validation.validate_message
+      "a.proto" file_options Pb_typing_util.empty_scope ast 
+  in 
+  ignore @@ Pb_typing_resolution.resolve_types all_types;
   ()
 
 let assert_unresolved f = 
   match ignore @@ f () with 
-  | exception (Exception.Compilation_error _ ) -> ()
+  | exception (Pb_exception.Compilation_error _ ) -> ()
   | _ -> assert(false)
 
 let test_unresolved_msg s = 
-  let ast = parse Pbparser.message_ s in 
-  let all_types = Pbtt_util.compile_message_p1 "a.proto" file_options Pbtt_util.empty_scope ast in 
+  let ast = parse Pb_parsing_parser.message_ s in 
+  let all_types = Pb_typing_validation.validate_message 
+      "a.proto" file_options Pb_typing_util.empty_scope ast 
+  in 
   assert_unresolved (fun () -> 
-    ignore @@ List.map (function 
-      | {Pbtt.spec = Pbtt.Message m; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m
-      | _ -> assert false
-    ) all_types
-  )
+    ignore @@ Pb_typing_resolution.resolve_types all_types;
+  ); 
+  ()
 
 let () = 
   let s = "\
@@ -100,19 +99,20 @@ let () =
 
 let assert_duplicate f = 
   match ignore @@ f () with 
-  | exception (Exception.Compilation_error _ )-> () 
+  | exception (Pb_exception.Compilation_error _ )-> () 
   | _ -> assert(false)
 
 
 let test_duplicate s = 
-  let ast = parse Pbparser.message_ s in 
+  let ast = parse Pb_parsing_parser.message_ s in 
   assert_duplicate (fun () -> 
-    let all_types = Pbtt_util.compile_message_p1 "a.proto" file_options Pbtt_util.empty_scope ast in 
-    ignore @@ List.map (function 
-      | {Pbtt.spec = Pbtt.Message m; scope; _ } -> Pbtt_util.compile_message_p2 all_types scope m
-      | _ -> assert false 
-    ) all_types
-  )
+    let all_types = 
+      Pb_typing_validation.validate_message 
+          "a.proto" file_options Pb_typing_util.empty_scope ast 
+    in
+    ignore @@ Pb_typing_resolution.resolve_types all_types
+  );
+  ()
 
 let () = 
   let s = "\

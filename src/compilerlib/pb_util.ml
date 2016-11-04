@@ -84,3 +84,26 @@ module Option = struct
 
 end (* Option *)
 
+let indentation_prefix =
+  let h = Hashtbl.create 16 in 
+  fun level  ->  
+    match Hashtbl.find h level with 
+    | s -> s 
+    | exception Not_found -> 
+      let s = String.make (2 * level) ' ' in 
+      Hashtbl.add h level s; 
+      s
+
+let read_file file_name = 
+  let ic = open_in file_name in 
+  let len = in_channel_length ic in 
+  let b = Bytes.create len in 
+  let offset = ref 0 in 
+  let remaining = ref len in 
+  while !offset <> len do 
+    let i = input ic b !offset ! remaining in 
+    offset:=(!offset + i); 
+    remaining:=(!remaining - i);
+  done; 
+  close_in ic;
+  Bytes.to_string b 

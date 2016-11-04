@@ -649,7 +649,7 @@ message TestOneof2 {
     string bar_string = 13 [default = "STRING"];
     string bar_cord = 14 [ctype=CORD, default = "CORD"];
     string bar_string_piece = 15 [ctype=STRING_PIECE, default = "SPIECE"];
-    bytes bar_bytes = 16 [default = "BYTES"];
+    bytes bar_bytes = 16 ; // [default = "BYTES"];
     NestedEnum bar_enum = 17 [default = BAR];
   }
 

@@ -1,16 +1,18 @@
 
 let parse f s  = 
-  f Pblexer.lexer (Lexing.from_string s)
+  f Pb_parsing_lexer.lexer (Lexing.from_string s)
+
+module Pt = Pb_parsing_parse_tree 
 
 let () =
   let do_test s = 
     let {
-      Pbpt.field_name; 
+      Pt.field_name; 
       field_type; 
       field_label; 
       field_options; 
       field_number
-    } = parse Pbparser.normal_field_ s in 
+    } = parse Pb_parsing_parser.normal_field_ s in 
     assert (field_name = "x"); 
     assert (field_label = `Optional); 
     assert (field_type = "int32"); 
@@ -23,12 +25,12 @@ let () =
 
 let () =
   let {
-    Pbpt.field_name; 
+    Pt.field_name; 
     field_type; 
     field_label; 
     field_options; 
     field_number
-  } = parse Pbparser.normal_field_ "optional .M1 x = 1;" in 
+  } = parse Pb_parsing_parser.normal_field_ "optional .M1 x = 1;" in 
   assert (field_name = "x"); 
   assert (field_label = `Optional); 
   assert (field_type = ".M1"); 
@@ -39,26 +41,26 @@ let () =
 
   let do_test s =  
     let {
-      Pbpt.oneof_name; 
-      Pbpt.oneof_fields; 
-    } = parse Pbparser.oneof_ s in
+      Pt.oneof_name; 
+      Pt.oneof_fields; 
+    } = parse Pb_parsing_parser.oneof_ s in
     assert (oneof_name = "foo"); 
     assert (List.length oneof_fields = 2);
     let {
-      Pbpt.field_name; 
-      Pbpt.field_number; 
-      Pbpt.field_type; 
-      Pbpt.field_options; _ 
+      Pt.field_name; 
+      Pt.field_number; 
+      Pt.field_type; 
+      Pt.field_options; _ 
     } = List.nth oneof_fields 0 in 
     assert (field_name = "name"); 
     assert (field_type = "string"); 
     assert (field_number= 4); 
     assert (List.length field_options = 0); 
     let {
-      Pbpt.field_name; 
-      Pbpt.field_number; 
-      Pbpt.field_type; 
-      Pbpt.field_options; _; 
+      Pt.field_name; 
+      Pt.field_number; 
+      Pt.field_type; 
+      Pt.field_options; _; 
     } = List.nth oneof_fields 1 in 
     assert (field_name = "sub_message"); 
     assert (field_type = "SubMessage"); 

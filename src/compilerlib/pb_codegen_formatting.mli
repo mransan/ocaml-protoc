@@ -23,21 +23,37 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
+(** Formatting utilities for code generation *)
+
+(* TODO: add a little example of how to use this module as well
+ * as a unit test for it *)
+
+(** {2 types} *) 
+
+type scope 
+(** A scope is a formatting container which can contains line of text as well 
+    as other nested scopes
+
+    In other word a scope define an indentation section.
  *)
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
+(** {2 Creation} *) 
 
-    After compilation this module also expose code generation 
-    functionality. 
+val empty_scope : unit -> scope 
+(** [empty_scope ()] returns a brand new scope *)
+
+val line : scope -> string -> unit 
+(** [line scope s] adds [s] to [scope] *)
+
+val empty_line : scope -> unit 
+(** [empty_line scope] adds an empty line to [scope] *)
+
+val scope : scope -> (scope -> unit) -> unit 
+(** [scope scope f] adds a sub scope and apply [f] to it. *)
+
+(** {2 Printing} *) 
+
+val print : scope -> string 
+(** [print scope] returns the formatted scops with a 2 character 
+    indentation for each scope. 
  *)
-
-module Tt = Pb_typing_type_tree 
-
-(** {2 Compilation } *) 
-
-val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
