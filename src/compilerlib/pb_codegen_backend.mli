@@ -34,10 +34,11 @@
  *)
 
 module Tt = Pb_typing_type_tree 
+module Ot = Pb_codegen_ocaml_type  
 
 (** {2 Compilation } *) 
 
 val compile :
   Tt.resolved_field_type Tt.proto ->
   Tt.resolved_field_type Tt.proto_type -> 
-  Ocaml_types.type_ list 
+  Ot.type_ list 
