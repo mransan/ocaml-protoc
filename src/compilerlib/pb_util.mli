@@ -23,7 +23,7 @@
 
 *)
 
-(** Miscellaneous functionality *)
+(** Standard library missing functions *)
 
 val rev_split_by_char : char -> string -> string list 
 (** [rev_split_by_char c s] will split the string [s] using the delimieter [c]

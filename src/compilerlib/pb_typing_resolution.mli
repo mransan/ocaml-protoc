@@ -23,7 +23,7 @@
 
 *)
 
-(** Type Resolution *) 
+(** Type resolution *) 
 
 (** This module resolves all the user defined for the protobuf message 
     fields; while built-in types were previously valided in 

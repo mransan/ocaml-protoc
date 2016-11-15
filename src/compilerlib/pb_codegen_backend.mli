@@ -23,15 +23,13 @@
 
 *)
 
-(** Backend for compiling Protobuf messages to OCaml 
- *)
+(** Compile protobuf parse tree to the ocaml type *)
 
 (** This module focuses on the compilation steps which transforms a 
     fully resolved Protobuf message into an OCaml representation. 
 
     After compilation this module also expose code generation 
-    functionality. 
- *)
+    functionality.  *)
 
 module Tt = Pb_typing_type_tree 
 module Ot = Pb_codegen_ocaml_type  

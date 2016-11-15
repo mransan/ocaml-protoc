@@ -25,7 +25,7 @@
 
 module Pt = Pb_parsing_parse_tree
 
-(** Protobuffer Typed tree. 
+(** Protobuf typed tree. 
 
     The typetree type is parametrized to allow for 2 phase compilation. 
  *)
@@ -38,7 +38,7 @@ module Pt = Pb_parsing_parse_tree
 
     [required foo.bar.Msg1 f = 1]
 
-    The [type_path] would be [["foo"; "bar"]]
+    The [type_path] would be [\["foo"; "bar"\]]
   *)
 type type_path = string list 
 
@@ -54,11 +54,11 @@ type type_path = string list
     
     [required foo.bar.Msg1 f = 1] 
 
-    The unresolved type would be {
-      scope=["foo";"bar"]; 
+    The unresolved type would be: [{
+      scope=\["foo";"bar"\]; 
       type_name="Msg1"; 
       from_root = false
-    }
+    }]
  *)
 type unresolved_field_type = {
   type_path : type_path; 

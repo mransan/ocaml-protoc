@@ -23,7 +23,7 @@
 
 *)
 
-(** Type Tree construction and Validation *)
+(** Typed tree construction and validation *)
 
 (** This module focuses on building the Type tree from the parse tree
     and provides a number of validation in doing so. 

@@ -23,9 +23,7 @@
 
 *)
 
-(** Basic Graph utilities to produce strongly connected component from 
-    a graph using Tarjan algorithm once.
-  *)
+(** Graph algorithms to support the recursion analysis *)
 
 (** {2 Types} *)
 

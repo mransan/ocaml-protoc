@@ -23,7 +23,7 @@
 
 *)
 
-(** Typing Compilation Step*) 
+(** Typing compilation step *) 
 
 (** This module performs the typing step in the compilation process by 
     doing the following:

@@ -1,5 +1,4 @@
-(** Module to define the signature for code generator 
-  *) 
+(** Common module signature for all codegen modules *)
 
 module type S = sig 
   

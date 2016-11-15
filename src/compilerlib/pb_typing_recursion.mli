@@ -23,7 +23,7 @@
 
 *)
 
-(** Mutually Recursive Type resolution *) 
+(** Mutually recursive type resolution *) 
 
 (** The protobuf syntax allows the definition of mutually recursive
     types, however this declaration is implicit (ie no dedicated syntax

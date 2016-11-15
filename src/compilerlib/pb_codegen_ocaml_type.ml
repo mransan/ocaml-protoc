@@ -23,7 +23,7 @@
 
 *)
 
-(** Generated OCaml type for protobuf messages *) 
+(** OCaml type representation *)
 
 module Pt = Pb_parsing_parse_tree
 
