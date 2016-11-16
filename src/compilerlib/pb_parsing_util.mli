@@ -23,7 +23,7 @@
 
 *)
 
-(** Parse Tree utilities *)
+(** Parse tree utilities *)
 
 (** This module defines convenient function to create and manipulate
     the parse tree.  *)

@@ -23,7 +23,7 @@
 
 *)
 
-(** Type Tree utilities *)
+(** Typed tree utilities *)
 
 (** This module provides accessor/creator function to facilitate 
     the manipulation of the type tree. *)
@@ -31,7 +31,7 @@
 module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree 
 
-(** {2 Accessors for Tt.field type} *)
+(** {2 Accessors for Tt.field type } *)
 
 val field_name   : ('a, 'b)  Tt.field -> string 
 (** [field_name field] returns the name [field] *)
@@ -60,7 +60,7 @@ val field_option : ('a, 'b) Tt.field -> string -> Pt.constant option
 
 val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type 
 (** [type_of_id all_types id] returns the type associated with the given id, 
-    @raise [Not_found] if the type is not in the all_types. 
+    raise [Not_found] if the type is not in the all_types. 
   *)
 
 val string_of_message : int -> Tt.type_scope -> 'a Tt.message -> string 
@@ -69,7 +69,7 @@ val message_option : 'a Tt.message -> string -> Pt.constant option
 
 val enum_option : Tt.enum -> string -> Pt.constant option 
 
-(** {2 Accessor for Tt.type *) 
+(** {2 Accessor for Tt.type} *) 
 
 val type_name_of_type : 'a Tt.proto_type -> string
 (** [type_name_of_type t] returns the type name (as defined in the 

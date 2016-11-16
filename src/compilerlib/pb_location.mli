@@ -23,7 +23,7 @@
 
 *)
 
-(** File Location utilities *)
+(** File location utilities *)
 
 type t 
 (** Location type *)

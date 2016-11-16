@@ -24,9 +24,9 @@
 *)
 
 module Pt = Pb_parsing_parse_tree 
-module E  = Pb_exception 
-module L  = Pb_logger 
-module OCaml_types = Ocaml_types 
+module E = Pb_exception 
+module L = Pb_logger 
+module Ot = Pb_codegen_ocaml_type
 module Parsing_util = Pb_parsing_util
 module Tt = Pb_typing_type_tree 
 module Typing_util = Pb_typing_util 
@@ -181,7 +181,7 @@ let user_defined_type_of_id all_types file_name i =
     E.programmatic_error E.No_type_found_for_id 
   | {Tt.file_name; spec; _ } as t -> 
       if Typing_util.is_empty_message t 
-      then OCaml_types.Ft_unit 
+      then Ot.Ft_unit 
       else 
         let udt_nested = begin match spec with 
           | Tt.Enum _ -> false 
@@ -191,30 +191,30 @@ let user_defined_type_of_id all_types file_name i =
         let {Tt.message_names; _ } = Typing_util.type_scope_of_type t in 
         let udt_type_name = type_name message_names (Typing_util.type_name_of_type t) in 
         if field_type_module = module_ 
-        then OCaml_types.(Ft_user_defined_type {udt_nested; udt_module = None; udt_type_name}) 
-        else OCaml_types.(Ft_user_defined_type {udt_nested; udt_module = Some field_type_module; udt_type_name}) 
+        then Ot.(Ft_user_defined_type {udt_nested; udt_module = None; udt_type_name}) 
+        else Ot.(Ft_user_defined_type {udt_nested; udt_module = Some field_type_module; udt_type_name}) 
 
 let encoding_info_of_field_type all_types field_type = 
   match field_type with 
-    | Tt.Field_type_double     -> Ocaml_types.Pk_bits64
-    | Tt.Field_type_float      -> Ocaml_types.Pk_bits32 
-    | Tt.Field_type_int32      -> Ocaml_types.Pk_varint false
-    | Tt.Field_type_int64      -> Ocaml_types.Pk_varint false
-    | Tt.Field_type_uint32     -> Ocaml_types.Pk_varint false
-    | Tt.Field_type_uint64     -> Ocaml_types.Pk_varint false
-    | Tt.Field_type_sint32     -> Ocaml_types.Pk_varint true
-    | Tt.Field_type_sint64     -> Ocaml_types.Pk_varint true 
-    | Tt.Field_type_fixed32    -> Ocaml_types.Pk_bits32
-    | Tt.Field_type_fixed64    -> Ocaml_types.Pk_bits64
-    | Tt.Field_type_sfixed32   -> Ocaml_types.Pk_bits32
-    | Tt.Field_type_sfixed64   -> Ocaml_types.Pk_bits64
-    | Tt.Field_type_bool       -> Ocaml_types.Pk_varint false 
-    | Tt.Field_type_string     -> Ocaml_types.Pk_bytes
-    | Tt.Field_type_bytes      -> Ocaml_types.Pk_bytes
+    | Tt.Field_type_double     -> Ot.Pk_bits64
+    | Tt.Field_type_float      -> Ot.Pk_bits32 
+    | Tt.Field_type_int32      -> Ot.Pk_varint false
+    | Tt.Field_type_int64      -> Ot.Pk_varint false
+    | Tt.Field_type_uint32     -> Ot.Pk_varint false
+    | Tt.Field_type_uint64     -> Ot.Pk_varint false
+    | Tt.Field_type_sint32     -> Ot.Pk_varint true
+    | Tt.Field_type_sint64     -> Ot.Pk_varint true 
+    | Tt.Field_type_fixed32    -> Ot.Pk_bits32
+    | Tt.Field_type_fixed64    -> Ot.Pk_bits64
+    | Tt.Field_type_sfixed32   -> Ot.Pk_bits32
+    | Tt.Field_type_sfixed64   -> Ot.Pk_bits64
+    | Tt.Field_type_bool       -> Ot.Pk_varint false 
+    | Tt.Field_type_string     -> Ot.Pk_bytes
+    | Tt.Field_type_bytes      -> Ot.Pk_bytes
     | Tt.Field_type_type id -> 
       begin match Typing_util.type_of_id all_types id with 
-      | {Tt.spec = Tt.Enum _; _ } -> Ocaml_types.Pk_varint false
-      | {Tt.spec = Tt.Message _; _} -> Ocaml_types.Pk_bytes
+      | {Tt.spec = Tt.Enum _; _ } -> Ot.Pk_varint false
+      | {Tt.spec = Tt.Message _; _} -> Ot.Pk_bytes
       end 
 
 let encoding_of_field all_types 
@@ -238,26 +238,26 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
   in 
 
   let int32_type = match Parsing_util.file_option file_options "int32_type" with
-    | Some (Pt.Constant_litteral "int_t") -> OCaml_types.(Ft_basic_type Bt_int) 
-    | _ -> OCaml_types.(Ft_basic_type Bt_int32)
+    | Some (Pt.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int) 
+    | _ -> Ot.(Ft_basic_type Bt_int32)
   in 
   
   let int64_type = match Parsing_util.file_option file_options "int64_type" with
-    | Some (Pt.Constant_litteral "int_t") -> OCaml_types.(Ft_basic_type Bt_int) 
-    | _ -> OCaml_types.(Ft_basic_type Bt_int64)
+    | Some (Pt.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int) 
+    | _ -> Ot.(Ft_basic_type Bt_int64)
   in 
 
   match field_type, ocaml_type with
-  | Tt.Field_type_double, _ -> OCaml_types.(Ft_basic_type Bt_float)
-  | Tt.Field_type_float, _ ->  OCaml_types.(Ft_basic_type Bt_float)
-  | Tt.Field_type_int32, `Int_t ->  OCaml_types.(Ft_basic_type Bt_int) 
-  | Tt.Field_type_int64, `Int_t ->  OCaml_types.(Ft_basic_type Bt_int)
-  | Tt.Field_type_uint32, `Int_t -> OCaml_types.(Ft_basic_type Bt_int)
-  | Tt.Field_type_uint64, `Int_t -> OCaml_types.(Ft_basic_type Bt_int)
-  | Tt.Field_type_sint32, `Int_t -> OCaml_types.(Ft_basic_type Bt_int)
-  | Tt.Field_type_sint64, `Int_t -> OCaml_types.(Ft_basic_type Bt_int)
-  | Tt.Field_type_fixed32, `Int_t -> OCaml_types.(Ft_basic_type Bt_int)  
-  | Tt.Field_type_fixed64, `Int_t -> OCaml_types.(Ft_basic_type Bt_int)
+  | Tt.Field_type_double, _ -> Ot.(Ft_basic_type Bt_float)
+  | Tt.Field_type_float, _ ->  Ot.(Ft_basic_type Bt_float)
+  | Tt.Field_type_int32, `Int_t ->  Ot.(Ft_basic_type Bt_int) 
+  | Tt.Field_type_int64, `Int_t ->  Ot.(Ft_basic_type Bt_int)
+  | Tt.Field_type_uint32, `Int_t -> Ot.(Ft_basic_type Bt_int)
+  | Tt.Field_type_uint64, `Int_t -> Ot.(Ft_basic_type Bt_int)
+  | Tt.Field_type_sint32, `Int_t -> Ot.(Ft_basic_type Bt_int)
+  | Tt.Field_type_sint64, `Int_t -> Ot.(Ft_basic_type Bt_int)
+  | Tt.Field_type_fixed32, `Int_t -> Ot.(Ft_basic_type Bt_int)  
+  | Tt.Field_type_fixed64, `Int_t -> Ot.(Ft_basic_type Bt_int)
   | Tt.Field_type_int32, _ ->  int32_type
   | Tt.Field_type_int64, _ ->  int64_type
   | Tt.Field_type_uint32, _ -> int32_type
@@ -270,9 +270,9 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
       E.unsupported_field_type ?field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
   | Tt.Field_type_sfixed64, _ -> 
       E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
-  | Tt.Field_type_bool, _   -> OCaml_types.(Ft_basic_type Bt_bool)
-  | Tt.Field_type_string, _ -> OCaml_types.(Ft_basic_type Bt_string)
-  | Tt.Field_type_bytes, _  -> OCaml_types.(Ft_basic_type Bt_bytes)
+  | Tt.Field_type_bool, _   -> Ot.(Ft_basic_type Bt_bool)
+  | Tt.Field_type_string, _ -> Ot.(Ft_basic_type Bt_string)
+  | Tt.Field_type_bytes, _  -> Ot.(Ft_basic_type Bt_bytes)
   | Tt.Field_type_type id, _ -> 
     user_defined_type_of_id all_types file_name id
 
@@ -302,7 +302,7 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_opt
     in 
     let (vc_payload_kind, vc_encoding_number, _, _) = encoding_of_field all_types field in 
     let vc_constructor = constructor_name (Typing_util.field_name field) in  
-    OCaml_types.({
+    Ot.({
       vc_constructor; 
       vc_encoding_number; 
       vc_payload_kind; 
@@ -316,7 +316,7 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_opt
     | None    -> type_name outer_message_names "" 
     | Some () -> type_name outer_message_names oneof_field.Tt.oneof_name
   in
-  OCaml_types.({v_name; v_constructors})
+  Ot.({v_name; v_constructors})
 
 (*
  * Notes on type level PPX extension handling. 
@@ -356,7 +356,7 @@ let compile_message
   (file_name:string) 
   (scope:Tt.type_scope) 
   (message: Tt.resolved_field_type Tt.message ) :
-  OCaml_types.type_ list   = 
+  Ot.type_ list   = 
 
   let module_ = module_of_file_name file_name in 
   (* TODO maybe module_ should be resolved before `compile_message` since 
@@ -384,7 +384,7 @@ let compile_message
   | Tt.Message_oneof_field f :: [] -> (
     let outer_message_names = message_names @ [message_name] in 
     let variant = variant_of_oneof ~outer_message_names all_types file_options file_name f in
-    [OCaml_types.({module_; spec = Variant variant;type_level_ppx_extension})]
+    [Ot.({module_; spec = Variant variant;type_level_ppx_extension})]
   ) 
 
   | _ -> 
@@ -414,19 +414,19 @@ let compile_message
         let mutable_  = is_mutable ~field_name field_options in 
 
         let record_field_type = match Typing_util.field_label field with
-          | `Nolabel -> OCaml_types.Rft_nolabel (field_type, encoding_number, pk)
-          | `Required -> OCaml_types.Rft_required (field_type, encoding_number, pk, field_default) 
-          | `Optional -> OCaml_types.Rft_optional (field_type, encoding_number, pk, field_default) 
+          | `Nolabel -> Ot.Rft_nolabel (field_type, encoding_number, pk)
+          | `Required -> Ot.Rft_required (field_type, encoding_number, pk, field_default) 
+          | `Optional -> Ot.Rft_optional (field_type, encoding_number, pk, field_default) 
           | `Repeated -> 
             let repeated_type = begin match ocaml_container field_options with 
-              | None -> OCaml_types.Rt_list 
-              | Some "repeated_field" -> OCaml_types.Rt_repeated_field 
+              | None -> Ot.Rt_list 
+              | Some "repeated_field" -> Ot.Rt_repeated_field 
               | Some _ -> failwith "Invalid ocaml_container attribute value" 
             end in 
-            OCaml_types.Rft_repeated_field (repeated_type, field_type, encoding_number, pk, packed) 
+            Ot.Rft_repeated_field (repeated_type, field_type, encoding_number, pk, packed) 
         in
 
-        let record_field = OCaml_types.({
+        let record_field = Ot.({
           rf_label = label_name_of_field_name field_name; 
           rf_field_type = record_field_type; 
           rf_mutable = mutable_; 
@@ -439,7 +439,7 @@ let compile_message
         let outer_message_names = message_names @ [message_name] in 
         let variant = variant_of_oneof ~include_oneof_name:() ~outer_message_names all_types file_options file_name field in
 
-        let record_field = OCaml_types.({
+        let record_field = Ot.({
           rf_label = label_name_of_field_name field.Tt.oneof_name; 
           rf_mutable = false; 
             (* TODO feature: 
@@ -450,7 +450,7 @@ let compile_message
           rf_field_type = Rft_variant_field variant; 
         }) in 
         
-        let variants = OCaml_types.({module_; spec = Variant variant; type_level_ppx_extension})::variants in 
+        let variants = Ot.({module_; spec = Variant variant; type_level_ppx_extension})::variants in 
 
         let fields   = record_field::fields in 
 
@@ -477,7 +477,7 @@ let compile_message
         let key_pk = encoding_info_of_field_type all_types map_key_type in 
 
         let key_type = match key_type with
-          | OCaml_types.Ft_basic_type bt -> bt 
+          | Ot.Ft_basic_type bt -> bt 
           | _ -> failwith "Only Basic Types are supported for map keys" 
         in
         
@@ -492,16 +492,16 @@ let compile_message
         let value_pk = encoding_info_of_field_type all_types map_value_type in 
             
         let associative_type = match ocaml_container map_options with 
-          | None -> OCaml_types.At_list 
-          | Some "hashtbl" -> OCaml_types.At_hashtable
+          | None -> Ot.At_list 
+          | Some "hashtbl" -> Ot.At_hashtable
           | Some _ -> failwith "Invalid ocaml_container attribute value for map" 
         in 
 
-        let record_field_type = OCaml_types.(Rft_associative_field 
+        let record_field_type = Ot.(Rft_associative_field 
           (associative_type, map_number, (key_type, key_pk), (value_type, value_pk)) 
         ) in 
 
-        let record_field = OCaml_types.({
+        let record_field = Ot.({
           rf_label = label_name_of_field_name map_name; 
           rf_field_type = record_field_type;
           rf_mutable = is_mutable ~field_name:map_name map_options;
@@ -513,12 +513,12 @@ let compile_message
 
     ) ([], []) message_body in (* fold_left body *) 
 
-    let record = OCaml_types.({
+    let record = Ot.({
       r_name = type_name message_names message_name; 
       r_fields = List.rev fields; 
     }) in 
 
-    let type_ = OCaml_types.({
+    let type_ = Ot.({
       module_; 
       spec = Record record;
       type_level_ppx_extension;
@@ -542,7 +542,7 @@ let compile_enum file_options file_name scope enum =
     |> process_all_types_ppx_extension file_name file_options 
   in
 
-  OCaml_types.({
+  Ot.({
     module_; 
     spec = Const_variant {
       cv_name = type_name message_names enum_name; 

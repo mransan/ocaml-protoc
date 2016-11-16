@@ -1,5 +1,7 @@
 (** Common utility functions for OCaml code generation *)
 
+module Ot = Pb_codegen_ocaml_type 
+
 val sp : ('a, unit, string) format -> 'a
 (** [sp x] same as sprintf but prefixed with new line *)
 
@@ -8,11 +10,11 @@ val let_decl_of_and : 'a option -> string
    is [None]), ["and"] otherwise.
  *)
 
-val string_of_record_field_type : Ocaml_types.record_field_type -> string 
+val string_of_record_field_type : Ot.record_field_type -> string 
 
-val string_of_field_type : Ocaml_types.field_type -> string 
+val string_of_field_type : Ot.field_type -> string 
 
-val function_name_of_user_defined : string -> Ocaml_types.user_defined_type -> string
+val function_name_of_user_defined : string -> Ot.user_defined_type -> string
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`. 
 
@@ -33,8 +35,12 @@ val mutable_record_name : string -> string
     type. 
  *) 
 
-val string_of_payload_kind : ?capitalize:unit -> Ocaml_types.payload_kind -> bool -> string 
+val string_of_payload_kind : ?capitalize:unit -> Ot.payload_kind -> bool -> string 
 (** [string_of_payload_kind ~capitalize:() payload_kind packed] will return the
     string corresponding to the payload kind. 
  *)
 
+
+val runtime_function : 
+  [`Decode | `Encode] * Ot.payload_kind * Ot.basic_type -> 
+  string 

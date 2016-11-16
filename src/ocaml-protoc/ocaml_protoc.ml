@@ -30,6 +30,7 @@ module Pt = Pb_parsing_parse_tree
 module Parsing_util = Pb_parsing_util
 module Tt = Pb_typing_type_tree 
 module Typing_util = Pb_typing_util
+module Ot = Pb_codegen_ocaml_type 
 
 (* [ocaml-protoc] provides the ability to override all the custom 
  * protobuf file options defined in 
@@ -115,7 +116,7 @@ module File_options = struct
 end 
   
 let ocaml_file_name_of_proto_file_name = 
-  Codegen_util.caml_file_name_of_proto_file_name 
+  Pb_codegen_util.caml_file_name_of_proto_file_name 
 
 let imported_filename include_dirs file_name = 
   if Sys.file_exists file_name
@@ -250,7 +251,7 @@ let compile cmd_line_files_options include_dirs proto_file_name =
 
   (* -- OCaml Backend -- *)
 
-  let module BO = Backend_ocaml in 
+  let module BO = Pb_codegen_backend in 
 
   let ocaml_types = List.rev @@ List.fold_left (fun ocaml_types types -> 
     let l = List.flatten @@ List.map (fun t -> 
@@ -263,15 +264,15 @@ let compile cmd_line_files_options include_dirs proto_file_name =
 
 type codegen_f = 
   ?and_:unit -> 
-  Ocaml_types.type_ -> 
+  Ot.type_ -> 
   Pb_codegen_formatting.scope -> bool 
 
 let all_code_gen = [
-  (module Codegen_type: Codegen.S);
-  (module Codegen_default: Codegen.S);
-  (module Codegen_decode: Codegen.S);
-  (module Codegen_encode: Codegen.S);
-  (module Codegen_pp: Codegen.S);
+  (module Pb_codegen_type_code: Pb_codegen_sig.S);
+  (module Pb_codegen_default_code: Pb_codegen_sig.S);
+  (module Pb_codegen_decode_code: Pb_codegen_sig.S);
+  (module Pb_codegen_encode_code: Pb_codegen_sig.S);
+  (module Pb_codegen_pp_code: Pb_codegen_sig.S);
 ]
 
 let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name = 
@@ -293,7 +294,7 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
         | None -> () 
         | Some ocamldoc_title -> ( 
           Pb_codegen_formatting.empty_line sc;
-          Pb_codegen_formatting.line sc @@ Codegen_util.sp 
+          Pb_codegen_formatting.line sc @@ Pb_codegen_util.sp 
               "(** {2 %s} *)" ocamldoc_title;  
           Pb_codegen_formatting.empty_line sc;
         )
@@ -320,7 +321,7 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
   print_ppx sc; 
   Pb_codegen_formatting.empty_line sc;
   gen otypes  sc (List.map (fun m -> 
-    let module C = (val m:Codegen.S) in 
+    let module C = (val m:Pb_codegen_sig.S) in 
     C.gen_struct, None
   ) all_code_gen);
 
@@ -330,13 +331,13 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
 
   let sc = Pb_codegen_formatting.empty_scope () in 
   Pb_codegen_formatting.line sc @@ 
-    Codegen_util.sp 
+    Pb_codegen_util.sp 
         "(** %s Generated Types and Encoding *)" 
         (Filename.basename proto_file_name); 
   Pb_codegen_formatting.empty_line sc; 
   print_ppx sc; 
   gen otypes  sc (List.map (fun m -> 
-    let module C = (val m:Codegen.S) in 
+    let module C = (val m:Pb_codegen_sig.S) in 
     C.gen_sig, Some C.ocamldoc_title
   ) all_code_gen);
 

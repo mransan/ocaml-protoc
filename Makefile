@@ -18,7 +18,7 @@ BENCHMARK_DIR         = src/tests/benchmark
 GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
 OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
 
-.PHONY: ocaml_protoc.native bin.native bin.byte clean clean.gen default
+.PHONY: doc ocaml_protoc.native bin.native bin.byte clean clean.gen default
 
 default:
 	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)
@@ -115,9 +115,13 @@ bin.uninstall: check_install
 	rm -f $(BINDIR)/ocaml-protoc$(EXE)
 
 all.install.build: lib.byte lib.native bin.native 
+
 install: all.install.build check_install lib.install.byte lib.install.native bin.install
 
-
 uninstall: lib.uninstall bin.uninstall
+
+doc:
+	$(OCB) src/compilerlib/compilerlib.docdir/index.html
 	
 include Makefile.test
+
