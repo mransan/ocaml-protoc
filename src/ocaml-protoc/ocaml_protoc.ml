@@ -33,6 +33,7 @@ module Typing_util = Pb_typing_util
 module Ot = Pb_codegen_ocaml_type 
 
 (* [ocaml-protoc] provides the ability to override all the custom 
+ *
  * protobuf file options defined in 
  * src/include/ocaml-protoc/ocamloptions.proto as command line arguments. 
  *
@@ -90,7 +91,7 @@ module File_options = struct
 
   (** Converts the command line values to Parse Tree file options
     *) 
-  let to_file_options t = 
+  let to_file_options t : Pt.file_option list = 
 
     let {int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx} = t in 
 

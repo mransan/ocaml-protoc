@@ -56,9 +56,9 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_INSTALL = /Users/maximeransan/Documents/protobuf
-PB_HINC    = $(PB_INSTALL)/include/
-PB_LINC    = $(PB_INSTALL)/lib/
+PB_INSTALL = /usr/local
+PB_HINC    = $(PB_INSTALL)/include
+PB_LINC    = $(PB_INSTALL)/lib
 PROTOC     = $(PB_INSTALL)/bin/protoc 
 
 export LD_LIBRARY_PATH=$(PB_LINC)

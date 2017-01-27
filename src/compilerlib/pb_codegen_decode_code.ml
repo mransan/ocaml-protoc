@@ -1,5 +1,4 @@
 module Ot = Pb_codegen_ocaml_type 
-module E = Pb_exception 
 module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
