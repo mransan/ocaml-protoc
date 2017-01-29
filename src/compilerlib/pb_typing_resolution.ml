@@ -28,7 +28,7 @@ module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree 
 
 module Types_by_scope = struct 
-  type type_ = Tt.unresolved_field_type Tt.proto_type 
+  type type_ = Tt.unresolved Tt.proto_type 
   
   let name_of_type {Tt.spec; _ } = 
     match spec with

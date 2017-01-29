@@ -30,13 +30,11 @@ module Loc = Pb_location
 
 type programmatic_error =
   | Invalid_string_split 
-  | Unexpected_field_type 
   | No_type_found_for_id 
 
 let string_of_programmatic_error e =  
   "Programatic_error" ^ match e with
   | Invalid_string_split -> "string split error"
-  | Unexpected_field_type -> "unexpected field type"
   | No_type_found_for_id  -> "no type was found for type id" 
 
 type unresolved_type = {

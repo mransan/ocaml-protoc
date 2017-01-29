@@ -218,7 +218,7 @@ let encoding_info_of_field_type all_types field_type =
       end 
 
 let encoding_of_field all_types 
-    (field:(Tt.resolved_field_type, 'a) Tt.field)  = 
+    (field:(Tt.resolved, 'a) Tt.field)  = 
 
   let packed = match Typing_util.field_option field "packed" with 
     | Some (Pt.Constant_bool x) -> x 
@@ -345,10 +345,10 @@ let process_all_types_ppx_extension file_name file_options type_level_ppx_extens
 
 let compile_message  
   (file_options: Pt.file_option list)
-  (all_types: Tt.resolved_field_type Tt.proto) 
+  (all_types: Tt.resolved Tt.proto) 
   (file_name:string) 
   (scope:Tt.type_scope) 
-  (message: Tt.resolved_field_type Tt.message ) :
+  (message: Tt.resolved Tt.message ) :
   Ot.type_ list   = 
 
   let module_ = module_of_file_name file_name in 

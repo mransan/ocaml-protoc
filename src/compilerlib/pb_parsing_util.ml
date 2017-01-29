@@ -47,7 +47,7 @@ let oneof_field ?options:(options =[]) ~number ~type_ name = {
   Pt.field_number = number;
   Pt.field_type = type_; 
   Pt.field_options = options;
-  Pt.field_label = `Oneof
+  Pt.field_label = ();
 } 
 
 let oneof ~fields name = {

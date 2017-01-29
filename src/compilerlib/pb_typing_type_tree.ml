@@ -30,8 +30,6 @@ module Pt = Pb_parsing_parse_tree
     The typetree type is parametrized to allow for 2 phase compilation. 
  *)
 
-
-
 (** Scope path of a type used for a message field.
     
     For instance in the following field defintion:
@@ -41,7 +39,6 @@ module Pt = Pb_parsing_parse_tree
     The [type_path] would be [\["foo"; "bar"\]]
   *)
 type type_path = string list 
-
 
 (** In the first phase of the compilation 
     the field of message type are not resolved but only 
@@ -60,7 +57,7 @@ type type_path = string list
       from_root = false
     }]
  *)
-type unresolved_field_type = {
+type unresolved = {
   type_path : type_path; 
   type_name : string; 
   from_root : bool;  (** from_root indicates that the scope for the type is
@@ -71,27 +68,21 @@ type unresolved_field_type = {
 (** After phase 2 compilation the field type is resolved to an 
     known message which can be uniquely identified by its id.
   *)
-type resolved_field_type = int 
+type resolved = int 
 
-(** field type. 
-    
-    The ['a] type is for re-using the same type 
-    definition for the 2 compilation phases. 
-    
-    After Phase 1 ['a] is [unresolved] while after Phase2
-    ['a] is [resolved].
-  *)
-
+(** Floating point builtin types *)
 type builtin_type_floating_point = [ 
   | `Double 
   | `Float 
 ]
 
+(** Unsigned integer builtin types *)
 type builtin_type_unsigned_int  = [
   | `Uint32 
   | `Uint64
 ]
 
+(** Signed integer builtin types *) 
 type builtin_type_signed_int = [
   | `Int32 
   | `Int64 
@@ -103,11 +94,13 @@ type builtin_type_signed_int = [
   | `Sfixed64 
 ]
 
+(** Integer builtin types *)
 type builtin_type_int= [ 
   |  builtin_type_unsigned_int 
   |  builtin_type_signed_int
 ]
 
+(** Builtin type defined in protobuf *)
 type builtin_type = [
   | builtin_type_floating_point
   | builtin_type_int
@@ -116,13 +109,25 @@ type builtin_type = [
   | `Bytes 
 ]
 
-type 'a field_type = [ builtin_type | `User_defined of 'a]  
-
-(** field definition. 
+(** field type. 
     
-    ['a] is for [unresolved] or [resolved]
-    ['b] is for [field_label] to account for both normal and one of fields. 
+    The ['a] type is for re-using the same type 
+    definition for the 2 compilation phases. 
+    
+    After Phase 1 ['a] is [unresolved] while after Phase2
+    ['a] is [resolved].
   *)
+type 'a field_type = [ 
+  | builtin_type          
+  | `User_defined of 'a   (** Message or Enum type *)
+]  
+
+(** Field definition. 
+    
+    {ul
+    {- ['a] is for [unresolved] or [resolved]}
+    {- ['b] is for [field_label] to account for both normal and one of fields.}
+    } *)
 type ('a, 'b) field = {
   field_parsed : 'b Pt.field; 
   field_type : 'a field_type; 
@@ -130,12 +135,11 @@ type ('a, 'b) field = {
   field_options : Pt.field_options; 
 }
 
-(** oneof definition *)
-type 'a oneof = {
-  oneof_name : string; 
-  oneof_fields : ('a, Pt.oneof_label) field list; 
-}
+type 'a oneof_field = ('a, Pt.oneof_field_label) field 
 
+type 'a message_field = ('a, Pt.message_field_label) field  
+
+(** Map definition *)
 type 'a map = {
   map_name : string;
   map_number : int;
@@ -144,11 +148,17 @@ type 'a map = {
   map_options : Pt.field_options;
 }
 
-(* type scope 
- *   
- * The scope of a type (message or enum) is defined by the package 
- * (defined in the top of the proto file as well as the messages above 
- * it since a message definition can be nested *)
+(** Oneof definition *)
+type 'a oneof = {
+  oneof_name : string; 
+  oneof_fields : 'a oneof_field list; 
+}
+
+(** Type scope 
+      
+    The scope of a type (message or enum) is defined by the package 
+    (defined in the top of the proto file as well as the messages above 
+    it since a message definition can be nested *)
 type type_scope = {
   packages : string list; 
   message_names : string list; 
@@ -156,7 +166,7 @@ type type_scope = {
 
 (** item for the message body *)
 type 'a message_body_content = 
-  | Message_field       of ('a, Pt.field_label) field 
+  | Message_field       of 'a message_field 
   | Message_oneof_field of 'a oneof 
   | Message_map_field   of 'a map
 

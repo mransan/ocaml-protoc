@@ -34,11 +34,11 @@ module Pt = Pb_parsing_parse_tree
 
 val field : 
   ?options:Pt.field_options ->
-  label:Pt.field_label-> 
+  label:Pt.message_field_label-> 
   number:int -> 
   type_:string -> 
   string -> 
-  Pt.field_label Pt.field
+  Pt.message_field
 
 val map :
   ?options:Pt.field_options ->
@@ -53,15 +53,15 @@ val oneof_field :
   number:int -> 
   type_:string -> 
   string -> 
-  Pt.oneof_label Pt.field
+  Pt.oneof_field
 
 val oneof :
-  fields:Pt.oneof_label Pt.field list -> 
+  fields:Pt.oneof_field list -> 
   string -> 
   Pt.oneof 
 
 val message_body_field : 
-  Pt.field_label Pt.field  -> 
+  Pt.message_field  -> 
   Pt.message_body_content  
 
 val message_body_map_field : 
@@ -117,7 +117,7 @@ val message :
 
 val import : ?public:unit -> string -> Pt.import 
 
-val extend : string -> Pt.field_label Pt.field list -> Pt.extend  
+val extend : string -> Pt.message_field list -> Pt.extend  
 
 val proto: 
   ?syntax:string ->

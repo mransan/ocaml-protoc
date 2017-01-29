@@ -75,7 +75,7 @@
 %type <Pb_parsing_parse_tree.field_options> field_options_
 
 %start normal_field_ 
-%type <Pb_parsing_parse_tree.field_label Pb_parsing_parse_tree.field> normal_field_
+%type <Pb_parsing_parse_tree.message_field> normal_field_
 
 %start enum_value_ 
 %type <Pb_parsing_parse_tree.enum_body_content> enum_value_

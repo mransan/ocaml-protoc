@@ -29,7 +29,6 @@
 
 type programmatic_error =
   | Invalid_string_split 
-  | Unexpected_field_type 
   | No_type_found_for_id 
 
 type error

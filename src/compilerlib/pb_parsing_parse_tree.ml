@@ -48,14 +48,18 @@ type message_option = option_
 
 (** A field property defining its occurence
  *)
-type field_label = [ 
+type message_field_label = [ 
   | `Optional 
   | `Required 
   | `Repeated 
   | `Nolabel  (** proto3 field which replaces required and optional *)
 ]
 
-type oneof_label = [ `Oneof ] 
+(** Oneof field fields label 
+
+    Oneof fields have no label, they are simply choices for the 
+    oneof fiel they belong to. *)
+type oneof_field_label = unit 
 
 (** message field. 
     
@@ -72,6 +76,10 @@ type 'a field = {
   field_options : field_options; 
 }
 
+type message_field = message_field_label field 
+
+type oneof_field = oneof_field_label field 
+
 type map = {
   map_name : string;
   map_number : int;
@@ -83,7 +91,7 @@ type map = {
 (** oneof entity *)
 type oneof = {
   oneof_name : string; 
-  oneof_fields : oneof_label field list; 
+  oneof_fields : oneof_field list; 
 }
 
 type enum_value = {
@@ -115,7 +123,7 @@ type extension_range =
     of a message. 
   *)
 type message_body_content = 
-  | Message_field of field_label field 
+  | Message_field of message_field
   | Message_map_field of map
   | Message_oneof_field of oneof 
   | Message_sub of message 
@@ -139,7 +147,7 @@ and message = {
 type extend  = {
   id : int; 
   extend_name : string; 
-  extend_body : field_label field list;
+  extend_body : message_field list;
 }
 
 type import = {

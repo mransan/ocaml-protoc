@@ -37,6 +37,6 @@ module Ot = Pb_codegen_ocaml_type
 (** {2 Compilation } *) 
 
 val compile :
-  Tt.resolved_field_type Tt.proto ->
-  Tt.resolved_field_type Tt.proto_type -> 
+  Tt.resolved Tt.proto ->
+  Tt.resolved Tt.proto_type -> 
   Ot.type_ list 

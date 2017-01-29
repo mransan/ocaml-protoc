@@ -55,7 +55,7 @@ module Types_by_scope : sig
 
   val add : 
     t -> 
-    Tt.unresolved_field_type Tt.proto_type -> 
+    Tt.unresolved Tt.proto_type -> 
     t 
   (** add a protobuf type *)
   
@@ -63,7 +63,7 @@ module Types_by_scope : sig
     t -> 
     Tt.type_path -> 
     string -> 
-    Tt.unresolved_field_type Tt.proto_type  
+    Tt.unresolved Tt.proto_type  
   (** find a protobuf type given its type path *)
 
   val print : t -> unit 
@@ -72,8 +72,8 @@ module Types_by_scope : sig
 end (* Types_by_scope *) 
 
 val resolve_types : 
-  Tt.unresolved_field_type Tt.proto_type list ->
-  Tt.resolved_field_type   Tt.proto_type list  
+  Tt.unresolved Tt.proto_type list ->
+  Tt.resolved Tt.proto_type list  
 (** [resolve_types types] resolves all the field types for all the [types]. 
     If a field cannot be resolved then [Pb_exception.Compilation_error] is 
     raised. *)
