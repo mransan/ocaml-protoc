@@ -196,22 +196,22 @@ let user_defined_type_of_id all_types file_name i =
 
 let encoding_info_of_field_type all_types field_type = 
   match field_type with 
-    | Tt.Field_type_double     -> Ot.Pk_bits64
-    | Tt.Field_type_float      -> Ot.Pk_bits32 
-    | Tt.Field_type_int32      -> Ot.Pk_varint false
-    | Tt.Field_type_int64      -> Ot.Pk_varint false
-    | Tt.Field_type_uint32     -> Ot.Pk_varint false
-    | Tt.Field_type_uint64     -> Ot.Pk_varint false
-    | Tt.Field_type_sint32     -> Ot.Pk_varint true
-    | Tt.Field_type_sint64     -> Ot.Pk_varint true 
-    | Tt.Field_type_fixed32    -> Ot.Pk_bits32
-    | Tt.Field_type_fixed64    -> Ot.Pk_bits64
-    | Tt.Field_type_sfixed32   -> Ot.Pk_bits32
-    | Tt.Field_type_sfixed64   -> Ot.Pk_bits64
-    | Tt.Field_type_bool       -> Ot.Pk_varint false 
-    | Tt.Field_type_string     -> Ot.Pk_bytes
-    | Tt.Field_type_bytes      -> Ot.Pk_bytes
-    | Tt.Field_type_type id -> 
+    | `Double     -> Ot.Pk_bits64
+    | `Float      -> Ot.Pk_bits32 
+    | `Int32      -> Ot.Pk_varint false
+    | `Int64      -> Ot.Pk_varint false
+    | `Uint32     -> Ot.Pk_varint false
+    | `Uint64     -> Ot.Pk_varint false
+    | `Sint32     -> Ot.Pk_varint true
+    | `Sint64     -> Ot.Pk_varint true 
+    | `Fixed32    -> Ot.Pk_bits32
+    | `Fixed64    -> Ot.Pk_bits64
+    | `Sfixed32   -> Ot.Pk_bits32
+    | `Sfixed64   -> Ot.Pk_bits64
+    | `Bool       -> Ot.Pk_varint false 
+    | `String     -> Ot.Pk_bytes
+    | `Bytes      -> Ot.Pk_bytes
+    | `User_defined id -> 
       begin match Typing_util.type_of_id all_types id with 
       | {Tt.spec = Tt.Enum _; _ } -> Ot.Pk_varint false
       | {Tt.spec = Tt.Message _; _} -> Ot.Pk_bytes
@@ -247,34 +247,27 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in 
 
+  let module T = struct 
+    type b32 = [ `Int32 | `Uint32 | `Sint32 | `Fixed32 ] 
+    type b64 = [ `Int64 | `Uint64 | `Sint64 | `Fixed64 ] 
+    type int = [ b32 | b64 ]
+  end in 
+
   match field_type, ocaml_type with
-  | Tt.Field_type_double, _ -> Ot.(Ft_basic_type Bt_float)
-  | Tt.Field_type_float, _ ->  Ot.(Ft_basic_type Bt_float)
-  | Tt.Field_type_int32, `Int_t ->  Ot.(Ft_basic_type Bt_int) 
-  | Tt.Field_type_int64, `Int_t ->  Ot.(Ft_basic_type Bt_int)
-  | Tt.Field_type_uint32, `Int_t -> Ot.(Ft_basic_type Bt_int)
-  | Tt.Field_type_uint64, `Int_t -> Ot.(Ft_basic_type Bt_int)
-  | Tt.Field_type_sint32, `Int_t -> Ot.(Ft_basic_type Bt_int)
-  | Tt.Field_type_sint64, `Int_t -> Ot.(Ft_basic_type Bt_int)
-  | Tt.Field_type_fixed32, `Int_t -> Ot.(Ft_basic_type Bt_int)  
-  | Tt.Field_type_fixed64, `Int_t -> Ot.(Ft_basic_type Bt_int)
-  | Tt.Field_type_int32, _ ->  int32_type
-  | Tt.Field_type_int64, _ ->  int64_type
-  | Tt.Field_type_uint32, _ -> int32_type
-  | Tt.Field_type_uint64, _ -> int64_type
-  | Tt.Field_type_sint32, _ -> int32_type
-  | Tt.Field_type_sint64, _ -> int64_type
-  | Tt.Field_type_fixed32, _ -> int32_type
-  | Tt.Field_type_fixed64, _ -> int64_type
-  | Tt.Field_type_sfixed32, _ -> 
-      E.unsupported_field_type ?field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
-  | Tt.Field_type_sfixed64, _ -> 
-      E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
-  | Tt.Field_type_bool, _   -> Ot.(Ft_basic_type Bt_bool)
-  | Tt.Field_type_string, _ -> Ot.(Ft_basic_type Bt_string)
-  | Tt.Field_type_bytes, _  -> Ot.(Ft_basic_type Bt_bytes)
-  | Tt.Field_type_type id, _ -> 
+  | #T.int    , `Int_t ->  Ot.(Ft_basic_type Bt_int) 
+  | #T.b32    , _ -> int32_type 
+  | #T.b64    , _ -> int64_type 
+  | `Double   , _ -> Ot.(Ft_basic_type Bt_float)
+  | `Float    , _ -> Ot.(Ft_basic_type Bt_float)
+  | `Bool     , _ -> Ot.(Ft_basic_type Bt_bool)
+  | `String   , _ -> Ot.(Ft_basic_type Bt_string)
+  | `Bytes    , _ -> Ot.(Ft_basic_type Bt_bytes)
+  | `User_defined id, _ -> 
     user_defined_type_of_id all_types file_name id
+  | `Sfixed32, _ -> 
+    E.unsupported_field_type ?field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
+  | `Sfixed64, _ -> 
+    E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
 
 let is_mutable ?field_name field_options = 
   match Typing_util.find_field_option field_options "ocaml_mutable"  with

@@ -81,23 +81,42 @@ type resolved_field_type = int
     After Phase 1 ['a] is [unresolved] while after Phase2
     ['a] is [resolved].
   *)
-type 'a field_type = 
-  | Field_type_double 
-  | Field_type_float 
-  | Field_type_int32 
-  | Field_type_int64 
-  | Field_type_uint32 
-  | Field_type_uint64
-  | Field_type_sint32 
-  | Field_type_sint64 
-  | Field_type_fixed32 
-  | Field_type_fixed64 
-  | Field_type_sfixed32 
-  | Field_type_sfixed64
-  | Field_type_bool 
-  | Field_type_string 
-  | Field_type_bytes 
-  | Field_type_type of 'a 
+
+type builtin_type_floating_point = [ 
+  | `Double 
+  | `Float 
+]
+
+type builtin_type_unsigned_int  = [
+  | `Uint32 
+  | `Uint64
+]
+
+type builtin_type_signed_int = [
+  | `Int32 
+  | `Int64 
+  | `Sint32 
+  | `Sint64 
+  | `Fixed32 
+  | `Fixed64 
+  | `Sfixed32 
+  | `Sfixed64 
+]
+
+type builtin_type_int= [ 
+  |  builtin_type_unsigned_int 
+  |  builtin_type_signed_int
+]
+
+type builtin_type = [
+  | builtin_type_floating_point
+  | builtin_type_int
+  | `Bool 
+  | `String 
+  | `Bytes 
+]
+
+type 'a field_type = [ builtin_type | `User_defined of 'a]  
 
 (** field definition. 
     

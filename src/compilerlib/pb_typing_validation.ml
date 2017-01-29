@@ -44,22 +44,22 @@ let unresolved_of_string s =
   }
 
 let field_type_of_string = function
- | "double"    -> Tt.Field_type_double 
- | "float"     -> Tt.Field_type_float 
- | "int32"     -> Tt.Field_type_int32 
- | "int64"     -> Tt.Field_type_int64 
- | "uint32"    -> Tt.Field_type_uint32 
- | "uint64"    -> Tt.Field_type_uint64
- | "sint32"    -> Tt.Field_type_sint32 
- | "sint64"    -> Tt.Field_type_sint64 
- | "fixed32"   -> Tt.Field_type_fixed32 
- | "fixed64"   -> Tt.Field_type_fixed64 
- | "sfixed32"  -> Tt.Field_type_sfixed32 
- | "sfixed64"  -> Tt.Field_type_sfixed64
- | "bool"      -> Tt.Field_type_bool 
- | "string"    -> Tt.Field_type_string 
- | "bytes"     -> Tt.Field_type_bytes 
- | s  -> Tt.Field_type_type  (unresolved_of_string s) 
+ | "double"    -> `Double 
+ | "float"     -> `Float 
+ | "int32"     -> `Int32 
+ | "int64"     -> `Int64 
+ | "uint32"    -> `Uint32 
+ | "uint64"    -> `Uint64
+ | "sint32"    -> `Sint32 
+ | "sint64"    -> `Sint64 
+ | "fixed32"   -> `Fixed32 
+ | "fixed64"   -> `Fixed64 
+ | "sfixed32"  -> `Sfixed32 
+ | "sfixed64"  -> `Sfixed64
+ | "bool"      -> `Bool 
+ | "string"    -> `String 
+ | "bytes"     -> `Bytes 
+ | s           -> `User_defined (unresolved_of_string s) 
 
 let get_default field_options = 
   match List.assoc "default" field_options with

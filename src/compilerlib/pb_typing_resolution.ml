@@ -147,64 +147,56 @@ let compute_search_type_paths unresolved_field_type message_type_path =
  *
  * Note that this function also does type coersion when the default value 
  * is an int and the builtin type is a float or double. *) 
-let resolve_builtin_type_field_default field_name field_type field_default = 
+let resolve_builtin_type_field_default field_name builtin_type field_default = 
   match field_default with
   | None -> None
   | Some constant -> 
-    match field_type with  
-    | Tt.Field_type_double 
-    | Tt.Field_type_float -> (
-      match constant with 
+    match builtin_type with  
+    | #Tt.builtin_type_floating_point ->
+      begin match constant with 
       | Pt.Constant_int i   -> Some (Pt.Constant_float (float_of_int i))
       | Pt.Constant_float _ -> Some constant 
       | _  -> 
         E.invalid_default_value 
           ~field_name ~info:"invalid default type (float/int expected)" ()
-    )
-    | Tt.Field_type_int32 
-    | Tt.Field_type_int64 
-    | Tt.Field_type_sint32 
-    | Tt.Field_type_sint64 
-    | Tt.Field_type_fixed32 
-    | Tt.Field_type_fixed64 
-    | Tt.Field_type_sfixed32 
-    | Tt.Field_type_sfixed64 -> (
-      match constant with 
+      end
+
+    | #Tt.builtin_type_signed_int -> 
+      begin match constant with 
       | Pt.Constant_int _ -> Some constant
       | _ -> 
         let info = "invalid default type (int expected)" in 
         E.invalid_default_value ~field_name ~info ()
-    )
-    | Tt.Field_type_uint32 
-    | Tt.Field_type_uint64 -> (
-      match constant with 
+      end
+
+    | #Tt.builtin_type_unsigned_int -> 
+      begin match constant with 
       | Pt.Constant_int i -> if i >=0 
         then Some constant 
         else E.invalid_default_value 
           ~field_name ~info:"negative default value for unsigned int" () 
       | _ -> E.invalid_default_value
           ~field_name ~info:"invalid default type (int expected)" ()
-    )
+      end
 
-    | Tt.Field_type_bool -> (
-      match constant with 
+    | `Bool -> 
+      begin match constant with 
       | Pt.Constant_bool _ -> Some constant
       | _  -> 
         let info = "invalid default type (bool expected)" in 
         E.invalid_default_value ~field_name ~info ()
-    ) 
+      end
 
-    | Tt.Field_type_string -> (
-      match constant with 
+    | `String -> 
+      begin match constant with 
       | Pt.Constant_string _ -> Some constant 
       | _  -> 
         let info = "invalid default type (string expected)" in 
         E.invalid_default_value ~field_name ~info ()
-    ) 
+      end
 
-    | Tt.Field_type_bytes -> E.invalid_default_value 
+    | `Bytes -> E.invalid_default_value 
       ~field_name ~info:"default value not supported for bytes" ()
-    | _ -> assert(false)
 
 (* This function verifies that the default value for a used defined 
  * field is correct. 
@@ -245,32 +237,6 @@ let resolve_enum_field_default field_name type_ field_default =
   | _ -> E.invalid_default_value 
     ~field_name ~info:"default value not supported for message" ()
 
-let resolve_field_builtin_type field_name field_type field_default = 
-  let field_type:Tt.resolved_field_type Tt.field_type = 
-    match field_type with 
-    | Tt.Field_type_double   -> Tt.Field_type_double            
-    | Tt.Field_type_float    -> Tt.Field_type_float            
-    | Tt.Field_type_int32    -> Tt.Field_type_int32            
-    | Tt.Field_type_int64    -> Tt.Field_type_int64            
-    | Tt.Field_type_uint32   -> Tt.Field_type_uint32            
-    | Tt.Field_type_uint64   -> Tt.Field_type_uint64           
-    | Tt.Field_type_sint32   -> Tt.Field_type_sint32            
-    | Tt.Field_type_sint64   -> Tt.Field_type_sint64            
-    | Tt.Field_type_fixed32  -> Tt.Field_type_fixed32            
-    | Tt.Field_type_fixed64  -> Tt.Field_type_fixed64            
-    | Tt.Field_type_sfixed32 -> Tt.Field_type_sfixed32            
-    | Tt.Field_type_sfixed64 -> Tt.Field_type_sfixed64           
-    | Tt.Field_type_bool     -> Tt.Field_type_bool            
-    | Tt.Field_type_string   -> Tt.Field_type_string            
-    | Tt.Field_type_bytes    -> Tt.Field_type_bytes            
-    | _ -> assert(false)
-  in
-
-  let field_default = 
-    resolve_builtin_type_field_default field_name field_type field_default
-  in 
-
-  (field_type, field_default) 
 
 (* this function resolves both the type and the defaut value of a field 
  * type. Note that it is necessary to verify both at the same time since
@@ -284,7 +250,14 @@ let resolve_field_type_and_default
     t field_name field_type field_default message_type_path = 
 
   match field_type with 
-  | Tt.Field_type_type unresolved_field_type -> 
+  | #Tt.builtin_type as builtin_type -> 
+    let field_default = 
+      resolve_builtin_type_field_default field_name builtin_type field_default
+    in 
+    (builtin_type, field_default)
+    
+
+  | `User_defined unresolved_field_type -> 
     let {Tt.type_name; _ } = unresolved_field_type in 
     let rec aux = function
       | [] -> raise Not_found
@@ -295,12 +268,10 @@ let resolve_field_type_and_default
           let field_default = 
             resolve_enum_field_default field_name type_ field_default 
           in 
-          (Tt.Field_type_type id, field_default)
+          (`User_defined id, field_default)
         | exception Not_found -> aux tl  
     in 
     aux (compute_search_type_paths unresolved_field_type message_type_path) 
-
-  | _ -> resolve_field_builtin_type field_name field_type field_default 
 
 (* this function resolves all the field type of the given type *)
 let resolve_type t type_ =
