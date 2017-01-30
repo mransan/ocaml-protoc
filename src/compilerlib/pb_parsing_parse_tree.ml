@@ -48,10 +48,10 @@ type oneof_field_label = unit
    the label.
  *)
 type 'a field = {
-  field_name : string; 
-  field_number : int; 
-  field_label : 'a ; 
-  field_type : Pb_field_type.unresolved_t ; 
+  field_name : string;
+  field_number : int;
+  field_label : 'a;
+  field_type : Pb_field_type.unresolved_t;
   field_options : Pb_option.set;
 }
 
@@ -63,18 +63,18 @@ type map_field = {
   map_name : string;
   map_number : int;
   map_key_type : Pb_field_type.map_key_type;
-  map_value_type : Pb_field_type.unresolved_t ;
+  map_value_type : Pb_field_type.unresolved_t;
   map_options : Pb_option.set;
 }
 
 (** oneof entity *)
 type oneof = {
-  oneof_name : string; 
-  oneof_fields : oneof_field list; 
+  oneof_name : string;
+  oneof_fields : oneof_field list;
 }
 
 type enum_value = {
-  enum_value_name : string; 
+  enum_value_name : string;
   enum_value_int : int;
 }
 
@@ -83,9 +83,9 @@ type enum_body_content =
   | Enum_option of Pb_option.t
 
 type enum = {
-  enum_id  : int; 
-  enum_name : string; 
-  enum_body : enum_body_content list; 
+  enum_id  : int;
+  enum_name : string;
+  enum_body : enum_body_content list;
 } 
 
 type extension_range_to = 
@@ -118,20 +118,20 @@ type message_body_content =
     functions expects this id to be unique.
   *)
 and message = {
-  id : int; 
-  message_name : string; 
-  message_body : message_body_content list; 
+  id : int;
+  message_name : string;
+  message_body : message_body_content list;
 }
 
 type extend  = {
-  id : int; 
-  extend_name : string; 
+  id : int;
+  extend_name : string;
   extend_body : message_field list;
 }
 
 type import = {
-  file_name : string; 
-  public : bool; 
+  file_name : string;
+  public : bool;
 }
 
 (** Definition of a protobuffer message file. 
@@ -139,10 +139,10 @@ type import = {
 type proto = {
   proto_file_name : string option;
   syntax : string option;
-  imports : import list; 
-  file_options : Pb_option.set; 
-  package : string option; 
-  messages : message list; 
-  enums : enum list; 
+  imports : import list;
+  file_options : Pb_option.set;
+  package : string option;
+  messages : message list;
+  enums : enum list;
   extends : extend list;
 }
