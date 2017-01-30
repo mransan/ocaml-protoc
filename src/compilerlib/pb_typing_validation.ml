@@ -34,37 +34,8 @@ let scope_of_package = function
   }
   | None -> Typing_util.empty_scope 
 
-let unresolved_of_string s = 
-  match Pb_util.rev_split_by_char '.' s with 
-  | [] -> E.programmatic_error E.Invalid_string_split
-  | hd :: tl -> {
-    Tt.type_path = (List.rev tl); 
-    Tt.type_name = hd;
-    Tt.from_root = String.get s 0 = '.';
-  }
-
-let field_type_of_string = function
- | "double"    -> Tt.Field_type_double 
- | "float"     -> Tt.Field_type_float 
- | "int32"     -> Tt.Field_type_int32 
- | "int64"     -> Tt.Field_type_int64 
- | "uint32"    -> Tt.Field_type_uint32 
- | "uint64"    -> Tt.Field_type_uint64
- | "sint32"    -> Tt.Field_type_sint32 
- | "sint64"    -> Tt.Field_type_sint64 
- | "fixed32"   -> Tt.Field_type_fixed32 
- | "fixed64"   -> Tt.Field_type_fixed64 
- | "sfixed32"  -> Tt.Field_type_sfixed32 
- | "sfixed64"  -> Tt.Field_type_sfixed64
- | "bool"      -> Tt.Field_type_bool 
- | "string"    -> Tt.Field_type_string 
- | "bytes"     -> Tt.Field_type_bytes 
- | s  -> Tt.Field_type_type  (unresolved_of_string s) 
-
 let get_default field_options = 
-  match List.assoc "default" field_options with
-  | constant -> Some constant 
-  | exception Not_found -> None 
+  Pb_option.get field_options "default" 
 
 let compile_field_p1 field_parsed =
 
@@ -73,7 +44,6 @@ let compile_field_p1 field_parsed =
     Pt.field_options;_
   } = field_parsed in
 
-  let field_type = field_type_of_string field_type in 
   let field_default = get_default field_options in 
   {
     Tt.field_parsed;
@@ -94,8 +64,8 @@ let compile_map_p1 map_parsed =
   Tt.({
     map_name; 
     map_number;
-    map_key_type = field_type_of_string map_key_type;
-    map_value_type = field_type_of_string map_value_type;
+    map_key_type;
+    map_value_type;
     map_options;
   })
 
@@ -125,33 +95,40 @@ let make_proto_type ~file_name ~file_options ~id ~scope ~spec = {
 
 (* compile a [Pbpt] enum to a [Pbtt] type *) 
 let compile_enum_p1 
-    ?parent_options:(parent_options = []) file_name 
+    ?parent_options:(parent_options = Pb_option.empty) file_name 
     file_options scope parsed_enum =
    
   let {Pt.enum_id; enum_name; enum_body}  = parsed_enum in
 
-  let rec aux enum_values enum_options = function
-    | [] -> 
-      let spec = Tt.Enum {
-        Tt.enum_name;
-        Tt.enum_values = List.rev enum_values;
-        Tt.enum_options = (List.rev enum_options) @ parent_options; 
-      } in 
-      make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec
+  let enum_values = Pb_util.List.filter_map (function 
+    | Pt.Enum_value {Pt.enum_value_name; enum_value_int} -> 
+      Some Tt.({enum_value_name; enum_value_int}) 
+    | _ -> None 
+  ) enum_body in 
 
-    | (Pt.Enum_value {Pt.enum_value_name; enum_value_int})::tl -> 
-      let enum_value = Tt.({enum_value_name; enum_value_int}) in 
-      aux (enum_value::enum_values) enum_options tl 
+  let enum_options = 
+    enum_body
+    |> Pb_util.List.filter_map (function 
+      | Pt.Enum_option o -> Some o 
+      | _  -> None
+    )  
+    |> List.fold_left (fun enum_options (name, value) ->
+       Pb_option.add enum_options name value 
+    ) Pb_option.empty 
+  in 
 
-    | (Pt.Enum_option enum_option)::tl -> 
-      aux enum_values (enum_option::enum_options) tl 
-  in
-  aux [] [] enum_body
+  let spec = Tt.Enum {
+    Tt.enum_name;
+    Tt.enum_values;
+    Tt.enum_options = Pb_option.merge parent_options enum_options;
+  } in 
+
+  make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec
 
 (* compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
  * defined more than one type).  *)
 let rec validate_message 
-    ?parent_options:(parent_options = []) file_name file_options 
+    ?parent_options:(parent_options = Pb_option.empty) file_name file_options 
     message_scope parsed_message = 
     
   let {Pt.id; Pt.message_name; Pt.message_body} = parsed_message in
@@ -166,10 +143,10 @@ let rec validate_message
        fold_left below. 
      *)
 
-    type ('a, 'b, 'c, 'd) t = {
+    type ('a, 'b, 'd) t = {
       message_body : 'a list; 
       extensions : 'b list; 
-      options : 'c list; 
+      options : Pb_option.set; 
       all_types: 'd list; 
     } 
 
@@ -224,7 +201,10 @@ let rec validate_message
       (* TODO add support for checking reserved fields *) 
 
     | Pt.Message_option message_option -> 
-      {acc with Acc.options = message_option::options} 
+      let options = 
+        Pb_option.add options (fst message_option) (snd message_option)
+      in 
+      {acc with Acc.options;}
 
   ) (Acc.e0 parent_options) message_body in
   

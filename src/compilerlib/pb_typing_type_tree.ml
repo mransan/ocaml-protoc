@@ -30,106 +30,43 @@ module Pt = Pb_parsing_parse_tree
     The typetree type is parametrized to allow for 2 phase compilation. 
  *)
 
-
-
-(** Scope path of a type used for a message field.
+(** Field definition. 
     
-    For instance in the following field defintion:
-
-    [required foo.bar.Msg1 f = 1]
-
-    The [type_path] would be [\["foo"; "bar"\]]
-  *)
-type type_path = string list 
-
-
-(** In the first phase of the compilation 
-    the field of message type are not resolved but only 
-    properly parsed. 
-    
-    The following type summarizes the information of a field
-    type. 
-
-    In the following field definition:
-    
-    [required foo.bar.Msg1 f = 1] 
-
-    The unresolved type would be: [{
-      scope=\["foo";"bar"\]; 
-      type_name="Msg1"; 
-      from_root = false
-    }]
- *)
-type unresolved_field_type = {
-  type_path : type_path; 
-  type_name : string; 
-  from_root : bool;  (** from_root indicates that the scope for the type is
-                         from the root of the type system. (ie starts with '.')
-                      *) 
-}
-
-(** After phase 2 compilation the field type is resolved to an 
-    known message which can be uniquely identified by its id.
-  *)
-type resolved_field_type = int 
-
-(** field type. 
-    
-    The ['a] type is for re-using the same type 
-    definition for the 2 compilation phases. 
-    
-    After Phase 1 ['a] is [unresolved] while after Phase2
-    ['a] is [resolved].
-  *)
-type 'a field_type = 
-  | Field_type_double 
-  | Field_type_float 
-  | Field_type_int32 
-  | Field_type_int64 
-  | Field_type_uint32 
-  | Field_type_uint64
-  | Field_type_sint32 
-  | Field_type_sint64 
-  | Field_type_fixed32 
-  | Field_type_fixed64 
-  | Field_type_sfixed32 
-  | Field_type_sfixed64
-  | Field_type_bool 
-  | Field_type_string 
-  | Field_type_bytes 
-  | Field_type_type of 'a 
-
-(** field definition. 
-    
-    ['a] is for [unresolved] or [resolved]
-    ['b] is for [field_label] to account for both normal and one of fields. 
-  *)
+    {ul
+    {- ['a] is for [unresolved] or [resolved]}
+    {- ['b] is for [field_label] to account for both normal and one of fields.}
+    } *)
 type ('a, 'b) field = {
   field_parsed : 'b Pt.field; 
-  field_type : 'a field_type; 
-  field_default : Pt.constant option; 
-  field_options : Pt.field_options; 
+  field_type : 'a Pb_field_type.t; 
+  field_default : Pb_option.constant option; 
+  field_options : Pb_option.set; 
 }
 
-(** oneof definition *)
-type 'a oneof = {
-  oneof_name : string; 
-  oneof_fields : ('a, Pt.oneof_label) field list; 
-}
+type 'a oneof_field = ('a, Pt.oneof_field_label) field 
 
-type 'a map = {
+type 'a message_field = ('a, Pt.message_field_label) field  
+
+(** Map definition *)
+type 'a map_field = {
   map_name : string;
   map_number : int;
-  map_key_type : 'a field_type;
-  map_value_type : 'a field_type;
-  map_options : Pt.field_options;
+  map_key_type : Pb_field_type.map_key_type;
+  map_value_type : 'a Pb_field_type.t;
+  map_options : Pb_option.set;
 }
 
-(* type scope 
- *   
- * The scope of a type (message or enum) is defined by the package 
- * (defined in the top of the proto file as well as the messages above 
- * it since a message definition can be nested *)
+(** Oneof definition *)
+type 'a oneof = {
+  oneof_name : string; 
+  oneof_fields : 'a oneof_field list; 
+}
+
+(** Type scope 
+      
+    The scope of a type (message or enum) is defined by the package 
+    (defined in the top of the proto file as well as the messages above 
+    it since a message definition can be nested *)
 type type_scope = {
   packages : string list; 
   message_names : string list; 
@@ -137,13 +74,13 @@ type type_scope = {
 
 (** item for the message body *)
 type 'a message_body_content = 
-  | Message_field       of ('a, Pt.field_label) field 
+  | Message_field       of 'a message_field 
   | Message_oneof_field of 'a oneof 
-  | Message_map_field   of 'a map
+  | Message_map_field   of 'a map_field 
 
 and 'a message = {
   extensions : Pt.extension_range list;
-  message_options : Pt.message_option list;
+  message_options : Pb_option.set;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
@@ -156,7 +93,7 @@ type enum_value = {
 type enum = {
   enum_name : string; 
   enum_values: enum_value list; 
-  enum_options : Pt.message_option list; 
+  enum_options : Pb_option.set; 
 }
 
 type 'a proto_type_spec = 
@@ -167,7 +104,7 @@ type 'a proto_type  = {
   scope : type_scope;
   id :  int; 
   file_name : string; 
-  file_options : Pt.file_option list;
+  file_options : Pb_option.set;
   spec : 'a proto_type_spec;
 }
 

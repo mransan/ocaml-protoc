@@ -57,7 +57,7 @@ type field_type =
   | Ft_basic_type        of basic_type
   | Ft_user_defined_type of user_defined_type
 
-type default_value = Pt.constant option 
+type default_value = Pb_option.constant option 
 
 type associative_type  = 
   | At_list

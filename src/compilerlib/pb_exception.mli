@@ -29,7 +29,6 @@
 
 type programmatic_error =
   | Invalid_string_split 
-  | Unexpected_field_type 
   | No_type_found_for_id 
 
 type error
@@ -107,3 +106,5 @@ val invalid_first_enum_value_proto3 :
   enum_name:string -> 
   unit ->
   'a
+
+val invalid_key_type_for_map : string -> 'a

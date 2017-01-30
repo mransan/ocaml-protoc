@@ -25,8 +25,6 @@
 
 module Tt = Pb_typing_type_tree 
 
-type type_ = Tt.resolved_field_type Tt.proto_type
-
 let perform_typing protos = 
 
   let typed_protos = List.fold_left (fun typed_protos proto -> 

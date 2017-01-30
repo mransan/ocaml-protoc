@@ -33,15 +33,6 @@ val rev_split_by_char : char -> string -> string list
     extension will be the head of the returned list. 
  *)
 
-val pop_last : 'a list -> 'a list 
-(** [pop_last l] removes the last element from the list *)
-
-val apply_until : ('a -> 'b option) -> 'a list -> 'b option 
-(** [apply_until f l] applies [f ei] until it returns [Some x] 
-    
-    If [f] returns [None] then [None] is returned. 
- *)
-
 val string_of_string_list : string list -> string 
 (** [string_of_string_list l] returns a debug string of [l] *)
 
@@ -76,3 +67,22 @@ module Option : sig
 end (* Option *)
 
 val read_file : string -> string 
+
+module List : sig 
+
+  val pop_last : 'a list -> 'a list 
+  (** [pop_last l] removes the last element from the list *)
+  
+  val apply_until : ('a -> 'b option) -> 'a list -> 'b option 
+  (** [apply_until f l] applies [f ei] until it returns [Some x] 
+      
+      If the end of the list is reached without [f] returning [Some _] then 
+      [None] is returned. 
+   *)
+
+  val filter_map : ('a -> 'b option) -> 'a list -> 'b list 
+  (** [filter_map f l] returns the list of element [x] for which [f] returned
+      [Some x]. The length of the returned list will be less or equal than 
+      the length of the input list [l]. *) 
+
+end (* List *) 

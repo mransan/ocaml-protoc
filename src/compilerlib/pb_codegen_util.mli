@@ -49,7 +49,10 @@ val string_of_payload_kind :
     string corresponding to the payload kind. 
  *)
 
-
 val runtime_function : 
-  [`Decode | `Encode] * Pb_codegen_ocaml_type.payload_kind * Pb_codegen_ocaml_type.basic_type -> 
+  ( 
+    [`Decode | `Encode] * 
+    Pb_codegen_ocaml_type.payload_kind *
+    Pb_codegen_ocaml_type.basic_type 
+  ) -> 
   string 

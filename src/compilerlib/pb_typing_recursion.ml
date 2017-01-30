@@ -29,25 +29,25 @@ module Graph = Pb_typing_graph
 let node_of_proto_type = function 
   | {Tt.id; Tt.spec = Tt.Enum _ ; _ }  -> Graph.create_node id [] 
   | {Tt.id; Tt.spec = Tt.Message {Tt.message_body; _ }; _ } -> 
+
+    let list_of_field_type = function
+      | `User_defined x  -> [x]
+      | #Pb_field_type.builtin_type -> []
+    in
+    (* TODO : this whole flatten thing is a bit hacky
+     * we should develop a clearer solution *)
+
     let sub = List.flatten @@ List.map (function
       | Tt.Message_field {Tt.field_type; _ } -> 
-        begin match field_type with
-        | Tt.Field_type_type x -> [x]
-        | _                      -> []
-        end
+        list_of_field_type field_type 
 
       | Tt.Message_oneof_field {Tt.oneof_fields; _ } -> 
         List.flatten @@ List.map (fun {Tt.field_type; _ } ->
-         match field_type with
-         | Tt.Field_type_type x -> [x]
-         | _ -> []
+         list_of_field_type field_type 
         ) oneof_fields  
 
       | Tt.Message_map_field {Tt.map_value_type; _ } -> 
-         begin match map_value_type with
-         | Tt.Field_type_type x -> [x]
-         | _ -> []
-         end
+         list_of_field_type map_value_type
 
     ) message_body in 
     Graph.create_node id sub

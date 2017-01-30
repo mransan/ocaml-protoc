@@ -82,7 +82,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 %.pb.cc: %.proto
 	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) $<
 
-%_pb.ml %_pb.mli : %.proto bin.byte bin.native
+%_pb.ml %_pb.mli : %.proto bin.native
 	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
 
 # Specialization of the above command is required for test01 since we add the extra 
@@ -91,12 +91,11 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 $(INTEGRATION_TESTS_DIR)/test01_pb.ml $(INTEGRATION_TESTS_DIR)/test01_pb.mli : $(INTEGRATION_TESTS_DIR)/test01.proto bin.byte bin.native
 	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -ocaml_all_types_ppx "deriving show" -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
 
-%_ml.native: ocaml_protoc.native %_pb.mli %_pb.ml %_ml.ml 
+%_ml.native: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -pkg ppx_deriving.show -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
 
-test%: ocaml_protoc.native bin.native \
-	   $(INTEGRATION_TESTS_DIR)/test%_ml.native \
-	   $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk 
+test%: $(INTEGRATION_TESTS_DIR)/test%_ml.native \
+	     $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk 
 	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk encode
 	time ./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native decode
 	./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native encode
