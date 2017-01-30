@@ -25,7 +25,6 @@
 
 module Pt = Pb_parsing_parse_tree 
 module E = Pb_exception 
-module L = Pb_logger 
 module Ot = Pb_codegen_ocaml_type
 module Parsing_util = Pb_parsing_util
 module Tt = Pb_typing_type_tree 

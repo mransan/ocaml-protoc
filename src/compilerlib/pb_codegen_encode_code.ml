@@ -1,7 +1,6 @@
 
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting 
-module E = Pb_exception
 module L = Pb_logger
 
 let constructor_name s = 

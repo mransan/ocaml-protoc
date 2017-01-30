@@ -23,8 +23,6 @@
 
 *)
 
-module E = Pb_exception 
-module L = Pb_logger 
 module Pt = Pb_parsing_parse_tree 
 module Tt = Pb_typing_type_tree 
 

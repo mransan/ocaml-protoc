@@ -1,7 +1,6 @@
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
 module L = Pb_logger
-module E = Pb_exception
 
 open Pb_codegen_util
 
