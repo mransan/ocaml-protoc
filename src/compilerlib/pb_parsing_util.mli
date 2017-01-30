@@ -46,7 +46,7 @@ val map_field :
   key_type:string ->
   value_type:string ->
   string ->
-  Pt.map
+  Pt.map_field 
 
 val oneof_field : 
   ?options:Pb_option.set ->
@@ -65,7 +65,7 @@ val message_body_field :
   Pt.message_body_content  
 
 val message_body_map_field : 
-  Pt.map ->
+  Pt.map_field ->
   Pt.message_body_content  
 
 val message_body_oneof_field  : 

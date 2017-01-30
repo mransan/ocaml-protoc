@@ -59,7 +59,7 @@ type message_field = message_field_label field
 
 type oneof_field = oneof_field_label field 
 
-type map = {
+type map_field = {
   map_name : string;
   map_number : int;
   map_key_type : Pb_field_type.map_key_type;
@@ -103,7 +103,7 @@ type extension_range =
   *)
 type message_body_content = 
   | Message_field of message_field
-  | Message_map_field of map
+  | Message_map_field of map_field 
   | Message_oneof_field of oneof 
   | Message_sub of message 
   | Message_enum of enum 

@@ -48,7 +48,7 @@ type 'a oneof_field = ('a, Pt.oneof_field_label) field
 type 'a message_field = ('a, Pt.message_field_label) field  
 
 (** Map definition *)
-type 'a map = {
+type 'a map_field = {
   map_name : string;
   map_number : int;
   map_key_type : Pb_field_type.map_key_type;
@@ -76,7 +76,7 @@ type type_scope = {
 type 'a message_body_content = 
   | Message_field       of 'a message_field 
   | Message_oneof_field of 'a oneof 
-  | Message_map_field   of 'a map
+  | Message_map_field   of 'a map_field 
 
 and 'a message = {
   extensions : Pt.extension_range list;
