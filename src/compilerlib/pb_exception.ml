@@ -84,6 +84,7 @@ type error =
   | Invalid_proto3_field_label of string * string 
   | Default_field_option_not_supported of string * string 
   | Invalid_first_enum_value_proto3 of string * string option 
+  | Invalid_key_type_for_map of string 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -170,6 +171,13 @@ let string_of_error = function
       ("The first enum value must be 0 in proto3." ^^ 
        "enum name: %s, message name: %s.")
       enum_name (Pb_util.Option.string_of_option (fun x -> x) message_name)
+
+  | Invalid_key_type_for_map field_name -> 
+    P.sprintf
+      ("Invalid key type for field %s. Map key type only supports integral " ^^
+       "and string type"
+      ) 
+      field_name
 
 let () =
   Printexc.register_printer (fun exn ->
@@ -258,3 +266,6 @@ let default_field_option_not_supported ~field_name ~message_name =
 let invalid_first_enum_value_proto3 ?message_name ~enum_name () = 
   raise (Compilation_error (Invalid_first_enum_value_proto3 (enum_name,
       message_name)))
+  
+let invalid_key_type_for_map field_name = 
+  raise (Compilation_error (Invalid_key_type_for_map field_name)) 

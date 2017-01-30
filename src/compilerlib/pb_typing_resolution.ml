@@ -28,7 +28,7 @@ module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree 
 
 module Types_by_scope = struct 
-  type type_ = Tt.unresolved Tt.proto_type 
+  type type_ = Pb_field_type.unresolved Tt.proto_type 
   
   let name_of_type {Tt.spec; _ } = 
     match spec with
@@ -124,7 +124,7 @@ let type_path_of_type {Tt.scope; spec; _ } =
  * ] *)
 let compute_search_type_paths unresolved_field_type message_type_path = 
   let {
-    Tt.type_path = type_path; 
+    Pb_field_type.type_path = type_path; 
     type_name = _ ; 
     from_root; 
   } = unresolved_field_type in 
@@ -135,7 +135,7 @@ let compute_search_type_paths unresolved_field_type message_type_path =
     let rec loop type_paths= function
       | [] -> type_path::type_paths
       | l  -> 
-        loop ((l @ type_path)::type_paths) (Pb_util.pop_last l)
+        loop ((l @ type_path)::type_paths) (Pb_util.List.pop_last l)
     in 
     List.rev @@ loop [] message_type_path
 
@@ -152,26 +152,26 @@ let resolve_builtin_type_field_default field_name builtin_type field_default =
   | None -> None
   | Some constant -> 
     match builtin_type with  
-    | #Tt.builtin_type_floating_point ->
+    | #Pb_field_type.builtin_type_floating_point ->
       begin match constant with 
-      | Pt.Constant_int i   -> Some (Pt.Constant_float (float_of_int i))
-      | Pt.Constant_float _ -> Some constant 
+      | Pb_option.Constant_int i   -> Some (Pb_option.Constant_float (float_of_int i))
+      | Pb_option.Constant_float _ -> Some constant 
       | _  -> 
         E.invalid_default_value 
           ~field_name ~info:"invalid default type (float/int expected)" ()
       end
 
-    | #Tt.builtin_type_signed_int -> 
+    | #Pb_field_type.builtin_type_signed_int -> 
       begin match constant with 
-      | Pt.Constant_int _ -> Some constant
+      | Pb_option.Constant_int _ -> Some constant
       | _ -> 
         let info = "invalid default type (int expected)" in 
         E.invalid_default_value ~field_name ~info ()
       end
 
-    | #Tt.builtin_type_unsigned_int -> 
+    | #Pb_field_type.builtin_type_unsigned_int -> 
       begin match constant with 
-      | Pt.Constant_int i -> if i >=0 
+      | Pb_option.Constant_int i -> if i >=0 
         then Some constant 
         else E.invalid_default_value 
           ~field_name ~info:"negative default value for unsigned int" () 
@@ -181,7 +181,7 @@ let resolve_builtin_type_field_default field_name builtin_type field_default =
 
     | `Bool -> 
       begin match constant with 
-      | Pt.Constant_bool _ -> Some constant
+      | Pb_option.Constant_bool _ -> Some constant
       | _  -> 
         let info = "invalid default type (bool expected)" in 
         E.invalid_default_value ~field_name ~info ()
@@ -189,7 +189,7 @@ let resolve_builtin_type_field_default field_name builtin_type field_default =
 
     | `String -> 
       begin match constant with 
-      | Pt.Constant_string _ -> Some constant 
+      | Pb_option.Constant_string _ -> Some constant 
       | _  -> 
         let info = "invalid default type (string expected)" in 
         E.invalid_default_value ~field_name ~info ()
@@ -211,7 +211,7 @@ let resolve_builtin_type_field_default field_name builtin_type field_default =
 let resolve_enum_field_default field_name type_ field_default = 
   match field_default with 
   | None -> None 
-  | Some ((Pt.Constant_litteral default_enum_value) as constant)  -> 
+  | Some ((Pb_option.Constant_litteral default_enum_value) as constant)  -> 
     let {Tt.spec; _ } = type_ in  
     begin match spec with
     | Tt.Message _ -> 
@@ -222,7 +222,7 @@ let resolve_enum_field_default field_name type_ field_default =
       E.invalid_default_value ~field_name ~info ()
 
     | Tt.Enum {Tt.enum_values; _ } -> 
-      let default_enum_value = Pb_util.apply_until (fun enum -> 
+      let default_enum_value = Pb_util.List.apply_until (fun enum -> 
         let {Tt.enum_value_name; _ } = enum in 
         if enum_value_name = default_enum_value 
         then Some enum_value_name 
@@ -250,7 +250,7 @@ let resolve_field_type_and_default
     t field_name field_type field_default message_type_path = 
 
   match field_type with 
-  | #Tt.builtin_type as builtin_type -> 
+  | #Pb_field_type.builtin_type as builtin_type -> 
     let field_default = 
       resolve_builtin_type_field_default field_name builtin_type field_default
     in 
@@ -258,7 +258,7 @@ let resolve_field_type_and_default
     
 
   | `User_defined unresolved_field_type -> 
-    let {Tt.type_name; _ } = unresolved_field_type in 
+    let {Pb_field_type.type_name; _ } = unresolved_field_type in 
     let rec aux = function
       | [] -> raise Not_found
       | type_path :: tl -> 
@@ -339,14 +339,11 @@ let resolve_type t type_ =
 
         let field_default = None in 
 
-        let map_key_type, _ = 
-          resolve_field_type_and_default 
-              t map_name map_key_type field_default message_type_path 
-        in 
         let map_value_type, _ = 
           resolve_field_type_and_default 
               t map_name map_value_type field_default message_type_path 
         in 
+
         Tt.Message_map_field {
           Tt.map_name; 
           map_number;

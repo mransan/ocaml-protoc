@@ -106,3 +106,5 @@ val invalid_first_enum_value_proto3 :
   enum_name:string -> 
   unit ->
   'a
+
+val invalid_key_type_for_map : string -> 'a

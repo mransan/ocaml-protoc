@@ -72,7 +72,7 @@
 %token EOF
 
 %start field_options_
-%type <Pb_parsing_parse_tree.field_options> field_options_
+%type <Pb_option.set> field_options_
 
 %start normal_field_ 
 %type <Pb_parsing_parse_tree.message_field> normal_field_
@@ -96,7 +96,7 @@
 %type <Pb_parsing_parse_tree.import> import_
 
 %start option_
-%type <Pb_parsing_parse_tree.file_option> option_
+%type <Pb_option.t> option_
 
 %start extension_range_list_ 
 %type <Pb_parsing_parse_tree.extension_range list> extension_range_list_ 
@@ -229,10 +229,12 @@ oneof_field :
 
 map :
   | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT semicolon {
-    Pb_parsing_util.map ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+    Pb_parsing_util.map_field 
+        ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
   }
   | MAP LANGLEB IDENT COMMA IDENT RANGLEB field_name EQUAL INT field_options semicolon {
-    Pb_parsing_util.map ~options:$10 ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+    Pb_parsing_util.map_field 
+        ~options:$10 ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
   }
 
 normal_field : 
@@ -243,7 +245,8 @@ normal_field :
     Pb_parsing_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3 
   } 
   | IDENT field_name EQUAL INT field_options semicolon { 
-    Pb_parsing_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 ~options:$5 $2
+    Pb_parsing_util.field 
+        ~label:`Nolabel ~type_:(snd $1) ~number:$4 ~options:$5 $2
   }
   | IDENT field_name EQUAL INT semicolon { 
     Pb_parsing_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 $2
@@ -276,11 +279,16 @@ label :
 
 field_options : 
   | LBRACKET field_option_list RBRACKET { $2 }; 
-  | LBRACKET RBRACKET                   { [] }; 
+  | LBRACKET RBRACKET                   { Pb_option.empty }; 
 
 field_option_list : 
-  | field_option                          { [$1] } 
-  | field_option COMMA field_option_list  { $1::$3 }
+  | field_option                          { 
+    let option_name, option_value = $1 in 
+    Pb_option.add Pb_option.empty option_name option_value 
+  } 
+  | field_option COMMA field_option_list  { 
+    Pb_option.add $3 (fst $1) (snd $1)
+  }
 
 field_option :
   | IDENT EQUAL constant               { (snd $1, $3) } 
@@ -298,15 +306,15 @@ option :
   | OPTION option_identifier EQUAL constant semicolon { ($2, $4) }
 
 constant : 
-  | INT        { Pb_parsing_parse_tree.Constant_int $1 }
-  | FLOAT      { Pb_parsing_parse_tree.Constant_float $1 }
+  | INT        { Pb_option.Constant_int $1 }
+  | FLOAT      { Pb_option.Constant_float $1 }
   | IDENT      { 
     match (snd $1) with 
-    | "true"   -> Pb_parsing_parse_tree.Constant_bool true 
-    | "false"  -> Pb_parsing_parse_tree.Constant_bool false 
-    | litteral -> Pb_parsing_parse_tree.Constant_litteral litteral 
+    | "true"   -> Pb_option.Constant_bool true 
+    | "false"  -> Pb_option.Constant_bool false 
+    | litteral -> Pb_option.Constant_litteral litteral 
   }
-  | STRING     { Pb_parsing_parse_tree.Constant_string $1 }; 
+  | STRING     { Pb_option.Constant_string $1 }; 
 
 enum:
   | ENUM IDENT LBRACE enum_values rbrace { Pb_parsing_util.enum ~enum_body:$4 (snd $2) } 

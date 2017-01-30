@@ -33,18 +33,6 @@ let rev_split_by_char c s =
   in 
   loop 0 []
   
-let rec pop_last = function 
-  | [] -> failwith "Invalid argument [] for pop_last"
-  | _::[] -> []
-  | hd::tl -> hd :: (pop_last tl)
-
-let rec apply_until f = function 
-  | []  -> None 
-  | hd::tl -> (match f hd with 
-    | None -> apply_until f tl 
-    | x    -> x
-  )  
-
 let string_of_string_list l = 
   Printf.sprintf "[%s]" (String.concat "," l)
 
@@ -107,3 +95,27 @@ let read_file file_name =
   done; 
   close_in ic;
   Bytes.to_string b 
+
+module List = struct 
+  let rec pop_last = function 
+    | [] -> failwith "Invalid argument [] for pop_last"
+    | _::[] -> []
+    | hd::tl -> hd :: (pop_last tl)
+  
+  let rec apply_until f = function 
+    | []  -> None 
+    | hd::tl -> 
+      begin match f hd with 
+      | None -> apply_until f tl 
+      | x    -> x
+      end
+  
+  let rec filter_map f = function
+    | [] -> []
+    | hd::tl -> 
+      begin match f hd with
+      | None -> filter_map f tl 
+      | Some x -> x :: (filter_map f tl)
+      end  
+
+end (* List *) 

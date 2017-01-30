@@ -39,17 +39,17 @@ module Tt = Pb_typing_type_tree
 
 val validate : 
   Pt.proto ->
-  Tt.unresolved Tt.proto
+  Pb_field_type.unresolved Tt.proto
 (** [validate file_name proto] makes a first phase compilation of the 
     parsed tree.  *)
 
 (** {2 Testing Only} *) 
 
 val validate_message : 
-  ?parent_options:Pt.message_option list ->
+  ?parent_options:Pb_option.set ->
   string -> 
-  Pt.file_option list ->
+  Pb_option.set -> (* file options *) 
   Tt.type_scope -> 
   Pt.message ->
-  Tt.unresolved Tt.proto
+  Pb_field_type.unresolved Tt.proto
 

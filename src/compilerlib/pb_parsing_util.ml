@@ -26,26 +26,43 @@
 module E = Pb_exception 
 module Pt = Pb_parsing_parse_tree
 
-let field ?options:(options =[]) ~label ~number ~type_ name = {
+let field ?options:(options = Pb_option.empty) ~label ~number ~type_ name = {
   Pt.field_name = name; 
   Pt.field_number = number;
-  Pt.field_type = type_; 
+  Pt.field_type = Pb_field_type.parse type_; 
   Pt.field_label = label;
   Pt.field_options = options;
 } 
 
-let map ?options:(map_options = []) ~number ~key_type ~value_type name = {
-  Pt.map_name = name;
-  Pt.map_number = number;
-  Pt.map_key_type = key_type;
-  Pt.map_value_type = value_type;
-  Pt.map_options;
-}
+let map_field ?options:(map_options = Pb_option.empty) ~number 
+        ~key_type ~value_type name = 
 
-let oneof_field ?options:(options =[]) ~number ~type_ name = {
+  let map_key_type = 
+    Pb_field_type.parse key_type 
+    |> (function 
+        | #Pb_field_type.map_key_type as t -> t 
+
+        | `Bytes 
+        | #Pb_field_type.builtin_type_floating_point 
+        | `User_defined _ -> 
+           E.invalid_key_type_for_map name 
+    ) 
+  in 
+
+  let map_value_type = Pb_field_type.parse value_type in   
+  
+  {
+    Pt.map_name = name;
+    Pt.map_number = number;
+    Pt.map_key_type;
+    Pt.map_value_type;
+    Pt.map_options;
+  }
+
+let oneof_field ?options:(options = Pb_option.empty) ~number ~type_ name = {
   Pt.field_name = name; 
   Pt.field_number = number;
-  Pt.field_type = type_; 
+  Pt.field_type = (Pb_field_type.parse type_); 
   Pt.field_options = options;
   Pt.field_label = ();
 } 
@@ -155,7 +172,7 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
       imports = [];
       package = None; 
       messages = []; 
-      file_options = []; 
+      file_options = Pb_option.empty; 
       enums = []; 
       extends = []; 
     }) 
@@ -196,7 +213,11 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
 
   let proto = match file_option with 
     | None   -> proto 
-    | Some i -> Pt.({proto with file_options = i :: file_options})
+    | Some i -> 
+      let file_options = 
+        Pb_option.add file_options (fst i) (snd i) 
+      in 
+      Pt.({proto with file_options})
   in 
   
   let proto = match extend with 
@@ -205,11 +226,6 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
   in 
   proto 
    
-let file_option (file_options:Pt.file_option list) (name:string) =
-  match List.assoc name file_options with
-  | x -> Some x 
-  | exception Not_found -> None  
-
 let verify_syntax2 proto = 
   let {Pt.messages; _} = proto in 
 
@@ -240,9 +256,9 @@ let verify_syntax3 proto =
    * in messages *)
 
   let verify_no_default_field_options field_name message_name field_options = 
-    match List.assoc "default" field_options with
-    | exception Not_found -> () 
-    | _ -> E.default_field_option_not_supported ~field_name ~message_name 
+    match Pb_option.get field_options "default" with
+    | None -> () 
+    | Some _ -> E.default_field_option_not_supported ~field_name ~message_name 
   in
 
   let verify_enum ?message_name {Pt.enum_name; enum_body; _} = 

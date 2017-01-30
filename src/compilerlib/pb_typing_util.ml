@@ -45,13 +45,8 @@ let field_default {Tt.field_default; _ } = field_default
 
 let field_options {Tt.field_options; _ } = field_options 
 
-let find_field_option field_options option_name = 
-  match List.assoc option_name field_options with
-  | x -> Some x 
-  | exception Not_found -> None  
-
 let field_option {Tt.field_options; _ } option_name = 
-  find_field_option field_options option_name 
+  Pb_option.get field_options option_name 
   
 let empty_scope  = { 
   Tt.packages = []; 
@@ -77,14 +72,10 @@ let string_of_message id scope message =
     (List.length message_body)
 
 let message_option {Tt.message_options; _ } option_name = 
-  match List.assoc option_name message_options with 
-  | cst -> Some cst 
-  | exception Not_found -> None 
+  Pb_option.get message_options option_name 
 
 let enum_option {Tt.enum_options; _ } option_name = 
-  match List.assoc option_name enum_options with 
-  | cst -> Some cst 
-  | exception Not_found -> None 
+  Pb_option.get enum_options option_name 
 
 let type_scope_of_type {Tt.scope; _ } = scope 
 

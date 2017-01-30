@@ -30,98 +30,6 @@ module Pt = Pb_parsing_parse_tree
     The typetree type is parametrized to allow for 2 phase compilation. 
  *)
 
-(** Scope path of a type used for a message field.
-    
-    For instance in the following field defintion:
-
-    [required foo.bar.Msg1 f = 1]
-
-    The [type_path] would be [\["foo"; "bar"\]]
-  *)
-type type_path = string list 
-
-(** In the first phase of the compilation 
-    the field of message type are not resolved but only 
-    properly parsed. 
-    
-    The following type summarizes the information of a field
-    type. 
-
-    In the following field definition:
-    
-    [required foo.bar.Msg1 f = 1] 
-
-    The unresolved type would be: [{
-      scope=\["foo";"bar"\]; 
-      type_name="Msg1"; 
-      from_root = false
-    }]
- *)
-type unresolved = {
-  type_path : type_path; 
-  type_name : string; 
-  from_root : bool;  (** from_root indicates that the scope for the type is
-                         from the root of the type system. (ie starts with '.')
-                      *) 
-}
-
-(** After phase 2 compilation the field type is resolved to an 
-    known message which can be uniquely identified by its id.
-  *)
-type resolved = int 
-
-(** Floating point builtin types *)
-type builtin_type_floating_point = [ 
-  | `Double 
-  | `Float 
-]
-
-(** Unsigned integer builtin types *)
-type builtin_type_unsigned_int  = [
-  | `Uint32 
-  | `Uint64
-]
-
-(** Signed integer builtin types *) 
-type builtin_type_signed_int = [
-  | `Int32 
-  | `Int64 
-  | `Sint32 
-  | `Sint64 
-  | `Fixed32 
-  | `Fixed64 
-  | `Sfixed32 
-  | `Sfixed64 
-]
-
-(** Integer builtin types *)
-type builtin_type_int= [ 
-  |  builtin_type_unsigned_int 
-  |  builtin_type_signed_int
-]
-
-(** Builtin type defined in protobuf *)
-type builtin_type = [
-  | builtin_type_floating_point
-  | builtin_type_int
-  | `Bool 
-  | `String 
-  | `Bytes 
-]
-
-(** field type. 
-    
-    The ['a] type is for re-using the same type 
-    definition for the 2 compilation phases. 
-    
-    After Phase 1 ['a] is [unresolved] while after Phase2
-    ['a] is [resolved].
-  *)
-type 'a field_type = [ 
-  | builtin_type          
-  | `User_defined of 'a   (** Message or Enum type *)
-]  
-
 (** Field definition. 
     
     {ul
@@ -130,9 +38,9 @@ type 'a field_type = [
     } *)
 type ('a, 'b) field = {
   field_parsed : 'b Pt.field; 
-  field_type : 'a field_type; 
-  field_default : Pt.constant option; 
-  field_options : Pt.field_options; 
+  field_type : 'a Pb_field_type.t; 
+  field_default : Pb_option.constant option; 
+  field_options : Pb_option.set; 
 }
 
 type 'a oneof_field = ('a, Pt.oneof_field_label) field 
@@ -143,9 +51,9 @@ type 'a message_field = ('a, Pt.message_field_label) field
 type 'a map = {
   map_name : string;
   map_number : int;
-  map_key_type : 'a field_type;
-  map_value_type : 'a field_type;
-  map_options : Pt.field_options;
+  map_key_type : Pb_field_type.map_key_type;
+  map_value_type : 'a Pb_field_type.t;
+  map_options : Pb_option.set;
 }
 
 (** Oneof definition *)
@@ -172,7 +80,7 @@ type 'a message_body_content =
 
 and 'a message = {
   extensions : Pt.extension_range list;
-  message_options : Pt.message_option list;
+  message_options : Pb_option.set;
   message_name : string; 
   message_body : 'a message_body_content list; 
 }
@@ -185,7 +93,7 @@ type enum_value = {
 type enum = {
   enum_name : string; 
   enum_values: enum_value list; 
-  enum_options : Pt.message_option list; 
+  enum_options : Pb_option.set; 
 }
 
 type 'a proto_type_spec = 
@@ -196,7 +104,7 @@ type 'a proto_type  = {
   scope : type_scope;
   id :  int; 
   file_name : string; 
-  file_options : Pt.file_option list;
+  file_options : Pb_option.set;
   spec : 'a proto_type_spec;
 }
 

@@ -33,15 +33,15 @@ module Pt = Pb_parsing_parse_tree
 (** {2 Creators } *) 
 
 val field : 
-  ?options:Pt.field_options ->
+  ?options:Pb_option.set ->
   label:Pt.message_field_label-> 
   number:int -> 
   type_:string -> 
   string -> 
   Pt.message_field
 
-val map :
-  ?options:Pt.field_options ->
+val map_field :
+  ?options:Pb_option.set ->
   number:int ->
   key_type:string ->
   value_type:string ->
@@ -49,7 +49,7 @@ val map :
   Pt.map
 
 val oneof_field : 
-  ?options:Pt.field_options ->
+  ?options:Pb_option.set ->
   number:int -> 
   type_:string -> 
   string -> 
@@ -78,7 +78,7 @@ val enum_value :
   Pt.enum_body_content
 
 val enum_option :
-  Pt.option_ -> 
+  Pb_option.t -> 
   Pt.enum_body_content
 
 val enum : 
@@ -107,7 +107,7 @@ val message_body_reserved:
   Pt.message_body_content
 
 val message_body_option : 
-  Pt.message_option -> 
+  Pb_option.t -> 
   Pt.message_body_content
 
 val message : 
@@ -121,7 +121,7 @@ val extend : string -> Pt.message_field list -> Pt.extend
 
 val proto: 
   ?syntax:string ->
-  ?file_option:Pt.file_option -> 
+  ?file_option:Pb_option.t -> 
   ?package:string -> 
   ?import:Pt.import -> 
   ?message:Pt.message ->
@@ -136,8 +136,3 @@ val verify_syntax_invariants : Pt.proto -> unit
 (** {2 Miscellaneous functionality } *)
 
 val message_printer :?level:int -> Pt.message -> unit 
-
-val file_option : Pt.file_option list -> string -> Pt.constant option 
-(** [file_option file_options name] return [Some file_option] for the given
-    [name]
- *)

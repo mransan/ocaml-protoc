@@ -94,23 +94,25 @@ module File_options = struct
 
     let {int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx} = t in 
 
-    let map x f l = 
+    let map x f options  = 
       match x with 
-      | None -> l 
-      | Some x -> (f x) :: l 
+      | None -> options
+      | Some x -> 
+        let option_name, option_value = f x in 
+        Pb_option.add options option_name option_value
     in 
-    []
+    Pb_option.empty
     |> map int32_type (fun s -> 
-      ("int32_type", Pt.Constant_litteral s)
+      ("int32_type", Pb_option.Constant_litteral s)
     )
     |> map int64_type (fun s -> 
-      ("int64_type", Pt.Constant_litteral s)
+      ("int64_type", Pb_option.Constant_litteral s)
     )
     |> map ocaml_file_ppx (fun s -> 
-      ("ocaml_file_ppx", Pt.Constant_string s)
+      ("ocaml_file_ppx", Pb_option.Constant_string s)
     )
     |> map ocaml_all_types_ppx (fun s -> 
-      ("ocaml_all_types_ppx", Pt.Constant_string s)
+      ("ocaml_all_types_ppx", Pb_option.Constant_string s)
     )
 
 end 
@@ -228,7 +230,8 @@ let compile cmd_line_files_options include_dirs proto_file_name =
   (* file options can be overriden/added with command line arguments *)
   let protos = List.map (fun proto -> 
     {proto with 
-      Pt.file_options = cmd_line_files_options @ proto.Pt.file_options
+      Pt.file_options = 
+        Pb_option.merge proto.Pt.file_options cmd_line_files_options 
     }
   ) protos in
 
@@ -280,9 +283,9 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
   (* File level ppx extension (ie @@@ type of ppx) *)
 
   let print_ppx sc = 
-    match Parsing_util.file_option proto_file_options "ocaml_file_ppx" with
+    match Pb_option.get proto_file_options "ocaml_file_ppx" with
     | None -> () 
-    | Some Pt.Constant_string s -> 
+    | Some Pb_option.Constant_string s -> 
       Pb_codegen_formatting.line sc @@ Printf.sprintf "[@@@%s]" s
     | _ -> E.invalid_ppx_extension_option proto_file_name  
   in 

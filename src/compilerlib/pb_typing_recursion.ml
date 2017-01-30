@@ -32,7 +32,7 @@ let node_of_proto_type = function
 
     let list_of_field_type = function
       | `User_defined x  -> [x]
-      | #Tt.builtin_type -> []
+      | #Pb_field_type.builtin_type -> []
     in
     (* TODO : this whole flatten thing is a bit hacky
      * we should develop a clearer solution *)

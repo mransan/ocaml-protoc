@@ -25,27 +25,6 @@
 
 (** Protobuf parse tree *)
 
-(** field constant *) 
-type constant = 
-  | Constant_string of string 
-  | Constant_bool of bool 
-  | Constant_int of int 
-  | Constant_float of float 
-  | Constant_litteral of string 
-
-(** field can have a list of options attached to 
-    them, for example the most widely used is [default]:
-
-    [required int32 my_field = [default=1]]
-  *) 
-type option_ = string * constant 
-
-type field_options = option_ list 
-
-type file_option = option_
-
-type message_option = option_ 
-
 (** A field property defining its occurence
  *)
 type message_field_label = [ 
@@ -72,8 +51,8 @@ type 'a field = {
   field_name : string; 
   field_number : int; 
   field_label : 'a ; 
-  field_type : string; 
-  field_options : field_options; 
+  field_type : Pb_field_type.unresolved_t ; 
+  field_options : Pb_option.set;
 }
 
 type message_field = message_field_label field 
@@ -83,9 +62,9 @@ type oneof_field = oneof_field_label field
 type map = {
   map_name : string;
   map_number : int;
-  map_key_type : string;
-  map_value_type : string;
-  map_options : field_options;
+  map_key_type : Pb_field_type.map_key_type;
+  map_value_type : Pb_field_type.unresolved_t ;
+  map_options : Pb_option.set;
 }
 
 (** oneof entity *)
@@ -101,7 +80,7 @@ type enum_value = {
 
 type enum_body_content =
   | Enum_value of enum_value
-  | Enum_option of option_
+  | Enum_option of Pb_option.t
 
 type enum = {
   enum_id  : int; 
@@ -130,7 +109,7 @@ type message_body_content =
   | Message_enum of enum 
   | Message_extension of extension_range list 
   | Message_reserved of extension_range list 
-  | Message_option of message_option 
+  | Message_option of Pb_option.t
 
 (** Message entity. 
  
@@ -161,7 +140,7 @@ type proto = {
   proto_file_name : string option;
   syntax : string option;
   imports : import list; 
-  file_options : file_option list; 
+  file_options : Pb_option.set; 
   package : string option; 
   messages : message list; 
   enums : enum list; 

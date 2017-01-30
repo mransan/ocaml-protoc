@@ -20,6 +20,8 @@ OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
 
 .PHONY: doc ocaml_protoc.native bin.native bin.byte clean clean.gen default
 
+all: bin.byte
+
 default:
 	$(info use `make [clean|lib.native|lib.byte|bin.native|bin.byte|install|uninstall]`)
 	

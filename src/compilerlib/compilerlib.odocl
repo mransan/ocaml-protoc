@@ -2,6 +2,8 @@ Pb_exception
 Pb_location
 Pb_logger
 Pb_util
+Pb_field_type
+Pb_option
 
 Pb_parsing
 Pb_parsing_parse_tree

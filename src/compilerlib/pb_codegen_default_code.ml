@@ -9,19 +9,20 @@ open Pb_codegen_util
 let default_value_of_basic_type ?field_name basic_type field_default = 
   match basic_type, field_default with 
   | Ot.Bt_string, None -> "\"\""
-  | Ot.Bt_string, Some (Pt.Constant_string s) -> sp "\"%s\"" s 
+  | Ot.Bt_string, Some (Pb_option.Constant_string s) -> sp "\"%s\"" s 
   | Ot.Bt_float , None -> "0." 
-  | Ot.Bt_float , Some (Pt.Constant_float f) -> string_of_float f
+  | Ot.Bt_float , Some (Pb_option.Constant_float f) -> string_of_float f
   | Ot.Bt_int   , None -> "0"
-  | Ot.Bt_int   , Some (Pt.Constant_int i) -> string_of_int i
+  | Ot.Bt_int   , Some (Pb_option.Constant_int i) -> string_of_int i
   | Ot.Bt_int32 , None -> "0l"
-  | Ot.Bt_int32 , Some (Pt.Constant_int i) -> sp "%il" i
+  | Ot.Bt_int32 , Some (Pb_option.Constant_int i) -> sp "%il" i
   | Ot.Bt_int64 , None -> "0L"
-  | Ot.Bt_int64 , Some (Pt.Constant_int i) -> sp "%iL" i
+  | Ot.Bt_int64 , Some (Pb_option.Constant_int i) -> sp "%iL" i
   | Ot.Bt_bytes , None -> "Bytes.create 0"  
-  | Ot.Bt_bytes , Some (Pt.Constant_string s) -> sp "Bytes.of_string \"%s\"" s  
+  | Ot.Bt_bytes , Some (Pb_option.Constant_string s) -> 
+        sp "Bytes.of_string \"%s\"" s  
   | Ot.Bt_bool  , None -> "false"
-  | Ot.Bt_bool  , Some (Pt.Constant_bool b) -> string_of_bool b
+  | Ot.Bt_bool  , Some (Pb_option.Constant_bool b) -> string_of_bool b
   | _ -> E.invalid_default_value 
     ?field_name ~info:"invalid default type" ()
 

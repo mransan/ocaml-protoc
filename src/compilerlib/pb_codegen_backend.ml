@@ -218,10 +218,10 @@ let encoding_info_of_field_type all_types field_type =
       end 
 
 let encoding_of_field all_types 
-    (field:(Tt.resolved, 'a) Tt.field)  = 
+    (field:(Pb_field_type.resolved, 'a) Tt.field)  = 
 
   let packed = match Typing_util.field_option field "packed" with 
-    | Some (Pt.Constant_bool x) -> x 
+    | Some (Pb_option.Constant_bool x) -> x 
     | Some _ -> E.invalid_packed_option (Typing_util.field_name field)  
     | None -> false 
   in 
@@ -232,18 +232,18 @@ let encoding_of_field all_types
 
 let compile_field_type ?field_name all_types file_options field_options file_name field_type = 
 
-  let ocaml_type = match Typing_util.find_field_option field_options "ocaml_type" with
-    | Some (Pt.Constant_litteral "int_t") -> `Int_t
+  let ocaml_type = match Pb_option.get field_options "ocaml_type" with
+    | Some (Pb_option.Constant_litteral "int_t") -> `Int_t
     | _ -> `None  
   in 
 
-  let int32_type = match Parsing_util.file_option file_options "int32_type" with
-    | Some (Pt.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int) 
+  let int32_type = match Pb_option.get file_options "int32_type" with
+    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int) 
     | _ -> Ot.(Ft_basic_type Bt_int32)
   in 
   
-  let int64_type = match Parsing_util.file_option file_options "int64_type" with
-    | Some (Pt.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int) 
+  let int64_type = match Pb_option.get file_options "int64_type" with
+    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int) 
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in 
 
@@ -270,15 +270,15 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
     E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
 
 let is_mutable ?field_name field_options = 
-  match Typing_util.find_field_option field_options "ocaml_mutable"  with
-  | Some (Pt.Constant_bool v) -> v 
+  match Pb_option.get field_options "ocaml_mutable"  with
+  | Some (Pb_option.Constant_bool v) -> v 
   | Some _ -> Pb_exception.invalid_mutable_option ?field_name () 
   | None -> false
             
 let ocaml_container field_options = 
-  match Typing_util.find_field_option field_options "ocaml_container" with
+  match Pb_option.get field_options "ocaml_container" with
   | None -> None 
-  | Some (Pt.Constant_litteral container_name) -> Some container_name
+  | Some (Pb_option.Constant_litteral container_name) -> Some container_name
   | Some _ -> None
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_options file_name oneof_field = 
@@ -331,24 +331,25 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_opt
  *)
 let string_of_string_option message_name = function 
   | None -> None
-  | Some Pt.Constant_string s -> Some s 
+  | Some Pb_option.Constant_string s -> Some s 
   | _ -> E.invalid_ppx_extension_option message_name 
   
 (* utility function to implement the priority logic defined in the notes above. 
  *)
-let process_all_types_ppx_extension file_name file_options type_level_ppx_extension = 
+let process_all_types_ppx_extension 
+          file_name file_options type_level_ppx_extension = 
   match type_level_ppx_extension with
   | Some x -> Some x 
   | None -> 
-    Parsing_util.file_option file_options "ocaml_all_types_ppx" 
+    Pb_option.get file_options "ocaml_all_types_ppx" 
     |> string_of_string_option file_name
 
 let compile_message  
-  (file_options: Pt.file_option list)
-  (all_types: Tt.resolved Tt.proto) 
+  (file_options: Pb_option.set)
+  (all_types: Pb_field_type.resolved Tt.proto) 
   (file_name:string) 
   (scope:Tt.type_scope) 
-  (message: Tt.resolved Tt.message ) :
+  (message: Pb_field_type.resolved Tt.message ) :
   Ot.type_ list   = 
 
   let module_ = module_of_file_name file_name in 
