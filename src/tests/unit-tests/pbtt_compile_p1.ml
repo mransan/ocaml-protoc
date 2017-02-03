@@ -6,7 +6,7 @@ let parse f s  =
 module Tt_util = Pb_typing_util 
 module Tt = Pb_typing_type_tree
   
-let file_options = []
+let file_options = Pb_option.empty
 
 let () = 
   let s = "\
@@ -44,7 +44,7 @@ let () =
       | _ -> assert(false)
     in 
     assert (Tt_util.field_name f1 = "ival"); 
-    assert (f1.Tt.field_type  = Tt.Field_type_int64);
+    assert (f1.Tt.field_type  = `Int64);
     assert (Tt_util.field_number f1 = 1); 
     assert (None = f1.Tt.field_default); 
     
@@ -54,7 +54,7 @@ let () =
       | _ -> assert(false)
     in 
     assert (Tt_util.field_name f2 = "sval"); 
-    assert (f2.Tt.field_type  = Tt.Field_type_string);
+    assert (f2.Tt.field_type  = `String);
     assert (Tt_util.field_number f2 = 2); 
     assert (None = f2.Tt.field_default); 
     ()
@@ -154,11 +154,11 @@ let () =
     assert ("mval" = Tt_util.field_name f1); 
     assert (1 = Tt_util.field_number f1); 
     let unresolved = {
-      Tt.type_path = ["Msg1";"Msg2"];
-      Tt.type_name = "SubMessage";
-      Tt.from_root = false;
+      Pb_field_type.type_path = ["Msg1";"Msg2"];
+      Pb_field_type.type_name = "SubMessage";
+      Pb_field_type.from_root = false;
     } in 
-    assert ((Tt.Field_type_type unresolved) = f1.Tt.field_type); 
+    assert ((`User_defined unresolved) = f1.Tt.field_type); 
     ()
   ) 
   | _ -> (assert false : unit)

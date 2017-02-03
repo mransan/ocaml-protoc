@@ -2,7 +2,7 @@
 let parse f s  = 
   f Pb_parsing_lexer.lexer (Lexing.from_string s)
 
-let file_options = [] 
+let file_options = Pb_option.empty
 
 let () = 
   let s = "\
