@@ -4,3 +4,4 @@ true: safe_string
 true: keep_locs
 true: debug
 true: warn(A-4-42-41-48)
+true: no_alias_deps
