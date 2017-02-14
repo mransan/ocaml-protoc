@@ -1,7 +1,6 @@
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting 
 module E = Pb_exception 
-module Pt = Pb_parsing_parse_tree
 
 open Pb_codegen_util
 
@@ -32,13 +31,12 @@ let default_value_of_field_type ?field_name field_type field_default =
   match field_type with 
   | Ot.Ft_user_defined_type t -> 
     function_name_of_user_defined "default" t  ^ " ()"
-  | Ot.Ft_unit          -> "()"
-  | Ot.Ft_basic_type bt -> default_value_of_basic_type ?field_name bt field_default
-
+  | Ot.Ft_unit -> "()"
+  | Ot.Ft_basic_type bt -> 
+    default_value_of_basic_type ?field_name bt field_default
 
 (* This function returns [(field_name, field_default_value, field_type)] for 
-   a record field.
- *)
+   a record field.  *)
 let record_field_default_info record_field : (string * string * string) =  
   let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in 
   let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in  
@@ -61,16 +59,15 @@ let record_field_default_info record_field : (string * string * string) =
     | Ot.Rft_repeated_field (rt, field_type, _, _, _) -> 
       begin match rt with
       | Ot.Rt_list -> "[]"
-      | Ot.Rt_repeated_field -> sp "Pbrt.Repeated_field.make (%s)" (dfvft field_type None) 
+      | Ot.Rt_repeated_field -> 
+        sp "Pbrt.Repeated_field.make (%s)" (dfvft field_type None) 
       end
     | Ot.Rft_associative_field (at, _, _, _) -> 
       begin match at with
       | Ot.At_list -> "[]"
       | Ot.At_hashtable -> "Hashtbl.create 128"
-        (* TODO 
-         * This initial value could be configurable either via 
-         * the default function or via a protobuf option.
-         *)
+        (* TODO This initial value could be configurable either via 
+         * the default function or via a protobuf option.  *)
       end
     | Ot.Rft_variant_field {Ot.v_constructors; _} -> 
        begin match v_constructors with
@@ -89,10 +86,9 @@ let gen_default_record  ?mutable_ ?and_ {Ot.r_name; r_fields} sc =
 
   let fields_default_info = List.map (fun r_field ->
     record_field_default_info r_field 
-  ) r_fields in (* List.map *) 
+  ) r_fields in
 
-  begin
-  match mutable_ with
+  begin match mutable_ with
   | Some () -> ( 
     let rn = Pb_codegen_util.mutable_record_name r_name in 
     F.line sc @@ sp "%s default_%s () : %s = {" (let_decl_of_and and_) rn rn;
@@ -125,9 +121,15 @@ let gen_default_variant ?and_ {Ot.v_name; Ot.v_constructors; } sc =
   | {Ot.vc_constructor; vc_field_type; _ }::_ ->  
     let decl = let_decl_of_and and_ in 
     begin match vc_field_type with
-    | Ot.Vct_nullary -> F.line sc @@ sp "%s default_%s (): %s = %s" decl v_name v_name vc_constructor 
+    | Ot.Vct_nullary -> 
+      F.line sc @@ sp "%s default_%s (): %s = %s" 
+                      decl v_name v_name vc_constructor 
+
     | Ot.Vct_non_nullary_constructor field_type -> 
-      let default_value = default_value_of_field_type ~field_name:v_name field_type None in
+      let default_value = 
+        let field_name = v_name in 
+        default_value_of_field_type ~field_name field_type None 
+      in
         (* TODO need to fix the deault value *)
       F.line sc @@ sp "%s default_%s () : %s = %s (%s)" 
          decl v_name v_name vc_constructor default_value 
@@ -135,7 +137,7 @@ let gen_default_variant ?and_ {Ot.v_name; Ot.v_constructors; } sc =
 
 let gen_default_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors; } sc = 
   let first_constructor_name = match cv_constructors with
-    | []            -> failwith "programmatic TODO error"
+    | [] -> failwith "programmatic TODO error"
     | (name, _) ::_ -> name 
   in  
   F.line sc @@ sp "%s default_%s () = (%s:%s)" 
@@ -154,7 +156,6 @@ let gen_struct ?and_ t sc =
     | {Ot.spec = Ot.Const_variant v; _ } -> gen_default_const_variant v sc, true
   in
   has_encoded
-
  
 let gen_sig_record sc {Ot.r_name; r_fields; } = 
 
@@ -169,15 +170,16 @@ let gen_sig_record sc {Ot.r_name; r_fields; } =
     F.line sc r_name;
   ); 
   let rn = r_name in 
-  F.line sc @@ sp "(** [default_%s ()] is the default value for type [%s] *)" rn rn;
+  F.line sc @@ sp "(** [default_%s ()] is the default value for type [%s] *)" 
+                  rn rn;
   ()
-
 
 let gen_sig ?and_ t sc = 
   let _ = and_ in
   let f type_name =  
     F.line sc @@ sp "val default_%s : unit -> %s" type_name type_name;
-    F.line sc @@ sp "(** [default_%s ()] is the default value for type [%s] *)" type_name type_name;
+    F.line sc @@ sp "(** [default_%s ()] is the default value for type [%s] *)" 
+                    type_name type_name;
   in 
   let (), has_encoded = 
     match t with 
