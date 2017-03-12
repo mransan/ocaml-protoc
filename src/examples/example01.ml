@@ -2,10 +2,11 @@ let () =
   (* Create OCaml value of generated type *) 
 
   let person = Example01_pb.({ 
-    name = "John Doe"; 
+    first_name = "John Doe"; 
     id = 1234l;
-    email = Some "jdoe@example.com"; 
-    phone = ["123-456-7890"];
+    email = "jdoe@example.com"; 
+    child = {cute_name = "Booboo"}; 
+(*    phone = ["123-456-7890"];*)
   }) in 
   
   (* Create a Protobuf encoder and encode value *)

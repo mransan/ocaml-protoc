@@ -198,7 +198,8 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
 
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in 
 
-  F.line sc @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name; 
+  F.line sc @@ sp 
+          "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name; 
   F.scope sc (fun sc -> 
     F.line sc @@ sp "let v = default_%s () in" mutable_record_name;
 

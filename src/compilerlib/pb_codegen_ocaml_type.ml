@@ -63,8 +63,7 @@ type associative_type  =
   | At_list
   | At_hashtable
   (* Future work can include the following OCaml associative containers
-  | Al_map
-  *)
+  | Al_map *)
 
 type repeated_type = 
   | Rt_list
