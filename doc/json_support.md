@@ -37,7 +37,7 @@ JSON Support
 
 ### Solution Description
 
-** 1. JSON Decoder/Encoder Signature**
+**1. JSON Decoder/Encoder Signature**
 
 The runtime library (`pbrt.cmxa`) will contain a new module `Pbrt_js` containing
 the module signature required for JSON encoding and decoding:
@@ -82,7 +82,7 @@ A new runtime library will be be published to NPM using BuckleScript.
 
 ### Javacript Developer Workflow
 
-** 1. Setup**
+**1. Setup**
 
 ```shell
 opam install ocaml-protoc 
