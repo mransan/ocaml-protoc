@@ -55,18 +55,18 @@ module type Decoder_sig = sig
       object. [None] indicates no more keys are available. *)
 end
 
-(\*\* Module signature for a JSON encoder required by the generated code *)
+(** Module signature for a JSON encoder required by the generated code *)
 module type Decoder_sig = sig 
   type t 
-  (\*\* JSON encoder ofr a Protobuf message *)
+  (** JSON encoder ofr a Protobuf message *)
 
   val empty : unit -> t 
-  (\*\* [empty ()] creates a new encoder *)
+  (** [empty ()] creates a new encoder *)
 
   val set\_string : t -> string -> string -> unit 
-  (\*\* [set\_string encoder key value] sets the key/value pair *)
+  (** [set\_string encoder key value] sets the key/value pair *)
 
-  (\*\* ... more setters *)
+  (** ... more setters *)
 module
 ``` 
 
