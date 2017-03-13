@@ -16,7 +16,7 @@ JSON Support
 
 **Possible Approaches**
 
-1. Generate **2 different code** for native and javascript. In native mode, the 
+1. Generate 2 different code for native and javascript. In native mode, the 
    generated code would be based on the widely popular YoJson libray, while
    in JavaScript code a new file would be generated which would depend
    on the BuckleScript runtime `Js_json`. 
@@ -24,8 +24,8 @@ JSON Support
 2. Generate Functorized code. The Functor could then be called with 
    either a module based on YoJson or BuckleScript runtime. 
 
-> The current prototype is based on approach 2. It makes the generated 
-> code simpler and easier to use and also the compiler code is shorter. The 
+> The current prototype is based on **approach 2 (Functor)**. It makes the generated 
+> code **simpler and easier to use** and also the compiler code is shorter. The 
 > separation of the JS/Native is clean and it also allows for later having
 > a more optimized implementation of the native parsing. 
 
