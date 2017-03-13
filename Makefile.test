@@ -147,7 +147,7 @@ all-tests: unit-tests integration google_unittest testCompat
 
 example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte bin.native 
 	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
-	$(OCB) -I src/examples src/examples/example$*.native
+	$(OCB) -pkg yojson -I src/examples src/examples/example$*.native
 
 all-examples: example01.native example02.native example03.native example04.native example05.native
 

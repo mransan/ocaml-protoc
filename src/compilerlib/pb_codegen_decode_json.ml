@@ -3,33 +3,9 @@ module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
 
-(* this function transforms a `lower_case_like_this` into an 
- * ocamlCaseLikeThis *)
-let caml_case_of_label s = 
-  let len = String.length s in 
-  let b = Bytes.create len in 
-  let capitalize = ref false and blen = ref 0 in 
-  for i = 0 to (len - 1) do 
-    let c = String.get s i in   
-    if c = '_'
-    then begin
-      capitalize := true; 
-    end
-    else begin
-      begin 
-        if !capitalize
-        then begin Bytes.set b !blen (Char.uppercase c) end
-        else begin Bytes.set b !blen c end;
-      end;
-      capitalize := false; 
-      incr blen; 
-    end
-  done;
-  Bytes.sub_string b 0 !blen
-
 (* Create the string for the exception raised expression in the case
    a JSON value type is not matching the protobuf definition. (For instance
-   getting a JSON number when the protobuf field type is a string) *).
+   getting a JSON number when the protobuf field type is a string) *)
 let unpexected_payload r_name r_label = 
   sp "raise (Pbrt_js.Unexpected_json_type (\"%s\", \"%s\"))"  
      r_name r_label
@@ -101,7 +77,7 @@ let gen_decode_record ?and_  {Ot.r_name; r_fields} sc =
           F.empty_line sc;
           F.line sc @@ sp "(* '%s' field *)" rf_label; 
 
-          let json_label = caml_case_of_label rf_label in 
+          let json_label = Pb_codegen_util.caml_case_of_label rf_label in 
           List.iter (fun (json_type, value_expression) ->
             F.line sc @@ sp "| Some (\"%s\", %s) -> v.%s <- %s; loop ()"
                          (json_label)

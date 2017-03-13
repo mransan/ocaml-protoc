@@ -330,9 +330,15 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
     C.gen_struct, None
   ) all_code_gen);
 
-  F.line sc "module Make (Decoder:Pbrt_js.Decoder_sig) = struct";
+  F.line sc "module Make_decoder(Decoder:Pbrt_js.Decoder_sig) = struct";
   F.scope sc (fun sc -> 
-    gen otypes sc [(Pb_codegen_decode_json.gen_struct, None)]
+    gen otypes sc [ (Pb_codegen_decode_json.gen_struct, None);] 
+  ); 
+  F.line sc "end";
+  
+  F.line sc "module Make_encoder(Encoder:Pbrt_js.Encoder_sig) = struct";
+  F.scope sc (fun sc -> 
+    gen otypes sc [ (Pb_codegen_encode_json.gen_struct, None);]
   ); 
   F.line sc "end";
   
@@ -353,7 +359,7 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
     C.gen_sig, Some C.ocamldoc_title
   ) all_code_gen);
   
-  F.line sc "module Make (Decoder:Pbrt_js.Decoder_sig) : sig";
+  F.line sc "module Make_decoder(Decoder:Pbrt_js.Decoder_sig) : sig";
   F.scope sc (fun sc -> 
     gen otypes sc [
       (
@@ -363,6 +369,15 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
   ); 
   F.line sc "end";
 
+  F.line sc "module Make_encoder(Encoder:Pbrt_js.Encoder_sig) : sig";
+  F.scope sc (fun sc -> 
+    gen otypes sc [
+      (
+        Pb_codegen_encode_json.gen_sig , 
+        Some (Pb_codegen_encode_json.ocamldoc_title)
+      );]
+  ); 
+  F.line sc "end";
   output_string sig_oc (F.print sc);
   ()
 

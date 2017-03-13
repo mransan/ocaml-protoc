@@ -3,10 +3,8 @@ exception Unexpected_json_type of string * string
   (* TODO expand on expected vs received type *)
 
 module type Decoder_sig = sig 
-
-
+  
   type t 
-    (* Dictionary *) 
 
   type value = 
     | String of string 
@@ -19,6 +17,8 @@ module type Decoder_sig = sig
     | Null
 
   val key : t -> (string * value) option
+  (** [key decoder] returns the next key/value pair in the current JSON 
+      object. [None] indicates no more keys are available. *)
 
 end 
 

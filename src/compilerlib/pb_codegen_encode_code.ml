@@ -253,4 +253,4 @@ let gen_sig ?and_ t sc =
   in
   has_encoded
 
-let ocamldoc_title = "Protobuf Toding"
+let ocamldoc_title = "Protobuf Encoding"

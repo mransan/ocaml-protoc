@@ -1,21 +1,18 @@
-let () = 
-  (* Create OCaml value of generated type *) 
 
-  let person = Example01_pb.({ 
-    first_name = "John Doe"; 
-    id = 1234l;
-    email = "jdoe@example.com"; 
-    child = {cute_name = "Booboo"}; 
-(*    phone = ["123-456-7890"];*)
-  }) in 
-  
+let person = Example01_pb.({ 
+  first_name = "John Doe"; 
+  id = 1234l;
+  email = "jdoe@example.com"; 
+  child = {cute_name = "Booboo"}; 
+}) 
+
+let () = 
   (* Create a Protobuf encoder and encode value *)
 
   let encoder = Pbrt.Encoder.create () in 
   Example01_pb.encode_person person encoder; 
 
   (* Output the protobuf message to a file *) 
-
   let oc = open_out "myfile" in 
   output_bytes oc (Pbrt.Encoder.to_bytes encoder);
   close_out oc
@@ -32,4 +29,14 @@ let () =
   in 
   
   let person = Example01_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in 
-  Format.fprintf Format.std_formatter "%a" Example01_pb.pp_person person 
+  Format.fprintf Format.std_formatter "debug:\n%a\n" 
+                 Example01_pb.pp_person person 
+
+module JsonEncoder = Example01_pb.Make_encoder(Pbrt_js_yojson.Encoder) 
+module JsonDecoder = Example01_pb.Make_decoder(Pbrt_js_yojson.Decoder)
+
+let () = 
+  let encoder = Pbrt_js_yojson.Encoder.empty () in 
+  JsonEncoder.encode_person person encoder; 
+  print_endline "Json value:"; 
+  print_endline @@ Yojson.Basic.to_string (`Assoc !encoder)

@@ -90,6 +90,31 @@ let string_of_payload_kind ?capitalize payload_kind packed =
   | None -> s 
   | Some () -> String.capitalize s [@@ocaml.warning "-3"] 
 
+(* this function transforms a `lower_case_like_this` into an 
+ * ocamlCaseLikeThis *)
+let caml_case_of_label s = 
+  let len = String.length s in 
+  let b = Bytes.create len in 
+  let capitalize = ref false and blen = ref 0 in 
+  for i = 0 to (len - 1) do 
+    let c = String.get s i in   
+    if c = '_'
+    then begin
+      capitalize := true; 
+    end
+    else begin
+      begin 
+        if !capitalize
+        then begin Bytes.set b !blen (Char.uppercase c) end
+        else begin Bytes.set b !blen c end;
+      end;
+      capitalize := false; 
+      incr blen; 
+    end
+  done;
+  Bytes.sub_string b 0 !blen
+
+
 let runtime_function = function 
   | `Decode , Ot.Pk_varint false, Ot.Bt_int   -> "Pbrt.Decoder.int_as_varint" 
   | `Decode , Ot.Pk_varint true , Ot.Bt_int   -> "Pbrt.Decoder.int_as_zigzag" 
