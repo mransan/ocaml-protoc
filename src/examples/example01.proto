@@ -4,6 +4,12 @@ message Child {
   string cute_name = 1;
 }
 
+enum Gender {
+  MALE = 0; 
+  FEMALE = 1; 
+  OTHER = 2;
+} 
+
 message Person {
     string first_name = 1;
     int32 id = 2;
@@ -14,4 +20,5 @@ message Person {
       int32 appartment = 6; // nb of floors 
       float house = 7;      // sq footage
     }
+    Gender gender = 8;
 }

@@ -41,6 +41,7 @@ type user_defined_type = {
      * a nested decoder. For types which serialize to a message it will be 
      * true (ie message in protobuf) but for enum types it won't. 
      *)
+    (* TODO : simply have a type here whether it is message or an enum *)
 }
 
 type basic_type = 

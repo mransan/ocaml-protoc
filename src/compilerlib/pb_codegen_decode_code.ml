@@ -241,8 +241,7 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
      * a Protobuf.Decoder.Failure exception is raised *) 
     List.iter (fun rf_label -> 
       F.line sc @@ sp 
-        ("begin if not !%s then raise Protobuf.Decoder." ^^ 
-         "(Failure (Missing_field \"%s\")) end;") 
+        "begin if not !%s then Pbrt.Decoder.missing_field \"%s\" end;"
         (is_set_variable_name rf_label) rf_label
     ) all_required_rf_labels ; 
 
@@ -314,8 +313,7 @@ let gen_decode_const_variant ?and_ {Ot.cv_name; cv_constructors; } sc =
     List.iter (fun (name, value) -> 
       F.line sc @@ sp "| %i -> (%s:%s)" value name cv_name
     ) cv_constructors; 
-    F.line sc @@ sp ("| _ -> raise Protobuf.Decoder.(Failure " ^^ 
-                     "(Malformed_variant \"%s\"))") cv_name
+    F.line sc @@ sp "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name
   )
 
 let gen_struct ?and_ t sc = 

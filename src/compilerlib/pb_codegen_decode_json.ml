@@ -32,15 +32,20 @@ let field_pattern_matches ~r_name ~rf_label field_type =
   | Ot.Ft_basic_type Ot.Bt_bytes -> basic_type "bytes" 
   | Ot.Ft_unit -> [] 
   | Ot.Ft_user_defined_type udt -> 
-    let value_expression = 
-      "(" ^ 
-      Pb_codegen_util.function_name_of_user_defined "decode" udt ^
-      " o)"
-    in
-    ("Decoder.Object o", value_expression)::
-    ("_", unpexected_payload r_name rf_label)::[]
-    (* TODO: This will not work for user defined types from other 
-       modules *)
+    let {Ot.udt_nested; _} = udt in 
+    let f_name = Pb_codegen_util.function_name_of_user_defined "decode" udt in 
+    if udt_nested
+    then 
+      let value_expression = "(" ^ f_name ^ " o)" in
+      ("Decoder.Object o", value_expression)::
+      ("_", unpexected_payload r_name rf_label)::[]
+      (* TODO: This will not work for user defined types from other 
+         modules *)
+    else 
+      let value_expression = "(" ^ f_name ^ " json_value)" in
+      ("json_value", value_expression):: []
+
+
 
 (* Generate all the pattern matches for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) = 
@@ -205,15 +210,26 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc =
     F.line sc "loop ()";
   ) 
 
+let gen_decode_const_variant ?and_ {Ot.cv_name; cv_constructors} sc = 
+  F.line sc @@ sp "%s decode_%s (value:Decoder.value) =" 
+    (Pb_codegen_util.let_decl_of_and and_) cv_name; 
+  F.scope sc (fun sc -> 
+    F.line sc "match value with"; 
+    List.iter (fun (constructor, _) -> 
+      F.line sc @@ sp "| Decoder.String \"%s\" -> %s"
+        (String.uppercase constructor) constructor
+    ) cv_constructors;  
+    F.line sc @@ sp "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name;  
+  ) 
+
 let gen_struct ?and_ t sc = 
   let (), has_encoded =  match t with 
     | {Ot.spec = Ot.Record r; _ }  -> 
       gen_decode_record ?and_ r sc, true
     | {Ot.spec = Ot.Variant v; _ } -> 
       gen_decode_variant ?and_ v sc, true
-    | _ -> assert(false) (* TODO *)
-(*    | {Ot.spec = Ot.Const_variant v; _ } -> 
-      gen_decode_const_variant ?and_ v sc, true*)
+    | {Ot.spec = Ot.Const_variant v; _ } -> 
+      gen_decode_const_variant ?and_ v sc, true
   in
   has_encoded
 
@@ -226,13 +242,13 @@ let gen_sig ?and_ t sc =
                      "[%s] value from [decoder] *)") type_name type_name; 
   in 
 
-  let (), has_encoded = 
-    match t with 
-    | {Ot.spec = Ot.Record {Ot.r_name; _ }; _} -> f r_name, true
-    | {Ot.spec = Ot.Variant {Ot.v_name; _ }; _ } -> f v_name, true 
-    | _ -> assert(false) (* TODO *)
-(*    | {Ot.spec = Ot.Const_variant {Ot.cv_name; _ }; _ } -> f cv_name, true*)
-  in
-  has_encoded
+  match t with 
+  | {Ot.spec = Ot.Record {Ot.r_name; _ }; _} -> f r_name; true
+  | {Ot.spec = Ot.Variant {Ot.v_name; _ }; _ } -> f v_name; true 
+  | {Ot.spec = Ot.Const_variant {Ot.cv_name; _ }; _ } -> 
+    F.line sc @@ sp "val decode_%s : Decoder.value -> %s" cv_name cv_name ; 
+    F.line sc @@ sp "(** [decode_%s value] decodes a [%s] from a Json value*)"
+      cv_name cv_name;
+    true
 
 let ocamldoc_title = "JSON Decoding"

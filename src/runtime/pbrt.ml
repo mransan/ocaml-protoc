@@ -34,12 +34,17 @@ module Decoder = struct
   let of_bytes = Protobuf.Decoder.of_bytes 
   
   let malformed_variant variant_name = 
-    raise Protobuf.Decoder.(Failure (Malformed_variant variant_name))
+    raise (Protobuf.Decoder.Failure (
+      Protobuf.Decoder.Malformed_variant variant_name))
 
   let unexpected_payload field_name pk = 
-    raise Protobuf.Decoder.(Failure (Unexpected_payload (field_name, pk)))
-    
+    raise (Protobuf.Decoder.Failure (
+      Protobuf.Decoder.Unexpected_payload (field_name, pk)))
   
+  let missing_field field_name = 
+    raise (Protobuf.Decoder.Failure (
+      Protobuf.Decoder.Missing_field field_name))
+
   let key = Protobuf.Decoder.key
   
   let skip = Protobuf.Decoder.skip 

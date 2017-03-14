@@ -120,7 +120,7 @@ type builtin_type = [
   *)
 type 'a t = [ 
   | builtin_type          
-  | `User_defined of 'a   (** Message or Enum type *)
+  | `User_defined of 'a   (* Message or Enum type *)
 ]  
 
 type unresolved_t = unresolved t 

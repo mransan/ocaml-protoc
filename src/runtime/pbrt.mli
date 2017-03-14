@@ -45,6 +45,10 @@ module Decoder : sig
   (** [unexpected_payload field_name pk] raises the exception 
       [Protobuf.Decoder.Failure (Unexpected_payload (field_name, pk))] *)
 
+  val missing_field : string -> 'a 
+  (** [missing_field field_name] raises the exception 
+      [Protobuf.Decoder.Failure (Missing_field field_name)] *)
+
   (** {2 Decoding Functions} *) 
   
   val key : t -> (int * Protobuf.payload_kind) option 
