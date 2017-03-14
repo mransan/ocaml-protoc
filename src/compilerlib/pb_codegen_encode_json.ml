@@ -210,8 +210,8 @@ let gen_encode_variant ?and_ {Ot.v_name; v_constructors} sc =
 let gen_encode_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors} sc = 
   F.line sc @@ sp "%s encode_%s (v:%s) : string = " 
       (Pb_codegen_util.let_decl_of_and and_) cv_name cv_name; 
-  F.line sc "match v with";
   F.scope sc (fun sc -> 
+    F.line sc "match v with";
     List.iter (fun (constructor, _) -> 
       let json_value = String.uppercase constructor in 
       F.line sc @@ sp "| %s -> \"%s\"" constructor json_value

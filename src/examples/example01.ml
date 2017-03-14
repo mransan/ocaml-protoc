@@ -9,6 +9,7 @@ let person = Example01_pb.({
   gender = Female;
 }) 
 
+(*
 let () = 
   (* Create a Protobuf encoder and encode value *)
 
@@ -19,8 +20,9 @@ let () =
   let oc = open_out "myfile" in 
   output_bytes oc (Pbrt.Encoder.to_bytes encoder);
   close_out oc
+  *)
 
-let () = 
+(*let () = 
   
   let bytes = 
     let ic = open_in "myfile" in 
@@ -33,7 +35,7 @@ let () =
   
   let person = Example01_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in 
   Format.fprintf Format.std_formatter "debug:\n%a\n" 
-                 Example01_pb.pp_person person 
+                 Example01_pb.pp_person person *)
 
 module JsonEncoder = Example01_pb.Make_encoder(Pbrt_js_yojson.Encoder) 
 module JsonDecoder = Example01_pb.Make_decoder(Pbrt_js_yojson.Decoder)

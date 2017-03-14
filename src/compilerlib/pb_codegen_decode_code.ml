@@ -38,7 +38,6 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
                     encoding_number (pbrt_payload_kind payload_kind is_packed);
     F.scope sc (fun sc -> 
       f sc;
-      F.line sc "loop ()";
     );
     F.line sc ")";
     F.line sc @@ sp "| Some (%i, pk) -> " encoding_number;
@@ -197,6 +196,7 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
           "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name; 
   F.scope sc (fun sc -> 
     F.line sc @@ sp "let v = default_%s () in" mutable_record_name;
+    F.line sc "let continue__= ref true in";
 
     (* Add the is_set_<field_name> boolean variable which keeps track 
      * of whether a required field is set during the decoding.  *)
@@ -207,7 +207,7 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
     (* Decoding is done with recursively (tail - recursive). The 
      * function loop iterate over all fields returned by the Protobuf 
      * runtime. *)
-    F.line sc "let rec loop () = "; 
+    F.line sc "while !continue__ do";
     F.scope sc (fun sc -> 
       F.line sc "match Pbrt.Decoder.key d with";
 
@@ -218,7 +218,7 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
           F.line sc @@ sp "v.%s <- List.rev v.%s;" field_name field_name
         ) all_lists;   
       );
-      F.line sc ")";
+      F.line sc "); continue__ := false";
 
       (* compare the decoded field with the one defined in the 
        * .proto file. Unknown fields are ignored. *)
@@ -232,10 +232,9 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
         | Ot.Rft_variant_field x -> process_variant_field sc rf_label x 
       ) r_fields; 
       F.line sc ("| Some (_, payload_kind) -> " ^ 
-                 "Pbrt.Decoder.skip d payload_kind; loop ()");
+                 "Pbrt.Decoder.skip d payload_kind");
     ); 
-    F.line sc "in"; 
-    F.line sc "loop ();";
+    F.line sc "done;"; 
 
     (* Add the check to see if all required fields are set if not 
      * a Protobuf.Decoder.Failure exception is raised *) 
@@ -252,14 +251,6 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
       ) r_fields;
     ); 
     F.line sc @@ sp "} : %s)" r_name;
-    
-    (* Rely on Obj.magic invariant to change the type to the 
-     * non-mutable record type. 
-     * Using Obj.magic avoids an additional allocation of the record *)
-    (*
-    F.line sc @@ sp "let v:%s = Obj.magic v in" r_name; 
-    F.line sc "v";
-    *)
   )
 
 let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc = 
