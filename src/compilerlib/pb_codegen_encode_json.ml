@@ -67,10 +67,10 @@ let gen_field sc var_name json_label field_type pk =
   
   (* User defined *)
   | Ot.Ft_user_defined_type udt, _ -> 
-    let {Ot.udt_nested; _} = udt in 
+    let {Ot.udt_type; _} = udt in 
     let f_name = Pb_codegen_util.function_name_of_user_defined "encode" udt  in
-    if udt_nested
-    then begin 
+    begin match udt_type with
+    | `Message -> begin 
       F.line sc @@ sp "begin (* %s field *)" json_label;
       F.scope sc (fun sc -> 
         F.line sc "let encoder' = Encoder.empty () in"; 
@@ -79,9 +79,10 @@ let gen_field sc var_name json_label field_type pk =
       ); 
       F.line sc "end;"
     end
-    else begin 
+    | `Enum -> begin 
       F.line sc @@ sp "Encoder.set_string encoder \"%s\" (%s %s);"
         json_label f_name var_name
+    end
     end
 
 let gen_rft_nolabel sc rf_label (field_type, _, pk) = 

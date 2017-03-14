@@ -32,20 +32,19 @@ let field_pattern_matches ~r_name ~rf_label field_type =
   | Ot.Ft_basic_type Ot.Bt_bytes -> basic_type "bytes" 
   | Ot.Ft_unit -> [] 
   | Ot.Ft_user_defined_type udt -> 
-    let {Ot.udt_nested; _} = udt in 
+    let {Ot.udt_type; _} = udt in 
     let f_name = Pb_codegen_util.function_name_of_user_defined "decode" udt in 
-    if udt_nested
-    then 
+    begin match udt_type with
+    | `Message -> 
       let value_expression = "(" ^ f_name ^ " o)" in
       ("Decoder.Object o", value_expression)::
       ("_", unpexected_payload r_name rf_label)::[]
       (* TODO: This will not work for user defined types from other 
          modules *)
-    else 
+    | `Enum ->
       let value_expression = "(" ^ f_name ^ " json_value)" in
       ("json_value", value_expression):: []
-
-
+    end
 
 (* Generate all the pattern matches for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) = 

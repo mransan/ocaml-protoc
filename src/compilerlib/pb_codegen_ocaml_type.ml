@@ -36,12 +36,7 @@ type payload_kind =
 type user_defined_type = {
   udt_module : string option; 
   udt_type_name : string; 
-  udt_nested : bool; 
-    (* The nested property indicate whether this [user_defined_type] requires 
-     * a nested decoder. For types which serialize to a message it will be 
-     * true (ie message in protobuf) but for enum types it won't. 
-     *)
-    (* TODO : simply have a type here whether it is message or an enum *)
+  udt_type : [`Message | `Enum ]; 
 }
 
 type basic_type = 

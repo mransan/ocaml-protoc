@@ -10,9 +10,10 @@ let decode_field_f field_type pk =
   match field_type with 
   | Ot.Ft_user_defined_type t -> 
     let f_name = Pb_codegen_util.function_name_of_user_defined "decode" t in
-    if t.Ot.udt_nested 
-    then (f_name ^ " (Pbrt.Decoder.nested d)")
-    else (f_name ^ " d") 
+    begin match t.Ot.udt_type with
+    | `Message -> (f_name ^ " (Pbrt.Decoder.nested d)")
+    | `Enum -> (f_name ^ " d")
+    end
   | Ot.Ft_unit -> 
       "Pbrt.Decoder.empty_nested d"
   | Ot.Ft_basic_type bt -> (decode_basic_type bt pk) ^ " d" 

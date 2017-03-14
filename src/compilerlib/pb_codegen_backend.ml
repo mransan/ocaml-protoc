@@ -180,16 +180,24 @@ let user_defined_type_of_id all_types file_name i =
       if Typing_util.is_empty_message t 
       then Ot.Ft_unit 
       else 
-        let udt_nested = begin match spec with 
-          | Tt.Enum _ -> false 
-          | Tt.Message _ -> true 
-        end in 
+        let udt_type = match spec with 
+          | Tt.Enum _ -> `Enum
+          | Tt.Message _ -> `Message
+        in 
         let field_type_module = module_of_file_name file_name in  
         let {Tt.message_names; _ } = Typing_util.type_scope_of_type t in 
         let udt_type_name = type_name message_names (Typing_util.type_name_of_type t) in 
         if field_type_module = module_ 
-        then Ot.(Ft_user_defined_type {udt_nested; udt_module = None; udt_type_name}) 
-        else Ot.(Ft_user_defined_type {udt_nested; udt_module = Some field_type_module; udt_type_name}) 
+        then Ot.(Ft_user_defined_type {
+          udt_type; 
+          udt_module = None; 
+          udt_type_name
+        }) 
+        else Ot.(Ft_user_defined_type {
+          udt_type; 
+          udt_module = Some field_type_module; 
+          udt_type_name
+        }) 
 
 let encoding_info_of_field_type all_types field_type = 
   match field_type with 
@@ -412,17 +420,27 @@ let compile_message
 
         let record_field_type = match Typing_util.field_label field with
           | `Nolabel -> 
+            (* From proto3 section on default value:
+             * https://goo.gl/NKt9Cc
+             *
+             * --
+             * For message fields, the field is not set. Its exact value is 
+             * language-dependent. See the generated code guide for details.
+             * --
+             *
+             * Since we must support the face that the message won't be sent
+             * we always make such a field an OCaml option. It's the 
+             * responsability of the application to check for [None] and 
+             * perform any error handling if required. *)
             let is_message = 
               begin match field_type with
-              | Ot.Ft_user_defined_type {Ot.udt_nested; _} -> udt_nested
+              | Ot.Ft_user_defined_type {Ot.udt_type = `Message;_} -> true 
               | _ -> false 
               end
             in  
             if is_message
-            then 
-              Ot.Rft_optional (field_type, encoding_number, pk, None) 
-            else
-              Ot.Rft_nolabel (field_type, encoding_number, pk)
+            then Ot.Rft_optional (field_type, encoding_number, pk, None) 
+            else Ot.Rft_nolabel (field_type, encoding_number, pk)
           | `Required -> 
              Ot.Rft_required (field_type, encoding_number, pk, field_default) 
           | `Optional -> 
