@@ -154,6 +154,7 @@ let parse_args () =
   let debug = ref false in  
   let json = ref false in 
   let binary = ref false in 
+  let pp = ref false in 
   let include_dirs = ref [] in 
   let include_dirs_spec = (fun dir -> 
     include_dirs := dir :: (!include_dirs)
@@ -165,6 +166,7 @@ let parse_args () =
     ("-debug", Arg.Set debug, "enable debugging");  
     ("-json", Arg.Set json, "generate json encoding");  
     ("-binary", Arg.Set json, "generate binary encoding");  
+    ("-pp", Arg.Set pp, "generate pretty print functions");  
     ("-I", Arg.String include_dirs_spec, "include directories");  
     ("-ml_out", Arg.Set_string  ml_out, "output directory");  
   ] @ File_options.cmd_line_args cmd_line_files_options in 
@@ -180,7 +182,10 @@ let parse_args () =
   (* Maintain backward compatible behavior *) 
   begin 
     if not !json 
-    then binary := true
+    then begin 
+      binary := true;
+      pp := true; 
+    end;
   end;
 
   (* check mandatory arguments are properly set *)
@@ -228,6 +233,7 @@ let parse_args () =
     !debug,
     !binary,
     !json, 
+    !pp,
     generated_files, 
     cmd_line_files_options
   )  
@@ -292,9 +298,15 @@ let generate_code
       proto_file_options 
       proto_file_name 
       generate_binary
-      generate_json = 
+      generate_json 
+      generate_pp = 
 
-  let all_code_gen = [(module Pb_codegen_pp_code: Pb_codegen_sig.S)] in 
+  let all_code_gen = 
+    if generate_pp
+    then [(module Pb_codegen_pp_code: Pb_codegen_sig.S)]
+    else []
+  in 
+
   let all_code_gen =
     if generate_binary
     then 
@@ -432,6 +444,7 @@ let () =
     enable_debugging, 
     generate_binary,
     generate_json,
+    generate_pp,
     generated_files,
     cmd_line_files_options
   ) = parse_args () in 
@@ -460,7 +473,8 @@ let () =
       proto_file_options 
       proto_file_name 
       generate_binary
-      generate_json;
+      generate_json
+      generate_pp;
 
     close_file_channels ();
 
