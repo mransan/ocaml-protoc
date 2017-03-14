@@ -4,6 +4,7 @@ let person = Example01_pb.({
   id = 1234l;
   email = "jdoe@example.com"; 
   child = {cute_name = "Booboo"}; 
+  phone = ["917-929-8071"; "646-269-2829"];
 }) 
 
 let () = 
@@ -38,5 +39,12 @@ module JsonDecoder = Example01_pb.Make_decoder(Pbrt_js_yojson.Decoder)
 let () = 
   let encoder = Pbrt_js_yojson.Encoder.empty () in 
   JsonEncoder.encode_person person encoder; 
+  let json_str = Yojson.Basic.to_string (`Assoc !encoder) in 
   print_endline "Json value:"; 
-  print_endline @@ Yojson.Basic.to_string (`Assoc !encoder)
+  print_endline json_str; 
+  match Yojson.Basic.from_string json_str with 
+  | `Assoc a -> 
+     let decoder = ref a in
+     let person' = JsonDecoder.decode_person decoder in 
+     assert(person' = person)
+  | _ -> assert(false)

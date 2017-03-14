@@ -332,9 +332,13 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
 
   F.line sc "module Make_decoder(Decoder:Pbrt_js.Decoder_sig) = struct";
   F.scope sc (fun sc -> 
+    F.empty_line sc;
+    F.line sc  "module Helper = Pbrt_js.Make_decoder_helper(Decoder)";
+    F.empty_line sc;
     gen otypes sc [ (Pb_codegen_decode_json.gen_struct, None);] 
   ); 
   F.line sc "end";
+  F.empty_line sc;
   
   F.line sc "module Make_encoder(Encoder:Pbrt_js.Encoder_sig) = struct";
   F.scope sc (fun sc -> 

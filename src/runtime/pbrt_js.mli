@@ -2,6 +2,10 @@
 exception Unexpected_json_type of string * string 
   (* TODO expand on expected vs received type *)
 
+val unexpected_json_type : string -> string -> 'a 
+  (** [unexpected_json_type record_name field_name] raises 
+      [Unexpected_json_type] exception. *)
+
 module type Decoder_sig = sig 
   
   type t 
@@ -11,7 +15,6 @@ module type Decoder_sig = sig
     | Float of float 
     | Int of int 
     | Object of t 
-    | Array_as_list of value list
     | Array_as_array of value array 
     | Bool of bool 
     | Null
@@ -41,3 +44,15 @@ module type Encoder_sig = sig
   val set_object_list : t -> string -> t list -> unit
 
 end
+
+module Make_decoder_helper(D:Decoder_sig) : sig 
+  
+  val string : D.value -> string -> string -> string 
+  val float : D.value -> string -> string -> float 
+  val int32 : D.value -> string -> string -> int32 
+  val int64 : D.value -> string -> string -> int64 
+  val int : D.value -> string -> string -> int 
+  val bool : D.value -> string -> string -> bool
+  val bytes : D.value -> string -> string -> bytes 
+
+end 

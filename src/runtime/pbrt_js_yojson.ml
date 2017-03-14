@@ -56,7 +56,6 @@ module Decoder : Decoder_sig = struct
     | Float of float 
     | Int of int 
     | Object of t 
-    | Array_as_list of value list
     | Array_as_array of value array 
     | Bool of bool 
     | Null
@@ -68,7 +67,7 @@ module Decoder : Decoder_sig = struct
     | `Float f -> Float f 
     | `String s -> String s 
     | `Assoc a -> Object (ref a)
-    | `List l -> Array_as_list (List.map map l)  
+    | `List l -> Array_as_array (List.map map l |> Array.of_list)  
 
   let key t = 
     match !t with
