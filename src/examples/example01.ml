@@ -5,6 +5,7 @@ let person = Example01_pb.({
   email = "jdoe@example.com"; 
   child = {cute_name = "Booboo"}; 
   phone = ["917-929-8071"; "646-269-2829"];
+  residence = House 12.;
 }) 
 
 let () = 

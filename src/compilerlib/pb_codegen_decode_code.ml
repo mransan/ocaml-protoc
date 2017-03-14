@@ -41,14 +41,9 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
       F.line sc "loop ()";
     );
     F.line sc ")";
-    F.line sc @@ sp "| Some (%i, pk) -> raise (" encoding_number;
-    F.scope sc (fun sc ->
-      F.line sc @@ sp 
-        ("Protobuf.Decoder.Failure " ^^ 
-         "(Protobuf.Decoder.Unexpected_payload (%s, pk))") 
-        (sp "\"Message(%s), field(%i)\"" r_name encoding_number)
-    );
-    F.line sc ")"
+    F.line sc @@ sp "| Some (%i, pk) -> " encoding_number;
+    F.line sc @@ sp "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
+     (sp "Message(%s), field(%i)" r_name encoding_number);
   in
   
   let process_nolabel_field sc rf_label (field_type, encoding_number, pk) = 
@@ -288,14 +283,15 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc =
         vc_encoding_number vc_constructor (decode_field_f field_type pk) 
   in 
 
-  F.line sc @@ sp "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) v_name;
+  F.line sc @@ sp "%s decode_%s d = " 
+    (Pb_codegen_util.let_decl_of_and and_) v_name;
   F.scope sc (fun sc ->
     F.line sc @@ sp "let rec loop () = "; 
     F.scope sc (fun sc ->
       F.line sc @@ sp "let ret:%s = match Pbrt.Decoder.key d with" v_name;
       F.scope sc (fun sc -> 
-        F.line sc @@ sp ("| None -> raise Protobuf.Decoder.(Failure " ^^ 
-                         "(Malformed_variant \"%s\"))") v_name; 
+        F.line sc @@ sp "| None -> Pbrt.Decoder.malformed_variant \"%s\""
+          v_name; 
         List.iter (fun ctor -> process_ctor sc ctor) v_constructors; 
         F.line sc "| Some (n, payload_kind) -> (";
         F.line sc "  Pbrt.Decoder.skip d payload_kind; ";

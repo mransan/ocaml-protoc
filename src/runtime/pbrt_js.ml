@@ -1,5 +1,4 @@
 exception Unexpected_json_type of string * string 
-  (* TODO expand on expected vs received type *)
 
 let unexpected_json_type record_name field_name = 
   raise (Unexpected_json_type (record_name, field_name))
@@ -7,7 +6,6 @@ let unexpected_json_type record_name field_name =
 module type Decoder_sig = sig 
 
   type t 
-    (* Dictionary *) 
 
   type value = 
     | String of string 
@@ -28,6 +26,7 @@ module type Encoder_sig = sig
 
   val empty : unit -> t  
 
+  val set_null : t -> string -> unit
   val set_string : t -> string -> string -> unit 
   val set_float : t -> string -> float -> unit 
   val set_int : t -> string -> int -> unit  

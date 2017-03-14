@@ -49,10 +49,14 @@ val string_of_payload_kind :
     string corresponding to the payload kind. 
  *)
 
-val caml_case_of_label : string -> string
+val camel_case_of_label : string -> string
 (** this function transforms a `lower_case_like_this` into an 
-    ocamlCaseLikeThis *)
+    camlCaseLikeThis *)
 
+val camel_case_of_constructor : string -> string 
+(** this function transform an OCaml constructuror `Like_this` into 
+    a 'likeThis' case *)
+     
 val runtime_function : 
   ( 
     [`Decode | `Encode] * 

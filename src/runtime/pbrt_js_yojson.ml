@@ -11,6 +11,9 @@ module Encoder : Encoder_sig = struct
 
   let empty () = ref [] 
 
+  let set_null t key = 
+    t := (key, `Null) :: !t 
+
   let set_string t key value = 
     t := (key, `String value) :: !t
   

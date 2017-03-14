@@ -31,6 +31,7 @@ module type Encoder_sig = sig
 
   val empty : unit -> t  
 
+  val set_null : t -> string -> unit
   val set_string : t -> string -> string -> unit 
   val set_float : t -> string -> float -> unit 
   val set_int : t -> string -> int -> unit  

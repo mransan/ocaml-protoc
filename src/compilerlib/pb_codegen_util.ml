@@ -92,7 +92,7 @@ let string_of_payload_kind ?capitalize payload_kind packed =
 
 (* this function transforms a `lower_case_like_this` into an 
  * ocamlCaseLikeThis *)
-let caml_case_of_label s = 
+let camel_case_of_label s = 
   let len = String.length s in 
   let b = Bytes.create len in 
   let capitalize = ref false and blen = ref 0 in 
@@ -114,6 +114,8 @@ let caml_case_of_label s =
   done;
   Bytes.sub_string b 0 !blen
 
+let camel_case_of_constructor s = 
+  camel_case_of_label (String.lowercase s)
 
 let runtime_function = function 
   | `Decode , Ot.Pk_varint false, Ot.Bt_int   -> "Pbrt.Decoder.int_as_varint" 
