@@ -278,7 +278,13 @@ let ocaml_container field_options =
   | Some (Pb_option.Constant_litteral container_name) -> Some container_name
   | Some _ -> None
 
-let variant_of_oneof ?include_oneof_name ~outer_message_names all_types file_options file_name oneof_field = 
+let variant_of_oneof 
+        ?include_oneof_name 
+        ~outer_message_names 
+        all_types 
+        file_options 
+        file_name 
+        oneof_field = 
 
   let v_constructors = List.map (fun field -> 
     let pbtt_field_type =  Typing_util.field_type field in 
@@ -405,9 +411,22 @@ let compile_message
         let mutable_  = is_mutable ~field_name field_options in 
 
         let record_field_type = match Typing_util.field_label field with
-          | `Nolabel -> Ot.Rft_nolabel (field_type, encoding_number, pk)
-          | `Required -> Ot.Rft_required (field_type, encoding_number, pk, field_default) 
-          | `Optional -> Ot.Rft_optional (field_type, encoding_number, pk, field_default) 
+          | `Nolabel -> 
+            let is_message = 
+              begin match field_type with
+              | Ot.Ft_user_defined_type {Ot.udt_nested; _} -> udt_nested
+              | _ -> false 
+              end
+            in  
+            if is_message
+            then 
+              Ot.Rft_optional (field_type, encoding_number, pk, None) 
+            else
+              Ot.Rft_nolabel (field_type, encoding_number, pk)
+          | `Required -> 
+             Ot.Rft_required (field_type, encoding_number, pk, field_default) 
+          | `Optional -> 
+             Ot.Rft_optional (field_type, encoding_number, pk, field_default) 
           | `Repeated -> 
             let repeated_type = begin match ocaml_container field_options with 
               | None -> Ot.Rt_list 

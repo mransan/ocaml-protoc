@@ -89,6 +89,16 @@ let gen_rft_nolabel sc rf_label (field_type, _, pk) =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in  
   gen_field sc var_name json_label field_type pk 
 
+let gen_rft_optional_field sc rf_label (field_type, _, pk, _) = 
+  F.line sc @@ sp "begin match v.%s with" rf_label; 
+  F.scope sc (fun sc ->
+    F.line sc "| None -> ()";
+    F.line sc "| Some v ->";
+    let json_label = Pb_codegen_util.camel_case_of_label rf_label in  
+    gen_field sc "v" json_label field_type pk 
+  ); 
+  F.line sc "end;"
+
 let gen_rft_repeated_field sc rf_label repeated_field = 
   let (repeated_type, field_type, _, pk, _) = repeated_field in
   begin match repeated_type with
@@ -167,9 +177,11 @@ let gen_encode_record ?and_ {Ot.r_name; r_fields } sc =
 
       | Ot.Rft_variant_field variant_field -> 
         gen_rft_variant_field sc rf_label variant_field 
+      
+      | Ot.Rft_optional optional_field ->
+        gen_rft_optional_field sc rf_label optional_field 
 
-      | Ot.Rft_required _ 
-      | Ot.Rft_optional _ ->
+      | Ot.Rft_required _ ->
         failwith "Only proto3 syntax supported in JSON encoding"
 
       | Ot.Rft_associative_field _ -> 

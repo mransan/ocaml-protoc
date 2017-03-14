@@ -16,6 +16,7 @@ message Person {
     string email = 3;
     repeated string phone = 4;
     Child child = 5;
+    Child second_child = 10;
     oneof residence {
       int32 appartment = 6; // nb of floors 
       float house = 7;      // sq footage

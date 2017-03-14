@@ -81,6 +81,18 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   F.line sc "end"
 
+let gen_rft_optional_field sc ~r_name ~rf_label optional_field = 
+  let (field_type, _, _, _) = optional_field in
+
+  let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
+  
+  let pattern_matches = field_pattern_matches ~r_name ~rf_label field_type in
+
+  List.iter (fun (json_type, value_expression) ->
+    F.line sc @@ sp "| Some (\"%s\", %s) -> " json_label json_type; 
+    F.line sc @@ sp "  v.%s <- Some (%s)" rf_label value_expression
+  ) pattern_matches 
+
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} = 
 
@@ -141,7 +153,8 @@ let gen_decode_record ?and_  {Ot.r_name; r_fields} sc =
         | Ot.Rft_variant_field variant_field -> 
           gen_rft_variant_field sc ~r_name ~rf_label variant_field
 
-        | _ -> assert(false)
+        | Ot.Rft_optional optional_field -> 
+          gen_rft_optional_field sc ~r_name ~rf_label optional_field
       ) r_fields;
 
       (* Unknown fields are simply ignored *)

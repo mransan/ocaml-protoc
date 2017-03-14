@@ -3,7 +3,8 @@ let person = Example01_pb.({
   first_name = "John Doe"; 
   id = 1234l;
   email = "jdoe@example.com"; 
-  child = {cute_name = "Booboo"}; 
+  child = Some {cute_name = "Booboo"}; 
+  second_child = None;
   phone = ["917-929-8071"; "646-269-2829"];
   residence = House 12.;
   gender = Female;
