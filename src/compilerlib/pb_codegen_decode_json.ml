@@ -7,7 +7,7 @@ let sp = Pb_codegen_util.sp
    a JSON value type is not matching the protobuf definition. (For instance
    getting a JSON number when the protobuf field type is a string) *)
 let unpexected_payload r_name rf_label = 
-  sp "(Pbrt_js.unexpected_json_type \"%s\" \"%s\")"  r_name rf_label 
+  sp "(Pbrt_js.E.unexpected_json_type \"%s\" \"%s\")"  r_name rf_label 
 
 (* Function which returns all the possible pattern match for reading a JSON 
    value into an OCaml value. The protobuf JSON encoding rules 
@@ -154,6 +154,14 @@ let gen_decode_record ?and_  {Ot.r_name; r_fields} sc =
 
         | Ot.Rft_optional optional_field -> 
           gen_rft_optional_field sc ~r_name ~rf_label optional_field
+        
+        | Ot.Rft_required _ ->
+          Printf.eprintf "Only proto3 syntax supported in JSON encoding";
+          exit 1
+
+        | Ot.Rft_associative_field _ -> 
+          Printf.eprintf "Map field are not currently supported for JSON";
+          exit 1
       ) r_fields;
 
       (* Unknown fields are simply ignored *)
@@ -210,7 +218,7 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc =
       F.line sc "match Decoder.key d with";
 
       (* termination condition *)
-      F.line sc @@ sp "| None -> Pbrt.Decoder.malformed_variant \"%s\"" 
+      F.line sc @@ sp "| None -> Pbrt_js.E.malformed_variant \"%s\"" 
         v_name; 
         
       List.iter (process_v_constructor sc) v_constructors; 
@@ -231,7 +239,7 @@ let gen_decode_const_variant ?and_ {Ot.cv_name; cv_constructors} sc =
       F.line sc @@ sp "| Decoder.String \"%s\" -> %s"
         (String.uppercase constructor) constructor
     ) cv_constructors;  
-    F.line sc @@ sp "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name;  
+    F.line sc @@ sp "| _ -> Pbrt_js.E.malformed_variant \"%s\"" cv_name;  
   ) 
 
 let gen_struct ?and_ t sc = 

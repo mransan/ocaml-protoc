@@ -1,14 +1,30 @@
+(** Protobuf JSON encoding runtime *)
 
-exception Unexpected_json_type of string * string 
-  (* TODO expand on expected vs received type *)
+(** All exception which could be raised by the generated JSON encoder
+    and decode function *)
+module E : sig 
+  type error = 
+    | Unexpected_json_type of string * string  
+    | Malformed_variant of string  
 
-val unexpected_json_type : string -> string -> 'a 
+  exception Failure of error
+  (** Decoding/Encoding failure *)
+
+  val unexpected_json_type : string -> string -> 'a
   (** [unexpected_json_type record_name field_name] raises 
-      [Unexpected_json_type] exception. *)
+      [Failure (Unexpected_json_type (record_name, field_name))] *)
 
+  val malformed_variant : string -> 'a
+  (** [malformed_variant variant_name] raise 
+      [Failure (Malformed_variant variant_name)] *)
+end 
+
+(** Module signature which the generated code relies upon for 
+    decoding functions *)
 module type Decoder_sig = sig 
   
   type t 
+  (** Decoder, represents a JSON object *)
 
   type value = 
     | String of string 
@@ -25,9 +41,12 @@ module type Decoder_sig = sig
 
 end 
 
+(** Module signature which the gnerated code relies upon for 
+    encoding functions *)
 module type Encoder_sig = sig
 
   type t 
+  (** Encoder, represents a JSON object *)
 
   val empty : unit -> t  
 
@@ -46,6 +65,8 @@ module type Encoder_sig = sig
 
 end
 
+(** Helper module for the generated code for common 
+    functionality *)
 module Make_decoder_helper(D:Decoder_sig) : sig 
   
   val string : D.value -> string -> string -> string 

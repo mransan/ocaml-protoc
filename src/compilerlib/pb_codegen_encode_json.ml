@@ -183,10 +183,12 @@ let gen_encode_record ?and_ {Ot.r_name; r_fields } sc =
         gen_rft_optional_field sc rf_label optional_field 
 
       | Ot.Rft_required _ ->
-        failwith "Only proto3 syntax supported in JSON encoding"
+        Printf.eprintf "Only proto3 syntax supported in JSON encoding";
+        exit 1
 
       | Ot.Rft_associative_field _ -> 
-        assert(false)
+        Printf.eprintf "Map field are not currently supported for JSON";
+        exit 1
         
     ) r_fields (* List.iter *); 
     F.line sc "()"
