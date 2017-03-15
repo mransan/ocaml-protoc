@@ -135,9 +135,11 @@ let gen_rft_repeated_field sc rf_label repeated_field =
       F.line sc @@ sp "%s v encoder';"
                    (Pb_codegen_util.function_name_of_user_defined "encode" udt);
       F.line sc @@ sp "Encoder.set_object encoder \"%s\" encoder';" json_label;
-      F.line sc "encoder";
+      F.line sc "encoder'";
     ); 
-    F.line sc @@ sp ") %s;" var_name
+    F.line sc @@ sp ") %s in" var_name;
+    F.line sc @@ sp "Encoder.set_object_list encoder \"%s\" %s';"
+      json_label rf_label
 
   | _ -> unsupported json_label
         
@@ -204,13 +206,14 @@ let gen_encode_variant ?and_ {Ot.v_name; v_constructors} sc =
 
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in
 
-    F.line sc @@ sp "| %s v ->" vc_constructor; 
     F.scope sc (fun sc -> 
       match vc_field_type with 
       | Ot.Vct_nullary -> 
+        F.line sc @@ sp "| %s ->" vc_constructor; 
         F.line sc @@ sp "Encoder.set_null encoder \"%s\"" json_label 
 
       | Ot.Vct_non_nullary_constructor field_type -> 
+        F.line sc @@ sp "| %s v ->" vc_constructor; 
         gen_field sc "v" json_label field_type vc_payload_kind
     )
   in 
@@ -218,8 +221,9 @@ let gen_encode_variant ?and_ {Ot.v_name; v_constructors} sc =
   F.line sc @@ sp "%s encode_%s (v:%s) encoder = " 
       (Pb_codegen_util.let_decl_of_and and_) v_name v_name;
   F.scope sc (fun sc -> 
-    F.line sc "match v with";
-    List.iter (process_v_constructor sc) v_constructors
+    F.line sc "begin match v with";
+    List.iter (process_v_constructor sc) v_constructors;
+    F.line sc "end";
   ) 
 
 let gen_encode_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors} sc = 
