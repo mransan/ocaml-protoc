@@ -37,6 +37,18 @@ module Decoder : sig
 
   val of_bytes : bytes -> t 
 
+  val malformed_variant : string -> 'a 
+  (** [malformed_variant variant_name] raises the exception 
+      [Protobuf.Decoder.Failure (Malformed_variant variant_name)] *) 
+
+  val unexpected_payload : string -> payload_kind -> 'a 
+  (** [unexpected_payload field_name pk] raises the exception 
+      [Protobuf.Decoder.Failure (Unexpected_payload (field_name, pk))] *)
+
+  val missing_field : string -> 'a 
+  (** [missing_field field_name] raises the exception 
+      [Protobuf.Decoder.Failure (Missing_field field_name)] *)
+
   (** {2 Decoding Functions} *) 
   
   val key : t -> (int * Protobuf.payload_kind) option 
@@ -351,17 +363,28 @@ module Pp : sig
       of the elements.
    *)
   
-  val pp_associative_list :(formatter -> 'a -> unit) -> (formatter -> 'b -> unit) -> formatter -> ('a * 'b) list -> unit 
+  val pp_associative_list : 
+    (formatter -> 'a -> unit) -> 
+    (formatter -> 'b -> unit) -> 
+    formatter -> ('a * 'b) list -> 
+    unit 
   
-  val pp_hastable : (formatter -> 'a -> unit) -> (formatter -> 'b -> unit) -> formatter -> ('a, 'b) Hashtbl.t -> unit 
+  val pp_hastable : 
+    (formatter -> 'a -> unit) -> 
+    (formatter -> 'b -> unit) -> 
+    formatter -> ('a, 'b) Hashtbl.t -> 
+    unit 
   
-  val pp_record_field : string -> (formatter -> 'a -> unit) -> formatter -> 'a -> unit
-  (** [pp_record_field label_name fmt field_value] formats a record [field_value] with
-      [label_name]
-   *)
+  val pp_record_field : 
+    string -> 
+    (formatter -> 'a -> unit) -> 
+    formatter -> 
+    'a -> 
+    unit
+  (** [pp_record_field label_name fmt field_value] formats a 
+      record [field_value] with [label_name] *)
   
   val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit 
-  (** [pp_brk fmt r] formats record value [r] with curly brakets. 
-   *)
+  (** [pp_brk fmt r] formats record value [r] with curly brakets.  *)
 
 end (* Pp *) 

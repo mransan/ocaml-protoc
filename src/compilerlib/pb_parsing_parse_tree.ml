@@ -31,7 +31,7 @@ type message_field_label = [
   | `Optional 
   | `Required 
   | `Repeated 
-  | `Nolabel  (** proto3 field which replaces required and optional *)
+  | `Nolabel  (* proto3 field which replaces required and optional *)
 ]
 
 (** Oneof field fields label 

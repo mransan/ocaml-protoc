@@ -10,9 +10,10 @@ let decode_field_f field_type pk =
   match field_type with 
   | Ot.Ft_user_defined_type t -> 
     let f_name = Pb_codegen_util.function_name_of_user_defined "decode" t in
-    if t.Ot.udt_nested 
-    then (f_name ^ " (Pbrt.Decoder.nested d)")
-    else (f_name ^ " d") 
+    begin match t.Ot.udt_type with
+    | `Message -> (f_name ^ " (Pbrt.Decoder.nested d)")
+    | `Enum -> (f_name ^ " d")
+    end
   | Ot.Ft_unit -> 
       "Pbrt.Decoder.empty_nested d"
   | Ot.Ft_basic_type bt -> (decode_basic_type bt pk) ^ " d" 
@@ -38,17 +39,11 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
                     encoding_number (pbrt_payload_kind payload_kind is_packed);
     F.scope sc (fun sc -> 
       f sc;
-      F.line sc "loop ()";
     );
     F.line sc ")";
-    F.line sc @@ sp "| Some (%i, pk) -> raise (" encoding_number;
-    F.scope sc (fun sc ->
-      F.line sc @@ sp 
-        ("Protobuf.Decoder.Failure " ^^ 
-         "(Protobuf.Decoder.Unexpected_payload (%s, pk))") 
-        (sp "\"Message(%s), field(%i)\"" r_name encoding_number)
-    );
-    F.line sc ")"
+    F.line sc @@ sp "| Some (%i, pk) -> " encoding_number;
+    F.line sc @@ sp "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
+     (sp "Message(%s), field(%i)" r_name encoding_number);
   in
   
   let process_nolabel_field sc rf_label (field_type, encoding_number, pk) = 
@@ -198,9 +193,11 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
 
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in 
 
-  F.line sc @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name; 
+  F.line sc @@ sp 
+          "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name; 
   F.scope sc (fun sc -> 
     F.line sc @@ sp "let v = default_%s () in" mutable_record_name;
+    F.line sc "let continue__= ref true in";
 
     (* Add the is_set_<field_name> boolean variable which keeps track 
      * of whether a required field is set during the decoding.  *)
@@ -211,7 +208,7 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
     (* Decoding is done with recursively (tail - recursive). The 
      * function loop iterate over all fields returned by the Protobuf 
      * runtime. *)
-    F.line sc "let rec loop () = "; 
+    F.line sc "while !continue__ do";
     F.scope sc (fun sc -> 
       F.line sc "match Pbrt.Decoder.key d with";
 
@@ -222,7 +219,7 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
           F.line sc @@ sp "v.%s <- List.rev v.%s;" field_name field_name
         ) all_lists;   
       );
-      F.line sc ")";
+      F.line sc "); continue__ := false";
 
       (* compare the decoded field with the one defined in the 
        * .proto file. Unknown fields are ignored. *)
@@ -236,17 +233,15 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
         | Ot.Rft_variant_field x -> process_variant_field sc rf_label x 
       ) r_fields; 
       F.line sc ("| Some (_, payload_kind) -> " ^ 
-                 "Pbrt.Decoder.skip d payload_kind; loop ()");
+                 "Pbrt.Decoder.skip d payload_kind");
     ); 
-    F.line sc "in"; 
-    F.line sc "loop ();";
+    F.line sc "done;"; 
 
     (* Add the check to see if all required fields are set if not 
      * a Protobuf.Decoder.Failure exception is raised *) 
     List.iter (fun rf_label -> 
       F.line sc @@ sp 
-        ("begin if not !%s then raise Protobuf.Decoder." ^^ 
-         "(Failure (Missing_field \"%s\")) end;") 
+        "begin if not !%s then Pbrt.Decoder.missing_field \"%s\" end;"
         (is_set_variable_name rf_label) rf_label
     ) all_required_rf_labels ; 
 
@@ -257,14 +252,6 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
       ) r_fields;
     ); 
     F.line sc @@ sp "} : %s)" r_name;
-    
-    (* Rely on Obj.magic invariant to change the type to the 
-     * non-mutable record type. 
-     * Using Obj.magic avoids an additional allocation of the record *)
-    (*
-    F.line sc @@ sp "let v:%s = Obj.magic v in" r_name; 
-    F.line sc "v";
-    *)
   )
 
 let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc = 
@@ -287,14 +274,15 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc =
         vc_encoding_number vc_constructor (decode_field_f field_type pk) 
   in 
 
-  F.line sc @@ sp "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) v_name;
+  F.line sc @@ sp "%s decode_%s d = " 
+    (Pb_codegen_util.let_decl_of_and and_) v_name;
   F.scope sc (fun sc ->
     F.line sc @@ sp "let rec loop () = "; 
     F.scope sc (fun sc ->
       F.line sc @@ sp "let ret:%s = match Pbrt.Decoder.key d with" v_name;
       F.scope sc (fun sc -> 
-        F.line sc @@ sp ("| None -> raise Protobuf.Decoder.(Failure " ^^ 
-                         "(Malformed_variant \"%s\"))") v_name; 
+        F.line sc @@ sp "| None -> Pbrt.Decoder.malformed_variant \"%s\""
+          v_name; 
         List.iter (fun ctor -> process_ctor sc ctor) v_constructors; 
         F.line sc "| Some (n, payload_kind) -> (";
         F.line sc "  Pbrt.Decoder.skip d payload_kind; ";
@@ -317,8 +305,7 @@ let gen_decode_const_variant ?and_ {Ot.cv_name; cv_constructors; } sc =
     List.iter (fun (name, value) -> 
       F.line sc @@ sp "| %i -> (%s:%s)" value name cv_name
     ) cv_constructors; 
-    F.line sc @@ sp ("| _ -> raise Protobuf.Decoder.(Failure " ^^ 
-                     "(Malformed_variant \"%s\"))") cv_name
+    F.line sc @@ sp "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name
   )
 
 let gen_struct ?and_ t sc = 

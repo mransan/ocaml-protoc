@@ -36,11 +36,7 @@ type payload_kind =
 type user_defined_type = {
   udt_module : string option; 
   udt_type_name : string; 
-  udt_nested : bool; 
-    (* The nested property indicate whether this [user_defined_type] requires 
-     * a nested decoder. For types which serialize to a message it will be 
-     * true (ie message in protobuf) but for enum types it won't. 
-     *)
+  udt_type : [`Message | `Enum ]; 
 }
 
 type basic_type = 
@@ -63,8 +59,7 @@ type associative_type  =
   | At_list
   | At_hashtable
   (* Future work can include the following OCaml associative containers
-  | Al_map
-  *)
+  | Al_map *)
 
 type repeated_type = 
   | Rt_list

@@ -1,20 +1,20 @@
 module T  = Test22_pb
 
 let decode_ref_data () = T.({
-    p1 = {
+    p1 = Some {
       first_name = "John";
       last_name  = "Doe";
       date_of_birth = 19820429l; 
-      tel_number = {area_code = 0l; number = 0l}; 
+      tel_number = None;
       employment = Employed_by "Google";
       marital_status = Single; 
       gender = Male;
     }; 
-    p2 = {
+    p2 = Some {
       first_name = "Marie";
       last_name  = "Dupont";
       date_of_birth = 19820306l; 
-      tel_number = {area_code = 917l; number = 1111111l};
+      tel_number = Some {area_code = 917l; number = 1111111l};
       employment = Employed_by "INRIA";
       marital_status = Married;
       gender = Female;
@@ -44,7 +44,7 @@ let () =
     first_name = "";
     last_name = "";
     date_of_birth  = 0l;
-    tel_number = {area_code = 0l; number = 0l};
+    tel_number = None;
     employment = Self_employed 0l; 
     marital_status = Single; 
     gender = Male;

@@ -31,6 +31,7 @@ module Parsing_util = Pb_parsing_util
 module Tt = Pb_typing_type_tree 
 module Typing_util = Pb_typing_util
 module Ot = Pb_codegen_ocaml_type 
+module F = Pb_codegen_formatting
 
 (* [ocaml-protoc] provides the ability to override all the custom 
  *
@@ -151,6 +152,9 @@ let imported_filename include_dirs file_name =
 let parse_args () = 
   let proto_file_name = ref "" in  
   let debug = ref false in  
+  let json = ref false in 
+  let binary = ref false in 
+  let pp = ref false in 
   let include_dirs = ref [] in 
   let include_dirs_spec = (fun dir -> 
     include_dirs := dir :: (!include_dirs)
@@ -160,6 +164,9 @@ let parse_args () =
    
   let cmd_line_args = [
     ("-debug", Arg.Set debug, "enable debugging");  
+    ("-json", Arg.Set json, "generate json encoding");  
+    ("-binary", Arg.Set json, "generate binary encoding");  
+    ("-pp", Arg.Set pp, "generate pretty print functions");  
     ("-I", Arg.String include_dirs_spec, "include directories");  
     ("-ml_out", Arg.Set_string  ml_out, "output directory");  
   ] @ File_options.cmd_line_args cmd_line_files_options in 
@@ -171,6 +178,16 @@ let parse_args () =
   let usage = "ocaml-protoc -ml_out <output_directory> <file_name>.proto" in
 
   Arg.parse cmd_line_args anon_fun usage;
+  
+  (* Maintain backward compatible behavior (ie if none of the new 
+     switch are used then default to generating binary and pp *) 
+  begin 
+    if not !json && not !binary && not !pp 
+    then begin 
+      binary := true;
+      pp := true; 
+    end;
+  end;
 
   (* check mandatory arguments are properly set *)
   begin 
@@ -214,7 +231,10 @@ let parse_args () =
     !include_dirs, 
     sig_oc, 
     struct_oc, 
-    !debug, 
+    !debug,
+    !binary,
+    !json, 
+    !pp,
     generated_files, 
     cmd_line_files_options
   )  
@@ -269,38 +289,61 @@ let compile cmd_line_files_options include_dirs proto_file_name =
 type codegen_f = 
   ?and_:unit -> 
   Ot.type_ -> 
-  Pb_codegen_formatting.scope -> bool 
+  F.scope -> bool 
 
-let all_code_gen = [
-  (module Pb_codegen_type_code: Pb_codegen_sig.S);
-  (module Pb_codegen_default_code: Pb_codegen_sig.S);
-  (module Pb_codegen_decode_code: Pb_codegen_sig.S);
-  (module Pb_codegen_encode_code: Pb_codegen_sig.S);
-  (module Pb_codegen_pp_code: Pb_codegen_sig.S);
-]
 
-let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name = 
+let generate_code 
+      sig_oc 
+      struct_oc 
+      ocaml_types 
+      proto_file_options 
+      proto_file_name 
+      generate_binary
+      generate_json 
+      generate_pp = 
 
+  let all_code_gen = 
+    if generate_pp
+    then [(module Pb_codegen_pp_code: Pb_codegen_sig.S)]
+    else []
+  in 
+
+  let all_code_gen =
+    if generate_binary
+    then 
+      (module Pb_codegen_decode_code: Pb_codegen_sig.S) ::
+      (module Pb_codegen_encode_code: Pb_codegen_sig.S) :: 
+      all_code_gen
+    else 
+      all_code_gen
+  in 
+
+  let all_code_gen = 
+    (module Pb_codegen_type_code: Pb_codegen_sig.S) ::
+    (module Pb_codegen_default_code: Pb_codegen_sig.S) ::
+    all_code_gen
+  in 
+  
   (* File level ppx extension (ie @@@ type of ppx) *)
 
   let print_ppx sc = 
     match Pb_option.get proto_file_options "ocaml_file_ppx" with
     | None -> () 
     | Some Pb_option.Constant_string s -> 
-      Pb_codegen_formatting.line sc @@ Printf.sprintf "[@@@%s]" s
+      F.line sc @@ Printf.sprintf "[@@@%s]" s
     | _ -> E.invalid_ppx_extension_option proto_file_name  
   in 
 
-  let gen otypes sc (fs:(codegen_f*string option) list)  = 
+  let gen ocaml_types sc (fs:(codegen_f*string option) list)  = 
     List.iter (fun ((f:codegen_f), ocamldoc_title)-> 
       begin
         match ocamldoc_title with
         | None -> () 
         | Some ocamldoc_title -> ( 
-          Pb_codegen_formatting.empty_line sc;
-          Pb_codegen_formatting.line sc @@ Pb_codegen_util.sp 
+          F.empty_line sc;
+          F.line sc @@ Pb_codegen_util.sp 
               "(** {2 %s} *)" ocamldoc_title;  
-          Pb_codegen_formatting.empty_line sc;
+          F.empty_line sc;
         )
       end;
 
@@ -310,42 +353,84 @@ let generate_code sig_oc struct_oc otypes proto_file_options proto_file_name =
             then f type_ sc 
             else f ~and_:() type_ sc
           in 
-          Pb_codegen_formatting.empty_line sc;
+          F.empty_line sc;
           first && (not has_encoded) 
         ) true types in 
         ()
-      ) otypes 
+      ) ocaml_types 
     ) fs 
   in
   
   (* -- `.ml` file -- *)
 
-  let sc = Pb_codegen_formatting.empty_scope () in 
-  Pb_codegen_formatting.line sc "[@@@ocaml.warning \"-27-30-39\"]";
+  let sc = F.empty_scope () in 
+  F.line sc "[@@@ocaml.warning \"-27-30-39\"]";
   print_ppx sc; 
-  Pb_codegen_formatting.empty_line sc;
-  gen otypes  sc (List.map (fun m -> 
+  F.empty_line sc;
+  gen ocaml_types  sc (List.map (fun m -> 
     let module C = (val m:Pb_codegen_sig.S) in 
     C.gen_struct, None
   ) all_code_gen);
 
-  output_string struct_oc (Pb_codegen_formatting.print sc);
+  if generate_json
+  then begin 
+    F.line sc "module Make_decoder(Decoder:Pbrt_json.Decoder_sig) = struct";
+    F.scope sc (fun sc -> 
+      F.empty_line sc;
+      F.line sc  "module Helper = Pbrt_json.Make_decoder_helper(Decoder)";
+      F.empty_line sc;
+      gen ocaml_types sc [ (Pb_codegen_decode_json.gen_struct, None);] 
+    ); 
+    F.line sc "end";
+    F.empty_line sc;
+    
+    F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) = struct";
+    F.scope sc (fun sc -> 
+      F.empty_line sc;
+      gen ocaml_types sc [ (Pb_codegen_encode_json.gen_struct, None);]
+    ); 
+    F.line sc "end";
+  end;
+
+  output_string struct_oc (F.print sc);
 
   (* -- `.mli` file -- *)
 
-  let sc = Pb_codegen_formatting.empty_scope () in 
-  Pb_codegen_formatting.line sc @@ 
+  let sc = F.empty_scope () in 
+  F.line sc @@ 
     Pb_codegen_util.sp 
         "(** %s Generated Types and Encoding *)" 
         (Filename.basename proto_file_name); 
-  Pb_codegen_formatting.empty_line sc; 
+  F.empty_line sc; 
   print_ppx sc; 
-  gen otypes  sc (List.map (fun m -> 
+  gen ocaml_types  sc (List.map (fun m -> 
     let module C = (val m:Pb_codegen_sig.S) in 
     C.gen_sig, Some C.ocamldoc_title
   ) all_code_gen);
+  
+  if generate_json
+  then begin 
+    F.line sc "module Make_decoder(Decoder:Pbrt_json.Decoder_sig) : sig";
+    F.scope sc (fun sc -> 
+      gen ocaml_types sc [
+        (
+          Pb_codegen_decode_json.gen_sig , 
+          Some (Pb_codegen_decode_json.ocamldoc_title)
+        );]
+    ); 
+    F.line sc "end";
 
-  output_string sig_oc (Pb_codegen_formatting.print sc);
+    F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) : sig";
+    F.scope sc (fun sc -> 
+      gen ocaml_types sc [
+        (
+          Pb_codegen_encode_json.gen_sig , 
+          Some (Pb_codegen_encode_json.ocamldoc_title)
+        );]
+    ); 
+    F.line sc "end";
+  end;
+  output_string sig_oc (F.print sc);
   ()
 
 (* -- main -- *)
@@ -358,6 +443,9 @@ let () =
     sig_oc, 
     struct_oc, 
     enable_debugging, 
+    generate_binary,
+    generate_json,
+    generate_pp,
     generated_files,
     cmd_line_files_options
   ) = parse_args () in 
@@ -375,11 +463,19 @@ let () =
       File_options.to_file_options cmd_line_files_options 
     in 
 
-    let otypes, proto_file_options = 
+    let ocaml_types, proto_file_options = 
       compile cmd_line_files_options include_dirs proto_file_name 
     in 
 
-    generate_code sig_oc struct_oc otypes proto_file_options proto_file_name;
+    generate_code 
+      sig_oc 
+      struct_oc 
+      ocaml_types 
+      proto_file_options 
+      proto_file_name 
+      generate_binary
+      generate_json
+      generate_pp;
 
     close_file_channels ();
 

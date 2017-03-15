@@ -21,7 +21,7 @@ val function_name_of_user_defined :
   Pb_codegen_ocaml_type.user_defined_type -> 
   string
 (** [function_name_of_user_defined prefix user_defined] returns the function
-    name of the form `(module'.'?)prefix_(type_name)`. 
+    name of the form `(module'.'?)<prefix>_(type_name)`. 
 
     This pattern is common since a generated function for a type
     (encode/decode/to_string) will call the same generated function for each 
@@ -49,6 +49,14 @@ val string_of_payload_kind :
     string corresponding to the payload kind. 
  *)
 
+val camel_case_of_label : string -> string
+(** this function transforms a `lower_case_like_this` into an 
+    camlCaseLikeThis *)
+
+val camel_case_of_constructor : string -> string 
+(** this function transform an OCaml constructuror `Like_this` into 
+    a 'likeThis' case *)
+     
 val runtime_function : 
   ( 
     [`Decode | `Encode] * 

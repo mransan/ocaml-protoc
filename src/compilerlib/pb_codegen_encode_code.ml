@@ -25,22 +25,24 @@ let gen_encode_field_type
   in 
 
   match field_type with 
-  | Ot.Ft_user_defined_type ud -> (
+  | Ot.Ft_user_defined_type ud ->
     encode_key sc;
     let f_name = Pb_codegen_util.function_name_of_user_defined "encode" ud in 
-    if ud.Ot.udt_nested 
-    then F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name var_name
-    else F.line sc @@ sp "%s %s encoder;" f_name var_name
-  )
-  | Ot.Ft_unit -> (
+    begin match ud.Ot.udt_type with
+    | `Message -> 
+      F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name var_name
+    | `Enum ->
+      F.line sc @@ sp "%s %s encoder;" f_name var_name
+    end
+  
+  | Ot.Ft_unit ->
     encode_key sc;
     F.line sc "Pbrt.Encoder.empty_nested encoder;" 
-  )
-  | Ot.Ft_basic_type bt -> ( 
+  
+  | Ot.Ft_basic_type bt ->
     encode_key sc;
     let rt = encode_basic_type bt pk in 
     F.line sc @@ sp "%s %s encoder;" rt var_name
-  )
 
 let gen_encode_record ?and_ {Ot.r_name; r_fields } sc = 
   L.log "gen_encode_record record_name: %s\n" r_name;
@@ -253,4 +255,4 @@ let gen_sig ?and_ t sc =
   in
   has_encoded
 
-let ocamldoc_title = "Protobuf Toding"
+let ocamldoc_title = "Protobuf Encoding"

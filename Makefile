@@ -80,21 +80,26 @@ check_install: check_prefix
         echo "$(BINDIR) directory does not exist... create it first"; exit 1; \
     fi;
 
+LIB_FILES+=pbrt
+LIB_FILES+=pbrt_json
+
 LIB_BUILD     =_build/src/runtime
 LIB_INSTALL   = META 
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmi 
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.annot
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.mli
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmx
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmt
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmti
-
 LIB_INSTALL  +=$(OCAMLOPTIONS_HINC)/ocamloptions.proto 
 
-LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmo
+# modules 
+LIB_INSTALL  +=$(patsubst %,$(LIB_BUILD)/%.mli,$(LIB_FILES))
+LIB_INSTALL  +=$(patsubst %,$(LIB_BUILD)/%.cmi,$(LIB_FILES))
+LIB_INSTALL  +=$(patsubst %,$(LIB_BUILD)/%.annot,$(LIB_FILES))
+LIB_INSTALL  +=$(patsubst %,$(LIB_BUILD)/%.cmo,$(LIB_FILES))
+
+# byte code library
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cma 
 
+# native library and modules 
 LIB_INSTALL  +=-optional  
+LIB_INSTALL  +=$(patsubst %,$(LIB_BUILD)/%.cmx,$(LIB_FILES))
+LIB_INSTALL  +=$(patsubst %,$(LIB_BUILD)/%.cmt,$(LIB_FILES))
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxa 
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.cmxs
 LIB_INSTALL  +=$(LIB_BUILD)/pbrt.a
@@ -124,4 +129,3 @@ doc:
 	$(OCB) src/compilerlib/compilerlib.docdir/index.html
 	
 include Makefile.test
-
