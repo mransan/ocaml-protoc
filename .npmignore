@@ -1,0 +1,11 @@
+_tags
+doc
+src/include
+src/tests
+src/ocaml-protoc
+src/compilerlib
+src/examples
+opam
+Makefile
+Makefile.test
+META

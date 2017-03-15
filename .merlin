@@ -9,3 +9,14 @@ B _build/src/compilerlib/ocaml
 B _build/src/runtime
 
 PKG ppx_deriving_protobuf.runtime
+
+####{BSB GENERATED: NO EDIT
+FLG -ppx /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-platform/bin/bsppx.exe
+S /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
+B /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
+FLG -nostdlib -no-alias-deps -color always -w -40+6+7+27+32..39+44+45
+S /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
+B /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
+S src/runtime
+B lib/bs/src/runtime
+####BSB GENERATED: NO EDIT}
