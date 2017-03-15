@@ -373,17 +373,17 @@ let generate_code
 
   if generate_json
   then begin 
-    F.line sc "module Make_decoder(Decoder:Pbrt_js.Decoder_sig) = struct";
+    F.line sc "module Make_decoder(Decoder:Pbrt_json.Decoder_sig) = struct";
     F.scope sc (fun sc -> 
       F.empty_line sc;
-      F.line sc  "module Helper = Pbrt_js.Make_decoder_helper(Decoder)";
+      F.line sc  "module Helper = Pbrt_json.Make_decoder_helper(Decoder)";
       F.empty_line sc;
       gen ocaml_types sc [ (Pb_codegen_decode_json.gen_struct, None);] 
     ); 
     F.line sc "end";
     F.empty_line sc;
     
-    F.line sc "module Make_encoder(Encoder:Pbrt_js.Encoder_sig) = struct";
+    F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) = struct";
     F.scope sc (fun sc -> 
       F.empty_line sc;
       gen ocaml_types sc [ (Pb_codegen_encode_json.gen_struct, None);]
@@ -409,7 +409,7 @@ let generate_code
   
   if generate_json
   then begin 
-    F.line sc "module Make_decoder(Decoder:Pbrt_js.Decoder_sig) : sig";
+    F.line sc "module Make_decoder(Decoder:Pbrt_json.Decoder_sig) : sig";
     F.scope sc (fun sc -> 
       gen ocaml_types sc [
         (
@@ -419,7 +419,7 @@ let generate_code
     ); 
     F.line sc "end";
 
-    F.line sc "module Make_encoder(Encoder:Pbrt_js.Encoder_sig) : sig";
+    F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) : sig";
     F.scope sc (fun sc -> 
       gen ocaml_types sc [
         (

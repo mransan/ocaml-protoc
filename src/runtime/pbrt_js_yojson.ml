@@ -3,7 +3,7 @@ open Yojson
 type json = Basic.json 
 
 module type Encoder_sig = 
-    Pbrt_js.Encoder_sig with type t = (string * json) list ref
+    Pbrt_json.Encoder_sig with type t = (string * json) list ref
 
 module Encoder : Encoder_sig = struct
 
@@ -48,7 +48,7 @@ end
 
 
 module type Decoder_sig = 
-  Pbrt_js.Decoder_sig with type t = (string * json) list ref 
+  Pbrt_json.Decoder_sig with type t = (string * json) list ref 
 
 module Decoder : Decoder_sig = struct 
 
