@@ -179,9 +179,10 @@ let parse_args () =
 
   Arg.parse cmd_line_args anon_fun usage;
   
-  (* Maintain backward compatible behavior *) 
+  (* Maintain backward compatible behavior (ie if none of the new 
+     switch are used then default to generating binary and pp *) 
   begin 
-    if not !json 
+    if not !json && not !binary && not !pp 
     then begin 
       binary := true;
       pp := true; 

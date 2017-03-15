@@ -1,5 +1,3 @@
-blah: example01.native
-
 # OCamlbuild configuration
 #
 OCB_INC   = -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
@@ -131,7 +129,3 @@ doc:
 	$(OCB) src/compilerlib/compilerlib.docdir/index.html
 	
 include Makefile.test
-
-js:
-	$(OCB) -pkgs yojson pbrt_js_yojson.native
-
