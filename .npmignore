@@ -5,6 +5,7 @@ src/tests
 src/ocaml-protoc
 src/compilerlib
 src/examples
+src/runtime/pbrt.mllib
 opam
 Makefile
 Makefile.test
