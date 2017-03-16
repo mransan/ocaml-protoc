@@ -124,7 +124,7 @@ let gen_rft_repeated_field sc rf_label repeated_field =
                    setter json_label var_name
     | Some map_function ->
       F.line sc @@ sp "Encoder.%s_list encoder \"%s\"" setter json_label;
-      F.line sc @@ sp "  (List.map %s %s)" map_function var_name
+      F.line sc @@ sp "  (List.map %s %s);" map_function var_name
     end 
   
   (* User defined *)
