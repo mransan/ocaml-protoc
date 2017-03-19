@@ -32,6 +32,9 @@ module Tt = Pb_typing_type_tree
 module Typing_util = Pb_typing_util
 module Ot = Pb_codegen_ocaml_type 
 module F = Pb_codegen_formatting
+module Codegen_util = Pb_codegen_util 
+
+let sp = Codegen_util.sp 
 
 (* [ocaml-protoc] provides the ability to override all the custom 
  *
@@ -120,7 +123,7 @@ module File_options = struct
 end 
   
 let ocaml_file_name_of_proto_file_name = 
-  Pb_codegen_util.caml_file_name_of_proto_file_name 
+  Codegen_util.caml_file_name_of_proto_file_name 
 
 let imported_filename include_dirs file_name = 
   if Sys.file_exists file_name
@@ -341,7 +344,7 @@ let generate_code
         | None -> () 
         | Some ocamldoc_title -> ( 
           F.empty_line sc;
-          F.line sc @@ Pb_codegen_util.sp 
+          F.line sc @@ Codegen_util.sp 
               "(** {2 %s} *)" ocamldoc_title;  
           F.empty_line sc;
         )
@@ -374,7 +377,18 @@ let generate_code
 
   if generate_json
   then begin 
+    let all_modules = 
+      List.flatten ocaml_types 
+      |> Codegen_util.collect_modules_of_types 
+    in
     F.line sc "module Make_decoder(Decoder:Pbrt_json.Decoder_sig) = struct";
+
+    F.scope sc (fun sc -> 
+      List.iter (fun m -> 
+        F.line sc @@ sp "module %s = %s.Make_decoder(Decoder)" m m;
+      ) all_modules
+    ); 
+    
     F.scope sc (fun sc -> 
       F.empty_line sc;
       F.line sc  "module Helper = Pbrt_json.Make_decoder_helper(Decoder)";
@@ -385,6 +399,11 @@ let generate_code
     F.empty_line sc;
     
     F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) = struct";
+    F.scope sc (fun sc -> 
+      List.iter (fun m -> 
+        F.line sc @@ sp "module %s = %s.Make_encoder(Encoder)" m m;
+      ) all_modules
+    ); 
     F.scope sc (fun sc -> 
       F.empty_line sc;
       gen ocaml_types sc [ (Pb_codegen_encode_json.gen_struct, None);]
@@ -398,7 +417,7 @@ let generate_code
 
   let sc = F.empty_scope () in 
   F.line sc @@ 
-    Pb_codegen_util.sp 
+    Codegen_util.sp 
         "(** %s Generated Types and Encoding *)" 
         (Filename.basename proto_file_name); 
   F.empty_line sc; 

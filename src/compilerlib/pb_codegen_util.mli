@@ -64,3 +64,9 @@ val runtime_function :
     Pb_codegen_ocaml_type.basic_type 
   ) -> 
   string 
+
+val collect_modules_of_types : 
+  Pb_codegen_ocaml_type.type_ list -> 
+  string list
+(** [collect_modules_of_types ocaml_types] return the list of all the modules
+    that the [ocaml_types] depends on *)

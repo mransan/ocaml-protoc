@@ -149,3 +149,43 @@ let runtime_function = function
   | `Encode , Ot.Pk_bytes, Ot.Bt_string -> "Pbrt.Encoder.string" 
   | `Encode , Ot.Pk_bytes, Ot.Bt_bytes -> "Pbrt.Encoder.bytes" 
   | _ -> failwith "Invalid encoding/OCaml type combination"
+
+let collect_modules_of_field_type modules = function
+  | Ot.Ft_user_defined_type {Ot.udt_module = Some m; _} -> 
+    m :: modules 
+  | _ -> modules  
+
+let collect_modules_of_variant modules {Ot.v_constructors; _} = 
+  List.fold_left (fun modules {Ot.vc_field_type; _} -> 
+    match vc_field_type with
+    | Ot.Vct_nullary -> modules
+    | Ot.Vct_non_nullary_constructor field_type -> 
+      collect_modules_of_field_type modules field_type 
+  ) modules v_constructors 
+
+let collect_modules_of_record_field_type modules = function
+  | Ot.Rft_nolabel (field_type, _, _)
+  | Ot.Rft_required (field_type, _, _, _)  
+  | Ot.Rft_optional (field_type, _, _, _) 
+  | Ot.Rft_repeated_field (_, field_type, _, _, _) 
+  | Ot.Rft_associative_field (_, _ , _, (field_type, _)) ->
+    collect_modules_of_field_type modules field_type 
+
+  | Ot.Rft_variant_field variant -> 
+    collect_modules_of_variant modules variant 
+
+let collect_modules_of_record modules {Ot.r_fields; _} = 
+  List.fold_left (fun modules {Ot.rf_field_type; _} -> 
+    collect_modules_of_record_field_type modules rf_field_type 
+  ) modules r_fields 
+
+let collect_modules_of_type_spec modules = function
+  | Ot.Record r -> collect_modules_of_record modules r 
+  | Ot.Variant v -> collect_modules_of_variant modules v 
+  | Ot.Const_variant _ -> modules 
+
+let collect_modules_of_types ocaml_types = 
+  List.fold_left (fun modules {Ot.spec; _} -> 
+    collect_modules_of_type_spec modules spec 
+  ) [] ocaml_types 
+  |> List.sort_uniq Pervasives.compare   
