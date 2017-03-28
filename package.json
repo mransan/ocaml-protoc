@@ -21,6 +21,8 @@
     "bs-platform": "^1.5.0"
   },
   "scripts" : {
-    "build" : "bsb -make-world"
+    "build" : "npm run gen && bsb -make-world",
+    "gen" : "./ocaml-protoc -json -ml_out src/tests/bs src/tests/bs/unittest.proto",
+    "test": "npm run build && node lib/js/src/tests/bs/" 
   }
 }

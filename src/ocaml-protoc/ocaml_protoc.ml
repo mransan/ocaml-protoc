@@ -377,7 +377,7 @@ let generate_code
 
   if generate_json
   then begin 
-    let all_modules = 
+(*    let all_modules = 
       List.flatten ocaml_types 
       |> Codegen_util.collect_modules_of_types 
     in
@@ -387,15 +387,15 @@ let generate_code
       List.iter (fun m -> 
         F.line sc @@ sp "module %s = %s.Make_decoder(Decoder)" m m;
       ) all_modules
-    ); 
+    ); *)
     
-    F.scope sc (fun sc -> 
+(*    F.scope sc (fun sc -> 
       F.empty_line sc;
       F.line sc  "module Helper = Pbrt_json.Make_decoder_helper(Decoder)";
-      F.empty_line sc;
-      gen ocaml_types sc [ (Pb_codegen_decode_json.gen_struct, None);] 
-    ); 
-    F.line sc "end";
+      F.empty_line sc;*)
+    gen ocaml_types sc [ (Pb_codegen_decode_bs.gen_struct, None);];
+(*    ); *)
+(*    F.line sc "end";
     F.empty_line sc;
     
     F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) = struct";
@@ -406,9 +406,11 @@ let generate_code
     ); 
     F.scope sc (fun sc -> 
       F.empty_line sc;
-      gen ocaml_types sc [ (Pb_codegen_encode_json.gen_struct, None);]
+      *)
+    gen ocaml_types sc [ (Pb_codegen_encode_bs.gen_struct, None);];
+      (* 
     ); 
-    F.line sc "end";
+    F.line sc "end";*)
   end;
 
   output_string struct_oc (F.print sc);
@@ -429,25 +431,25 @@ let generate_code
   
   if generate_json
   then begin 
-    F.line sc "module Make_decoder(Decoder:Pbrt_json.Decoder_sig) : sig";
     F.scope sc (fun sc -> 
       gen ocaml_types sc [
         (
-          Pb_codegen_decode_json.gen_sig , 
-          Some (Pb_codegen_decode_json.ocamldoc_title)
+          Pb_codegen_decode_bs.gen_sig , 
+          Some (Pb_codegen_decode_bs.ocamldoc_title)
         );]
     ); 
-    F.line sc "end";
 
-    F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) : sig";
+(*    F.line sc "module Make_encoder(Encoder:Pbrt_json.Encoder_sig) : sig";
+ *    *)
     F.scope sc (fun sc -> 
       gen ocaml_types sc [
         (
-          Pb_codegen_encode_json.gen_sig , 
-          Some (Pb_codegen_encode_json.ocamldoc_title)
+          Pb_codegen_encode_bs.gen_sig , 
+          Some (Pb_codegen_encode_bs.ocamldoc_title)
         );]
     ); 
-    F.line sc "end";
+    (*
+    F.line sc "end";*)
   end;
   output_string sig_oc (F.print sc);
   ()
