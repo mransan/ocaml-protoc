@@ -301,13 +301,15 @@ let open_files ~ml_out ~proto_file_name ~file_suffix =
     in 
     Filename.concat ml_out out_basename
   in 
+  
+  Printf.printf "Generating %s.mli\n%!" out_file_name; 
+  Printf.printf "Generating %s.ml\n%!"  out_file_name; 
 
   (open_out @@ out_file_name ^ ".mli" , open_out @@ out_file_name ^ ".ml")
 
 let generate_type_and_default 
        ocaml_types proto_file_options ml_out proto_file_name = 
   let file_suffix = "types" in 
-  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
 
   let print_ppx sc = 
     match Pb_option.get proto_file_options "ocaml_file_ppx" with
@@ -318,36 +320,31 @@ let generate_type_and_default
   in 
 
   (* .ml file *) 
-
-  let sc = F.empty_scope () in 
-  F.line sc "[@@@ocaml.warning \"-27-30-39\"]";
-  F.empty_line sc; 
-  print_ppx sc; 
-  F.empty_line sc;
-  generate_for_all_types ocaml_types sc 
-    Pb_codegen_types.gen_struct None;
-  generate_for_all_types ocaml_types sc 
-    Pb_codegen_default.gen_struct None;
-
-  output_string struct_oc (F.print sc);
+  let ml_sc = F.empty_scope () in 
+  F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
+  F.empty_line ml_sc; 
+  print_ppx ml_sc; 
+  F.empty_line ml_sc;
+  generate_for_all_types ocaml_types ml_sc Pb_codegen_types.gen_struct None;
+  generate_for_all_types ocaml_types ml_sc Pb_codegen_default.gen_struct None;
 
   (* .mli file *)
-  
-  let sc = F.empty_scope () in 
-  F.linep sc 
-        "(** %s Types *)" 
-        (Filename.basename proto_file_name); 
-  F.empty_line sc; 
-  print_ppx sc; 
-  F.empty_line sc;
-  generate_for_all_types ocaml_types sc 
+  let mli_sc = F.empty_scope () in 
+  F.linep mli_sc "(** %s Types *)" 
+    (Filename.basename proto_file_name); 
+  F.empty_line mli_sc; 
+  print_ppx mli_sc; 
+  F.empty_line mli_sc;
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_types.gen_sig 
     (Some Pb_codegen_types.ocamldoc_title);
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types mli_sc
     Pb_codegen_default.gen_sig 
     (Some Pb_codegen_default.ocamldoc_title);
 
-  output_string sig_oc (F.print sc)
+  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
+  output_string struct_oc (F.print ml_sc);
+  output_string sig_oc (F.print mli_sc)
 
 let generate_mutable_records ocaml_types sc = 
   let ocaml_types = List.flatten ocaml_types in 
@@ -362,124 +359,124 @@ let generate_mutable_records ocaml_types sc =
 
 let generate_yojson ocaml_types ml_out proto_file_name = 
   let file_suffix = "yojson" in 
-  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
 
   (* .ml file *) 
-  let sc = F.empty_scope () in 
-  F.line sc "[@@@ocaml.warning \"-27-30-39\"]";
-  F.empty_line sc;
-  generate_mutable_records ocaml_types sc;
-  F.empty_line sc;
+  let ml_sc = F.empty_scope () in 
+  F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
+  F.empty_line ml_sc;
+  generate_mutable_records ocaml_types ml_sc;
+  F.empty_line ml_sc;
 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_decode_yojson.gen_struct None; 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_encode_yojson.gen_struct None; 
-  output_string struct_oc (F.print sc);
   
   (* .mli file *)
-  let sc = F.empty_scope () in 
-  F.linep sc 
+  let mli_sc = F.empty_scope () in 
+  F.linep mli_sc 
         "(** %s YoJSON Encoding *)" 
         (Filename.basename proto_file_name); 
-  F.empty_line sc; 
-  generate_for_all_types ocaml_types sc 
+  F.empty_line mli_sc; 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_encode_yojson.gen_sig 
     (Some Pb_codegen_encode_yojson.ocamldoc_title);
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_decode_yojson.gen_sig 
     (Some Pb_codegen_decode_yojson.ocamldoc_title);
 
-  output_string sig_oc (F.print sc)
+  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
+  output_string struct_oc (F.print ml_sc);
+  output_string sig_oc (F.print mli_sc)
 
 let generate_bs ocaml_types ml_out proto_file_name = 
   let file_suffix = "bs" in 
-  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
 
   (* .ml file *) 
-  let sc = F.empty_scope () in 
-  F.line sc "[@@@ocaml.warning \"-27-30-39\"]";
-  F.empty_line sc;
-  generate_mutable_records ocaml_types sc;
-  F.empty_line sc;
+  let ml_sc = F.empty_scope () in 
+  F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
+  F.empty_line ml_sc;
+  generate_mutable_records ocaml_types ml_sc;
+  F.empty_line ml_sc;
 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_decode_bs.gen_struct None; 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_encode_bs.gen_struct None; 
-  output_string struct_oc (F.print sc);
   
   (* .mli file *)
-  let sc = F.empty_scope () in 
-  F.linep sc 
+  let mli_sc = F.empty_scope () in 
+  F.linep mli_sc 
         "(** %s BuckleScript Encoding *)" 
         (Filename.basename proto_file_name); 
-  F.empty_line sc; 
-  generate_for_all_types ocaml_types sc 
+  F.empty_line mli_sc; 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_encode_bs.gen_sig 
     (Some Pb_codegen_encode_bs.ocamldoc_title);
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_decode_bs.gen_sig 
     (Some Pb_codegen_decode_bs.ocamldoc_title);
-
-  output_string sig_oc (F.print sc)
+  
+  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
+  output_string struct_oc (F.print ml_sc);
+  output_string sig_oc (F.print mli_sc)
 
 let generate_binary ocaml_types ml_out proto_file_name = 
   let file_suffix = "pb" in 
-  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
 
   (* .ml file *) 
-  let sc = F.empty_scope () in 
-  F.line sc "[@@@ocaml.warning \"-27-30-39\"]";
-  F.empty_line sc;
-  generate_mutable_records ocaml_types sc;
-  F.empty_line sc;
+  let ml_sc = F.empty_scope () in 
+  F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
+  F.empty_line ml_sc;
+  generate_mutable_records ocaml_types ml_sc;
+  F.empty_line ml_sc;
 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_decode_binary.gen_struct None; 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_encode_binary.gen_struct None; 
-  output_string struct_oc (F.print sc);
   
   (* .mli file *)
-  let sc = F.empty_scope () in 
-  F.linep sc 
+  let mli_sc = F.empty_scope () in 
+  F.linep mli_sc 
         "(** %s Binary Encoding *)" 
         (Filename.basename proto_file_name); 
-  F.empty_line sc; 
-  generate_for_all_types ocaml_types sc 
+  F.empty_line mli_sc; 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_encode_binary.gen_sig 
     (Some Pb_codegen_encode_binary.ocamldoc_title);
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_decode_binary.gen_sig 
     (Some Pb_codegen_decode_binary.ocamldoc_title);
 
-  output_string sig_oc (F.print sc)
+  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
+  output_string struct_oc (F.print ml_sc);
+  output_string sig_oc (F.print mli_sc)
 
 let generate_pp ocaml_types ml_out proto_file_name = 
   let file_suffix = "pp" in 
-  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
 
   (* .ml file *) 
-  let sc = F.empty_scope () in 
-  F.line sc "[@@@ocaml.warning \"-27-30-39\"]";
-  F.empty_line sc;
+  let ml_sc = F.empty_scope () in 
+  F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
+  F.empty_line ml_sc;
 
-  generate_for_all_types ocaml_types sc 
+  generate_for_all_types ocaml_types ml_sc 
     Pb_codegen_pp.gen_struct None; 
-  output_string struct_oc (F.print sc);
   
   (* .mli file *)
-  let sc = F.empty_scope () in 
-  F.linep sc 
+  let mli_sc = F.empty_scope () in 
+  F.linep mli_sc 
     "(** %s Pretty Printing *)" 
     (Filename.basename proto_file_name); 
-  F.empty_line sc; 
-  generate_for_all_types ocaml_types sc 
+  F.empty_line mli_sc; 
+  generate_for_all_types ocaml_types mli_sc 
     Pb_codegen_pp.gen_sig 
     (Some Pb_codegen_pp.ocamldoc_title);
 
-  output_string sig_oc (F.print sc)
+  let sig_oc, struct_oc = open_files ~ml_out ~proto_file_name ~file_suffix in 
+  output_string struct_oc (F.print ml_sc);
+  output_string sig_oc (F.print mli_sc)
 
 let generate_code 
       ocaml_types 
