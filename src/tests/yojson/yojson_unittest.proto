@@ -1,0 +1,60 @@
+syntax = "proto3"; 
+
+message AllBasicTypes {
+   double    field01 =  1;
+   float     field02 =  2;
+   int32     field03 =  3;
+   int64     field04 =  4;
+   uint32    field05 =  5;
+   uint64    field06 =  6;
+   sint32    field07 =  7;
+   sint64    field08 =  8;
+   fixed32   field09 =  9;
+   fixed64   field10 = 10;
+   bool      field13 = 13;
+   string    field14 = 14;
+   repeated double    repeated01 = 21;
+   repeated float     repeated02 = 22;
+   repeated int32     repeated03 = 23;
+   repeated int64     repeated04 = 24;
+   repeated uint32    repeated05 = 25;
+   repeated uint64    repeated06 = 26;
+   repeated sint32    repeated07 = 27;
+   repeated sint64    repeated08 = 28;
+   repeated fixed32   repeated09 = 29;
+   repeated fixed64   repeated10 = 30;
+   repeated bool      repeated13 = 33;
+   repeated string    repeated14 = 34;
+}
+
+message SmallMessage {
+  string sm_string = 1;
+}
+
+enum Enum {
+  VALUE0 = 0; 
+  Value1 = 1; 
+  Value_Two = 2;
+}
+
+message SingleOneOf {
+  oneof t {
+    string string_value = 1; 
+    int32  int_value = 2; 
+    Enum   enum_value = 3;
+    SmallMessage small_message = 4; 
+    SingleOneOf recursive_value = 5; 
+  }
+}
+
+message Test {
+  AllBasicTypes all_basic_types = 1; 
+  Enum test_enum0 = 2; 
+  Enum test_enum1 = 3; 
+  Enum test_enum2 = 4; 
+  SingleOneOf single_one_of_string = 5; 
+  SingleOneOf single_one_of_int  = 6; 
+  SingleOneOf single_one_of_enum = 7; 
+  SingleOneOf single_one_of_small_message = 8; 
+  SingleOneOf single_one_of_recursive = 9; 
+}

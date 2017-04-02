@@ -1,5 +1,5 @@
 let () = 
-  let open Bs_unittest_types in 
+  let open Yojson_unittest_types in 
   let all_basic_types = {
     field01 = 1.20001;
     field02 = 1.2000000001;
@@ -68,16 +68,16 @@ let () =
   } in 
 
   let json_str = 
-    let dict = Js_dict.empty () in 
-    Bs_unittest_bs.encode_test test dict; 
-    Js.log dict;
-    Js_json.stringify (Js_json.object_ dict)
+    Yojson_unittest_yojson.encode_test test
+    |> Yojson.Basic.to_string 
   in
 
+  print_endline json_str;
+
   let test'= 
-     match Js_json.decodeObject (Js_json.parse json_str) with
-     | Some dict -> Bs_unittest_bs.decode_test dict 
-     | None -> assert(false)
+    json_str 
+    |> Yojson.Basic.from_string 
+    |> Yojson_unittest_yojson.decode_test  
   in 
 
   assert(test = test');

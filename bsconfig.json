@@ -14,10 +14,10 @@
       "dir": "src/tests/bs",
       "internal-depends": "../../runtime",
       "files": [
-        "unittest_types.mli",
-        "unittest_types.ml",
-        "unittest_bs.mli",
-        "unittest_bs.ml",
+        "bs_unittest_types.mli",
+        "bs_unittest_types.ml",
+        "bs_unittest_bs.mli",
+        "bs_unittest_bs.ml",
         "index.ml"
       ]
     }

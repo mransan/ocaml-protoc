@@ -60,9 +60,9 @@ let gen_field var_name json_label field_type pk =
     let setter, map_function = setter_of_basic_type json_label basic_type pk in
     begin match map_function with
     | None -> 
-      Some (sp "(\"%s\", Pbrt_json.%s %s)" json_label setter var_name)
+      Some (sp "(\"%s\", Pbrt_yojson.%s %s)" json_label setter var_name)
     | Some map_function ->
-      Some (sp "(\"%s\", Pbrt_json.%s (%s %s))"
+      Some (sp "(\"%s\", Pbrt_yojson.%s (%s %s))"
                json_label setter map_function var_name)
     end
   
@@ -119,9 +119,9 @@ let gen_rft_repeated sc rf_label repeated_field =
       in 
       begin match map_function with
       | None ->
-        F.linep sc "let l = %s |> List.map Pbrt_json.%s in" var_name setter
+        F.linep sc "let l = %s |> List.map Pbrt_yojson.%s in" var_name setter
       | Some map_function ->
-        F.linep sc "let l = %s |> List.map %s |> List.map Pbrt_json.%s in " 
+        F.linep sc "let l = %s |> List.map %s |> List.map Pbrt_yojson.%s in " 
           var_name map_function setter
       end 
     
@@ -202,7 +202,7 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields } sc =
     F.line sc "`Assoc assoc"
   )
 
-let gen_variant ?and_ {Ot.v_name; v_constructors} sc = 
+let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
 
   let process_v_constructor sc v_constructor = 
     let {
@@ -212,36 +212,36 @@ let gen_variant ?and_ {Ot.v_name; v_constructors} sc =
 
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in
 
-    F.scope sc (fun sc -> 
-      match vc_field_type with 
-      | Ot.Vct_nullary -> 
-        F.linep sc "| %s -> `Assoc [(\"%s\", `Null)]" vc_constructor json_label 
+    match vc_field_type with 
+    | Ot.Vct_nullary -> 
+      F.linep sc "| %s -> `Assoc [(\"%s\", `Null)]" vc_constructor json_label 
 
-      | Ot.Vct_non_nullary_constructor field_type -> 
-        match gen_field "v" json_label field_type vc_payload_kind with
-        | None -> 
-          F.linep sc "| %s -> `Assoc [(\"%s\", `Null)]" vc_constructor json_label 
-        | Some exp -> 
-          F.linep sc "| %s -> `Assoc [%s]" vc_constructor exp
-    )
+    | Ot.Vct_non_nullary_constructor field_type -> 
+      match gen_field "v" json_label field_type vc_payload_kind with
+      | None -> 
+        F.linep sc "| %s_types.%s -> `Assoc [(\"%s\", `Null)]" 
+          module_ vc_constructor json_label 
+      | Some exp -> 
+        F.linep sc "| %s_types.%s v -> `Assoc [%s]" module_ vc_constructor exp
   in 
 
-  F.linep sc "%s encode_%s (v:%s) = " 
-    (Pb_codegen_util.let_decl_of_and and_) v_name v_name;
+  F.linep sc "%s encode_%s (v:%s_types.%s) = " 
+    (Pb_codegen_util.let_decl_of_and and_) v_name module_ v_name;
   F.scope sc (fun sc -> 
     F.line sc "begin match v with";
     List.iter (process_v_constructor sc) v_constructors;
     F.line sc "end";
   ) 
 
-let gen_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors} sc = 
-  F.linep sc "%s encode_%s (v:%s) = " 
-      (Pb_codegen_util.let_decl_of_and and_) cv_name cv_name; 
+let gen_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
+  F.linep sc "%s encode_%s (v:%s_types.%s) = " 
+      (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun (constructor, _) -> 
       let json_value = String.uppercase constructor in 
-      F.linep sc "| %s -> `String \"%s\"" constructor json_value
+      F.linep sc "| %s_types.%s -> `String \"%s\"" 
+        module_ constructor json_value
     ) cv_constructors
   ) 
 
@@ -251,8 +251,8 @@ let gen_struct ?and_ t sc  =
   let has_encoded = 
     match spec with 
     | Ot.Record r -> gen_record  ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_variant ?and_ v sc; true 
-    | Ot.Const_variant v -> gen_const_variant ?and_ v sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true 
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
   in 
 
   has_encoded
