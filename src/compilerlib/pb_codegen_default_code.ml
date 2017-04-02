@@ -4,6 +4,8 @@ module E = Pb_exception
 
 open Pb_codegen_util
 
+let file_suffix = Pb_codegen_type_code.file_suffix 
+
 let default_value_of_basic_type ?field_name basic_type field_default = 
   match basic_type, field_default with 
   | Ot.Bt_string, None -> "\"\""
@@ -27,23 +29,31 @@ let default_value_of_basic_type ?field_name basic_type field_default =
 (* Generate the string which is the default value for a given field
    type and default information.
  *)
-let default_value_of_field_type ?field_name field_type field_default = 
+let default_value_of_field_type ?module_ ?field_name field_type field_default = 
   match field_type with 
-  | Ot.Ft_user_defined_type t -> 
-    function_name_of_user_defined "default" t  ^ " ()"
+  | Ot.Ft_user_defined_type udt -> 
+    let function_prefix  = "default" in 
+    let module_suffix = file_suffix in 
+    let f_name = 
+       function_name_of_user_defined ~function_prefix ~module_suffix udt ^ " ()"
+    in 
+    begin match module_, udt.Ot.udt_module with
+    | Some module_, None -> module_ ^ "_" ^ module_suffix ^ "." ^ f_name  
+    | _ -> f_name
+    end
   | Ot.Ft_unit -> "()"
   | Ot.Ft_basic_type bt -> 
     default_value_of_basic_type ?field_name bt field_default
 
 (* This function returns [(field_name, field_default_value, field_type)] for 
    a record field.  *)
-let record_field_default_info record_field : (string * string * string) =  
+let record_field_default_info ?module_ record_field : (string * string * string) =  
   let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in 
   let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in  
   let field_name  = rf_label in 
 
-  let dfvft field_type defalut_value = 
-    default_value_of_field_type ~field_name field_type defalut_value 
+  let dfvft field_type field_default = 
+    default_value_of_field_type ?module_ ~field_name field_type field_default 
   in
 
   let default_value = match rf_field_type with
@@ -73,20 +83,31 @@ let record_field_default_info record_field : (string * string * string) =
        begin match v_constructors with
        | [] -> assert(false)
        | {Ot.vc_constructor; vc_field_type; _ }::_ -> 
-         begin match vc_field_type with
-         | Ot.Vct_nullary -> vc_constructor
-         | Ot.Vct_non_nullary_constructor field_type -> 
-           sp "%s (%s)" vc_constructor (dfvft field_type None) 
+         let default_value = 
+           match vc_field_type with
+           | Ot.Vct_nullary -> vc_constructor
+           | Ot.Vct_non_nullary_constructor field_type -> 
+             sp "%s (%s)" vc_constructor (dfvft field_type None) 
+         in
+         begin match module_ with
+         | None -> default_value
+         | Some module_ -> module_ ^ "_types." ^ default_value 
          end
        end 
   in
   (field_name, default_value, type_string)
 
-let gen_default_record  ?mutable_ ?and_ {Ot.r_name; r_fields} sc = 
+let gen_default_record  ?mutable_ ?and_ module_ {Ot.r_name; r_fields} sc = 
 
-  let fields_default_info = List.map (fun r_field ->
-    record_field_default_info r_field 
-  ) r_fields in
+  let fields_default_info = 
+    let module_ = match mutable_ with
+      | None -> None 
+      | Some () -> Some module_ 
+    in 
+    List.map (fun r_field ->
+      record_field_default_info ?module_ r_field 
+    ) r_fields 
+  in
 
   begin match mutable_ with
   | Some () -> ( 
@@ -146,11 +167,9 @@ let gen_default_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors; } sc =
 let gen_struct ?and_ t sc = 
   let (), has_encoded = 
     match t with 
-    | {Ot.spec = Ot.Record r ; _ } ->
+    | {Ot.spec = Ot.Record r ; module_;  _ } ->
       (
-        gen_default_record ?and_ r sc; 
-        F.empty_line sc;
-        gen_default_record ~mutable_:() ~and_:() r sc
+        gen_default_record ?and_ module_ r sc; 
       ), true 
     | {Ot.spec = Ot.Variant v; _ } -> gen_default_variant ?and_ v sc, true 
     | {Ot.spec = Ot.Const_variant v; _ } -> gen_default_const_variant v sc, true
@@ -190,3 +209,4 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Default values" 
+

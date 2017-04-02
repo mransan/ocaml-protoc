@@ -19,62 +19,19 @@ module E : sig
       [Failure (Malformed_variant variant_name)] *)
 end 
 
-(** Module signature which the generated code relies upon for 
-    decoding functions *)
-module type Decoder_sig = sig 
-  
-  type t 
-  (** Decoder, represents a JSON object *)
-
-  type value = 
-    | String of string 
-    | Float of float 
-    | Int of int 
-    | Object of t 
-    | Array_as_array of value array 
-    | Bool of bool 
-    | Null
-
-  val key : t -> (string * value) option
-  (** [key decoder] returns the next key/value pair in the current JSON 
-      object. [None] indicates no more keys are available. *)
-
-end 
-
-(** Module signature which the gnerated code relies upon for 
-    encoding functions *)
-module type Encoder_sig = sig
-
-  type t 
-  (** Encoder, represents a JSON object *)
-
-  val empty : unit -> t  
-
-  val set_null : t -> string -> unit
-  val set_string : t -> string -> string -> unit 
-  val set_float : t -> string -> float -> unit 
-  val set_int : t -> string -> int -> unit  
-  val set_bool : t -> string -> bool -> unit 
-  val set_object : t -> string -> t -> unit 
-  
-  val set_string_list : t -> string -> string list -> unit 
-  val set_float_list : t -> string -> float list -> unit 
-  val set_int_list : t -> string -> int list -> unit  
-  val set_bool_list : t -> string -> bool list -> unit 
-  val set_object_list : t -> string -> t list -> unit
-
-end
-
 (** Helper module for the generated code for common 
     functionality *)
-module Make_decoder_helper(D:Decoder_sig) : sig 
   
-  val string : D.value -> string -> string -> string 
-  val float : D.value -> string -> string -> float 
-  val int32 : D.value -> string -> string -> int32 
-  val int64 : D.value -> string -> string -> int64 
-  val int : D.value -> string -> string -> int 
-  val bool : D.value -> string -> string -> bool
-  val bytes : D.value -> string -> string -> bytes 
+val string : Yojson.Basic.json -> string -> string -> string 
+val float : Yojson.Basic.json -> string -> string -> float 
+val int32 : Yojson.Basic.json -> string -> string -> int32 
+val int64 : Yojson.Basic.json -> string -> string -> int64 
+val int : Yojson.Basic.json -> string -> string -> int 
+val bool : Yojson.Basic.json -> string -> string -> bool
+val bytes : Yojson.Basic.json -> string -> string -> bytes 
 
-end 
+val make_bool : bool -> Yojson.Basic.json
+val make_int : int -> Yojson.Basic.json
+val make_float : float -> Yojson.Basic.json 
+val make_string : string -> Yojson.Basic.json 
+val make_list : Yojson.Basic.json list -> Yojson.Basic.json 

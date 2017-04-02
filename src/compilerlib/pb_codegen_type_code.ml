@@ -6,9 +6,9 @@ open Pb_codegen_util
 
 let type_decl_of_and = function | Some () -> "and" | None -> "type" 
 
-let gen_type_record ?mutable_ ?and_ {Ot.r_name; r_fields } sc = 
+let gen_type_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc = 
 
-  let mutable_ = match mutable_ with
+  let is_mutable = match mutable_ with
     | Some () -> true
     | None    -> false 
   in 
@@ -31,11 +31,11 @@ let gen_type_record ?mutable_ ?and_ {Ot.r_name; r_fields } sc =
     else 
       if is_imperative_type field_type 
       then "" 
-      else if mutable_ then "mutable " else ""
+      else if is_mutable then "mutable " else ""
   in
 
   let r_name = 
-    if mutable_ 
+    if is_mutable 
     then Pb_codegen_util.mutable_record_name r_name 
     else r_name 
   in 
@@ -44,7 +44,13 @@ let gen_type_record ?mutable_ ?and_ {Ot.r_name; r_fields } sc =
   F.scope sc (fun sc -> 
     List.iter (fun {Ot.rf_label; rf_field_type; rf_mutable;} ->  
       let prefix = field_prefix rf_field_type rf_mutable in 
-      let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in 
+      let type_string = 
+        let module_ = match mutable_ with
+          | None -> None
+          | Some () -> Some module_ 
+        in 
+        Pb_codegen_util.string_of_record_field_type ?module_ rf_field_type 
+      in 
       F.line sc @@ sp "%s%s : %s;" prefix rf_label type_string 
     ) r_fields;
   ); 
@@ -82,11 +88,9 @@ let print_ppx_extension {Ot.type_level_ppx_extension; _ } sc =
 let gen_struct ?and_ t scope = 
   begin
     match t with 
-    | {Ot.spec = Ot.Record r; _ } -> (
-      gen_type_record  ?and_ r scope; 
+    | {Ot.spec = Ot.Record r; module_; _ } -> (
+      gen_type_record ?and_ module_ r scope; 
       print_ppx_extension t scope; 
-      F.empty_line scope;
-      gen_type_record ~mutable_:() ~and_:() r scope 
     ) 
 
     | {Ot.spec = Ot.Variant v; _ } -> 
@@ -102,8 +106,8 @@ let gen_struct ?and_ t scope =
 let gen_sig ?and_ t scope = 
   begin
     match t with 
-    | {Ot.spec = Ot.Record r; _ } -> (
-      gen_type_record  ?and_ r scope 
+    | {Ot.spec = Ot.Record r; module_; _} -> (
+      gen_type_record ?and_ module_ r scope 
     ) 
     | {Ot.spec = Ot.Variant v; _ } -> gen_type_variant  ?and_ v scope  
     | {Ot.spec = Ot.Const_variant v; _ } -> gen_type_const_variant ?and_ v scope 
@@ -112,3 +116,5 @@ let gen_sig ?and_ t scope =
   true
 
 let ocamldoc_title = "Types"
+
+let file_suffix = "types"

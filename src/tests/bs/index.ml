@@ -1,5 +1,5 @@
 let () = 
-  let open Unittest_pb in 
+  let open Unittest_types in 
   let all_basic_types = {
     field01 = 1.20001;
     field02 = 1.2000000001;
@@ -69,14 +69,14 @@ let () =
 
   let json_str = 
     let dict = Js_dict.empty () in 
-    Unittest_pb.encode_test test dict; 
+    Unittest_bs.encode_test test dict; 
     Js.log dict;
     Js_json.stringify (Js_json.object_ dict)
   in
 
   let test'= 
      match Js_json.decodeObject (Js_json.parse json_str) with
-     | Some dict -> Unittest_pb.decode_test dict 
+     | Some dict -> Unittest_bs.decode_test dict 
      | None -> assert(false)
   in 
 

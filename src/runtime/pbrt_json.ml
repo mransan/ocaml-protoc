@@ -28,89 +28,55 @@ module E = struct
   
 end 
 
-module type Decoder_sig = sig 
+let int32 v record_name field_name = 
+  match v with
+  | `String v -> Int32.of_string v 
+  | `Float f -> Int32.of_float f 
+  | `Int i -> Int32.of_int i 
+  | `Null -> 0l 
+  | _ -> E.unexpected_json_type record_name field_name  
 
-  type t 
+let float v record_name field_name = 
+  match v with
+  | `String v -> float_of_string v 
+  | `Float f -> f 
+  | `Int i -> float_of_int i 
+  | `Null -> 0.0 
+  | _ -> E.unexpected_json_type record_name field_name  
 
-  type value = 
-    | String of string 
-    | Float of float 
-    | Int of int 
-    | Object of t 
-    | Array_as_array of value array 
-    | Bool of bool 
-    | Null
+let int64 v record_name field_name = 
+  match v with
+  | `String v -> Int64.of_string v 
+  | `Float f -> Int64.of_float f 
+  | `Int i -> Int64.of_int i 
+  | `Null -> 0L 
+  | _ -> E.unexpected_json_type record_name field_name  
 
-  val key : t -> (string * value) option
+let int v record_name field_name = 
+  match v with
+  | `String v -> int_of_string v 
+  | `Float f -> int_of_float f 
+  | `Int i -> i 
+  | `Null -> 0 
+  | _ -> E.unexpected_json_type record_name field_name  
 
-end 
+let string v record_name field_name = 
+  match v with
+  | `String v -> v 
+  | `Null -> ""
+  | _ -> E.unexpected_json_type record_name field_name
 
-module type Encoder_sig = sig
+let bool v record_name field_name = 
+  match v with
+  | `Bool b -> b 
+  | `Null -> false
+  | _ -> E.unexpected_json_type record_name field_name 
 
-  type t 
+let bytes _ record_name field_name = 
+  E.unexpected_json_type record_name field_name
 
-  val empty : unit -> t  
-
-  val set_null : t -> string -> unit
-  val set_string : t -> string -> string -> unit 
-  val set_float : t -> string -> float -> unit 
-  val set_int : t -> string -> int -> unit  
-  val set_bool : t -> string -> bool -> unit 
-  val set_object : t -> string -> t -> unit 
-  
-  val set_string_list : t -> string -> string list -> unit 
-  val set_float_list : t -> string -> float list -> unit 
-  val set_int_list : t -> string -> int list -> unit  
-  val set_bool_list : t -> string -> bool list -> unit 
-  val set_object_list : t -> string -> t list -> unit
-end
-
-module Make_decoder_helper(D:Decoder_sig) = struct 
-
-  let int32 v record_name field_name = 
-    match v with
-    | D.String v -> Int32.of_string v 
-    | D.Float f -> Int32.of_float f 
-    | D.Int i -> Int32.of_int i 
-    | D.Null -> 0l 
-    | _ -> E.unexpected_json_type record_name field_name  
-  
-  let float v record_name field_name = 
-    match v with
-    | D.String v -> float_of_string v 
-    | D.Float f -> f 
-    | D.Int i -> float_of_int i 
-    | D.Null -> 0.0 
-    | _ -> E.unexpected_json_type record_name field_name  
-
-  let int64 v record_name field_name = 
-    match v with
-    | D.String v -> Int64.of_string v 
-    | D.Float f -> Int64.of_float f 
-    | D.Int i -> Int64.of_int i 
-    | D.Null -> 0L 
-    | _ -> E.unexpected_json_type record_name field_name  
-
-  let int v record_name field_name = 
-    match v with
-    | D.String v -> int_of_string v 
-    | D.Float f -> int_of_float f 
-    | D.Int i -> i 
-    | D.Null -> 0 
-    | _ -> E.unexpected_json_type record_name field_name  
-
-  let string v record_name field_name = 
-    match v with
-    | D.String v -> v 
-    | D.Null -> ""
-    | _ -> E.unexpected_json_type record_name field_name
-
-  let bool v record_name field_name = 
-    match v with
-    | D.Bool b -> b 
-    | D.Null -> false
-    | _ -> E.unexpected_json_type record_name field_name 
-
-  let bytes _ record_name field_name = 
-    E.unexpected_json_type record_name field_name
-end 
+let make_bool v = `Bool  v
+let make_int v = `Int  v
+let make_float v = `Float  v
+let make_string v = `String  v
+let make_list v = `List v

@@ -127,7 +127,7 @@ and type_spec =
   | Const_variant of const_variant 
 
 type type_ = {
-  module_ : string; (* For now limit to a single module *)  
+  module_ : string; 
   spec : type_spec; 
   type_level_ppx_extension : string option; 
 }

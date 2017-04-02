@@ -22,7 +22,7 @@
   },
   "scripts" : {
     "build" : "npm run gen && bsb -make-world",
-    "gen" : "./ocaml-protoc -json -ml_out src/tests/bs src/tests/bs/unittest.proto",
+    "gen" : "./ocaml-protoc -bs -ml_out src/tests/bs src/tests/bs/unittest.proto",
     "test": "npm run build && node lib/js/src/tests/bs/" 
   }
 }

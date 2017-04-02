@@ -20,7 +20,12 @@ let value_expression ~r_name ~rf_label field_type =
   | Ot.Ft_unit -> "()"
   | Ot.Ft_user_defined_type udt -> 
     let {Ot.udt_type; _} = udt in 
-    let f_name = Pb_codegen_util.function_name_of_user_defined "decode" udt in 
+    let f_name = 
+      let function_prefix = "decode" in 
+      let module_suffix = "bs" in 
+      Pb_codegen_util.function_name_of_user_defined 
+        ~function_prefix ~module_suffix udt 
+    in 
     begin match udt_type with
     | `Message -> 
       let o = 
@@ -104,7 +109,7 @@ let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} =
   ) v_constructors
 
 (* Generate decode function for a record *)
-let gen_decode_record ?and_  {Ot.r_name; r_fields} sc = 
+let gen_decode_record ?and_  module_ {Ot.r_name; r_fields} sc = 
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in 
 
   F.line sc @@ 
@@ -155,14 +160,14 @@ let gen_decode_record ?and_  {Ot.r_name; r_fields} sc =
     F.line sc "({"; 
     F.scope sc (fun sc -> 
       List.iter (fun {Ot.rf_label;_} -> 
-        F.line sc @@ sp "%s = v.%s;" rf_label rf_label; 
+        F.line sc @@ sp "%s_types.%s = v.%s;" module_ rf_label rf_label; 
       ) r_fields;
     ); 
-    F.line sc @@ sp "} : %s)" r_name;
+    F.line sc @@ sp "} : %s_types.%s)" module_ r_name;
   )
 
 (* Generate decode function for a variant type *)
-let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc = 
+let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
 
   (* helper function for each constructor case *)
   let process_v_constructor sc {Ot.vc_constructor; vc_field_type; _} = 
@@ -171,8 +176,8 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc =
 
     match vc_field_type with
     | Ot.Vct_nullary -> 
-      F.line sc @@ sp "| \"%s\" -> %s"
-                   json_label vc_constructor
+      F.line sc @@ sp "| \"%s\" -> %s_types.%s"
+                   json_label module_ vc_constructor
 
     | Ot.Vct_non_nullary_constructor field_type ->
       let value_expression = 
@@ -183,7 +188,8 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc =
       F.line sc @@ sp "| \"%s\" -> " json_label ;
       F.line sc @@ sp "  let json = Js_dict.unsafeGet json \"%s\" in" 
         json_label;
-      F.line sc @@ sp "  %s (%s)" vc_constructor value_expression;
+      F.line sc @@ sp "  %s_types.%s (%s)" 
+        module_ vc_constructor value_expression;
   in
 
   F.line sc @@ 
@@ -215,48 +221,55 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc =
     F.line sc "loop (Array.length keys - 1)";
   ) 
 
-let gen_decode_const_variant ?and_ {Ot.cv_name; cv_constructors} sc = 
+let gen_decode_const_variant ?and_ module_ {Ot.cv_name; cv_constructors} sc = 
   F.line sc @@ sp "%s decode_%s (json:Js_json.t) =" 
     (Pb_codegen_util.let_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     F.line sc @@ sp "match Pbrt_bs.string json \"%s\" \"value\" with" cv_name; 
     List.iter (fun (constructor, _) -> 
-      F.line sc @@ sp "| \"%s\" -> %s"
-        (String.uppercase constructor) constructor
+      F.line sc @@ sp "| \"%s\" -> %s_types.%s"
+        (String.uppercase constructor) module_ constructor
     ) cv_constructors;  
-    F.line sc @@ sp "| \"\" -> %s" 
-      (fst @@ List.hd cv_constructors);
+    F.line sc @@ sp "| \"\" -> %s_types.%s" 
+      module_ (fst @@ List.hd cv_constructors);
     F.line sc @@ sp "| _ -> Pbrt_json.E.malformed_variant \"%s\"" cv_name;  
   ) 
 
 let gen_struct ?and_ t sc = 
-  let (), has_encoded =  match t with 
-    | {Ot.spec = Ot.Record r; _ }  -> 
-      gen_decode_record ?and_ r sc, true
-    | {Ot.spec = Ot.Variant v; _ } -> 
-      gen_decode_variant ?and_ v sc, true
-    | {Ot.spec = Ot.Const_variant v; _ } -> 
-      gen_decode_const_variant ?and_ v sc, true
+  let {Ot.module_; spec; _} = t in 
+
+  let has_encoded =  match spec with 
+    | Ot.Record r  -> 
+      gen_decode_record ?and_ module_ r sc; true
+    | Ot.Variant v -> 
+      gen_decode_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> 
+      gen_decode_const_variant ?and_ module_ v sc; true
   in
   has_encoded
 
 let gen_sig ?and_ t sc = 
   let _ = and_ in
 
+  let {Ot.module_; spec; _} = t in 
+
   let f type_name = 
-    F.line sc @@ sp "val decode_%s : Js_json.t Js_dict.t -> %s" 
-                 type_name type_name ; 
+    F.line sc @@ sp "val decode_%s : Js_json.t Js_dict.t -> %s_types.%s" 
+                 type_name module_ type_name ; 
     F.line sc @@ sp ("(** [decode_%s decoder] decodes a " ^^ 
                      "[%s] value from [decoder] *)") type_name type_name; 
   in 
 
-  match t with 
-  | {Ot.spec = Ot.Record {Ot.r_name; _ }; _} -> f r_name; true
-  | {Ot.spec = Ot.Variant {Ot.v_name; _ }; _ } -> f v_name; true 
-  | {Ot.spec = Ot.Const_variant {Ot.cv_name; _ }; _ } -> 
-    F.line sc @@ sp "val decode_%s : Js_json.t -> %s" cv_name cv_name ; 
+  match spec with 
+  | Ot.Record {Ot.r_name; _ } -> f r_name; true
+  | Ot.Variant {Ot.v_name; _ } -> f v_name; true 
+  | Ot.Const_variant {Ot.cv_name; _ } -> 
+    F.line sc @@ sp "val decode_%s : Js_json.t -> %s_types.%s" 
+      cv_name module_ cv_name ; 
     F.line sc @@ sp "(** [decode_%s value] decodes a [%s] from a Json value*)"
       cv_name cv_name;
     true
 
 let ocamldoc_title = "BS Decoding"
+
+let file_suffix = "bs"

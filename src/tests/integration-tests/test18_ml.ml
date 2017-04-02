@@ -1,4 +1,6 @@
-module T  = Test18_pb
+module T  = Test18_types
+module Pb = Test18_pb
+module Pp = Test18_pp
 
 let decode_ref_data () = T.({
   string_to_string = List.rev @@ ("one", "two")::("three", "four")::[];
@@ -15,6 +17,6 @@ let () =
 
   match mode with 
   | Test_util.Decode -> 
-    Test_util.decode "test18.c2ml.data" T.decode_maps T.pp_maps (decode_ref_data  ()) 
+    Test_util.decode "test18.c2ml.data" Pb.decode_maps Pp.pp_maps (decode_ref_data  ()) 
   | Test_util.Encode -> 
-    Test_util.encode "test18.ml2c.data" T.encode_maps (decode_ref_data ())
+    Test_util.encode "test18.ml2c.data" Pb.encode_maps (decode_ref_data ())

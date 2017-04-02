@@ -14,4 +14,5 @@ module type S = sig
   
   val ocamldoc_title : string 
 
+  val file_suffix : string 
 end (* S *)  

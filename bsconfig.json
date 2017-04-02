@@ -7,8 +7,6 @@
       "files": [
         "pbrt.mli",
         "pbrt.ml",
-        "pbrt_json.mli",
-        "pbrt_json.ml",
         "pbrt_bs.ml"
       ]
     },
@@ -16,8 +14,10 @@
       "dir": "src/tests/bs",
       "internal-depends": "../../runtime",
       "files": [
-        "unittest_pb.mli",
-        "unittest_pb.ml",
+        "unittest_types.mli",
+        "unittest_types.ml",
+        "unittest_bs.mli",
+        "unittest_bs.ml",
         "index.ml"
       ]
     }

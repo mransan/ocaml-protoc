@@ -142,7 +142,7 @@ let module_of_file_name file_name =
   let file_name = Filename.basename file_name in 
   match String.rindex file_name '.' with 
   | dot_index -> 
-    module_name @@ (String.sub file_name 0 dot_index ^ "_pb") 
+    module_name @@ (String.sub file_name 0 dot_index) 
   | exception Not_found -> E.invalid_file_name file_name  
 
 let type_name message_scope name = 

@@ -1,6 +1,10 @@
+first : test01
+# 	./ocaml-protoc -yojson -binary -pp -ml_out src/examples/ src/examples/example01.proto
+# 	$(OCB) -pkgs yojson -I src/examples example01.byte
+
 # OCamlbuild configuration
 #
-OCB_INC   = -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
+OCB_INC   = -X lib -X node_modules -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
 OCB_FLAGS = -use-ocamlfind -pkgs ppx_deriving_protobuf.runtime 
 OCB       = ocamlbuild $(OCB_FLAGS) $(OCB_INC)
 

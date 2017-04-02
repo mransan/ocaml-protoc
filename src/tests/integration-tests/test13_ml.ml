@@ -1,4 +1,6 @@
-module T  = Test13_pb
+module T  = Test13_types
+module Pb = Test13_pb
+module Pp = Test13_pp
 
 let decode_ref_data () = T.({
   p2 = {
@@ -16,6 +18,6 @@ let () =
 
   match mode with 
   | Test_util.Decode -> 
-    Test_util.decode "test13.c2ml.data" T.decode_t T.pp_t (decode_ref_data  ()) 
+    Test_util.decode "test13.c2ml.data" Pb.decode_t Pp.pp_t (decode_ref_data  ()) 
   | Test_util.Encode -> 
-    Test_util.encode "test13.ml2c.data" T.encode_t (decode_ref_data ())
+    Test_util.encode "test13.ml2c.data" Pb.encode_t (decode_ref_data ())

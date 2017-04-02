@@ -9,15 +9,18 @@ val let_decl_of_and : 'a option -> string
  *)
 
 val string_of_record_field_type : 
+  ?module_:string ->
   Pb_codegen_ocaml_type.record_field_type -> 
   string 
 
 val string_of_field_type : 
+  ?module_:string ->
   Pb_codegen_ocaml_type.field_type -> 
   string 
 
 val function_name_of_user_defined : 
-  string -> 
+  function_prefix:string -> 
+  module_suffix:string ->
   Pb_codegen_ocaml_type.user_defined_type -> 
   string
 (** [function_name_of_user_defined prefix user_defined] returns the function
@@ -28,7 +31,10 @@ val function_name_of_user_defined :
     user defined field type. 
  *)
 
-val caml_file_name_of_proto_file_name : string -> string
+val caml_file_name_of_proto_file_name : 
+  proto_file_name:string -> 
+  file_suffix:string -> 
+  string
 (** [caml_file_name_of_proto_file_name filename] returns the OCaml file name from
     the protobuf file name
  *)

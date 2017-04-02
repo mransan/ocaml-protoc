@@ -3,13 +3,20 @@ module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
 
+let file_suffix = "pb"
+
 let decode_basic_type bt pk = 
   Pb_codegen_util.runtime_function (`Decode, pk, bt)
   
 let decode_field_f field_type pk = 
   match field_type with 
   | Ot.Ft_user_defined_type t -> 
-    let f_name = Pb_codegen_util.function_name_of_user_defined "decode" t in
+    let f_name = 
+      let function_prefix = "decode" in 
+      let module_suffix = file_suffix in 
+      Pb_codegen_util.function_name_of_user_defined 
+        ~function_prefix ~module_suffix t 
+    in
     begin match t.Ot.udt_type with
     | `Message -> (f_name ^ " (Pbrt.Decoder.nested d)")
     | `Enum -> (f_name ^ " d")
@@ -18,7 +25,7 @@ let decode_field_f field_type pk =
       "Pbrt.Decoder.empty_nested d"
   | Ot.Ft_basic_type bt -> (decode_basic_type bt pk) ^ " d" 
 
-let gen_decode_record ?and_ {Ot.r_name; r_fields} sc = 
+let gen_decode_record ?and_ module_ {Ot.r_name; r_fields} sc = 
 
   (* return the variable name used for keeping track if a required 
    * field has been set during decoding.  *)
@@ -162,11 +169,12 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
         match vc_field_type  with
         | Ot.Vct_nullary -> (
           F.line sc "Pbrt.Decoder.empty_nested d;";
-          F.line sc @@ sp "v.%s <- %s;" rf_label vc_constructor; 
+          F.line sc @@ sp "v.%s <- %s_types.%s;" 
+            rf_label module_ vc_constructor; 
         ) 
         | Ot.Vct_non_nullary_constructor field_type -> (
-          F.line sc @@ sp "v.%s <- %s (%s);" 
-            rf_label vc_constructor (decode_field_f field_type pk)
+          F.line sc @@ sp "v.%s <- %s_types.%s (%s);" 
+            rf_label module_ vc_constructor (decode_field_f field_type pk)
         )
       )
     ) v_constructors
@@ -248,13 +256,13 @@ let gen_decode_record ?and_ {Ot.r_name; r_fields} sc =
     F.line sc "({"; 
     F.scope sc (fun sc -> 
       List.iter (fun {Ot.rf_label;_} -> 
-        F.line sc @@ sp "%s = v.%s;" rf_label rf_label; 
+        F.line sc @@ sp "%s_types.%s = v.%s;" module_ rf_label rf_label; 
       ) r_fields;
     ); 
-    F.line sc @@ sp "} : %s)" r_name;
+    F.line sc @@ sp "} : %s_types.%s)" module_ r_name;
   )
 
-let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc = 
+let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors;} sc = 
 
   let process_ctor sc variant_constructor = 
 
@@ -266,12 +274,13 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc =
 
     match vc_field_type with 
     | Ot.Vct_nullary -> (
-      F.line sc @@ sp "| Some (%i, _) -> (Pbrt.Decoder.empty_nested d ; %s)" 
-        vc_encoding_number vc_constructor
+      F.line sc @@ 
+        sp "| Some (%i, _) -> (Pbrt.Decoder.empty_nested d ; %s_types.%s)" 
+        vc_encoding_number module_ vc_constructor
     ) 
     | Ot.Vct_non_nullary_constructor field_type -> 
-      F.line sc @@ sp "| Some (%i, _) -> %s (%s)" 
-        vc_encoding_number vc_constructor (decode_field_f field_type pk) 
+      F.line sc @@ sp "| Some (%i, _) -> %s_types.%s (%s)" 
+        vc_encoding_number module_ vc_constructor (decode_field_f field_type pk) 
   in 
 
   F.line sc @@ sp "%s decode_%s d = " 
@@ -279,7 +288,8 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc =
   F.scope sc (fun sc ->
     F.line sc @@ sp "let rec loop () = "; 
     F.scope sc (fun sc ->
-      F.line sc @@ sp "let ret:%s = match Pbrt.Decoder.key d with" v_name;
+      F.line sc @@ sp "let ret:%s_types.%s = match Pbrt.Decoder.key d with"
+        module_ v_name;
       F.scope sc (fun sc -> 
         F.line sc @@ sp "| None -> Pbrt.Decoder.malformed_variant \"%s\""
           v_name; 
@@ -296,45 +306,51 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors;} sc =
     F.line sc "loop ()";
   )
 
-let gen_decode_const_variant ?and_ {Ot.cv_name; cv_constructors; } sc = 
+let gen_decode_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
 
   F.line sc @@ sp "%s decode_%s d = " 
                   (Pb_codegen_util.let_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match Pbrt.Decoder.int_as_varint d with";
     List.iter (fun (name, value) -> 
-      F.line sc @@ sp "| %i -> (%s:%s)" value name cv_name
+      F.line sc @@ sp "| %i -> (%s_types.%s:%s_types.%s)" 
+        value module_ name module_ cv_name
     ) cv_constructors; 
     F.line sc @@ sp "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name
   )
 
 let gen_struct ?and_ t sc = 
-  let (), has_encoded =  match t with 
-    | {Ot.spec = Ot.Record r; _ }  -> 
-      gen_decode_record ?and_ r sc, true
-    | {Ot.spec = Ot.Variant v; _ } -> 
-      gen_decode_variant ?and_ v sc, true
-    | {Ot.spec = Ot.Const_variant v; _ } -> 
-      gen_decode_const_variant ?and_ v sc, true
+  let {Ot.module_; spec; _} = t in
+
+  let has_encoded =  
+    match spec with 
+    | Ot.Record r  -> gen_decode_record ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_decode_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> gen_decode_const_variant ?and_ module_ v sc; true
   in
+
   has_encoded
 
 let gen_sig ?and_ t sc = 
 
   let _ = and_ in
+  let {Ot.module_; spec; _} = t in
 
   let f type_name = 
-    F.line sc @@ sp "val decode_%s : Pbrt.Decoder.t -> %s" type_name type_name ; 
+    F.line sc @@ sp "val decode_%s : Pbrt.Decoder.t -> %s_types.%s" 
+      type_name module_ type_name ; 
     F.line sc @@ sp ("(** [decode_%s decoder] decodes a " ^^ 
                      "[%s] value from [decoder] *)") type_name type_name; 
   in 
 
-  let (), has_encoded = 
-    match t with 
-    | {Ot.spec = Ot.Record {Ot.r_name; _ }; _} -> f r_name, true
-    | {Ot.spec = Ot.Variant {Ot.v_name; _ }; _ } -> f v_name, true 
-    | {Ot.spec = Ot.Const_variant {Ot.cv_name; _ }; _ } -> f cv_name, true
+  let has_encoded = 
+    match spec with 
+    | Ot.Record {Ot.r_name; _ } -> f r_name; true
+    | Ot.Variant {Ot.v_name; _ } -> f v_name; true 
+    | Ot.Const_variant {Ot.cv_name; _ } -> f cv_name; true
   in
+
   has_encoded
 
 let ocamldoc_title = "Protobuf Decoding"
+

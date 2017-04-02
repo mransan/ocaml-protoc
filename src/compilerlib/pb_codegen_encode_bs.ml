@@ -68,7 +68,12 @@ let gen_field sc var_name json_label field_type pk =
   (* User defined *)
   | Ot.Ft_user_defined_type udt, _ -> 
     let {Ot.udt_type; _} = udt in 
-    let f_name = Pb_codegen_util.function_name_of_user_defined "encode" udt  in
+    let f_name = 
+      let function_prefix = "encode" in 
+      let module_suffix = "pb" in 
+      Pb_codegen_util.function_name_of_user_defined 
+        ~function_prefix ~module_suffix udt  
+     in
     begin match udt_type with
     | `Message -> begin 
       F.line sc @@ sp "begin (* %s field *)" json_label;
@@ -86,13 +91,12 @@ let gen_field sc var_name json_label field_type pk =
     end
     end
 
-let gen_rft_nolabel sc rf_label (field_type, _, pk) = 
-  let var_name = sp "v.%s" rf_label in 
+let gen_rft_nolabel sc var_name rf_label (field_type, _, pk) = 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in  
   gen_field sc var_name json_label field_type pk 
 
-let gen_rft_optional_field sc rf_label (field_type, _, pk, _) = 
-  F.line sc @@ sp "begin match v.%s with" rf_label; 
+let gen_rft_optional_field sc var_name rf_label (field_type, _, pk, _) = 
+  F.line sc @@ sp "begin match %s with" var_name; 
   F.scope sc (fun sc ->
     F.line sc "| None -> ()";
     F.line sc "| Some v ->";
@@ -101,7 +105,7 @@ let gen_rft_optional_field sc rf_label (field_type, _, pk, _) =
   ); 
   F.line sc "end;"
 
-let gen_rft_repeated_field sc rf_label repeated_field = 
+let gen_rft_repeated_field sc var_name rf_label repeated_field = 
   let (repeated_type, field_type, _, pk, _) = repeated_field in
   begin match repeated_type with
   | Ot.Rt_list -> () 
@@ -110,7 +114,6 @@ let gen_rft_repeated_field sc rf_label repeated_field =
     |> failwith    
   end; 
 
-  let var_name = sp "v.%s" rf_label in 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in  
 
   match field_type, pk with
@@ -124,7 +127,9 @@ let gen_rft_repeated_field sc rf_label repeated_field =
       F.line sc @@ sp "let a = %s |> Array.of_list |> Array.map Js_json.%s in" 
         var_name setter;
     | Some map_function ->
-      F.line sc @@ sp "let a = %s |> List.map %s |> Array.of_list |> Array.map Js_json.%s in" 
+      F.line sc @@ 
+        sp ("let a = %s |> List.map %s |> Array.of_list " ^^ 
+            "|> Array.map Js_json.%s in")
         var_name map_function setter;
     end;
     F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.array_ a);"
@@ -135,8 +140,14 @@ let gen_rft_repeated_field sc rf_label repeated_field =
     F.line sc @@ sp "let %s' = List.map (fun v ->" rf_label;
     F.scope sc (fun sc -> 
       F.line sc "let json' = Js_dict.empty () in"; 
-      F.line sc @@ sp "%s v json';"
-                   (Pb_codegen_util.function_name_of_user_defined "encode" udt);
+      let f_name = 
+        let function_prefix = "encode" in
+        let module_suffix = "bs" in 
+        Pb_codegen_util.function_name_of_user_defined 
+          ~function_prefix ~module_suffix udt
+      in 
+
+      F.line sc @@ sp "%s v json';" f_name;
       F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.object_ json');" 
         json_label;
       F.line sc "json' |> Array.of_list";
@@ -147,8 +158,8 @@ let gen_rft_repeated_field sc rf_label repeated_field =
 
   | _ -> unsupported json_label
         
-let gen_rft_variant_field sc rf_label {Ot.v_constructors; _} = 
-  F.line sc @@ sp "begin match v.%s with" rf_label;
+let gen_rft_variant_field sc var_name rf_label {Ot.v_constructors; _} = 
+  F.line sc @@ sp "begin match %s with" var_name;
   F.scope sc (fun sc -> 
     List.iter (fun {Ot.vc_constructor; vc_field_type; vc_payload_kind; _} ->
       let var_name = "v" in 
@@ -167,26 +178,27 @@ let gen_rft_variant_field sc rf_label {Ot.v_constructors; _} =
   ); 
   F.line sc @@ sp "end; (* match v.%s *)" rf_label
 
-let gen_encode_record ?and_ {Ot.r_name; r_fields } sc = 
+let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc = 
   let rn = r_name in 
-  F.line sc @@ sp "%s encode_%s (v:%s) json = " 
-      (Pb_codegen_util.let_decl_of_and and_) rn rn;
+  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) json = " 
+      (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
   F.scope sc (fun sc -> 
     List.iter (fun record_field -> 
       let {Ot.rf_label; rf_field_type; _ } = record_field in  
+      let var_name = sp "v.%s_types.%s" module_ rf_label in 
 
       match rf_field_type with 
       | Ot.Rft_nolabel nolabel_field  ->
-        gen_rft_nolabel sc rf_label nolabel_field
+        gen_rft_nolabel sc var_name rf_label nolabel_field
      
       | Ot.Rft_repeated_field repeated_field  -> 
-        gen_rft_repeated_field sc rf_label repeated_field  
+        gen_rft_repeated_field sc var_name rf_label repeated_field  
 
       | Ot.Rft_variant_field variant_field -> 
-        gen_rft_variant_field sc rf_label variant_field 
+        gen_rft_variant_field sc var_name rf_label variant_field 
       
       | Ot.Rft_optional optional_field ->
-        gen_rft_optional_field sc rf_label optional_field 
+        gen_rft_optional_field sc var_name rf_label optional_field 
 
       | Ot.Rft_required _ ->
         Printf.eprintf "Only proto3 syntax supported in JSON encoding";
@@ -200,7 +212,7 @@ let gen_encode_record ?and_ {Ot.r_name; r_fields } sc =
     F.line sc "()"
   )
 
-let gen_encode_variant ?and_ {Ot.v_name; v_constructors} sc = 
+let gen_encode_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
 
   let process_v_constructor sc v_constructor = 
     let {
@@ -213,62 +225,66 @@ let gen_encode_variant ?and_ {Ot.v_name; v_constructors} sc =
     F.scope sc (fun sc -> 
       match vc_field_type with 
       | Ot.Vct_nullary -> 
-        F.line sc @@ sp "| %s ->" vc_constructor; 
+        F.line sc @@ sp "| %s_types.%s ->" module_ vc_constructor; 
         F.line sc @@ sp "Js_dict.set json \"%s\" Js_json.null" json_label 
 
       | Ot.Vct_non_nullary_constructor field_type -> 
-        F.line sc @@ sp "| %s v ->" vc_constructor; 
+        F.line sc @@ sp "| %s_types.%s v ->" module_ vc_constructor; 
         gen_field sc "v" json_label field_type vc_payload_kind
     )
   in 
 
-  F.line sc @@ sp "%s encode_%s (v:%s) json = " 
-      (Pb_codegen_util.let_decl_of_and and_) v_name v_name;
+  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) json = " 
+      (Pb_codegen_util.let_decl_of_and and_) v_name module_ v_name;
   F.scope sc (fun sc -> 
     F.line sc "begin match v with";
     List.iter (process_v_constructor sc) v_constructors;
     F.line sc "end";
   ) 
 
-let gen_encode_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors} sc = 
-  F.line sc @@ sp "%s encode_%s (v:%s) : string = " 
-      (Pb_codegen_util.let_decl_of_and and_) cv_name cv_name; 
+let gen_encode_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
+  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) : string = " 
+      (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun (constructor, _) -> 
       let json_value = String.uppercase constructor in 
       (* TODO it should not be upper case *)
-      F.line sc @@ sp "| %s -> \"%s\"" constructor json_value
+      F.line sc @@ sp "| %s_types.%s -> \"%s\"" module_ constructor json_value
     ) cv_constructors
   ) 
 
-let gen_struct ?and_ t sc  = 
-  let (), has_encoded = 
-    match t with 
-    | {Ot.spec = Ot.Record r; _ } -> 
-      gen_encode_record  ?and_ r sc, true
-    | {Ot.spec = Ot.Variant v; _ } -> 
-      gen_encode_variant ?and_ v sc, true 
-    | {Ot.spec = Ot.Const_variant v; _ } ->
-      gen_encode_const_variant ?and_ v sc, true
-  in 
+let gen_struct ?and_ t sc = 
+  let {Ot.module_; spec; _} = t in 
+
+  let has_encoded =  match spec with 
+    | Ot.Record r  -> 
+      gen_encode_record ?and_ module_ r sc; true
+    | Ot.Variant v -> 
+      gen_encode_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> 
+      gen_encode_const_variant ?and_ module_ v sc; true
+  in
   has_encoded
 
 let gen_sig ?and_ t sc = 
   let _ = and_ in
+  let {Ot.module_; spec; _} = t in 
   let f type_name = 
-    F.line sc @@ sp "val encode_%s : %s -> Js_json.t Js_dict.t -> unit" 
-                 type_name type_name;
-    F.line sc @@ sp ("(** [encode_%s v encoder] encodes [v] with the " ^^ 
-                     "given [encoder] *)") type_name; 
+    F.line sc @@ sp "val encode_%s : %s_types.%s -> Js_json.t Js_dict.t -> unit" 
+      type_name module_ type_name;
+    F.line sc @@ sp ("(** [encode_%s v dict] encodes [v] int the " ^^ 
+                     "given JSON [dict] *)") type_name; 
   in 
-  match t with 
-  | {Ot.spec = Ot.Record {Ot.r_name; _ }; _}-> f r_name; true
-  | {Ot.spec = Ot.Variant v; _ } -> f v.Ot.v_name; true 
-  | {Ot.spec = Ot.Const_variant {Ot.cv_name; _ }; _ } -> 
-    F.line sc @@ sp "val encode_%s : %s -> string"
-      cv_name cv_name;
+  match spec with 
+  | Ot.Record {Ot.r_name; _ } -> f r_name; true
+  | Ot.Variant v -> f v.Ot.v_name; true 
+  | Ot.Const_variant {Ot.cv_name; _ } -> 
+    F.line sc @@ sp "val encode_%s : %s_types.%s -> string"
+      cv_name module_ cv_name;
     F.line sc @@ sp ("(** [encode_%s v] returns JSON string*)") cv_name; 
     true
 
 let ocamldoc_title = "Protobuf JSON Encoding"
+
+let file_suffix = Pb_codegen_decode_bs.file_suffix

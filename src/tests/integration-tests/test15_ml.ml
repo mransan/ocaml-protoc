@@ -1,4 +1,6 @@
-module T  = Test15_pb
+module T  = Test15_types
+module Pb = Test15_pb
+module Pp = Test15_pp
 
 (** [fill_0_to_n n] create and fill a Pbrt.Repeated_field 
     with int32 values from [0; n].
@@ -36,6 +38,6 @@ let () =
 
   match mode with 
   | Test_util.Decode -> 
-    Test_util.decode "test15.c2ml.data" T.decode_m2 T.pp_m2 (decode_ref_data  ()) 
+    Test_util.decode "test15.c2ml.data" Pb.decode_m2 Pp.pp_m2 (decode_ref_data  ()) 
   | Test_util.Encode -> 
-    Test_util.encode "test15.ml2c.data" T.encode_m2 (decode_ref_data ())
+    Test_util.encode "test15.ml2c.data" Pb.encode_m2 (decode_ref_data ())
