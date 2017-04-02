@@ -97,12 +97,12 @@ let gen_rft_nolabel sc var_name rf_label (field_type, _, pk) =
 
 let gen_rft_optional_field sc var_name rf_label (field_type, _, pk, _) = 
   F.linep sc "begin match %s with" var_name; 
-  F.scope sc (fun sc ->
-    F.line sc "| None -> ()";
-    F.line sc "| Some v ->";
+  F.line sc "| None -> ()";
+  F.line sc "| Some v ->";
+  F.scope sc (fun sc -> 
     let json_label = Pb_codegen_util.camel_case_of_label rf_label in  
-    gen_field sc "v" json_label field_type pk 
-  ); 
+    gen_field sc "v" json_label field_type pk;
+  );
   F.line sc "end;"
 
 let gen_rft_repeated_field sc var_name rf_label repeated_field = 
@@ -222,16 +222,16 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
 
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in
 
-    F.scope sc (fun sc -> 
-      match vc_field_type with 
-      | Ot.Vct_nullary -> 
-        F.linep sc "| %s_types.%s ->" module_ vc_constructor; 
-        F.linep sc "Js_dict.set json \"%s\" Js_json.null" json_label 
+    match vc_field_type with 
+    | Ot.Vct_nullary -> 
+      F.linep sc "| %s_types.%s ->" module_ vc_constructor; 
+      F.linep sc "  Js_dict.set json \"%s\" Js_json.null" json_label 
 
-      | Ot.Vct_non_nullary_constructor field_type -> 
-        F.linep sc "| %s_types.%s v ->" module_ vc_constructor; 
+    | Ot.Vct_non_nullary_constructor field_type -> 
+      F.linep sc "| %s_types.%s v ->" module_ vc_constructor; 
+      F.scope sc (fun sc -> 
         gen_field sc "v" json_label field_type vc_payload_kind
-    )
+      )
   in 
 
   F.linep sc "%s encode_%s (v:%s_types.%s) json = " 

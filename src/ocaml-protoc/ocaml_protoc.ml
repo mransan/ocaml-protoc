@@ -354,6 +354,7 @@ let generate_mutable_records ocaml_types sc =
       Pb_codegen_types.gen_record ~mutable_:() module_ r sc;
       F.empty_line sc;
       Pb_codegen_default.gen_record ~mutable_:() module_ r sc; 
+      F.empty_line sc;
     | _ -> () 
   ) ocaml_types
 

@@ -25,158 +25,150 @@ let decode_field_f field_type pk =
       "Pbrt.Decoder.empty_nested d"
   | Ot.Ft_basic_type bt -> (decode_basic_type bt pk) ^ " d" 
 
+let pbrt_payload_kind payload_kind is_packed = 
+  if is_packed 
+  then 
+    "Bytes"
+  else 
+    Pb_codegen_util.string_of_payload_kind ~capitalize:() payload_kind false 
+
+let gen_field_common sc encoding_number payload_kind message_name 
+                         ?(is_packed = false) f = 
+  F.linep sc "| Some (%i, Pbrt.%s) -> begin"   
+    encoding_number (pbrt_payload_kind payload_kind is_packed);
+  F.scope sc (fun sc -> 
+    f sc;
+  );
+  F.line sc "end";
+  F.linep sc "| Some (%i, pk) -> " encoding_number;
+  F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
+    (sp "Message(%s), field(%i)" message_name encoding_number)
+
+let gen_rft_nolabel sc r_name rf_label (field_type, encoding_number, pk) = 
+  gen_field_common sc encoding_number pk r_name (fun sc -> 
+    F.linep sc "v.%s <- %s;" rf_label (decode_field_f field_type pk); 
+  ) 
+
+(* return the variable name used for keeping track if a required 
+ * field has been set during decoding.  *)
+let is_set_variable_name rf_label = 
+  sp "%s_is_set" rf_label 
+
+let gen_rft_required sc r_name rf_label (field_type, encoding_number, pk, _) = 
+  gen_field_common sc encoding_number pk r_name (fun sc -> 
+    F.linep sc "v.%s <- %s; %s := true;" 
+      rf_label 
+      (decode_field_f field_type pk) 
+      (is_set_variable_name rf_label); 
+  ) 
+
+let gen_rft_optional_field sc r_name rf_label optional_field = 
+  let (field_type, encoding_number, pk, _) = optional_field in 
+  gen_field_common sc encoding_number pk r_name (fun sc -> 
+    F.linep sc "v.%s <- Some (%s);" rf_label (decode_field_f field_type pk); 
+  )
+
+let gen_rft_repeated_field sc r_name rf_label repeated_field = 
+  let (rt, field_type, encoding_number, pk, is_packed) = repeated_field in
+  match rt, is_packed with
+  | Ot.Rt_list, false -> 
+    gen_field_common sc encoding_number pk r_name ~is_packed (fun sc -> 
+      F.linep sc "v.%s <- (%s) :: v.%s;" 
+        rf_label (decode_field_f field_type pk) rf_label; 
+    ) 
+  | Ot.Rt_repeated_field, false -> (
+    gen_field_common sc encoding_number pk r_name ~is_packed (fun sc -> 
+      F.linep sc "Pbrt.Repeated_field.add (%s) v.%s; " 
+        (decode_field_f field_type pk) rf_label; 
+    ) 
+  ) 
+  | Ot.Rt_list, true -> (
+    gen_field_common sc encoding_number pk r_name ~is_packed (fun sc -> 
+      F.linep sc 
+        "v.%s <- Pbrt.Decoder.packed_fold (fun l d -> (%s)::l) [] d;" 
+        rf_label (decode_field_f field_type pk) 
+    ) 
+  ) 
+  | Ot.Rt_repeated_field, true -> (
+    gen_field_common sc encoding_number pk r_name ~is_packed (fun sc -> 
+      F.line sc "Pbrt.Decoder.packed_fold (fun () d -> ";
+      F.scope sc (fun sc -> 
+        F.linep sc "Pbrt.Repeated_field.add (%s) v.%s;" 
+          (decode_field_f field_type pk) rf_label;
+      );
+      F.line sc ") () d;";
+    ) 
+  ) 
+
+let gen_rft_associative_field sc r_name rf_label associative_field =   
+
+  let (
+    at, 
+    encoding_number, 
+    (key_type, key_pk), 
+    (value_type, value_pk)) = associative_field in  
+
+  let decode_key_f   = decode_basic_type key_type key_pk in 
+    (* Because key can never be nested we can assign the decoding function 
+     * directly rather wrapping up in a closure like for the value 
+     * below
+     *)
+     (* TODO enhancement
+      * For the value decoding function passed as an argument to 
+      * [Pbrt.Decoder.map_entry] it's not always the case that it would 
+      * require nesting. In the case it does not neeed a nested decoder 
+      * we can avoid creating a closure and therefore improving 
+      * the performance.  *)
+
+  gen_field_common sc encoding_number Ot.Pk_bytes r_name (fun sc -> 
+    F.line sc "let decode_value = (fun d ->";
+    F.scope sc (fun sc ->
+      F.line sc @@ decode_field_f value_type value_pk;
+    ); 
+    F.line sc ") in"; 
+    let decode_expression = sp 
+        "(Pbrt.Decoder.map_entry d ~decode_key:%s ~decode_value)" 
+         decode_key_f 
+    in
+
+    begin match at with
+    | Ot.At_list -> 
+      F.linep sc "v.%s <- (" rf_label; 
+      F.scope sc (fun sc -> 
+        F.linep sc "%s::v.%s;" decode_expression rf_label
+      ); 
+      F.line sc ");" 
+
+    | Ot.At_hashtable -> 
+      F.linep sc "let a, b = %s in" decode_expression;
+      F.linep sc "Hashtbl.add v.%s a b;" rf_label;
+    end;
+  )
+
+let gen_rft_variant_field sc module_ r_name rf_label {Ot.v_constructors; _} = 
+  List.iter (fun variant_constructor  -> 
+
+    let {
+      Ot.vc_constructor; 
+      vc_field_type; 
+      vc_encoding_number; 
+      vc_payload_kind = pk; } = variant_constructor in 
+
+    gen_field_common sc vc_encoding_number pk r_name (fun sc->  
+      match vc_field_type  with
+      | Ot.Vct_nullary -> (
+        F.line sc "Pbrt.Decoder.empty_nested d;";
+        F.linep sc "v.%s <- %s_types.%s;" rf_label module_ vc_constructor; 
+      ) 
+      | Ot.Vct_non_nullary_constructor field_type -> (
+        F.linep sc "v.%s <- %s_types.%s (%s);" 
+          rf_label module_ vc_constructor (decode_field_f field_type pk)
+      )
+    )
+  ) v_constructors
+
 let gen_record ?and_ module_ {Ot.r_name; r_fields} sc = 
 
-  (* return the variable name used for keeping track if a required 
-   * field has been set during decoding.  *)
-  let is_set_variable_name rf_label = 
-    sp "%s_is_set" rf_label 
-  in
-
-  let pbrt_payload_kind payload_kind is_packed = 
-    if is_packed 
-    then "Bytes"
-    else 
-      Pb_codegen_util.string_of_payload_kind ~capitalize:() payload_kind false 
-  in  
-
-  let process_field_common sc encoding_number payload_kind 
-                           ?(is_packed = false) f = 
-    F.linep sc "| Some (%i, Pbrt.%s) -> ("   
-      encoding_number (pbrt_payload_kind payload_kind is_packed);
-    F.scope sc (fun sc -> 
-      f sc;
-    );
-    F.line sc ")";
-    F.linep sc "| Some (%i, pk) -> " encoding_number;
-    F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
-      (sp "Message(%s), field(%i)" r_name encoding_number);
-  in
-  
-  let process_nolabel_field sc rf_label (field_type, encoding_number, pk) = 
-    process_field_common sc encoding_number pk (fun sc -> 
-      F.linep sc "v.%s <- %s;" rf_label (decode_field_f field_type pk); 
-    ) 
-  in
-
-  let process_required_field sc rf_label (field_type, encoding_number, pk, _) = 
-    process_field_common sc encoding_number pk (fun sc -> 
-      F.linep sc "v.%s <- %s; %s := true;" 
-        rf_label 
-        (decode_field_f field_type pk) 
-        (is_set_variable_name rf_label); 
-    ) 
-  in
-
-  let process_optional_field sc rf_label (field_type, encoding_number, pk, _) = 
-    process_field_common sc encoding_number pk (fun sc -> 
-      F.linep sc "v.%s <- Some (%s);" rf_label (decode_field_f field_type pk); 
-    )
-  in
-
-  let process_repeated_field sc rf_label repeated_field = 
-    let (rt, field_type, encoding_number, pk, is_packed) = repeated_field in
-    match rt, is_packed with
-    | Ot.Rt_list, false -> 
-      process_field_common sc encoding_number pk ~is_packed (fun sc -> 
-        F.linep sc "v.%s <- (%s) :: v.%s;" 
-          rf_label (decode_field_f field_type pk) rf_label; 
-      ) 
-    | Ot.Rt_repeated_field, false -> (
-      process_field_common sc encoding_number pk ~is_packed (fun sc -> 
-        F.linep sc "Pbrt.Repeated_field.add (%s) v.%s; " 
-          (decode_field_f field_type pk) rf_label; 
-      ) 
-    ) 
-    | Ot.Rt_list, true -> (
-      process_field_common sc encoding_number pk ~is_packed (fun sc -> 
-        F.linep sc 
-          "v.%s <- Pbrt.Decoder.packed_fold (fun l d -> (%s)::l) [] d;" 
-          rf_label (decode_field_f field_type pk) 
-      ) 
-    ) 
-    | Ot.Rt_repeated_field, true -> (
-      process_field_common sc encoding_number pk ~is_packed (fun sc -> 
-        F.line sc "Pbrt.Decoder.packed_fold (fun () d -> ";
-        F.scope sc (fun sc -> 
-          F.linep sc "Pbrt.Repeated_field.add (%s) v.%s;" 
-            (decode_field_f field_type pk) rf_label;
-        );
-        F.line sc ") () d;";
-      ) 
-    ) 
-  in
-
-  let process_associative_field sc rf_label associative_field =   
-  
-    let (
-      at, 
-      encoding_number, 
-      (key_type, key_pk), 
-      (value_type, value_pk)) = associative_field in  
-
-    let decode_key_f   = decode_basic_type key_type key_pk in 
-      (* Because key can never be nested we can assign the decoding function 
-       * directly rather wrapping up in a closure like for the value 
-       * below
-       *)
-       (* TODO enhancement
-        * For the value decoding function passed as an argument to 
-        * [Pbrt.Decoder.map_entry] it's not always the case that it would 
-        * require nesting. In the case it does not neeed a nested decoder 
-        * we can avoid creating a closure and therefore improving 
-        * the performance. 
-        *)
-    process_field_common sc encoding_number Ot.Pk_bytes (fun sc -> 
-      F.line sc "let decode_value = (fun d ->";
-      F.scope sc (fun sc ->
-        F.line sc @@ decode_field_f value_type value_pk;
-      ); 
-      F.line sc ") in"; 
-      let decode_expression = sp 
-          "(Pbrt.Decoder.map_entry d ~decode_key:%s ~decode_value)" 
-           decode_key_f 
-      in
-
-      begin match at with
-      | Ot.At_list -> ( 
-        F.linep sc "v.%s <- (" rf_label; 
-        F.scope sc (fun sc -> 
-          F.linep sc "%s::v.%s;" decode_expression rf_label
-        ); 
-        F.line sc ");" 
-      )
-      | Ot.At_hashtable -> (
-        F.linep sc "let a, b = %s in" decode_expression;
-        F.linep sc "Hashtbl.add v.%s a b;" rf_label;
-      )
-      end;
-    )
-  in
-
-  let process_variant_field sc rf_label {Ot.v_constructors; _} = 
-    List.iter (fun variant_constructor  -> 
-
-      let {
-        Ot.vc_constructor; 
-        vc_field_type; 
-        vc_encoding_number; 
-        vc_payload_kind = pk; } = variant_constructor in 
-
-      process_field_common sc vc_encoding_number pk (fun sc->  
-        match vc_field_type  with
-        | Ot.Vct_nullary -> (
-          F.line sc "Pbrt.Decoder.empty_nested d;";
-          F.linep sc "v.%s <- %s_types.%s;" rf_label module_ vc_constructor; 
-        ) 
-        | Ot.Vct_non_nullary_constructor field_type -> (
-          F.linep sc "v.%s <- %s_types.%s (%s);" 
-            rf_label module_ vc_constructor (decode_field_f field_type pk)
-        )
-      )
-    ) v_constructors
-  in 
-  
   (* list fields have a special treatement when decoding since each new element
    * of a repeated field is appended to the front of the list. In order
    * to retreive the right order efficiently we reverse all the repeated field
@@ -229,12 +221,18 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields} sc =
        * .proto file. Unknown fields are ignored. *)
       List.iter (fun {Ot.rf_label; rf_field_type; _ } -> 
         match rf_field_type with
-        | Ot.Rft_nolabel x -> process_nolabel_field sc rf_label x 
-        | Ot.Rft_required x -> process_required_field sc rf_label x 
-        | Ot.Rft_optional x -> process_optional_field sc rf_label x 
-        | Ot.Rft_repeated_field x -> process_repeated_field sc rf_label x 
-        | Ot.Rft_associative_field x-> process_associative_field sc rf_label x 
-        | Ot.Rft_variant_field x -> process_variant_field sc rf_label x 
+        | Ot.Rft_nolabel x -> 
+          gen_rft_nolabel sc r_name rf_label x 
+        | Ot.Rft_required x -> 
+          gen_rft_required sc r_name rf_label x 
+        | Ot.Rft_optional x -> 
+          gen_rft_optional_field sc r_name rf_label x 
+        | Ot.Rft_repeated_field x -> 
+          gen_rft_repeated_field sc r_name rf_label x 
+        | Ot.Rft_associative_field x-> 
+          gen_rft_associative_field sc r_name rf_label x 
+        | Ot.Rft_variant_field x -> 
+          gen_rft_variant_field sc module_ r_name rf_label x 
       ) r_fields; 
       F.line sc ("| Some (_, payload_kind) -> " ^ 
                  "Pbrt.Decoder.skip d payload_kind");
