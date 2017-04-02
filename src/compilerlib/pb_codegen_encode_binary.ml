@@ -1,4 +1,3 @@
-
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting 
 module L = Pb_logger
@@ -11,7 +10,7 @@ let constructor_name s =
 let sp = Pb_codegen_util.sp
 
 let gen_encode_field_key sc number pk is_packed = 
-  F.line sc @@ sp "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
+  F.linep sc "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " 
     number (constructor_name @@ Pb_codegen_util.string_of_payload_kind pk is_packed)
   
 let encode_basic_type bt pk = 
@@ -37,9 +36,9 @@ let gen_encode_field_type
     in 
     begin match udt.Ot.udt_type with
     | `Message -> 
-      F.line sc @@ sp "Pbrt.Encoder.nested (%s %s) encoder;" f_name var_name
+      F.linep sc "Pbrt.Encoder.nested (%s %s) encoder;" f_name var_name
     | `Enum ->
-      F.line sc @@ sp "%s %s encoder;" f_name var_name
+      F.linep sc "%s %s encoder;" f_name var_name
     end
   
   | Ot.Ft_unit ->
@@ -49,14 +48,13 @@ let gen_encode_field_type
   | Ot.Ft_basic_type bt ->
     encode_key sc;
     let rt = encode_basic_type bt pk in 
-    F.line sc @@ sp "%s %s encoder;" rt var_name
+    F.linep sc "%s %s encoder;" rt var_name
 
 let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc = 
-  L.log "gen_encode_record record_name: %s\n" r_name;
-
   let rn = r_name in 
-  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) encoder = " 
+  F.linep sc "%s encode_%s (v:%s_types.%s) encoder = " 
       (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
+
   F.scope sc (fun sc -> 
     List.iter (fun record_field -> 
       let {Ot.rf_label; rf_field_type; _ } = record_field in  
@@ -65,36 +63,43 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
       match rf_field_type with 
       | Ot.Rft_nolabel (field_type, encoding_number, pk)
       | Ot.Rft_required (field_type, encoding_number, pk, _) -> ( 
-        gen_encode_field_type ~with_key:() sc var_name encoding_number pk false (* packed *) field_type
+        gen_encode_field_type 
+          ~with_key:() sc var_name encoding_number pk 
+          false (* packed *) field_type
       )
+
       | Ot.Rft_optional (field_type, encoding_number, pk, _) -> (
         F.line sc "(";
         F.scope sc (fun sc -> 
-          F.line sc @@ sp "match %s with" var_name;
-          F.line sc @@ sp "| Some x -> (";
+          F.linep sc "match %s with" var_name;
+          F.linep sc "| Some x -> (";
           F.scope sc (fun sc ->
-            gen_encode_field_type ~with_key:() sc "x" encoding_number pk false field_type;
+            gen_encode_field_type 
+              ~with_key:() sc "x" encoding_number pk false field_type;
           ); 
           F.line sc ")";
           F.line sc "| None -> ();";
         );
         F.line sc ");";
       )
+
       | Ot.Rft_repeated_field (rt, field_type, encoding_number, pk, is_packed) -> (
         match rt, is_packed with
         | Ot.Rt_list, false -> (
           F.line sc "List.iter (fun x -> ";
           F.scope sc (fun sc -> 
-            gen_encode_field_type ~with_key:() sc "x" encoding_number pk is_packed field_type;
+            gen_encode_field_type 
+              ~with_key:() sc "x" encoding_number pk is_packed field_type;
           );
-          F.line sc @@ sp ") %s;" var_name;
+          F.linep sc ") %s;" var_name;
         ) 
         | Ot.Rt_repeated_field, false -> ( 
           F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
           F.scope sc (fun sc -> 
-            gen_encode_field_type ~with_key:() sc "x" encoding_number pk is_packed field_type;
+            gen_encode_field_type 
+              ~with_key:() sc "x" encoding_number pk is_packed field_type;
           );
-          F.line sc @@ sp ") %s;" var_name;
+          F.linep sc ") %s;" var_name;
         ) 
         | Ot.Rt_list, true -> (
           gen_encode_field_key sc encoding_number pk is_packed;
@@ -106,7 +111,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
             F.scope sc (fun sc -> 
               gen_encode_field_type sc "x" encoding_number pk is_packed field_type;
             );
-            F.line sc @@ sp ") %s;" var_name;
+            F.linep sc ") %s;" var_name;
           );
           F.line sc ") encoder;";
         ) 
@@ -120,7 +125,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
             F.scope sc (fun sc -> 
               gen_encode_field_type sc "x" encoding_number pk is_packed field_type;
             );
-            F.line sc @@ sp ") %s;" var_name; 
+            F.linep sc ") %s;" var_name; 
           );
           F.line sc") encoder;";
         ) 
@@ -128,11 +133,11 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
       | Ot.Rft_variant_field {Ot.v_constructors; _} -> (
         F.line sc  "(";
         F.scope sc (fun sc -> 
-          F.line sc @@ sp "match %s with" var_name;
+          F.linep sc "match %s with" var_name;
           List.iter (fun {Ot.vc_constructor; vc_field_type; vc_encoding_number; vc_payload_kind} -> 
             begin match vc_field_type with
             | Ot.Vct_nullary -> ( 
-              F.line sc @@ sp "| %s_types.%s -> (" module_ vc_constructor; 
+              F.linep sc "| %s_types.%s -> (" module_ vc_constructor; 
               F.scope sc (fun sc -> 
                 gen_encode_field_key sc vc_encoding_number vc_payload_kind false;
                 F.line sc "Pbrt.Encoder.empty_nested encoder";
@@ -140,7 +145,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
               F.line sc ")";
             )
             | Ot.Vct_non_nullary_constructor field_type -> (
-              F.line sc @@ sp "| %s_types.%s x -> (" module_ vc_constructor;
+              F.linep sc "| %s_types.%s x -> (" module_ vc_constructor;
               F.scope sc (fun sc -> 
                 gen_encode_field_type sc ~with_key:() "x" vc_encoding_number vc_payload_kind false field_type  
               ); 
@@ -158,7 +163,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
           (key_type, key_pk), 
           (value_type, value_pk)
         ) = associative_field in
-        F.line sc @@ sp "let encode_key = %s in" (encode_basic_type key_type key_pk);
+        F.linep sc "let encode_key = %s in" (encode_basic_type key_type key_pk);
         F.line sc "let encode_value = (fun x encoder ->";
         F.scope sc (fun sc -> 
           gen_encode_field_type sc "x" (-1 (* TODO *)) value_pk false value_type;
@@ -175,14 +180,14 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
         end; 
         F.scope sc (fun sc ->
           gen_encode_field_key sc encoding_number Ot.Pk_bytes false;
-          F.line sc @@ sp "let map_entry = (k, Pbrt.%s), (v, Pbrt.%s) in"
+          F.linep sc "let map_entry = (k, Pbrt.%s), (v, Pbrt.%s) in"
             (Pb_codegen_util.string_of_payload_kind ~capitalize:() key_pk false) 
             (Pb_codegen_util.string_of_payload_kind ~capitalize:() value_pk false); 
           F.line sc 
               ("Pbrt.Encoder.map_entry ~encode_key " ^ 
                "~encode_value map_entry encoder")
         );
-        F.line sc @@ sp ") %s;" var_name;
+        F.linep sc ") %s;" var_name;
       ) 
       
     ) r_fields (* List.iter *); 
@@ -192,7 +197,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
 let gen_encode_variant ?and_ module_ variant sc = 
   let {Ot.v_name; Ot.v_constructors} = variant in 
   let vn = v_name in  
-  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) encoder = " 
+  F.linep sc "%s encode_%s (v:%s_types.%s) encoder = " 
       (Pb_codegen_util.let_decl_of_and and_) vn module_ vn;
   F.scope sc (fun sc -> 
     F.line sc "match v with";
@@ -204,7 +209,7 @@ let gen_encode_variant ?and_ module_ variant sc =
         vc_payload_kind} = variant_constructor in 
       begin match vc_field_type with
       | Ot.Vct_nullary -> ( 
-        F.line sc @@ sp "| %s_types.%s -> (" module_ vc_constructor; 
+        F.linep sc "| %s_types.%s -> (" module_ vc_constructor; 
         F.scope sc (fun sc -> 
           gen_encode_field_key sc vc_encoding_number vc_payload_kind false;
           F.line sc "Pbrt.Encoder.empty_nested encoder";
@@ -212,7 +217,7 @@ let gen_encode_variant ?and_ module_ variant sc =
         F.line sc ")";
       )
       | Ot.Vct_non_nullary_constructor field_type -> (
-        F.line sc @@ sp "| %s_types.%s x -> (" module_ vc_constructor;
+        F.linep sc "| %s_types.%s x -> (" module_ vc_constructor;
         F.scope sc (fun sc -> 
           gen_encode_field_type 
               sc ~with_key:() "x" 
@@ -228,7 +233,7 @@ let gen_encode_const_variant ?and_ module_ cv sc =
 
   let {Ot.cv_name; cv_constructors} = cv in 
 
-  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) encoder =" 
+  F.linep sc "%s encode_%s (v:%s_types.%s) encoder =" 
       (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
@@ -260,9 +265,9 @@ let gen_sig ?and_ t sc =
   let _ = and_ in
   let {Ot.module_; spec; _} = t in 
   let f type_name = 
-    F.line sc @@ sp "val encode_%s : %s_types.%s -> Pbrt.Encoder.t -> unit"
+    F.linep sc "val encode_%s : %s_types.%s -> Pbrt.Encoder.t -> unit"
       type_name module_ type_name;
-    F.line sc @@ sp 
+    F.linep sc 
       "(** [encode_%s v encoder] encodes [v] with the given [encoder] *)" 
       type_name; 
   in 
@@ -275,5 +280,3 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Protobuf Encoding"
-
-

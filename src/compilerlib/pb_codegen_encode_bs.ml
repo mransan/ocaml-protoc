@@ -58,10 +58,10 @@ let gen_field sc var_name json_label field_type pk =
     let setter, map_function = setter_of_basic_type json_label basic_type pk in
     begin match map_function with
     | None -> 
-      F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.%s %s);" 
-                   json_label setter var_name
+      F.linep sc "Js_dict.set json \"%s\" (Js_json.%s %s);" 
+        json_label setter var_name
     | Some map_function ->
-      F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.%s (%s %s));"
+      F.linep sc "Js_dict.set json \"%s\" (Js_json.%s (%s %s));"
         json_label setter map_function var_name 
     end
   
@@ -76,17 +76,17 @@ let gen_field sc var_name json_label field_type pk =
      in
     begin match udt_type with
     | `Message -> begin 
-      F.line sc @@ sp "begin (* %s field *)" json_label;
+      F.linep sc "begin (* %s field *)" json_label;
       F.scope sc (fun sc -> 
         F.line sc "let json' = Js_dict.empty () in"; 
-        F.line sc @@ sp "%s %s json';" f_name var_name;
-        F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.object_ json');" 
+        F.linep sc "%s %s json';" f_name var_name;
+        F.linep sc "Js_dict.set json \"%s\" (Js_json.object_ json');" 
           json_label;
       ); 
       F.line sc "end;"
     end
     | `Enum -> begin 
-      F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.string (%s %s));"
+      F.linep sc "Js_dict.set json \"%s\" (Js_json.string (%s %s));"
         json_label f_name var_name
     end
     end
@@ -96,7 +96,7 @@ let gen_rft_nolabel sc var_name rf_label (field_type, _, pk) =
   gen_field sc var_name json_label field_type pk 
 
 let gen_rft_optional_field sc var_name rf_label (field_type, _, pk, _) = 
-  F.line sc @@ sp "begin match %s with" var_name; 
+  F.linep sc "begin match %s with" var_name; 
   F.scope sc (fun sc ->
     F.line sc "| None -> ()";
     F.line sc "| Some v ->";
@@ -124,7 +124,7 @@ let gen_rft_repeated_field sc var_name rf_label repeated_field =
     let setter, map_function = setter_of_basic_type json_label basic_type pk in 
     begin match map_function with
     | None ->
-      F.line sc @@ sp "let a = %s |> Array.of_list |> Array.map Js_json.%s in" 
+      F.linep sc "let a = %s |> Array.of_list |> Array.map Js_json.%s in" 
         var_name setter;
     | Some map_function ->
       F.line sc @@ 
@@ -132,12 +132,12 @@ let gen_rft_repeated_field sc var_name rf_label repeated_field =
             "|> Array.map Js_json.%s in")
         var_name map_function setter;
     end;
-    F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.array_ a);"
+    F.linep sc "Js_dict.set json \"%s\" (Js_json.array_ a);"
       json_label 
   
   (* User defined *)
   | Ot.Ft_user_defined_type udt, Ot.Pk_bytes -> 
-    F.line sc @@ sp "let %s' = List.map (fun v ->" rf_label;
+    F.linep sc "let %s' = List.map (fun v ->" rf_label;
     F.scope sc (fun sc -> 
       F.line sc "let json' = Js_dict.empty () in"; 
       let f_name = 
@@ -147,40 +147,40 @@ let gen_rft_repeated_field sc var_name rf_label repeated_field =
           ~function_prefix ~module_suffix udt
       in 
 
-      F.line sc @@ sp "%s v json';" f_name;
-      F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.object_ json');" 
+      F.linep sc "%s v json';" f_name;
+      F.linep sc "Js_dict.set json \"%s\" (Js_json.object_ json');" 
         json_label;
       F.line sc "json' |> Array.of_list";
     ); 
-    F.line sc @@ sp ") %s in" var_name;
-    F.line sc @@ sp "Js_dict.set json \"%s\" (Js_json.array_ %s');"
+    F.linep sc ") %s in" var_name;
+    F.linep sc "Js_dict.set json \"%s\" (Js_json.array_ %s');"
       json_label rf_label
 
   | _ -> unsupported json_label
         
 let gen_rft_variant_field sc var_name rf_label {Ot.v_constructors; _} = 
-  F.line sc @@ sp "begin match %s with" var_name;
+  F.linep sc "begin match %s with" var_name;
   F.scope sc (fun sc -> 
     List.iter (fun {Ot.vc_constructor; vc_field_type; vc_payload_kind; _} ->
       let var_name = "v" in 
       let json_label = 
         Pb_codegen_util.camel_case_of_constructor vc_constructor 
       in  
-      F.line sc @@ sp "| %s v ->" vc_constructor; 
+      F.linep sc "| %s v ->" vc_constructor; 
       F.scope sc (fun sc ->  
         match vc_field_type with
         | Ot.Vct_nullary -> 
-          F.line sc @@ sp "Js_dict.set json \"%s\" Js_json.null" json_label
+          F.linep sc "Js_dict.set json \"%s\" Js_json.null" json_label
         | Ot.Vct_non_nullary_constructor field_type -> 
           gen_field sc var_name json_label field_type vc_payload_kind
       )
     ) v_constructors;
   ); 
-  F.line sc @@ sp "end; (* match v.%s *)" rf_label
+  F.linep sc "end; (* match v.%s *)" rf_label
 
 let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc = 
   let rn = r_name in 
-  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) json = " 
+  F.linep sc "%s encode_%s (v:%s_types.%s) json = " 
       (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
   F.scope sc (fun sc -> 
     List.iter (fun record_field -> 
@@ -225,16 +225,16 @@ let gen_encode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
     F.scope sc (fun sc -> 
       match vc_field_type with 
       | Ot.Vct_nullary -> 
-        F.line sc @@ sp "| %s_types.%s ->" module_ vc_constructor; 
-        F.line sc @@ sp "Js_dict.set json \"%s\" Js_json.null" json_label 
+        F.linep sc "| %s_types.%s ->" module_ vc_constructor; 
+        F.linep sc "Js_dict.set json \"%s\" Js_json.null" json_label 
 
       | Ot.Vct_non_nullary_constructor field_type -> 
-        F.line sc @@ sp "| %s_types.%s v ->" module_ vc_constructor; 
+        F.linep sc "| %s_types.%s v ->" module_ vc_constructor; 
         gen_field sc "v" json_label field_type vc_payload_kind
     )
   in 
 
-  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) json = " 
+  F.linep sc "%s encode_%s (v:%s_types.%s) json = " 
       (Pb_codegen_util.let_decl_of_and and_) v_name module_ v_name;
   F.scope sc (fun sc -> 
     F.line sc "begin match v with";
@@ -243,27 +243,25 @@ let gen_encode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
   ) 
 
 let gen_encode_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
-  F.line sc @@ sp "%s encode_%s (v:%s_types.%s) : string = " 
+  F.linep sc "%s encode_%s (v:%s_types.%s) : string = " 
       (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun (constructor, _) -> 
       let json_value = String.uppercase constructor in 
       (* TODO it should not be upper case *)
-      F.line sc @@ sp "| %s_types.%s -> \"%s\"" module_ constructor json_value
+      F.linep sc "| %s_types.%s -> \"%s\"" module_ constructor json_value
     ) cv_constructors
   ) 
 
 let gen_struct ?and_ t sc = 
   let {Ot.module_; spec; _} = t in 
 
-  let has_encoded =  match spec with 
-    | Ot.Record r  -> 
-      gen_encode_record ?and_ module_ r sc; true
-    | Ot.Variant v -> 
-      gen_encode_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> 
-      gen_encode_const_variant ?and_ module_ v sc; true
+  let has_encoded =
+    match spec with 
+    | Ot.Record r  -> gen_encode_record ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_encode_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> gen_encode_const_variant ?and_ module_ v sc; true
   in
   has_encoded
 
@@ -271,18 +269,18 @@ let gen_sig ?and_ t sc =
   let _ = and_ in
   let {Ot.module_; spec; _} = t in 
   let f type_name = 
-    F.line sc @@ sp "val encode_%s : %s_types.%s -> Js_json.t Js_dict.t -> unit" 
+    F.linep sc "val encode_%s : %s_types.%s -> Js_json.t Js_dict.t -> unit" 
       type_name module_ type_name;
-    F.line sc @@ sp ("(** [encode_%s v dict] encodes [v] int the " ^^ 
+    F.linep sc ("(** [encode_%s v dict] encodes [v] int the " ^^ 
                      "given JSON [dict] *)") type_name; 
   in 
   match spec with 
   | Ot.Record {Ot.r_name; _ } -> f r_name; true
   | Ot.Variant v -> f v.Ot.v_name; true 
   | Ot.Const_variant {Ot.cv_name; _ } -> 
-    F.line sc @@ sp "val encode_%s : %s_types.%s -> string"
+    F.linep sc "val encode_%s : %s_types.%s -> string"
       cv_name module_ cv_name;
-    F.line sc @@ sp ("(** [encode_%s v] returns JSON string*)") cv_name; 
+    F.linep sc ("(** [encode_%s v] returns JSON string*)") cv_name; 
     true
 
 let ocamldoc_title = "Protobuf JSON Encoding"

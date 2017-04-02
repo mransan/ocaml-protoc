@@ -277,8 +277,7 @@ let generate_for_all_types ocaml_types sc (f:codegen_f) ocamldoc_title =
     | None -> () 
     | Some ocamldoc_title -> ( 
       F.empty_line sc;
-      F.line sc @@ Codegen_util.sp 
-          "(** {2 %s} *)" ocamldoc_title;  
+      F.linep sc "(** {2 %s} *)" ocamldoc_title;  
       F.empty_line sc;
     )
   end;
@@ -314,7 +313,7 @@ let generate_type_and_default
     match Pb_option.get proto_file_options "ocaml_file_ppx" with
     | None -> () 
     | Some Pb_option.Constant_string s -> 
-      F.line sc @@ Printf.sprintf "[@@@%s]" s
+      F.linep sc "[@@@%s]" s
     | _ -> E.invalid_ppx_extension_option proto_file_name  
   in 
 
@@ -335,7 +334,7 @@ let generate_type_and_default
   (* .mli file *)
   
   let sc = F.empty_scope () in 
-  F.line sc @@ sp 
+  F.linep sc 
         "(** %s Types *)" 
         (Filename.basename proto_file_name); 
   F.empty_line sc; 
@@ -380,7 +379,7 @@ let generate_yojson ocaml_types ml_out proto_file_name =
   
   (* .mli file *)
   let sc = F.empty_scope () in 
-  F.line sc @@ sp 
+  F.linep sc 
         "(** %s YoJSON Encoding *)" 
         (Filename.basename proto_file_name); 
   F.empty_line sc; 
@@ -412,7 +411,7 @@ let generate_bs ocaml_types ml_out proto_file_name =
   
   (* .mli file *)
   let sc = F.empty_scope () in 
-  F.line sc @@ sp 
+  F.linep sc 
         "(** %s BuckleScript Encoding *)" 
         (Filename.basename proto_file_name); 
   F.empty_line sc; 
@@ -444,7 +443,7 @@ let generate_binary ocaml_types ml_out proto_file_name =
   
   (* .mli file *)
   let sc = F.empty_scope () in 
-  F.line sc @@ sp 
+  F.linep sc 
         "(** %s Binary Encoding *)" 
         (Filename.basename proto_file_name); 
   F.empty_line sc; 
@@ -472,9 +471,9 @@ let generate_pp ocaml_types ml_out proto_file_name =
   
   (* .mli file *)
   let sc = F.empty_scope () in 
-  F.line sc @@ sp 
-        "(** %s Pretty Printing *)" 
-        (Filename.basename proto_file_name); 
+  F.linep sc 
+    "(** %s Pretty Printing *)" 
+    (Filename.basename proto_file_name); 
   F.empty_line sc; 
   generate_for_all_types ocaml_types sc 
     Pb_codegen_pp.gen_sig 

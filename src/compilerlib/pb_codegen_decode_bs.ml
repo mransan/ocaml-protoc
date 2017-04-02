@@ -28,9 +28,7 @@ let value_expression ~r_name ~rf_label field_type =
     in 
     begin match udt_type with
     | `Message -> 
-      let o = 
-        sp "(Pbrt_bs.object_ json \"%s\" \"%s\")" r_name rf_label  
-      in 
+      let o = sp "(Pbrt_bs.object_ json \"%s\" \"%s\")" r_name rf_label  in 
       "(" ^ f_name ^ " " ^ o ^ ")"
     | `Enum ->
       "(" ^ f_name ^ " json)"
@@ -42,9 +40,9 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
   let value_expression = value_expression ~r_name ~rf_label field_type in
 
-  F.line sc @@ sp "| \"%s\" -> " json_label; 
-  F.line sc @@ sp "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
-  F.line sc @@ sp "  v.%s <- %s" rf_label value_expression
+  F.linep sc "| \"%s\" -> " json_label; 
+  F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+  F.linep sc "  v.%s <- %s" rf_label value_expression
 
 (* Generate all the pattern matches for a repeated field *)
 let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
@@ -52,19 +50,19 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
 
-  F.line sc @@ sp "| \"%s\" -> begin" json_label;
+  F.linep sc "| \"%s\" -> begin" json_label;
 
   F.scope sc (fun sc -> 
     F.line sc "let a = ";
     F.scope sc (fun sc -> 
-      F.line sc @@ sp "let a = Js_dict.unsafeGet json \"%s\" in " json_label;
-      F.line sc @@ sp "Pbrt_bs.array_ a \"%s\" \"%s\"" r_name rf_label; 
+      F.linep sc "let a = Js_dict.unsafeGet json \"%s\" in " json_label;
+      F.linep sc "Pbrt_bs.array_ a \"%s\" \"%s\"" r_name rf_label; 
     ); 
     F.line sc "in";
-    F.line sc @@ sp "v.%s <- Array.map (fun json -> " rf_label;
+    F.linep sc "v.%s <- Array.map (fun json -> " rf_label;
 
     let value_expression = value_expression ~r_name ~rf_label field_type in
-    F.line sc @@ sp "  %s" value_expression;
+    F.linep sc "  %s" value_expression;
     F.line sc ") a |> Array.to_list;";
   ); 
 
@@ -76,9 +74,9 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
   let value_expression = value_expression ~r_name ~rf_label field_type in
 
-  F.line sc @@ sp "| \"%s\" -> " json_label; 
-  F.line sc @@ sp "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
-  F.line sc @@ sp "  v.%s <- Some (%s)" rf_label value_expression
+  F.linep sc "| \"%s\" -> " json_label; 
+  F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+  F.linep sc "  v.%s <- Some (%s)" rf_label value_expression
 
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} = 
@@ -90,21 +88,16 @@ let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} =
     in
 
     match vc_field_type with
-    | Ot.Vct_nullary -> begin 
-      F.line sc @@ sp "| \"%s\" -> v.%s <- %s"
-                   json_label rf_label vc_constructor
-    end
+    | Ot.Vct_nullary -> 
+      F.linep sc "| \"%s\" -> v.%s <- %s" json_label rf_label vc_constructor
 
     | Ot.Vct_non_nullary_constructor field_type ->
       let value_expression = 
         value_expression ~r_name ~rf_label field_type
       in
-
-      F.line sc @@ sp "| \"%s\" -> " json_label;
-      F.line sc @@ sp "  let json = Js_dict.unsafeGet json \"%s\" in" 
-        json_label;
-      F.line sc @@ sp "  v.%s <- %s (%s)" 
-        rf_label vc_constructor value_expression;
+      F.linep sc "| \"%s\" -> " json_label;
+      F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+      F.linep sc "  v.%s <- %s (%s)" rf_label vc_constructor value_expression;
     
   ) v_constructors
 
@@ -112,13 +105,13 @@ let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} =
 let gen_decode_record ?and_  module_ {Ot.r_name; r_fields} sc = 
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in 
 
-  F.line sc @@ 
-    sp "%s decode_%s json =" (Pb_codegen_util.let_decl_of_and and_) r_name; 
+  F.linep sc "%s decode_%s json =" 
+    (Pb_codegen_util.let_decl_of_and and_) r_name; 
 
   F.scope sc (fun sc -> 
-    F.line sc @@ sp "let v = default_%s () in" mutable_record_name;
-    F.line sc @@ "let keys = Js_dict.keys json in"; 
-    F.line sc @@ "let last_key_index = Array.length keys - 1 in"; 
+    F.linep sc "let v = default_%s () in" mutable_record_name;
+    F.line sc "let keys = Js_dict.keys json in"; 
+    F.line sc "let last_key_index = Array.length keys - 1 in"; 
     
     F.line sc "for i = 0 to last_key_index do";
     F.scope sc (fun sc -> 
@@ -160,10 +153,10 @@ let gen_decode_record ?and_  module_ {Ot.r_name; r_fields} sc =
     F.line sc "({"; 
     F.scope sc (fun sc -> 
       List.iter (fun {Ot.rf_label;_} -> 
-        F.line sc @@ sp "%s_types.%s = v.%s;" module_ rf_label rf_label; 
+        F.linep sc "%s_types.%s = v.%s;" module_ rf_label rf_label; 
       ) r_fields;
     ); 
-    F.line sc @@ sp "} : %s_types.%s)" module_ r_name;
+    F.linep sc "} : %s_types.%s)" module_ r_name;
   )
 
 (* Generate decode function for a variant type *)
@@ -176,8 +169,7 @@ let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
 
     match vc_field_type with
     | Ot.Vct_nullary -> 
-      F.line sc @@ sp "| \"%s\" -> %s_types.%s"
-                   json_label module_ vc_constructor
+      F.linep sc "| \"%s\" -> %s_types.%s" json_label module_ vc_constructor
 
     | Ot.Vct_non_nullary_constructor field_type ->
       let value_expression = 
@@ -185,18 +177,16 @@ let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
         value_expression ~r_name ~rf_label field_type
       in
 
-      F.line sc @@ sp "| \"%s\" -> " json_label ;
-      F.line sc @@ sp "  let json = Js_dict.unsafeGet json \"%s\" in" 
-        json_label;
-      F.line sc @@ sp "  %s_types.%s (%s)" 
-        module_ vc_constructor value_expression;
+      F.linep sc "| \"%s\" -> " json_label ;
+      F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+      F.linep sc "  %s_types.%s (%s)" module_ vc_constructor value_expression;
   in
 
-  F.line sc @@ 
-    sp "%s decode_%s json =" (Pb_codegen_util.let_decl_of_and and_) v_name; 
+  F.linep sc "%s decode_%s json =" 
+    (Pb_codegen_util.let_decl_of_and and_) v_name; 
 
   F.scope sc (fun sc -> 
-    F.line sc @@ "let keys = Js_dict.keys json in"; 
+    F.line sc "let keys = Js_dict.keys json in"; 
     
     (* even though a variant should be an object with a single field, 
      * it is possible other fields are present in the JSON object. Therefore
@@ -204,47 +194,46 @@ let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
      * of the cases it will be a single iteration *)
     F.line sc "let rec loop = function "; 
     F.scope sc (fun sc -> 
-      F.line sc @@ sp "| -1 -> Pbrt_json.E.malformed_variant \"%s\"" 
-        v_name;  
-      F.line sc "| i -> ";
+      F.linep sc "| -1 -> Pbrt_json.E.malformed_variant \"%s\"" v_name;  
+      F.line sc  "| i -> ";
+
       F.scope sc (fun sc -> 
         F.line sc "begin match Array.unsafe_get keys i with";
-
         List.iter (process_v_constructor sc) v_constructors; 
-
         F.empty_line sc; 
         F.line sc "| _ -> loop (i - 1)";
         F.line sc "end";
       );
     );
+
     F.line sc "in"; 
     F.line sc "loop (Array.length keys - 1)";
   ) 
 
 let gen_decode_const_variant ?and_ module_ {Ot.cv_name; cv_constructors} sc = 
-  F.line sc @@ sp "%s decode_%s (json:Js_json.t) =" 
+  F.linep sc "%s decode_%s (json:Js_json.t) =" 
     (Pb_codegen_util.let_decl_of_and and_) cv_name; 
+
   F.scope sc (fun sc -> 
-    F.line sc @@ sp "match Pbrt_bs.string json \"%s\" \"value\" with" cv_name; 
+    F.linep sc "match Pbrt_bs.string json \"%s\" \"value\" with" cv_name; 
+    
     List.iter (fun (constructor, _) -> 
-      F.line sc @@ sp "| \"%s\" -> %s_types.%s"
+      F.linep sc "| \"%s\" -> %s_types.%s"
         (String.uppercase constructor) module_ constructor
     ) cv_constructors;  
-    F.line sc @@ sp "| \"\" -> %s_types.%s" 
-      module_ (fst @@ List.hd cv_constructors);
-    F.line sc @@ sp "| _ -> Pbrt_json.E.malformed_variant \"%s\"" cv_name;  
+
+    F.linep sc "| \"\" -> %s_types.%s" module_ (fst @@ List.hd cv_constructors);
+
+    F.linep sc "| _ -> Pbrt_json.E.malformed_variant \"%s\"" cv_name;  
   ) 
 
 let gen_struct ?and_ t sc = 
   let {Ot.module_; spec; _} = t in 
 
   let has_encoded =  match spec with 
-    | Ot.Record r  -> 
-      gen_decode_record ?and_ module_ r sc; true
-    | Ot.Variant v -> 
-      gen_decode_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> 
-      gen_decode_const_variant ?and_ module_ v sc; true
+    | Ot.Record r  -> gen_decode_record ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_decode_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> gen_decode_const_variant ?and_ module_ v sc; true
   in
   has_encoded
 
@@ -254,9 +243,9 @@ let gen_sig ?and_ t sc =
   let {Ot.module_; spec; _} = t in 
 
   let f type_name = 
-    F.line sc @@ sp "val decode_%s : Js_json.t Js_dict.t -> %s_types.%s" 
+    F.linep sc "val decode_%s : Js_json.t Js_dict.t -> %s_types.%s" 
                  type_name module_ type_name ; 
-    F.line sc @@ sp ("(** [decode_%s decoder] decodes a " ^^ 
+    F.linep sc ("(** [decode_%s decoder] decodes a " ^^ 
                      "[%s] value from [decoder] *)") type_name type_name; 
   in 
 
@@ -264,9 +253,9 @@ let gen_sig ?and_ t sc =
   | Ot.Record {Ot.r_name; _ } -> f r_name; true
   | Ot.Variant {Ot.v_name; _ } -> f v_name; true 
   | Ot.Const_variant {Ot.cv_name; _ } -> 
-    F.line sc @@ sp "val decode_%s : Js_json.t -> %s_types.%s" 
+    F.linep sc "val decode_%s : Js_json.t -> %s_types.%s" 
       cv_name module_ cv_name ; 
-    F.line sc @@ sp "(** [decode_%s value] decodes a [%s] from a Json value*)"
+    F.linep sc "(** [decode_%s value] decodes a [%s] from a Json value*)"
       cv_name cv_name;
     true
 

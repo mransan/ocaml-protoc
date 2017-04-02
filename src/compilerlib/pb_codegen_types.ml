@@ -40,7 +40,7 @@ let gen_type_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc =
     else r_name 
   in 
 
-  F.line sc @@ sp "%s %s = {" (type_decl_of_and and_) r_name;
+  F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
   F.scope sc (fun sc -> 
     List.iter (fun {Ot.rf_label; rf_field_type; rf_mutable;} ->  
       let prefix = field_prefix rf_field_type rf_mutable in 
@@ -51,7 +51,7 @@ let gen_type_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc =
         in 
         Pb_codegen_util.string_of_record_field_type ?module_ rf_field_type 
       in 
-      F.line sc @@ sp "%s%s : %s;" prefix rf_label type_string 
+      F.linep sc "%s%s : %s;" prefix rf_label type_string 
     ) r_fields;
   ); 
   F.line sc "}"
@@ -59,31 +59,31 @@ let gen_type_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc =
 let gen_type_variant ?and_ variant sc =  
   let {Ot.v_name; v_constructors; } = variant in
 
-  F.line sc @@ sp "%s %s =" (type_decl_of_and and_) v_name; 
+  F.linep sc "%s %s =" (type_decl_of_and and_) v_name; 
 
   F.scope sc (fun sc -> 
     List.iter (fun {Ot.vc_constructor; vc_field_type; _} ->
       match vc_field_type with
-      | Ot.Vct_nullary -> F.line sc @@ sp "| %s" vc_constructor
+      | Ot.Vct_nullary -> F.linep sc "| %s" vc_constructor
       | Ot.Vct_non_nullary_constructor  field_type -> (
         let type_string = string_of_field_type field_type in 
-        F.line sc @@ sp "| %s of %s" vc_constructor type_string 
+        F.linep sc "| %s of %s" vc_constructor type_string 
       )
     ) v_constructors;
   )
 
 let gen_type_const_variant ?and_ {Ot.cv_name; cv_constructors} sc = 
-  F.line sc @@ sp "%s %s =" (type_decl_of_and and_) cv_name; 
+  F.linep sc "%s %s =" (type_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     List.iter (fun (name, _ ) -> 
-      F.line sc @@ sp "| %s " name
+      F.linep sc "| %s " name
     ) cv_constructors;
   )
 
 let print_ppx_extension {Ot.type_level_ppx_extension; _ } sc = 
   match type_level_ppx_extension with
   | None -> () 
-  | Some ppx_content -> F.line sc @@ sp "[@@%s]" ppx_content
+  | Some ppx_content -> F.linep sc "[@@%s]" ppx_content
 
 let gen_struct ?and_ t scope = 
   begin
@@ -104,13 +104,11 @@ let gen_struct ?and_ t scope =
   true
 
 let gen_sig ?and_ t scope = 
-  begin
-    match t with 
-    | {Ot.spec = Ot.Record r; module_; _} -> (
-      gen_type_record ?and_ module_ r scope 
-    ) 
-    | {Ot.spec = Ot.Variant v; _ } -> gen_type_variant  ?and_ v scope  
-    | {Ot.spec = Ot.Const_variant v; _ } -> gen_type_const_variant ?and_ v scope 
+  let {Ot.module_; spec; _} = t in 
+  begin match spec with 
+    | Ot.Record r ->gen_type_record ?and_ module_ r scope 
+    | Ot.Variant v -> gen_type_variant  ?and_ v scope  
+    | Ot.Const_variant v -> gen_type_const_variant ?and_ v scope 
   end; 
   print_ppx_extension t scope; 
   true
