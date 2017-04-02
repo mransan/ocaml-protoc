@@ -65,20 +65,20 @@ let record_field_default_info ?module_ record_field =
       | None   -> "None"
       | Some _ -> sp "Some (%s)" @@ dfvft field_type default_value   
       end 
-    | Ot.Rft_repeated_field (rt, field_type, _, _, _) -> 
+    | Ot.Rft_repeated (rt, field_type, _, _, _) -> 
       begin match rt with
       | Ot.Rt_list -> "[]"
       | Ot.Rt_repeated_field -> 
         sp "Pbrt.Repeated_field.make (%s)" (dfvft field_type None) 
       end
-    | Ot.Rft_associative_field (at, _, _, _) -> 
+    | Ot.Rft_associative (at, _, _, _) -> 
       begin match at with
       | Ot.At_list -> "[]"
       | Ot.At_hashtable -> "Hashtbl.create 128"
         (* TODO This initial value could be configurable either via 
          * the default function or via a protobuf option.  *)
       end
-    | Ot.Rft_variant_field {Ot.v_constructors; _} -> 
+    | Ot.Rft_variant {Ot.v_constructors; _} -> 
        begin match v_constructors with
        | [] -> assert(false)
        | {Ot.vc_constructor; vc_field_type; _ }::_ -> 

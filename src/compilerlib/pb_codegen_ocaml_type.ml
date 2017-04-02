@@ -79,15 +79,15 @@ type record_field_type =
   | Rft_optional        of (field_type * encoding_number * payload_kind * 
                             default_value) 
 
-  | Rft_repeated_field  of (repeated_type * field_type * encoding_number * 
+  | Rft_repeated        of (repeated_type * field_type * encoding_number * 
                             payload_kind  * is_packed)  
 
-  | Rft_associative_field of (associative_type           * 
+  | Rft_associative     of (associative_type           * 
                               encoding_number            * 
                              (basic_type * payload_kind) * 
                              (field_type * payload_kind))
 
-  | Rft_variant_field     of variant 
+  | Rft_variant         of variant 
 
 and variant_constructor = {
   vc_constructor : string ; 

@@ -43,21 +43,21 @@ let string_of_record_field_type ?module_ = function
       string_of_field_type ?module_ field_type
   | Ot.Rft_optional (field_type, _, _, _) -> 
       (string_of_field_type ?module_ field_type) ^ " option"
-  | Ot.Rft_repeated_field (rt, field_type, _, _,_) -> 
+  | Ot.Rft_repeated (rt, field_type, _, _,_) -> 
       (string_of_field_type ?module_ field_type) ^ " " ^ 
       (string_of_repeated_type rt)
-  | Ot.Rft_associative_field (Ot.At_list, _, (key_type, _), (value_type, _)) -> 
+  | Ot.Rft_associative (Ot.At_list, _, (key_type, _), (value_type, _)) -> 
       Printf.sprintf "(%s * %s) %s" 
         (string_of_basic_type key_type)
         (string_of_field_type ?module_ value_type) 
         (string_of_associative_type Ot.At_list) 
-  | Ot.Rft_associative_field 
+  | Ot.Rft_associative
                 (Ot.At_hashtable, _, (key_type, _), (value_type, _)) -> 
       Printf.sprintf "(%s, %s) %s" 
         (string_of_basic_type key_type)
         (string_of_field_type ?module_ value_type) 
         (string_of_associative_type Ot.At_hashtable) 
-  | Ot.Rft_variant_field {Ot.v_name; _ } -> 
+  | Ot.Rft_variant {Ot.v_name; _ } -> 
     match module_ with 
     | None -> v_name
     | Some module_ -> module_ ^ "_types." ^ v_name
@@ -177,11 +177,11 @@ let collect_modules_of_record_field_type modules = function
   | Ot.Rft_nolabel (field_type, _, _)
   | Ot.Rft_required (field_type, _, _, _)  
   | Ot.Rft_optional (field_type, _, _, _) 
-  | Ot.Rft_repeated_field (_, field_type, _, _, _) 
-  | Ot.Rft_associative_field (_, _ , _, (field_type, _)) ->
+  | Ot.Rft_repeated (_, field_type, _, _, _) 
+  | Ot.Rft_associative (_, _ , _, (field_type, _)) ->
     collect_modules_of_field_type modules field_type 
 
-  | Ot.Rft_variant_field variant -> 
+  | Ot.Rft_variant variant -> 
     collect_modules_of_variant modules variant 
 
 let collect_modules_of_record modules {Ot.r_fields; _} = 

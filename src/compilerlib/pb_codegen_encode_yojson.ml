@@ -83,7 +83,7 @@ let gen_rft_nolabel sc rf_label (field_type, _, pk) =
   | None -> () 
   | Some exp -> F.linep sc "let assoc = %s :: assoc in" exp 
 
-let gen_rft_optional_field sc rf_label (field_type, _, pk, _) = 
+let gen_rft_optional sc rf_label (field_type, _, pk, _) = 
   F.linep sc "let assoc = match v.%s with" rf_label; 
   F.scope sc (fun sc ->
     F.line sc "| None -> assoc";
@@ -94,7 +94,7 @@ let gen_rft_optional_field sc rf_label (field_type, _, pk, _) =
   ); 
   F.line sc "in"
 
-let gen_rft_repeated_field sc rf_label repeated_field = 
+let gen_rft_repeated sc rf_label repeated_field = 
   let (repeated_type, field_type, _, pk, _) = repeated_field in
   begin match repeated_type with
   | Ot.Rt_list -> () 
@@ -142,7 +142,7 @@ let gen_rft_repeated_field sc rf_label repeated_field =
   );
   F.line sc "in"
         
-let gen_rft_variant_field sc rf_label {Ot.v_constructors; _} = 
+let gen_rft_variant sc rf_label {Ot.v_constructors; _} = 
   F.linep sc "let assoc = match v.%s with" rf_label;
 
   F.scope sc (fun sc -> 
@@ -181,20 +181,20 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields } sc =
       | Ot.Rft_nolabel nolabel_field  ->
         gen_rft_nolabel sc rf_label nolabel_field
      
-      | Ot.Rft_repeated_field repeated_field  -> 
-        gen_rft_repeated_field sc rf_label repeated_field  
+      | Ot.Rft_repeated repeated_field  -> 
+        gen_rft_repeated sc rf_label repeated_field  
 
-      | Ot.Rft_variant_field variant_field -> 
-        gen_rft_variant_field sc rf_label variant_field 
+      | Ot.Rft_variant variant_field -> 
+        gen_rft_variant sc rf_label variant_field 
       
       | Ot.Rft_optional optional_field ->
-        gen_rft_optional_field sc rf_label optional_field 
+        gen_rft_optional sc rf_label optional_field 
 
       | Ot.Rft_required _ ->
         Printf.eprintf "Only proto3 syntax supported in JSON encoding";
         exit 1
 
-      | Ot.Rft_associative_field _ -> 
+      | Ot.Rft_associative _ -> 
         Printf.eprintf "Map field are not currently supported for JSON";
         exit 1
         

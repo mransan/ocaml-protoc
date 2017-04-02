@@ -59,7 +59,7 @@ let gen_rft_required sc var_name (field_type, encoding_number, pk, _) =
   gen_encode_field_type ~with_key:() sc var_name encoding_number pk 
     false (* packed *) field_type
 
-let gen_rft_optional_field sc var_name (field_type, encoding_number, pk, _) = 
+let gen_rft_optional sc var_name (field_type, encoding_number, pk, _) = 
   F.linep sc "begin match %s with" var_name;
   F.linep sc "| Some x -> ";
   F.scope sc (fun sc ->
@@ -69,7 +69,7 @@ let gen_rft_optional_field sc var_name (field_type, encoding_number, pk, _) =
   F.line sc "| None -> ();";
   F.line sc "end;"
 
-let gen_rft_repeated_field sc var_name repeated_field = 
+let gen_rft_repeated sc var_name repeated_field = 
   let (rt, field_type, encoding_number, pk, is_packed) = repeated_field in 
 
   match rt, is_packed with
@@ -121,7 +121,7 @@ let gen_rft_repeated_field sc var_name repeated_field =
     F.line sc") encoder;";
   ) 
 
-let gen_rft_variant_field sc module_ var_name {Ot.v_constructors; _} =
+let gen_rft_variant sc module_ var_name {Ot.v_constructors; _} =
 
   F.linep sc "begin match %s with" var_name;
   List.iter (fun constructor  -> 
@@ -153,7 +153,7 @@ let gen_rft_variant_field sc module_ var_name {Ot.v_constructors; _} =
   ) v_constructors;
   F.line sc "end;"
 
-let gen_rft_associative_field sc var_name associative_field = 
+let gen_rft_associative sc var_name associative_field = 
   let (
     at, 
     encoding_number, 
@@ -205,16 +205,16 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields } sc =
         gen_rft_required sc var_name x 
 
       | Ot.Rft_optional x -> 
-        gen_rft_optional_field sc var_name x 
+        gen_rft_optional sc var_name x 
 
-      | Ot.Rft_repeated_field x ->
-        gen_rft_repeated_field sc var_name x 
+      | Ot.Rft_repeated x ->
+        gen_rft_repeated sc var_name x 
 
-      | Ot.Rft_variant_field x -> 
-        gen_rft_variant_field sc module_ var_name x 
+      | Ot.Rft_variant x -> 
+        gen_rft_variant sc module_ var_name x 
 
-      | Ot.Rft_associative_field x -> 
-        gen_rft_associative_field sc var_name x 
+      | Ot.Rft_associative x -> 
+        gen_rft_associative sc var_name x 
       
     ) r_fields (* List.iter *); 
     F.line sc "()";

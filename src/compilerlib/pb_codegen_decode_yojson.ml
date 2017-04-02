@@ -118,10 +118,10 @@ let gen_record ?and_  module_ {Ot.r_name; r_fields} sc =
         | Ot.Rft_nolabel nolabel_field  ->
           gen_rft_nolabel sc ~r_name ~rf_label nolabel_field
 
-        | Ot.Rft_repeated_field repeated_field -> 
+        | Ot.Rft_repeated repeated_field -> 
           gen_rft_repeated_field sc ~r_name ~rf_label repeated_field
 
-        | Ot.Rft_variant_field variant_field -> 
+        | Ot.Rft_variant variant_field -> 
           gen_rft_variant_field sc ~r_name ~rf_label variant_field
 
         | Ot.Rft_optional optional_field -> 
@@ -131,7 +131,7 @@ let gen_record ?and_  module_ {Ot.r_name; r_fields} sc =
           Printf.eprintf "Only proto3 syntax supported in JSON encoding";
           exit 1
 
-        | Ot.Rft_associative_field _ -> 
+        | Ot.Rft_associative _ -> 
           Printf.eprintf "Map field are not currently supported for JSON";
           exit 1
       ) r_fields;

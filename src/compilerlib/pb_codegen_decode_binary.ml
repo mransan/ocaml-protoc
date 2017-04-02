@@ -62,13 +62,13 @@ let gen_rft_required sc r_name rf_label (field_type, encoding_number, pk, _) =
       (is_set_variable_name rf_label); 
   ) 
 
-let gen_rft_optional_field sc r_name rf_label optional_field = 
+let gen_rft_optional sc r_name rf_label optional_field = 
   let (field_type, encoding_number, pk, _) = optional_field in 
   gen_field_common sc encoding_number pk r_name (fun sc -> 
     F.linep sc "v.%s <- Some (%s);" rf_label (decode_field_f field_type pk); 
   )
 
-let gen_rft_repeated_field sc r_name rf_label repeated_field = 
+let gen_rft_repeated sc r_name rf_label repeated_field = 
   let (rt, field_type, encoding_number, pk, is_packed) = repeated_field in
   match rt, is_packed with
   | Ot.Rt_list, false -> 
@@ -100,7 +100,7 @@ let gen_rft_repeated_field sc r_name rf_label repeated_field =
     ) 
   ) 
 
-let gen_rft_associative_field sc r_name rf_label associative_field =   
+let gen_rft_associative sc r_name rf_label associative_field =   
 
   let (
     at, 
@@ -145,7 +145,7 @@ let gen_rft_associative_field sc r_name rf_label associative_field =
     end;
   )
 
-let gen_rft_variant_field sc module_ r_name rf_label {Ot.v_constructors; _} = 
+let gen_rft_variant sc module_ r_name rf_label {Ot.v_constructors; _} = 
   List.iter (fun variant_constructor  -> 
 
     let {
@@ -175,8 +175,8 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields} sc =
    * lists values when the message is done being decoded.  *) 
   let all_lists = List.fold_left (fun acc {Ot.rf_label; rf_field_type; _ } -> 
     match rf_field_type with
-    | Ot.Rft_repeated_field (Ot.Rt_list, _, _ , _, _ ) -> rf_label :: acc 
-    | Ot.Rft_associative_field (Ot.At_list, _, _, _) -> rf_label :: acc
+    | Ot.Rft_repeated (Ot.Rt_list, _, _ , _, _ ) -> rf_label :: acc 
+    | Ot.Rft_associative (Ot.At_list, _, _, _) -> rf_label :: acc
     | _ -> acc  
   ) [] r_fields in  
 
@@ -226,13 +226,13 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields} sc =
         | Ot.Rft_required x -> 
           gen_rft_required sc r_name rf_label x 
         | Ot.Rft_optional x -> 
-          gen_rft_optional_field sc r_name rf_label x 
-        | Ot.Rft_repeated_field x -> 
-          gen_rft_repeated_field sc r_name rf_label x 
-        | Ot.Rft_associative_field x-> 
-          gen_rft_associative_field sc r_name rf_label x 
-        | Ot.Rft_variant_field x -> 
-          gen_rft_variant_field sc module_ r_name rf_label x 
+          gen_rft_optional sc r_name rf_label x 
+        | Ot.Rft_repeated x -> 
+          gen_rft_repeated sc r_name rf_label x 
+        | Ot.Rft_associative x-> 
+          gen_rft_associative sc r_name rf_label x 
+        | Ot.Rft_variant x -> 
+          gen_rft_variant sc module_ r_name rf_label x 
       ) r_fields; 
       F.line sc ("| Some (_, payload_kind) -> " ^ 
                  "Pbrt.Decoder.skip d payload_kind");

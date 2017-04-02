@@ -45,7 +45,7 @@ let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc =
             rf_label field_string_of var_name
         ) (* Rft_optional *) 
 
-        | Ot.Rft_repeated_field (rt, field_type, _, _, _) ->  (
+        | Ot.Rft_repeated (rt, field_type, _, _, _) ->  (
           let field_string_of = gen_field field_type in 
           begin match rt with 
           | Ot.Rt_list -> (
@@ -61,7 +61,7 @@ let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc =
           end
         ) (* Rft_repeated_field *)
 
-        | Ot.Rft_variant_field {Ot.v_name; v_constructors = _ } -> (
+        | Ot.Rft_variant {Ot.v_name; v_constructors = _ } -> (
           (* constructors are ignored because the pretty printing is completely 
            * delegated to the pretty print function associated with that variant. 
            * This is indeed different from the [decode]/[encode] functions which 
@@ -73,7 +73,7 @@ let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc =
             rf_label ("pp_" ^ v_name) var_name
         ) (* Rft_variant_field *)
 
-        | Ot.Rft_associative_field (at, _, (key_type,_), (value_type, _)) -> (
+        | Ot.Rft_associative (at, _, (key_type,_), (value_type, _)) -> (
 
           let pp_runtime_function = match at with
             | Ot.At_list -> "pp_associative_list"

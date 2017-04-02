@@ -45,7 +45,7 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
   F.linep sc "  v.%s <- %s" rf_label value_expression
 
 (* Generate all the pattern matches for a repeated field *)
-let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
+let gen_rft_repeated sc ~r_name ~rf_label repeated_field =
   let (_, field_type, _, _, _) = repeated_field in
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
@@ -68,7 +68,7 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   F.line sc "end"
 
-let gen_rft_optional_field sc ~r_name ~rf_label optional_field = 
+let gen_rft_optional sc ~r_name ~rf_label optional_field = 
   let (field_type, _, _, _) = optional_field in
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
@@ -79,7 +79,7 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
   F.linep sc "  v.%s <- Some (%s)" rf_label value_expression
 
 (* Generate pattern match for a variant field *)
-let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} = 
+let gen_rft_variant sc ~r_name ~rf_label {Ot.v_constructors; _} = 
 
   List.iter (fun {Ot.vc_constructor; vc_field_type; _} -> 
 
@@ -125,19 +125,19 @@ let gen_record ?and_  module_ {Ot.r_name; r_fields} sc =
           gen_rft_nolabel sc ~r_name ~rf_label nolabel_field
         
         | Ot.Rft_optional optional_field -> 
-          gen_rft_optional_field sc ~r_name ~rf_label optional_field
+          gen_rft_optional sc ~r_name ~rf_label optional_field
 
-        | Ot.Rft_repeated_field repeated_field -> 
-          gen_rft_repeated_field sc ~r_name ~rf_label repeated_field
+        | Ot.Rft_repeated repeated_field -> 
+          gen_rft_repeated sc ~r_name ~rf_label repeated_field
 
-        | Ot.Rft_variant_field variant_field -> 
-          gen_rft_variant_field sc ~r_name ~rf_label variant_field
+        | Ot.Rft_variant variant_field -> 
+          gen_rft_variant sc ~r_name ~rf_label variant_field
 
         | Ot.Rft_required _ ->
           Printf.eprintf "Only proto3 syntax supported in JSON encoding";
           exit 1
 
-        | Ot.Rft_associative_field _ -> 
+        | Ot.Rft_associative _ -> 
           Printf.eprintf "Map field are not currently supported for JSON";
           exit 1
 

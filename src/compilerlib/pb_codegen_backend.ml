@@ -451,7 +451,7 @@ let compile_message
               | Some "repeated_field" -> Ot.Rt_repeated_field 
               | Some _ -> failwith "Invalid ocaml_container attribute value" 
             end in 
-            Ot.Rft_repeated_field (repeated_type, field_type, encoding_number, pk, packed) 
+            Ot.Rft_repeated (repeated_type, field_type, encoding_number, pk, packed) 
         in
 
         let record_field = Ot.({
@@ -475,7 +475,7 @@ let compile_message
              * enhancement should essentially propage from the parser all the way down 
              * to here. 
              *)
-          rf_field_type = Rft_variant_field variant; 
+          rf_field_type = Rft_variant variant; 
         }) in 
         
         let variants = Ot.({module_; spec = Variant variant; type_level_ppx_extension})::variants in 
@@ -525,7 +525,7 @@ let compile_message
           | Some _ -> failwith "Invalid ocaml_container attribute value for map" 
         in 
 
-        let record_field_type = Ot.(Rft_associative_field 
+        let record_field_type = Ot.(Rft_associative
           (associative_type, map_number, (key_type, key_pk), (value_type, value_pk)) 
         ) in 
 

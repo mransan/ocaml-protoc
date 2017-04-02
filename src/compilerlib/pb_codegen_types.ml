@@ -17,12 +17,12 @@ let gen_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc =
     | Ot.Rft_nolabel _ 
     | Ot.Rft_required _ 
     | Ot.Rft_optional _ 
-    | Ot.Rft_variant_field _ 
-    | Ot.Rft_repeated_field (Ot.Rt_list, _, _, _, _) 
-    | Ot.Rft_associative_field (Ot.At_list, _, _, _) -> false 
+    | Ot.Rft_variant _ 
+    | Ot.Rft_repeated (Ot.Rt_list, _, _, _, _) 
+    | Ot.Rft_associative (Ot.At_list, _, _, _) -> false 
 
-    | Ot.Rft_repeated_field (Ot.Rt_repeated_field,_, _, _, _) 
-    | Ot.Rft_associative_field (Ot.At_hashtable, _, _, _) -> true
+    | Ot.Rft_repeated (Ot.Rt_repeated_field,_, _, _, _) 
+    | Ot.Rft_associative (Ot.At_hashtable, _, _, _) -> true
   in
     
   let field_prefix field_type field_mutable = 
