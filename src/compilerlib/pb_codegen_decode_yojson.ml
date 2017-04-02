@@ -9,13 +9,13 @@ let file_suffix = "yojson"
    value into an OCaml value. The protobuf JSON encoding rules 
    are defined here:
    https://developers.google.com/protocol-buffers/docs/proto3#json *)
-let field_pattern_matches ~r_name ~rf_label field_type = 
+let field_pattern_match ~r_name ~rf_label field_type = 
    
   let basic_type helper_fun = 
     (
       "json_value", 
       sp "Pbrt_json.%s json_value \"%s\" \"%s\"" helper_fun r_name rf_label
-    ) :: []
+    )
   in
 
   match field_type with 
@@ -26,7 +26,7 @@ let field_pattern_matches ~r_name ~rf_label field_type =
   | Ot.Ft_basic_type Ot.Bt_int64 -> basic_type "int64" 
   | Ot.Ft_basic_type Ot.Bt_bool -> basic_type "bool" 
   | Ot.Ft_basic_type Ot.Bt_bytes -> basic_type "bytes" 
-  | Ot.Ft_unit -> [] 
+  | Ot.Ft_unit -> assert(false)
   | Ot.Ft_user_defined_type udt -> 
     let f_name = 
       let function_prefix = "decode" in 
@@ -35,19 +35,16 @@ let field_pattern_matches ~r_name ~rf_label field_type =
         ~function_prefix ~module_suffix udt 
     in 
     let value_expression = "(" ^ f_name ^ " json_value)" in
-    ("json_value", value_expression):: []
+    ("json_value", value_expression)
 
 (* Generate all the pattern matches for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) = 
    
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
   
-  let pattern_matches = field_pattern_matches ~r_name ~rf_label field_type in
-
-  List.iter (fun (json_type, value_expression) ->
-    F.linep sc "| (\"%s\", %s) -> " json_label json_type; 
-    F.linep sc "  v.%s <- %s" rf_label value_expression
-  ) pattern_matches 
+  let match_, exp = field_pattern_match ~r_name ~rf_label field_type in
+  F.linep sc "| (\"%s\", %s) -> " json_label match_; 
+  F.linep sc "  v.%s <- %s" rf_label exp
 
 (* Generate all the pattern matches for a repeated field *)
 let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
@@ -59,12 +56,8 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   F.scope sc (fun sc -> 
     F.linep sc "v.%s <- List.map (function" rf_label;
-
-    let pattern_matches = field_pattern_matches ~r_name ~rf_label field_type in
-
-    List.iter (fun (json_type, value_expression) -> 
-      F.linep sc "  | %s -> %s" json_type value_expression;
-    ) pattern_matches; 
+    let match_, exp = field_pattern_match ~r_name ~rf_label field_type in
+    F.linep sc "  | %s -> %s" match_ exp;
     F.line sc ") l;";
   ); 
 
@@ -75,12 +68,10 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in 
   
-  let pattern_matches = field_pattern_matches ~r_name ~rf_label field_type in
+  let match_, exp = field_pattern_match ~r_name ~rf_label field_type in
 
-  List.iter (fun (json_type, value_expression) ->
-    F.linep sc "| (\"%s\", %s) -> " json_label json_type; 
-    F.linep sc "  v.%s <- Some (%s)" rf_label value_expression
-  ) pattern_matches 
+  F.linep sc "| (\"%s\", %s) -> " json_label match_; 
+  F.linep sc "  v.%s <- Some (%s)" rf_label exp
 
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} = 
@@ -92,21 +83,14 @@ let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} =
     in
 
     match vc_field_type with
-    | Ot.Vct_nullary -> begin 
+    | Ot.Vct_nullary -> 
       F.linep sc "| (\"%s\", _) -> v.%s <- %s"
         json_label rf_label vc_constructor
-    end
 
     | Ot.Vct_non_nullary_constructor field_type ->
-      let pattern_matches = 
-        field_pattern_matches ~r_name ~rf_label field_type
-      in
-
-      List.iter (fun (json_type, value_expression) -> 
-        F.linep sc "| (\"%s\", %s) -> " json_label json_type;
-        F.linep sc "  v.%s <- %s (%s)" 
-          rf_label vc_constructor value_expression;
-      ) pattern_matches 
+      let match_, exp = field_pattern_match ~r_name ~rf_label field_type in
+      F.linep sc "| (\"%s\", %s) -> " json_label match_;
+      F.linep sc "  v.%s <- %s (%s)" rf_label vc_constructor exp;
     
   ) v_constructors
 
@@ -181,16 +165,13 @@ let gen_decode_variant ?and_ {Ot.v_name; v_constructors} sc =
       F.linep sc "| (\"%s\", _)::_-> %s" json_label vc_constructor 
 
     | Ot.Vct_non_nullary_constructor field_type ->
-      let pattern_matches = 
+      let match_, exp = 
         let r_name = v_name and rf_label = vc_constructor in 
-        field_pattern_matches ~r_name ~rf_label field_type
+        field_pattern_match ~r_name ~rf_label field_type
       in
 
-      List.iter (fun (json_type, value_expression) -> 
-        F.linep sc "| (\"%s\", %s)::_ -> "
-          json_label json_type;
-        F.linep sc "  %s (%s)" vc_constructor value_expression;
-      ) pattern_matches
+      F.linep sc "| (\"%s\", %s)::_ -> " json_label match_;
+      F.linep sc "  %s (%s)" vc_constructor exp
   in
 
   F.linep sc "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) v_name; 
