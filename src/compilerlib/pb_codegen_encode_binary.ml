@@ -3,7 +3,7 @@ module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting 
 module L = Pb_logger
 
-let file_suffix = Pb_codegen_decode_code.file_suffix
+let file_suffix = Pb_codegen_decode_binary.file_suffix
 
 let constructor_name s = 
   (String.capitalize @@ String.lowercase s) [@@ocaml.warning "-3"] 

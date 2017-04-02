@@ -1,4 +1,4 @@
-first : test01
+first : bin.byte
 # 	./ocaml-protoc -yojson -binary -pp -ml_out src/examples/ src/examples/example01.proto
 # 	$(OCB) -pkgs yojson -I src/examples example01.byte
 
@@ -29,7 +29,10 @@ default:
 	
 clean.gen:
 	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.*
+	rm -f $(INTEGRATION_TESTS_DIR)/*_types.ml*
 	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml*
+	rm -f $(INTEGRATION_TESTS_DIR)/*_pp.ml*
+	rm -f $(INTEGRATION_TESTS_DIR)/*_bs.ml*
 	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.ml*
 	rm -f $(OCAMLOPTIONS_HINC)/*.pb.*
 	rm -f src/examples/*_pb.ml*

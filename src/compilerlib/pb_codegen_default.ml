@@ -4,7 +4,7 @@ module E = Pb_exception
 
 open Pb_codegen_util
 
-let file_suffix = Pb_codegen_type_code.file_suffix 
+let file_suffix = Pb_codegen_types.file_suffix 
 
 let default_value_of_basic_type ?field_name basic_type field_default = 
   match basic_type, field_default with 
