@@ -50,7 +50,7 @@ let gen_encode_field_type
     let rt = encode_basic_type bt pk in 
     F.linep sc "%s %s encoder;" rt var_name
 
-let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc = 
+let gen_record ?and_ module_ {Ot.r_name; r_fields } sc = 
   let rn = r_name in 
   F.linep sc "%s encode_%s (v:%s_types.%s) encoder = " 
       (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
@@ -194,7 +194,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
     F.line sc "()";
   ) (* encode function *)
 
-let gen_encode_variant ?and_ module_ variant sc = 
+let gen_variant ?and_ module_ variant sc = 
   let {Ot.v_name; Ot.v_constructors} = variant in 
   let vn = v_name in  
   F.linep sc "%s encode_%s (v:%s_types.%s) encoder = " 
@@ -229,7 +229,7 @@ let gen_encode_variant ?and_ module_ variant sc =
     ) v_constructors;
   ) 
 
-let gen_encode_const_variant ?and_ module_ cv sc = 
+let gen_const_variant ?and_ module_ cv sc = 
 
   let {Ot.cv_name; cv_constructors} = cv in 
 
@@ -254,10 +254,10 @@ let gen_struct ?and_ t sc =
   let {Ot.module_; spec; _} = t in
   let has_encoded = 
     match spec with 
-    | Ot.Record r  -> gen_encode_record  ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_encode_variant ?and_ module_ v sc; true 
+    | Ot.Record r  -> gen_record  ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true 
     | Ot.Const_variant v ->
-      gen_encode_const_variant ?and_ module_ v sc; true
+      gen_const_variant ?and_ module_ v sc; true
   in 
   has_encoded
 

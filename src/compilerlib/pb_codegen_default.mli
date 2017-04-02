@@ -2,7 +2,7 @@
 
 include Pb_codegen_sig.S
 
-val gen_default_record : 
+val gen_record : 
   ?mutable_:unit ->
   ?and_:unit -> 
   string -> (* module_ *) 

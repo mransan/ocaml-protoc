@@ -96,7 +96,7 @@ let record_field_default_info ?module_ record_field =
   in
   (field_name, default_value, type_string)
 
-let gen_default_record  ?mutable_ ?and_ module_ {Ot.r_name; r_fields} sc = 
+let gen_record  ?mutable_ ?and_ module_ {Ot.r_name; r_fields} sc = 
 
   let fields_default_info = 
     let module_ = match mutable_ with
@@ -135,7 +135,7 @@ let gen_default_record  ?mutable_ ?and_ module_ {Ot.r_name; r_fields} sc =
   end; 
   F.line sc "}"
 
-let gen_default_variant ?and_ {Ot.v_name; Ot.v_constructors; } sc = 
+let gen_variant ?and_ {Ot.v_name; Ot.v_constructors; } sc = 
   match v_constructors with
   | []     -> failwith "programmatic TODO error" 
   | {Ot.vc_constructor; vc_field_type; _ }::_ ->  
@@ -155,7 +155,7 @@ let gen_default_variant ?and_ {Ot.v_name; Ot.v_constructors; } sc =
          decl v_name v_name vc_constructor default_value 
     end 
 
-let gen_default_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors; } sc = 
+let gen_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors; } sc = 
   let first_constructor_name = match cv_constructors with
     | [] -> failwith "programmatic TODO error"
     | (name, _) ::_ -> name 
@@ -168,9 +168,9 @@ let gen_struct ?and_ t sc =
 
   let has_encoded = 
     match spec with 
-    | Ot.Record r -> gen_default_record ?and_ module_ r sc ; true 
-    | Ot.Variant v -> gen_default_variant ?and_ v sc; true 
-    | Ot.Const_variant v -> gen_default_const_variant v sc; true
+    | Ot.Record r -> gen_record ?and_ module_ r sc ; true 
+    | Ot.Variant v -> gen_variant ?and_ v sc; true 
+    | Ot.Const_variant v -> gen_const_variant v sc; true
   in
   has_encoded
  

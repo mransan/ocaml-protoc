@@ -25,7 +25,7 @@ let decode_field_f field_type pk =
       "Pbrt.Decoder.empty_nested d"
   | Ot.Ft_basic_type bt -> (decode_basic_type bt pk) ^ " d" 
 
-let gen_decode_record ?and_ module_ {Ot.r_name; r_fields} sc = 
+let gen_record ?and_ module_ {Ot.r_name; r_fields} sc = 
 
   (* return the variable name used for keeping track if a required 
    * field has been set during decoding.  *)
@@ -257,7 +257,7 @@ let gen_decode_record ?and_ module_ {Ot.r_name; r_fields} sc =
     F.linep sc "} : %s_types.%s)" module_ r_name;
   )
 
-let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors;} sc = 
+let gen_variant ?and_ module_ {Ot.v_name; v_constructors;} sc = 
 
   let process_ctor sc variant_constructor = 
 
@@ -305,7 +305,7 @@ let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors;} sc =
     F.line sc "loop ()";
   )
 
-let gen_decode_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
+let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
 
   F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
@@ -322,9 +322,9 @@ let gen_struct ?and_ t sc =
 
   let has_encoded =  
     match spec with 
-    | Ot.Record r  -> gen_decode_record ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_decode_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> gen_decode_const_variant ?and_ module_ v sc; true
+    | Ot.Record r  -> gen_record ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
   in
 
   has_encoded

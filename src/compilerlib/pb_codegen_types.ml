@@ -6,7 +6,7 @@ open Pb_codegen_util
 
 let type_decl_of_and = function | Some () -> "and" | None -> "type" 
 
-let gen_type_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc = 
+let gen_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc = 
 
   let is_mutable = match mutable_ with
     | Some () -> true
@@ -56,7 +56,7 @@ let gen_type_record ?mutable_ ?and_ module_ {Ot.r_name; r_fields } sc =
   ); 
   F.line sc "}"
 
-let gen_type_variant ?and_ variant sc =  
+let gen_variant ?and_ variant sc =  
   let {Ot.v_name; v_constructors; } = variant in
 
   F.linep sc "%s %s =" (type_decl_of_and and_) v_name; 
@@ -72,7 +72,7 @@ let gen_type_variant ?and_ variant sc =
     ) v_constructors;
   )
 
-let gen_type_const_variant ?and_ {Ot.cv_name; cv_constructors} sc = 
+let gen_const_variant ?and_ {Ot.cv_name; cv_constructors} sc = 
   F.linep sc "%s %s =" (type_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     List.iter (fun (name, _ ) -> 
@@ -86,29 +86,21 @@ let print_ppx_extension {Ot.type_level_ppx_extension; _ } sc =
   | Some ppx_content -> F.linep sc "[@@%s]" ppx_content
 
 let gen_struct ?and_ t scope = 
-  begin
-    match t with 
-    | {Ot.spec = Ot.Record r; module_; _ } -> (
-      gen_type_record ?and_ module_ r scope; 
-      print_ppx_extension t scope; 
-    ) 
-
-    | {Ot.spec = Ot.Variant v; _ } -> 
-      gen_type_variant  ?and_ v scope;  
-      print_ppx_extension t scope; 
-
-    | {Ot.spec = Ot.Const_variant v; _ } -> 
-      gen_type_const_variant ?and_ v scope; 
-      print_ppx_extension t scope; 
+  let {Ot.module_; spec; _} = t in 
+  begin match spec with 
+    | Ot.Record r  -> gen_record ?and_ module_ r scope 
+    | Ot.Variant v -> gen_variant  ?and_ v scope 
+    | Ot.Const_variant v -> gen_const_variant ?and_ v scope
   end; 
+  print_ppx_extension t scope; 
   true
 
 let gen_sig ?and_ t scope = 
   let {Ot.module_; spec; _} = t in 
   begin match spec with 
-    | Ot.Record r ->gen_type_record ?and_ module_ r scope 
-    | Ot.Variant v -> gen_type_variant  ?and_ v scope  
-    | Ot.Const_variant v -> gen_type_const_variant ?and_ v scope 
+    | Ot.Record r ->gen_record ?and_ module_ r scope 
+    | Ot.Variant v -> gen_variant  ?and_ v scope  
+    | Ot.Const_variant v -> gen_const_variant ?and_ v scope 
   end; 
   print_ppx_extension t scope; 
   true

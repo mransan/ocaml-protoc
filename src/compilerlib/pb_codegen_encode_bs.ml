@@ -178,7 +178,7 @@ let gen_rft_variant_field sc var_name rf_label {Ot.v_constructors; _} =
   ); 
   F.linep sc "end; (* match v.%s *)" rf_label
 
-let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc = 
+let gen_record ?and_ module_ {Ot.r_name; r_fields } sc = 
   let rn = r_name in 
   F.linep sc "%s encode_%s (v:%s_types.%s) json = " 
       (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
@@ -212,7 +212,7 @@ let gen_encode_record ?and_ module_ {Ot.r_name; r_fields } sc =
     F.line sc "()"
   )
 
-let gen_encode_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
+let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
 
   let process_v_constructor sc v_constructor = 
     let {
@@ -242,7 +242,7 @@ let gen_encode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
     F.line sc "end";
   ) 
 
-let gen_encode_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
+let gen_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
   F.linep sc "%s encode_%s (v:%s_types.%s) : string = " 
       (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
@@ -259,9 +259,9 @@ let gen_struct ?and_ t sc =
 
   let has_encoded =
     match spec with 
-    | Ot.Record r  -> gen_encode_record ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_encode_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> gen_encode_const_variant ?and_ module_ v sc; true
+    | Ot.Record r  -> gen_record ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
   in
   has_encoded
 

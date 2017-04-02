@@ -6,7 +6,7 @@ let file_suffix = "pp"
 
 open Pb_codegen_util
 
-let gen_pp_field field_type = 
+let gen_field field_type = 
   match field_type with 
   | Ot.Ft_user_defined_type udt -> 
     let function_prefix = "pp" in 
@@ -14,7 +14,7 @@ let gen_pp_field field_type =
     function_name_of_user_defined ~function_prefix ~module_suffix udt  
   | _ ->  sp "Pbrt.Pp.pp_%s" (string_of_field_type field_type) 
 
-let gen_pp_record  ?and_ module_ {Ot.r_name; r_fields} sc = 
+let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc = 
   L.log "gen_pp, record_name: %s\n" r_name; 
 
   F.line sc @@ sp "%s pp_%s fmt (v:%s_types.%s) = " 
@@ -32,21 +32,21 @@ let gen_pp_record  ?and_ module_ {Ot.r_name; r_fields} sc =
 
         | Ot.Rft_nolabel (field_type, _, _)
         | Ot.Rft_required (field_type, _, _, _) -> ( 
-          let field_string_of = gen_pp_field field_type in 
+          let field_string_of = gen_field field_type in 
           F.line sc @@ sp 
             "Pbrt.Pp.pp_record_field \"%s\" %s fmt %s;" 
             rf_label field_string_of var_name
         ) (* Rft_required *)
 
         | Ot.Rft_optional (field_type, _, _, _) -> (
-          let field_string_of = gen_pp_field field_type in 
+          let field_string_of = gen_field field_type in 
           F.line sc @@ sp 
             "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_option %s) fmt %s;" 
             rf_label field_string_of var_name
         ) (* Rft_optional *) 
 
         | Ot.Rft_repeated_field (rt, field_type, _, _, _) ->  (
-          let field_string_of = gen_pp_field field_type in 
+          let field_string_of = gen_field field_type in 
           begin match rt with 
           | Ot.Rt_list -> (
             F.line sc @@ sp 
@@ -79,8 +79,8 @@ let gen_pp_record  ?and_ module_ {Ot.r_name; r_fields} sc =
             | Ot.At_list -> "pp_associative_list"
             | Ot.At_hashtable -> "pp_hastable"
           in
-          let pp_key = gen_pp_field (Ot.Ft_basic_type key_type) in 
-          let pp_value = gen_pp_field value_type in 
+          let pp_key = gen_field (Ot.Ft_basic_type key_type) in 
+          let pp_value = gen_field value_type in 
           F.line sc @@ sp "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.%s %s %s) fmt %s;"
             rf_label pp_runtime_function pp_key pp_value var_name  
         ) (* Associative_list *)
@@ -92,7 +92,7 @@ let gen_pp_record  ?and_ module_ {Ot.r_name; r_fields} sc =
     F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()";
   )
 
-let gen_pp_variant ?and_ module_ {Ot.v_name; Ot.v_constructors; } sc = 
+let gen_variant ?and_ module_ {Ot.v_name; Ot.v_constructors; } sc = 
   F.line sc @@ sp "%s pp_%s fmt (v:%s_types.%s) =" 
     (let_decl_of_and and_) v_name module_ v_name; 
   F.scope sc (fun sc -> 
@@ -105,7 +105,7 @@ let gen_pp_variant ?and_ module_ {Ot.v_name; Ot.v_constructors; } sc =
           module_ vc_constructor vc_constructor 
       )
       | Ot.Vct_non_nullary_constructor field_type -> (  
-        let field_string_of = gen_pp_field field_type in 
+        let field_string_of = gen_field field_type in 
         F.line sc @@ sp  
           "| %s_types.%s x -> Format.fprintf fmt \"@[%s(%%a)@]\" %s x" 
           module_ vc_constructor vc_constructor field_string_of 
@@ -113,7 +113,7 @@ let gen_pp_variant ?and_ module_ {Ot.v_name; Ot.v_constructors; } sc =
     ) v_constructors;
   )
 
-let gen_pp_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
+let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
   F.line sc @@ sp "%s pp_%s fmt (v:%s_types.%s) =" 
     (let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
@@ -128,9 +128,9 @@ let gen_struct ?and_ t sc =
   let {Ot.module_; spec; _} = t in 
   begin 
     match spec with
-    | Ot.Record r -> gen_pp_record ?and_ module_ r sc
-    | Ot.Variant v  -> gen_pp_variant ?and_ module_ v sc
-    | Ot.Const_variant v -> gen_pp_const_variant ?and_ module_ v sc
+    | Ot.Record r -> gen_record ?and_ module_ r sc
+    | Ot.Variant v  -> gen_variant ?and_ module_ v sc
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc
   end; 
   true
 

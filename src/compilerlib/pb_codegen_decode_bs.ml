@@ -102,7 +102,7 @@ let gen_rft_variant_field sc ~r_name ~rf_label {Ot.v_constructors; _} =
   ) v_constructors
 
 (* Generate decode function for a record *)
-let gen_decode_record ?and_  module_ {Ot.r_name; r_fields} sc = 
+let gen_record ?and_  module_ {Ot.r_name; r_fields} sc = 
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in 
 
   F.linep sc "%s decode_%s json =" 
@@ -160,7 +160,7 @@ let gen_decode_record ?and_  module_ {Ot.r_name; r_fields} sc =
   )
 
 (* Generate decode function for a variant type *)
-let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
+let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
 
   (* helper function for each constructor case *)
   let process_v_constructor sc {Ot.vc_constructor; vc_field_type; _} = 
@@ -210,7 +210,7 @@ let gen_decode_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
     F.line sc "loop (Array.length keys - 1)";
   ) 
 
-let gen_decode_const_variant ?and_ module_ {Ot.cv_name; cv_constructors} sc = 
+let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors} sc = 
   F.linep sc "%s decode_%s (json:Js_json.t) =" 
     (Pb_codegen_util.let_decl_of_and and_) cv_name; 
 
@@ -231,9 +231,9 @@ let gen_struct ?and_ t sc =
   let {Ot.module_; spec; _} = t in 
 
   let has_encoded =  match spec with 
-    | Ot.Record r  -> gen_decode_record ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_decode_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> gen_decode_const_variant ?and_ module_ v sc; true
+    | Ot.Record r  -> gen_record ?and_ module_ r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
   in
   has_encoded
 
