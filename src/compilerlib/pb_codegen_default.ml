@@ -158,7 +158,7 @@ let gen_variant ?and_ {Ot.v_name; Ot.v_constructors; } sc =
 let gen_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors; } sc = 
   let first_constructor_name = match cv_constructors with
     | [] -> failwith "programmatic TODO error"
-    | (name, _) ::_ -> name 
+    | {Ot.cvc_name; _}::_ -> cvc_name
   in  
   F.linep sc "%s default_%s () = (%s:%s)" 
     (let_decl_of_and and_) cv_name first_constructor_name cv_name

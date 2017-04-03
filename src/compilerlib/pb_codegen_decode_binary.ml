@@ -308,9 +308,9 @@ let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc =
   F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match Pbrt.Decoder.int_as_varint d with";
-    List.iter (fun (name, value) -> 
+    List.iter (fun {Ot.cvc_name; cvc_binary_value; _} ->
       F.linep sc "| %i -> (%s_types.%s:%s_types.%s)" 
-        value module_ name module_ cv_name
+        cvc_binary_value module_ cvc_name module_ cv_name
     ) cv_constructors; 
     F.linep sc "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name
   )

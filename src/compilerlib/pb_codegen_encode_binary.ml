@@ -262,15 +262,15 @@ let gen_const_variant ?and_ module_ cv sc =
       (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
-    List.iter (fun (name, value) -> 
+    List.iter (fun {Ot.cvc_name;cvc_binary_value; _} -> 
       F.line sc (
-        if value > 0 
+        if cvc_binary_value > 0 
         then 
           sp "| %s_types.%s -> Pbrt.Encoder.int_as_varint %i encoder" 
-            module_ name value
+            module_ cvc_name cvc_binary_value
         else 
           sp "| %s_types.%s -> Pbrt.Encoder.int_as_varint (%i) encoder" 
-            module_ name value
+            module_ cvc_name cvc_binary_value
       )
     ) cv_constructors; 
   )

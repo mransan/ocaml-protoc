@@ -75,8 +75,8 @@ let gen_variant ?and_ variant sc =
 let gen_const_variant ?and_ {Ot.cv_name; cv_constructors} sc = 
   F.linep sc "%s %s =" (type_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
-    List.iter (fun (name, _ ) -> 
-      F.linep sc "| %s " name
+    List.iter (fun {Ot.cvc_name; _} ->
+      F.linep sc "| %s " cvc_name
     ) cv_constructors;
   )
 

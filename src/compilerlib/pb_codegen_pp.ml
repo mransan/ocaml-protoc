@@ -118,9 +118,9 @@ let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc =
     (let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
-    List.iter (fun (name, _ ) -> 
+    List.iter (fun {Ot.cvc_name; _} -> 
       F.line sc @@ sp "| %s_types.%s -> Format.fprintf fmt \"%s\"" 
-        module_ name name
+        module_ cvc_name cvc_name
     ) cv_constructors; 
   )
 

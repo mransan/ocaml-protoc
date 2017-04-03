@@ -217,12 +217,15 @@ let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors} sc =
   F.scope sc (fun sc -> 
     F.linep sc "match Pbrt_bs.string json \"%s\" \"value\" with" cv_name; 
     
-    List.iter (fun (constructor, _) -> 
+    List.iter (fun {Ot.cvc_name; cvc_string_value; _} ->
       F.linep sc "| \"%s\" -> %s_types.%s"
-        (String.uppercase constructor) module_ constructor
+        cvc_string_value module_ cvc_name
     ) cv_constructors;  
 
-    F.linep sc "| \"\" -> %s_types.%s" module_ (fst @@ List.hd cv_constructors);
+    F.linep sc "| \"\" -> %s_types.%s" module_ (
+      let {Ot.cvc_name;_} = List.hd cv_constructors in 
+      cvc_name
+    );
 
     F.linep sc "| _ -> Pbrt_json.E.malformed_variant \"%s\"" cv_name;  
   ) 

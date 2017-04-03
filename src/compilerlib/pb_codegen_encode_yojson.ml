@@ -238,10 +238,9 @@ let gen_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc =
       (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
-    List.iter (fun (constructor, _) -> 
-      let json_value = String.uppercase constructor in 
+    List.iter (fun {Ot.cvc_name; cvc_string_value; _ } ->
       F.linep sc "| %s_types.%s -> `String \"%s\"" 
-        module_ constructor json_value
+        module_ cvc_name cvc_string_value 
     ) cv_constructors
   ) 
 

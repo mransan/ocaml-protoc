@@ -561,7 +561,11 @@ let compile_enum file_options file_name scope enum =
   let {Tt.message_names; Tt.packages = _ } = scope in 
 
   let cv_constructors = List.map (fun {Tt.enum_value_name; Tt.enum_value_int} -> 
-    (constructor_name enum_value_name,  enum_value_int)
+    {
+      Ot.cvc_name = constructor_name enum_value_name; 
+      Ot.cvc_binary_value = enum_value_int;
+      Ot.cvc_string_value = enum_value_name; 
+    } 
   ) enum_values in 
 
   let type_level_ppx_extension = 

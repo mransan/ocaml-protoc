@@ -116,9 +116,15 @@ and record = {
   r_fields : record_field list; 
 }
 
+and const_variant_constructor = {
+  cvc_name : string; 
+  cvc_binary_value : int; 
+  cvc_string_value : string;
+}
+
 and const_variant = {
   cv_name : string; 
-  cv_constructors : (string * int) list;
+  cv_constructors : const_variant_constructor list;
 }
 
 and type_spec = 
