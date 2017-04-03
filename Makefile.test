@@ -134,7 +134,17 @@ google_unittest: bin.byte
 
 .PHONY: all-tests
 
-all-tests: unit-tests integration google_unittest testCompat 
+#
+# Yojson
+# ------
+
+YOJSON_DIR=src/tests/yojson
+yojson: bin.byte 
+	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
+	$(OCB) -pkg yojson -I $(YOJSON_DIR) yojson_unittest_ml.byte
+	./yojson_unittest_ml.byte
+
+all-tests: unit-tests yojson integration google_unittest testCompat 
 
 #
 # Examples
@@ -167,12 +177,3 @@ benchmark_single_ml.native: bin.byte
 	$(ML_PROTOC) -I $(BENCHMARK_DIR) -ml_out $(BENCHMARK_DIR) $(BENCHMARK_DIR)/benchmark.proto
 	$(OCB) -use-ocamlfind -pkg unix -I src/tests/benchmark $@ 
 
-#
-# Yojson
-# ------
-
-YOJSON_DIR=src/tests/yojson
-yojson: bin.byte 
-	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
-	$(OCB) -pkg yojson -I $(YOJSON_DIR) yojson_unittest_ml.byte
-	./yojson_unittest_ml.byte
