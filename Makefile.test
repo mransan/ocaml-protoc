@@ -141,8 +141,20 @@ google_unittest: bin.byte
 YOJSON_DIR=src/tests/yojson
 yojson: bin.byte 
 	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
+	$(PROTOC) \
+		--cpp_out $(YOJSON_DIR) \
+		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
+		$(YOJSON_DIR)/yojson_unittest.proto
 	$(OCB) -pkg yojson -I $(YOJSON_DIR) yojson_unittest_ml.byte
-	./yojson_unittest_ml.byte
+	$(CXX) \
+		$(CPPFLAGS) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
+		$(YOJSON_DIR)/yojson_unittest_cpp.cpp $(YOJSON_DIR)/yojson_unittest.pb.cc \
+		-L $(PB_LINC) \
+		-l protobuf \
+		-o $@
+	./yojson
+	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
 
 all-tests: unit-tests yojson integration google_unittest testCompat 
 

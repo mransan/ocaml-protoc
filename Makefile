@@ -1,4 +1,4 @@
-first : bin.byte
+first : yojson
 # 	./ocaml-protoc -yojson -binary -pp -ml_out src/examples/ src/examples/example01.proto
 # 	$(OCB) -pkgs yojson -I src/examples example01.byte
 
