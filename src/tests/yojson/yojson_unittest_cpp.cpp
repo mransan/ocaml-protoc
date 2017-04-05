@@ -4,7 +4,6 @@
 #include <iostream>
 #include <fstream>
 
-
 AllBasicTypes all_basic_types() {
   AllBasicTypes ret;
   ret.set_field01(1.2000001); 
