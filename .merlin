@@ -15,10 +15,8 @@ FLG -ppx /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-plat
 S /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
 B /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
 FLG -nostdlib -no-alias-deps -color always -w -40+6+7+27+32..39+44+45
-S /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
-B /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
 S src/tests/bs
 B lib/bs/src/tests/bs
-S src/runtime
-B lib/bs/src/runtime
+S src/runtime-bs/src
+B lib/bs/src/runtime-bs/src
 ####BSB GENERATED: NO EDIT}

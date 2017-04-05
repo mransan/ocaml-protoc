@@ -194,7 +194,7 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
      * of the cases it will be a single iteration *)
     F.line sc "let rec loop = function "; 
     F.scope sc (fun sc -> 
-      F.linep sc "| -1 -> Pbrt_json.E.malformed_variant \"%s\"" v_name;  
+      F.linep sc "| -1 -> Pbrt_bs.E.malformed_variant \"%s\"" v_name;  
       F.line sc  "| i -> ";
 
       F.scope sc (fun sc -> 
@@ -227,7 +227,7 @@ let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors} sc =
       cvc_name
     );
 
-    F.linep sc "| _ -> Pbrt_json.E.malformed_variant \"%s\"" cv_name;  
+    F.linep sc "| _ -> Pbrt_bs.E.malformed_variant \"%s\"" cv_name;  
   ) 
 
 let gen_struct ?and_ t sc = 

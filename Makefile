@@ -34,8 +34,12 @@ clean.gen:
 	rm -f $(INTEGRATION_TESTS_DIR)/*_types.ml*
 	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml*
 	rm -f $(INTEGRATION_TESTS_DIR)/*_pp.ml*
-	rm -f $(INTEGRATION_TESTS_DIR)/*_bs.ml*
+	rm -f $(YOJSON_DIR)/*_types.ml*
+	rm -f $(YOJSON_DIR)/*_yojson.ml*
+	rm -f $(YOJSON_DIR)/*.pb.*
 	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.ml*
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_pp.ml*
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_types.ml*
 	rm -f $(OCAMLOPTIONS_HINC)/*.pb.*
 	rm -f src/examples/*_pb.ml*
 

@@ -11,6 +11,8 @@ message AllBasicTypes {
    sint64    field08 =  8;
    fixed32   field09 =  9;
    fixed64   field10 = 10;
+   sfixed32   field11 =  11;
+   sfixed64   field12 = 12;
    bool      field13 = 13;
    string    field14 = 14;
    repeated double    repeated01 = 21;
@@ -23,6 +25,8 @@ message AllBasicTypes {
    repeated sint64    repeated08 = 28;
    repeated fixed32   repeated09 = 29;
    repeated fixed64   repeated10 = 30;
+   repeated sfixed32   repeated11 = 31;
+   repeated sfixed64   repeated12 = 32;
    repeated bool      repeated13 = 33;
    repeated string    repeated14 = 34;
 }
