@@ -16,10 +16,10 @@ AllBasicsTypes create_test_all_basic_types() {
     abt.set_o06(456); 
     abt.set_o07(-123); 
     abt.set_o08(-456); 
-    abt.set_o09(123); 
-    abt.set_o10(456); 
-    // abt.set_o11(-123); 
-    // abt.set_o12(-456); 
+    abt.set_o09(0xEFFFFFFFl); 
+    abt.set_o10(0xEBABABABABABABABL); 
+    abt.set_o11(0xEFFFFFFFl);
+    abt.set_o12(0xEBABABABABABABABL);
     abt.set_o13(true); 
     abt.set_o14("Iam a test string"); 
     abt.set_o15("Iam a test byte"); 

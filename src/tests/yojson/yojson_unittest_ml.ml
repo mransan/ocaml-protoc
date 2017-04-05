@@ -1,7 +1,7 @@
 let test = 
   let open Yojson_unittest_types in 
   let all_basic_types = {
-    field01 = 1.20001;
+    field01 = 1.2000001;
     field02 = 1.2;
     field03 = 0xEFFFFFFFl;
     field04 = 0xEBABABABABABABABL;
@@ -9,11 +9,11 @@ let test =
     field06 = 0x7BABABABABABABABL;
     field07 = 0xEFFFFFFFl;
     field08 = 0xEBABABABABABABABL;
-    field09 = 0x7FFFFFFFl;
-    field10 = 0x7BABABABABABABABL;
+    field09 = 0xEFFFFFFFl;
+    field10 = 0xEBABABABABABABABL;
     field13 = true;
     field14 = "This is a test \"string\"";
-    repeated01 = [1.20001;                    ]; 
+    repeated01 = [1.2000001;                    ]; 
     repeated02 = [1.2;               ]; 
     repeated03 = [0xEFFFFFFFl;                 ]; 
     repeated04 = [0xEBABABABABABABABL;         ]; 
@@ -21,8 +21,8 @@ let test =
     repeated06 = [0x7BABABABABABABABL;         ]; 
     repeated07 = [0xEFFFFFFFl;                 ]; 
     repeated08 = [0xEBABABABABABABABL;         ]; 
-    repeated09 = [0x7FFFFFFFl;                 ]; 
-    repeated10 = [0x7BABABABABABABABL;         ]; 
+    repeated09 = [0xEFFFFFFFl;                 ]; 
+    repeated10 = [0xEBABABABABABABABL;         ]; 
     repeated13 = [true;                       ]; 
     repeated14 = ["This is a test \"string\"";]; 
   } in  

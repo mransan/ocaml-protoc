@@ -12,12 +12,10 @@ let decode_ref_data () = {
   T.o06 = 456L; 
   T.o07 = (-123l);
   T.o08 = (-456L); 
-  T.o09 = 123l;
-  T.o10 = 456L;
-  (*
-  T.o11 ;
-  T.o12 ;
-  *)
+  T.o09 = 0xEFFFFFFFl;
+  T.o10 = 0xEBABABABABABABABL;
+  T.o11 = 0xEFFFFFFFl;
+  T.o12 = 0xEBABABABABABABABL;
   T.o13 = true;
   T.o14 = "Iam a test string";
   T.o15 = Bytes.of_string "Iam a test byte"; 

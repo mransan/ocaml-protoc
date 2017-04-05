@@ -235,7 +235,7 @@ let encoding_of_field all_types
 
   (pk, Typing_util.field_number field, packed, Typing_util.field_default field)
 
-let compile_field_type ?field_name all_types file_options field_options file_name field_type = 
+let compile_field_type all_types file_options field_options file_name field_type = 
 
   let ocaml_type = match Pb_option.get field_options "ocaml_type" with
     | Some (Pb_option.Constant_litteral "int_t") -> `Int_t
@@ -253,8 +253,8 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
   in 
 
   let module T = struct 
-    type b32 = [ `Int32 | `Uint32 | `Sint32 | `Fixed32 ] 
-    type b64 = [ `Int64 | `Uint64 | `Sint64 | `Fixed64 ] 
+    type b32 = [ `Int32 | `Uint32 | `Sint32 | `Fixed32 | `Sfixed32 ] 
+    type b64 = [ `Int64 | `Uint64 | `Sint64 | `Fixed64 | `Sfixed64 ] 
     type int = [ b32 | b64 ]
   end in 
 
@@ -269,10 +269,10 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
   | `Bytes    , _ -> Ot.(Ft_basic_type Bt_bytes)
   | `User_defined id, _ -> 
     user_defined_type_of_id all_types file_name id
-  | `Sfixed32, _ -> 
+(*  | `Sfixed32, _ -> 
     E.unsupported_field_type ?field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
   | `Sfixed64, _ -> 
-    E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
+    E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () *)
 
 let is_mutable ?field_name field_options = 
   match Pb_option.get field_options "ocaml_mutable"  with
@@ -297,7 +297,6 @@ let variant_of_oneof
   let v_constructors = List.map (fun field -> 
     let pbtt_field_type =  Typing_util.field_type field in 
     let field_type = compile_field_type 
-      ~field_name:(Typing_util.field_name field) 
       all_types 
       file_options 
       (Typing_util.field_options field) 
@@ -407,7 +406,6 @@ let compile_message
         let field_options = Typing_util.field_options field in 
 
         let field_type = compile_field_type 
-          ~field_name
           all_types 
           file_options 
           field_options 
@@ -495,7 +493,6 @@ let compile_message
           map_options} = mf in 
 
         let key_type = compile_field_type 
-          ~field_name:(Printf.sprintf "key of %s" map_name)
           all_types 
           file_options 
           map_options
@@ -510,7 +507,6 @@ let compile_message
         in
         
         let value_type = compile_field_type 
-          ~field_name:(Printf.sprintf "value of %s" map_name)
           all_types 
           file_options 
           map_options

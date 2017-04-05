@@ -7,29 +7,29 @@
 
 AllBasicTypes all_basic_types() {
   AllBasicTypes ret;
-  ret.set_field01(1.20001); 
-  ret.set_field02(1.2000000001);
+  ret.set_field01(1.2000001); 
+  ret.set_field02(1.2);
   ret.set_field03(0xEFFFFFFFl);
   ret.set_field04(0xEBABABABABABABABL);
   ret.set_field05(0x7FFFFFFFl);
   ret.set_field06(0x7BABABABABABABABL);
   ret.set_field07(0xEFFFFFFFl);
   ret.set_field08(0xEBABABABABABABABL);
-  ret.set_field09(0x7FFFFFFFl);
-  ret.set_field10(0x7BABABABABABABABL);
+  ret.set_field09(0xEFFFFFFFl);
+  ret.set_field10(0xEBABABABABABABABL);
   ret.set_field13(true);
   ret.set_field14("This is a test \"string\"");
 
-  ret.add_repeated01(1.20001); 
-  ret.add_repeated02(1.2000000001); 
+  ret.add_repeated01(1.2000001); 
+  ret.add_repeated02(1.2); 
   ret.add_repeated03(0xEFFFFFFFl); 
   ret.add_repeated04(0xEBABABABABABABABL); 
   ret.add_repeated05(0x7FFFFFFFl); 
   ret.add_repeated06(0x7BABABABABABABABL); 
   ret.add_repeated07(0xEFFFFFFFl); 
   ret.add_repeated08(0xEBABABABABABABABL); 
-  ret.add_repeated09(0x7FFFFFFFl); 
-  ret.add_repeated10(0x7BABABABABABABABL); 
+  ret.add_repeated09(0xEFFFFFFFl); 
+  ret.add_repeated10(0xEBABABABABABABABL); 
   ret.add_repeated13(true); 
   ret.add_repeated14("This is a test \"string\""); 
 

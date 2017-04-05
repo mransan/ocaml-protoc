@@ -6,6 +6,7 @@ export CXX
 ifndef CPPFLAGS
     CPPFLAGS = 
 endif
+CPPFLAGS+=-Wno-deprecated
 export CPPFLAGS
 
 #
