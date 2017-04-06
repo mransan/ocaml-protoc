@@ -167,12 +167,12 @@ let gen_rft_variant sc rf_label {Ot.v_constructors; _} =
 
   F.linep sc "in (* match v.%s *)" rf_label
 
-let gen_record ?and_ module_ {Ot.r_name; r_fields } sc = 
+let gen_record ?and_ module_prefix {Ot.r_name; r_fields } sc = 
   let rn = r_name in 
   F.linep sc "%s encode_%s (v:%s_types.%s) = " 
-      (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
+      (Pb_codegen_util.let_decl_of_and and_) rn module_prefix rn;
   F.scope sc (fun sc -> 
-    F.linep sc "let open !%s_types in" module_;
+    F.linep sc "let open !%s_types in" module_prefix;
     F.line sc "let assoc = [] in ";
     List.iter (fun record_field -> 
       let {Ot.rf_label; rf_field_type; _ } = record_field in  
@@ -202,7 +202,7 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields } sc =
     F.line sc "`Assoc assoc"
   )
 
-let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
+let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc = 
 
   let process_v_constructor sc v_constructor = 
     let {
@@ -220,48 +220,48 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
       match gen_field "v" json_label field_type vc_payload_kind with
       | None -> 
         F.linep sc "| %s_types.%s -> `Assoc [(\"%s\", `Null)]" 
-          module_ vc_constructor json_label 
+          module_prefix vc_constructor json_label 
       | Some exp -> 
-        F.linep sc "| %s_types.%s v -> `Assoc [%s]" module_ vc_constructor exp
+        F.linep sc "| %s_types.%s v -> `Assoc [%s]" module_prefix vc_constructor exp
   in 
 
   F.linep sc "%s encode_%s (v:%s_types.%s) = " 
-    (Pb_codegen_util.let_decl_of_and and_) v_name module_ v_name;
+    (Pb_codegen_util.let_decl_of_and and_) v_name module_prefix v_name;
   F.scope sc (fun sc -> 
     F.line sc "begin match v with";
     List.iter (process_v_constructor sc) v_constructors;
     F.line sc "end";
   ) 
 
-let gen_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
+let gen_const_variant ?and_ module_prefix {Ot.cv_name; Ot.cv_constructors} sc = 
   F.linep sc "%s encode_%s (v:%s_types.%s) = " 
-      (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
+      (Pb_codegen_util.let_decl_of_and and_) cv_name module_prefix cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun {Ot.cvc_name; cvc_string_value; _ } ->
       F.linep sc "| %s_types.%s -> `String \"%s\"" 
-        module_ cvc_name cvc_string_value 
+        module_prefix cvc_name cvc_string_value 
     ) cv_constructors
   ) 
 
 let gen_struct ?and_ t sc  = 
-  let {Ot.spec; module_; _} = t in 
+  let {Ot.spec; module_prefix; _} = t in 
 
   let has_encoded = 
     match spec with 
-    | Ot.Record r -> gen_record  ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true 
-    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
+    | Ot.Record r -> gen_record  ?and_ module_prefix r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_prefix v sc; true 
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_prefix v sc; true
   in 
 
   has_encoded
 
 let gen_sig ?and_ t sc = 
   let _ = and_ in
-  let {Ot.module_ ; _ } = t in 
+  let {Ot.module_prefix ; _ } = t in 
   let f type_name = 
     F.linep sc "val encode_%s : %s_types.%s -> Yojson.Basic.json" 
-                 type_name module_ type_name;
+                 type_name module_prefix type_name;
     F.linep sc ("(** [encode_%s v encoder] encodes [v] to " ^^ 
                      "to json*)") type_name; 
   in 

@@ -145,7 +145,7 @@ let gen_rft_associative sc r_name rf_label associative_field =
     end;
   )
 
-let gen_rft_variant sc module_ r_name rf_label {Ot.v_constructors; _} = 
+let gen_rft_variant sc module_prefix r_name rf_label {Ot.v_constructors; _} = 
   List.iter (fun variant_constructor  -> 
 
     let {
@@ -158,16 +158,16 @@ let gen_rft_variant sc module_ r_name rf_label {Ot.v_constructors; _} =
       match vc_field_type  with
       | Ot.Vct_nullary -> (
         F.line sc "Pbrt.Decoder.empty_nested d;";
-        F.linep sc "v.%s <- %s_types.%s;" rf_label module_ vc_constructor; 
+        F.linep sc "v.%s <- %s_types.%s;" rf_label module_prefix vc_constructor; 
       ) 
       | Ot.Vct_non_nullary_constructor field_type -> (
         F.linep sc "v.%s <- %s_types.%s (%s);" 
-          rf_label module_ vc_constructor (decode_field_f field_type pk)
+          rf_label module_prefix vc_constructor (decode_field_f field_type pk)
       )
     )
   ) v_constructors
 
-let gen_record ?and_ module_ {Ot.r_name; r_fields} sc = 
+let gen_record ?and_ module_prefix {Ot.r_name; r_fields} sc = 
 
   (* list fields have a special treatement when decoding since each new element
    * of a repeated field is appended to the front of the list. In order
@@ -232,7 +232,7 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields} sc =
         | Ot.Rft_associative x-> 
           gen_rft_associative sc r_name rf_label x 
         | Ot.Rft_variant x -> 
-          gen_rft_variant sc module_ r_name rf_label x 
+          gen_rft_variant sc module_prefix r_name rf_label x 
       ) r_fields; 
       F.line sc ("| Some (_, payload_kind) -> " ^ 
                  "Pbrt.Decoder.skip d payload_kind");
@@ -249,13 +249,13 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields} sc =
     F.line sc "({"; 
     F.scope sc (fun sc -> 
       List.iter (fun {Ot.rf_label;_} -> 
-        F.linep sc "%s_types.%s = v.%s;" module_ rf_label rf_label; 
+        F.linep sc "%s_types.%s = v.%s;" module_prefix rf_label rf_label; 
       ) r_fields;
     ); 
-    F.linep sc "} : %s_types.%s)" module_ r_name;
+    F.linep sc "} : %s_types.%s)" module_prefix r_name;
   )
 
-let gen_variant ?and_ module_ {Ot.v_name; v_constructors;} sc = 
+let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors;} sc = 
 
   let process_ctor sc variant_constructor = 
 
@@ -269,12 +269,12 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors;} sc =
     | Ot.Vct_nullary -> (
       F.linep sc 
         "| Some (%i, _) -> (Pbrt.Decoder.empty_nested d ; %s_types.%s)" 
-        vc_encoding_number module_ vc_constructor
+        vc_encoding_number module_prefix vc_constructor
     ) 
     | Ot.Vct_non_nullary_constructor field_type -> 
       F.linep sc "| Some (%i, _) -> %s_types.%s (%s)" 
         vc_encoding_number 
-        module_ 
+        module_prefix 
         vc_constructor 
         (decode_field_f field_type pk) 
   in 
@@ -285,7 +285,7 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors;} sc =
     F.linep sc "let rec loop () = "; 
     F.scope sc (fun sc ->
       F.linep sc "let ret:%s_types.%s = match Pbrt.Decoder.key d with"
-        module_ v_name;
+        module_prefix v_name;
 
       F.scope sc (fun sc -> 
         F.linep sc "| None -> Pbrt.Decoder.malformed_variant \"%s\"" v_name; 
@@ -303,26 +303,26 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors;} sc =
     F.line sc "loop ()";
   )
 
-let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
+let gen_const_variant ?and_ module_prefix {Ot.cv_name; cv_constructors; } sc = 
 
   F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match Pbrt.Decoder.int_as_varint d with";
     List.iter (fun {Ot.cvc_name; cvc_binary_value; _} ->
       F.linep sc "| %i -> (%s_types.%s:%s_types.%s)" 
-        cvc_binary_value module_ cvc_name module_ cv_name
+        cvc_binary_value module_prefix cvc_name module_prefix cv_name
     ) cv_constructors; 
     F.linep sc "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name
   )
 
 let gen_struct ?and_ t sc = 
-  let {Ot.module_; spec; _} = t in
+  let {Ot.module_prefix; spec; _} = t in
 
   let has_encoded =  
     match spec with 
-    | Ot.Record r  -> gen_record ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
+    | Ot.Record r  -> gen_record ?and_ module_prefix r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_prefix v sc; true
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_prefix v sc; true
   in
 
   has_encoded
@@ -330,11 +330,11 @@ let gen_struct ?and_ t sc =
 let gen_sig ?and_ t sc = 
   let _ = and_ in
 
-  let {Ot.module_; spec; _} = t in
+  let {Ot.module_prefix; spec; _} = t in
 
   let f type_name = 
     F.linep sc "val decode_%s : Pbrt.Decoder.t -> %s_types.%s" 
-      type_name module_ type_name ; 
+      type_name module_prefix type_name ; 
     F.linep sc ("(** [decode_%s decoder] decodes a " ^^ 
                      "[%s] value from [decoder] *)") type_name type_name; 
   in 

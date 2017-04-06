@@ -14,11 +14,11 @@ let gen_field field_type =
     function_name_of_user_defined ~function_prefix ~module_suffix udt  
   | _ ->  sp "Pbrt.Pp.pp_%s" (string_of_field_type field_type) 
 
-let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc = 
+let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc = 
   L.log "gen_pp, record_name: %s\n" r_name; 
 
   F.line sc @@ sp "%s pp_%s fmt (v:%s_types.%s) = " 
-    (let_decl_of_and and_) r_name module_ r_name;
+    (let_decl_of_and and_) r_name module_prefix r_name;
   F.scope sc (fun sc ->
     F.line sc "let pp_i fmt () ="; 
     F.scope sc (fun sc -> 
@@ -27,7 +27,7 @@ let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc =
 
         let {Ot.rf_label; rf_field_type; _ } = record_field in 
 
-        let var_name = sp "v.%s_types.%s" module_ rf_label in 
+        let var_name = sp "v.%s_types.%s" module_prefix rf_label in 
         match rf_field_type with 
 
         | Ot.Rft_nolabel (field_type, _, _)
@@ -92,9 +92,9 @@ let gen_record  ?and_ module_ {Ot.r_name; r_fields} sc =
     F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()";
   )
 
-let gen_variant ?and_ module_ {Ot.v_name; Ot.v_constructors; } sc = 
+let gen_variant ?and_ module_prefix {Ot.v_name; Ot.v_constructors; } sc = 
   F.line sc @@ sp "%s pp_%s fmt (v:%s_types.%s) =" 
-    (let_decl_of_and and_) v_name module_ v_name; 
+    (let_decl_of_and and_) v_name module_prefix v_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun {Ot.vc_constructor;vc_field_type; _ } ->  
@@ -102,44 +102,44 @@ let gen_variant ?and_ module_ {Ot.v_name; Ot.v_constructors; } sc =
       | Ot.Vct_nullary -> ( 
         F.line sc @@ sp 
           "| %s_types.%s  -> Format.fprintf fmt \"%s\"" 
-          module_ vc_constructor vc_constructor 
+          module_prefix vc_constructor vc_constructor 
       )
       | Ot.Vct_non_nullary_constructor field_type -> (  
         let field_string_of = gen_field field_type in 
         F.line sc @@ sp  
           "| %s_types.%s x -> Format.fprintf fmt \"@[%s(%%a)@]\" %s x" 
-          module_ vc_constructor vc_constructor field_string_of 
+          module_prefix vc_constructor vc_constructor field_string_of 
       )
     ) v_constructors;
   )
 
-let gen_const_variant ?and_ module_ {Ot.cv_name; cv_constructors; } sc = 
+let gen_const_variant ?and_ module_prefix {Ot.cv_name; cv_constructors; } sc = 
   F.line sc @@ sp "%s pp_%s fmt (v:%s_types.%s) =" 
-    (let_decl_of_and and_) cv_name module_ cv_name; 
+    (let_decl_of_and and_) cv_name module_prefix cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun {Ot.cvc_name; _} -> 
       F.line sc @@ sp "| %s_types.%s -> Format.fprintf fmt \"%s\"" 
-        module_ cvc_name cvc_name
+        module_prefix cvc_name cvc_name
     ) cv_constructors; 
   )
 
 let gen_struct ?and_ t sc = 
-  let {Ot.module_; spec; _} = t in 
+  let {Ot.module_prefix; spec; _} = t in 
   begin 
     match spec with
-    | Ot.Record r -> gen_record ?and_ module_ r sc
-    | Ot.Variant v  -> gen_variant ?and_ module_ v sc
-    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc
+    | Ot.Record r -> gen_record ?and_ module_prefix r sc
+    | Ot.Variant v  -> gen_variant ?and_ module_prefix v sc
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_prefix v sc
   end; 
   true
 
 let gen_sig ?and_ t sc = 
   let _ = and_ in
-  let {Ot.module_; spec; _} = t in
+  let {Ot.module_prefix; spec; _} = t in
   let f type_name =  
     F.line sc @@ sp "val pp_%s : Format.formatter -> %s_types.%s -> unit "
-      type_name module_ type_name;
+      type_name module_prefix type_name;
     F.line sc @@ sp "(** [pp_%s v] formats v *)" type_name;
   in 
   begin

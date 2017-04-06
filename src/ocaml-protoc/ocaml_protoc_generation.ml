@@ -115,12 +115,12 @@ let generate_type_and_default
 
 let generate_mutable_records ocaml_types sc = 
   let ocaml_types = List.flatten ocaml_types in 
-  List.iter (fun {Ot.spec; module_; _ } -> 
+  List.iter (fun {Ot.spec; module_prefix; _ } -> 
     match spec with
     | Ot.Record r -> 
-      Pb_codegen_types.gen_record ~mutable_:() module_ r sc;
+      Pb_codegen_types.gen_record ~mutable_:() module_prefix r sc;
       F.empty_line sc;
-      Pb_codegen_default.gen_record ~mutable_:() module_ r sc; 
+      Pb_codegen_default.gen_record ~mutable_:() module_prefix r sc; 
       F.empty_line sc;
     | _ -> () 
   ) ocaml_types

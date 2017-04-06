@@ -9,12 +9,12 @@ val let_decl_of_and : 'a option -> string
  *)
 
 val string_of_record_field_type : 
-  ?module_:string ->
+  ?module_prefix:string ->
   Pb_codegen_ocaml_type.record_field_type -> 
   string 
 
 val string_of_field_type : 
-  ?module_:string ->
+  ?module_prefix:string ->
   Pb_codegen_ocaml_type.field_type -> 
   string 
 

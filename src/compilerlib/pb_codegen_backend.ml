@@ -172,7 +172,7 @@ let type_name message_scope name =
     with the same name. 
  *)
 let user_defined_type_of_id all_types file_name i = 
-  let module_ = module_of_file_name file_name in 
+  let module_prefix = module_of_file_name file_name in 
   match Typing_util.type_of_id all_types i with
   | exception Not_found -> 
     E.programmatic_error E.No_type_found_for_id 
@@ -187,7 +187,7 @@ let user_defined_type_of_id all_types file_name i =
         let field_type_module = module_of_file_name file_name in  
         let {Tt.message_names; _ } = Typing_util.type_scope_of_type t in 
         let udt_type_name = type_name message_names (Typing_util.type_name_of_type t) in 
-        if field_type_module = module_ 
+        if field_type_module = module_prefix 
         then Ot.(Ft_user_defined_type {
           udt_type; 
           udt_module = None; 
@@ -362,7 +362,7 @@ let compile_message
   (message: Pb_field_type.resolved Tt.message ) :
   Ot.type_ list   = 
 
-  let module_ = module_of_file_name file_name in 
+  let module_prefix = module_of_file_name file_name in 
   (* TODO maybe module_ should be resolved before `compile_message` since 
      it is common with compile_enum
    *)
@@ -388,7 +388,7 @@ let compile_message
   | Tt.Message_oneof_field f :: [] -> (
     let outer_message_names = message_names @ [message_name] in 
     let variant = variant_of_oneof ~outer_message_names all_types file_options file_name f in
-    [Ot.({module_; spec = Variant variant;type_level_ppx_extension})]
+    [Ot.({module_prefix; spec = Variant variant;type_level_ppx_extension})]
   ) 
 
   | _ -> 
@@ -476,7 +476,7 @@ let compile_message
           rf_field_type = Rft_variant variant; 
         }) in 
         
-        let variants = Ot.({module_; spec = Variant variant; type_level_ppx_extension})::variants in 
+        let variants = Ot.({module_prefix; spec = Variant variant; type_level_ppx_extension})::variants in 
 
         let fields   = record_field::fields in 
 
@@ -543,7 +543,7 @@ let compile_message
     }) in 
 
     let type_ = Ot.({
-      module_; 
+      module_prefix; 
       spec = Record record;
       type_level_ppx_extension;
     }) in 
@@ -553,7 +553,7 @@ let compile_message
 let compile_enum file_options file_name scope enum = 
 
   let {Tt.enum_name; enum_values; _ } = enum in
-  let module_ = module_of_file_name file_name in 
+  let module_prefix = module_of_file_name file_name in 
   let {Tt.message_names; Tt.packages = _ } = scope in 
 
   let cv_constructors = List.map (fun {Tt.enum_value_name; Tt.enum_value_int} -> 
@@ -571,7 +571,7 @@ let compile_enum file_options file_name scope enum =
   in
 
   Ot.({
-    module_; 
+    module_prefix; 
     spec = Const_variant {
       cv_name = type_name message_names enum_name; 
       cv_constructors;

@@ -1,5 +1,7 @@
 (** Common module signature for all codegen modules *)
 
+(*type context = [| `Single_file | `Multi_file |] *)
+
 module type S = sig 
   
   val gen_sig : 

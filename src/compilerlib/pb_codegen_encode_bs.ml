@@ -178,14 +178,14 @@ let gen_rft_variant sc var_name rf_label {Ot.v_constructors; _} =
   ); 
   F.linep sc "end; (* match v.%s *)" rf_label
 
-let gen_record ?and_ module_ {Ot.r_name; r_fields } sc = 
+let gen_record ?and_ module_prefix {Ot.r_name; r_fields } sc = 
   let rn = r_name in 
   F.linep sc "%s encode_%s (v:%s_types.%s) json = " 
-      (Pb_codegen_util.let_decl_of_and and_) rn module_ rn;
+      (Pb_codegen_util.let_decl_of_and and_) rn module_prefix rn;
   F.scope sc (fun sc -> 
     List.iter (fun record_field -> 
       let {Ot.rf_label; rf_field_type; _ } = record_field in  
-      let var_name = sp "v.%s_types.%s" module_ rf_label in 
+      let var_name = sp "v.%s_types.%s" module_prefix rf_label in 
 
       match rf_field_type with 
       | Ot.Rft_nolabel nolabel_field  ->
@@ -212,7 +212,7 @@ let gen_record ?and_ module_ {Ot.r_name; r_fields } sc =
     F.line sc "()"
   )
 
-let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc = 
+let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc = 
 
   let process_v_constructor sc v_constructor = 
     let {
@@ -224,51 +224,51 @@ let gen_variant ?and_ module_ {Ot.v_name; v_constructors} sc =
 
     match vc_field_type with 
     | Ot.Vct_nullary -> 
-      F.linep sc "| %s_types.%s ->" module_ vc_constructor; 
+      F.linep sc "| %s_types.%s ->" module_prefix vc_constructor; 
       F.linep sc "  Js_dict.set json \"%s\" Js_json.null" json_label 
 
     | Ot.Vct_non_nullary_constructor field_type -> 
-      F.linep sc "| %s_types.%s v ->" module_ vc_constructor; 
+      F.linep sc "| %s_types.%s v ->" module_prefix vc_constructor; 
       F.scope sc (fun sc -> 
         gen_field sc "v" json_label field_type vc_payload_kind
       )
   in 
 
   F.linep sc "%s encode_%s (v:%s_types.%s) json = " 
-      (Pb_codegen_util.let_decl_of_and and_) v_name module_ v_name;
+      (Pb_codegen_util.let_decl_of_and and_) v_name module_prefix v_name;
   F.scope sc (fun sc -> 
     F.line sc "begin match v with";
     List.iter (process_v_constructor sc) v_constructors;
     F.line sc "end";
   ) 
 
-let gen_const_variant ?and_ module_ {Ot.cv_name; Ot.cv_constructors} sc = 
+let gen_const_variant ?and_ module_prefix {Ot.cv_name; Ot.cv_constructors} sc = 
   F.linep sc "%s encode_%s (v:%s_types.%s) : string = " 
-      (Pb_codegen_util.let_decl_of_and and_) cv_name module_ cv_name; 
+      (Pb_codegen_util.let_decl_of_and and_) cv_name module_prefix cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match v with";
     List.iter (fun {Ot.cvc_name; cvc_string_value; _} -> 
-      F.linep sc "| %s_types.%s -> \"%s\"" module_ cvc_name cvc_string_value
+      F.linep sc "| %s_types.%s -> \"%s\"" module_prefix cvc_name cvc_string_value
     ) cv_constructors
   ) 
 
 let gen_struct ?and_ t sc = 
-  let {Ot.module_; spec; _} = t in 
+  let {Ot.module_prefix; spec; _} = t in 
 
   let has_encoded =
     match spec with 
-    | Ot.Record r  -> gen_record ?and_ module_ r sc; true
-    | Ot.Variant v -> gen_variant ?and_ module_ v sc; true
-    | Ot.Const_variant v -> gen_const_variant ?and_ module_ v sc; true
+    | Ot.Record r  -> gen_record ?and_ module_prefix r sc; true
+    | Ot.Variant v -> gen_variant ?and_ module_prefix v sc; true
+    | Ot.Const_variant v -> gen_const_variant ?and_ module_prefix v sc; true
   in
   has_encoded
 
 let gen_sig ?and_ t sc = 
   let _ = and_ in
-  let {Ot.module_; spec; _} = t in 
+  let {Ot.module_prefix; spec; _} = t in 
   let f type_name = 
     F.linep sc "val encode_%s : %s_types.%s -> Js_json.t Js_dict.t -> unit" 
-      type_name module_ type_name;
+      type_name module_prefix type_name;
     F.linep sc ("(** [encode_%s v dict] encodes [v] int the " ^^ 
                      "given JSON [dict] *)") type_name; 
   in 
@@ -277,7 +277,7 @@ let gen_sig ?and_ t sc =
   | Ot.Variant v -> f v.Ot.v_name; true 
   | Ot.Const_variant {Ot.cv_name; _ } -> 
     F.linep sc "val encode_%s : %s_types.%s -> string"
-      cv_name module_ cv_name;
+      cv_name module_prefix cv_name;
     F.linep sc ("(** [encode_%s v] returns JSON string*)") cv_name; 
     true
 

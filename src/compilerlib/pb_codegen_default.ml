@@ -28,7 +28,7 @@ let default_value_of_basic_type ?field_name basic_type field_default =
 
 (* Generate the string which is the default value for a given field
    type and default information.  *)
-let default_value_of_field_type ?module_ ?field_name field_type field_default = 
+let default_value_of_field_type ?module_prefix ?field_name field_type field_default = 
   match field_type with 
   | Ot.Ft_user_defined_type udt -> 
     let function_prefix  = "default" in 
@@ -36,8 +36,8 @@ let default_value_of_field_type ?module_ ?field_name field_type field_default =
     let f_name = 
        function_name_of_user_defined ~function_prefix ~module_suffix udt ^ " ()"
     in 
-    begin match module_, udt.Ot.udt_module with
-    | Some module_, None -> module_ ^ "_" ^ module_suffix ^ "." ^ f_name  
+    begin match module_prefix, udt.Ot.udt_module with
+    | Some module_prefix, None -> module_prefix ^ "_" ^ module_suffix ^ "." ^ f_name  
     | _ -> f_name
     end
   | Ot.Ft_unit -> "()"
@@ -46,13 +46,13 @@ let default_value_of_field_type ?module_ ?field_name field_type field_default =
 
 (* This function returns [(field_name, field_default_value, field_type)] for 
    a record field.  *)
-let record_field_default_info ?module_ record_field =
+let record_field_default_info ?module_prefix record_field =
   let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in 
   let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in  
   let field_name  = rf_label in 
 
   let dfvft field_type field_default = 
-    default_value_of_field_type ?module_ ~field_name field_type field_default 
+    default_value_of_field_type ?module_prefix ~field_name field_type field_default 
   in
 
   let default_value = match rf_field_type with
@@ -88,23 +88,23 @@ let record_field_default_info ?module_ record_field =
            | Ot.Vct_non_nullary_constructor field_type -> 
              sp "%s (%s)" vc_constructor (dfvft field_type None) 
          in
-         begin match module_ with
+         begin match module_prefix with
          | None -> default_value
-         | Some module_ -> module_ ^ "_types." ^ default_value 
+         | Some module_prefix -> module_prefix ^ "_types." ^ default_value 
          end
        end 
   in
   (field_name, default_value, type_string)
 
-let gen_record  ?mutable_ ?and_ module_ {Ot.r_name; r_fields} sc = 
+let gen_record  ?mutable_ ?and_ module_prefix {Ot.r_name; r_fields} sc = 
 
   let fields_default_info = 
-    let module_ = match mutable_ with
+    let module_prefix = match mutable_ with
       | None -> None 
-      | Some () -> Some module_ 
+      | Some () -> Some module_prefix 
     in 
     List.map (fun r_field ->
-      record_field_default_info ?module_ r_field 
+      record_field_default_info ?module_prefix r_field 
     ) r_fields 
   in
 
@@ -164,11 +164,11 @@ let gen_const_variant ?and_ {Ot.cv_name; Ot.cv_constructors; } sc =
     (let_decl_of_and and_) cv_name first_constructor_name cv_name
 
 let gen_struct ?and_ t sc = 
-  let {Ot.module_; spec; _} = t in 
+  let {Ot.module_prefix; spec; _} = t in 
 
   let has_encoded = 
     match spec with 
-    | Ot.Record r -> gen_record ?and_ module_ r sc ; true 
+    | Ot.Record r -> gen_record ?and_ module_prefix r sc ; true 
     | Ot.Variant v -> gen_variant ?and_ v sc; true 
     | Ot.Const_variant v -> gen_const_variant v sc; true
   in
