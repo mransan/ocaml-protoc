@@ -134,6 +134,9 @@ and type_spec =
 
 type type_ = {
   module_prefix : string; 
+    (** code generation leads to several file/module being generated for 
+        a given [type_]. [module_prefix] is the common prefix for all those
+        generated module and it is based on the `.proto` filename. *)
   spec : type_spec; 
   type_level_ppx_extension : string option; 
 }
