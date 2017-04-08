@@ -1,7 +1,5 @@
-first : yojson
-# 	./ocaml-protoc -yojson -binary -pp -ml_out src/examples/ src/examples/example01.proto
-# 	$(OCB) -pkgs yojson -I src/examples example01.byte
-
+first : bin.byte
+#
 # OCamlbuild configuration
 #
 OCB_INC   = -X lib -X node_modules 

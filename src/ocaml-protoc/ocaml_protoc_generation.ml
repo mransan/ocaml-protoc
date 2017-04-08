@@ -113,14 +113,15 @@ let generate_type_and_default
   output_string struct_oc (F.print ml_sc);
   output_string sig_oc (F.print mli_sc)
 
-let generate_mutable_records ocaml_types sc = 
+let generate_mutable_records gen_file_suffix ocaml_types sc = 
   let ocaml_types = List.flatten ocaml_types in 
   List.iter (fun {Ot.spec; module_prefix; _ } -> 
     match spec with
     | Ot.Record r -> 
-      Pb_codegen_types.gen_record ~mutable_:() module_prefix r sc;
+      Pb_codegen_types.gen_record_mutable module_prefix r sc;
       F.empty_line sc;
-      Pb_codegen_default.gen_record ~mutable_:() module_prefix r sc; 
+      Pb_codegen_default.gen_record_mutable 
+        ~gen_file_suffix ~module_prefix r sc; 
       F.empty_line sc;
     | _ -> () 
   ) ocaml_types
@@ -132,7 +133,7 @@ let generate_yojson ocaml_types cmdline =
   let ml_sc = F.empty_scope () in 
   F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
   F.empty_line ml_sc;
-  generate_mutable_records ocaml_types ml_sc;
+  generate_mutable_records file_suffix ocaml_types ml_sc;
   F.empty_line ml_sc;
 
   generate_for_all_types ocaml_types ml_sc 
@@ -164,7 +165,7 @@ let generate_bs ocaml_types cmdline =
   let ml_sc = F.empty_scope () in 
   F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
   F.empty_line ml_sc;
-  generate_mutable_records ocaml_types ml_sc;
+  generate_mutable_records file_suffix ocaml_types ml_sc;
   F.empty_line ml_sc;
 
   generate_for_all_types ocaml_types ml_sc 
@@ -196,7 +197,7 @@ let generate_binary ocaml_types cmdline =
   let ml_sc = F.empty_scope () in 
   F.line ml_sc "[@@@ocaml.warning \"-27-30-39\"]";
   F.empty_line ml_sc;
-  generate_mutable_records ocaml_types ml_sc;
+  generate_mutable_records file_suffix ocaml_types ml_sc;
   F.empty_line ml_sc;
 
   generate_for_all_types ocaml_types ml_sc 

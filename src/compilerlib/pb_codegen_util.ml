@@ -200,6 +200,6 @@ let collect_modules_of_types ocaml_types =
   ) [] ocaml_types 
   |> List.sort_uniq Pervasives.compare   
 
-let module_of_context module_prefix file_suffix = function
+(*let module_of_context module_prefix file_suffix = function
   | `Single_file -> "" 
-  | `Multi_file -> Printf.sprintf "%s_%s." module_prefix file_suffix 
+  | `Multi_file -> Printf.sprintf "%s_%s." module_prefix file_suffix *)
