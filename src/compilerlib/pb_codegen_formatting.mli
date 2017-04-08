@@ -45,6 +45,8 @@ val empty_scope : unit -> scope
 val line : scope -> string -> unit 
 (** [line scope s] adds [s] to [scope] *)
 
+val linep : scope -> ('a, unit, string, unit) format4 -> 'a  
+
 val empty_line : scope -> unit 
 (** [empty_line scope] adds an empty line to [scope] *)
 

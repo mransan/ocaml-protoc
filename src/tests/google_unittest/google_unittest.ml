@@ -1,7 +1,4 @@
-
-
-module T = Unittest_pb
-
+module T = Unittest_types
 
 let () = 
   assert({T.a = Some "*/ <- Neither should this."} = T.default_test_comment_injection_message ()) 

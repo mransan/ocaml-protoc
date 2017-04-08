@@ -1,6 +1,9 @@
+#
 # OCamlbuild configuration
 #
-OCB_INC   = -I src/compilerlib -I src/compilerlib/ocaml -I src/runtime -I src/ocaml-protoc
+OCB_INC   = -X lib -X node_modules 
+OCB_INC  += -I src/runtime -I src/runtime-yojson/src/
+OCB_INC  += -I src/compilerlib -I src/ocaml-protoc
 OCB_FLAGS = -use-ocamlfind -pkgs ppx_deriving_protobuf.runtime 
 OCB       = ocamlbuild $(OCB_FLAGS) $(OCB_INC)
 
@@ -25,8 +28,15 @@ default:
 	
 clean.gen:
 	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.*
+	rm -f $(INTEGRATION_TESTS_DIR)/*_types.ml*
 	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml*
+	rm -f $(INTEGRATION_TESTS_DIR)/*_pp.ml*
+	rm -f $(YOJSON_DIR)/*_types.ml*
+	rm -f $(YOJSON_DIR)/*_yojson.ml*
+	rm -f $(YOJSON_DIR)/*.pb.*
 	rm -f $(GOOGLE_UNITTEST_DIR)/*_pb.ml*
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_pp.ml*
+	rm -f $(GOOGLE_UNITTEST_DIR)/*_types.ml*
 	rm -f $(OCAMLOPTIONS_HINC)/*.pb.*
 	rm -f src/examples/*_pb.ml*
 
@@ -81,7 +91,6 @@ check_install: check_prefix
     fi;
 
 LIB_FILES+=pbrt
-LIB_FILES+=pbrt_json
 
 LIB_BUILD     =_build/src/runtime
 LIB_INSTALL   = META 

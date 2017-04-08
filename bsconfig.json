@@ -1,15 +1,24 @@
 {
   "name": "bs-ocaml-protoc",
-  "sources": {
-    "dir": "src/runtime",
-    "public": ["Pbrt", "Pbrt_json"],
-    "files": [
-      "pbrt.mli",
-      "pbrt.ml",
-      "pbrt_json.mli",
-      "pbrt_json.ml"
-    ]
-  },
-  "bs-dependencies": [ "bs-ppx_deriving_protobuf"],
+  "sources": [
+    {
+      "dir": "src/runtime-bs/src",
+      "files": [
+        "pbrt_bs.ml"
+      ]
+    },
+    {
+      "dir": "src/tests/bs",
+      "internal-depends": "../../runtime-bs/src",
+      "files": [
+        "bs_unittest_types.mli",
+        "bs_unittest_types.ml",
+        "bs_unittest_bs.mli",
+        "bs_unittest_bs.ml",
+        "index.ml"
+      ]
+    }
+  ],
+  "bs-dependencies": [ ],
   "generate-merlin": true 
 }

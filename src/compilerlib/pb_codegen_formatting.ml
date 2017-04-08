@@ -37,6 +37,9 @@ let empty_scope () =
 let line scope s =
   scope.items <- (Line s)::scope.items  
 
+let linep scope format = 
+  Printf.ksprintf (line scope) format
+
 let empty_line scope = 
   line scope "" 
 

@@ -1,34 +1,39 @@
 let () = 
   (* Create OCaml value of generated type *) 
 
-  let person = Example01_pb.({ 
+  let person = Example01_types.({ 
     name = "John Doe"; 
     id = 1234l;
-    email = Some "jdoe@example.com"; 
+    email = "jdoe@example.com"; 
     phone = ["123-456-7890"];
   }) in 
+
+  print_endline @@ Format.asprintf "person: %a" Example01_pp.pp_person person;
   
-  (* Create a Protobuf encoder and encode value *)
+  let json = 
+    person 
+    |> Example01_yojson.encode_person 
+    |> Yojson.Basic.to_string 
+  in
+  print_endline json; 
 
-  let encoder = Pbrt.Encoder.create () in 
-  Example01_pb.encode_person person encoder; 
+  let person' = 
+    json
+    |> Yojson.Basic.from_string
+    |> Example01_yojson.decode_person
+  in  
 
-  (* Output the protobuf message to a file *) 
+  assert(person = person');
 
-  let oc = open_out "myfile" in 
-  output_bytes oc (Pbrt.Encoder.to_bytes encoder);
-  close_out oc
-
-let () = 
-  
-  let bytes = 
-    let ic = open_in "myfile" in 
-    let len = in_channel_length ic in 
-    let bytes = Bytes.create len in 
-    really_input ic bytes 0 len; 
-    close_in ic; 
-    bytes 
+  let binary = 
+    let encoder = Pbrt.Encoder.create () in 
+    Example01_pb.encode_person person encoder; 
+    Pbrt.Encoder.to_bytes encoder
   in 
-  
-  let person = Example01_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in 
-  Format.fprintf Format.std_formatter "%a" Example01_pb.pp_person person 
+
+  let person' =
+    let decoder = Pbrt.Decoder.of_bytes binary in 
+    Example01_pb.decode_person decoder
+  in 
+
+  assert(person = person')

@@ -14,16 +14,20 @@ let string_of_basic_type = function
   | Ot.Bt_bytes  -> "bytes"
   | Ot.Bt_bool   -> "bool"
 
-let string_of_user_defined = function 
+let string_of_user_defined ?module_prefix = function 
   | {Ot.udt_module = None; Ot.udt_type_name; _ } -> 
-    udt_type_name 
-  | {Ot.udt_module = Some module_; Ot.udt_type_name; _ } -> 
-    module_ ^ "." ^ udt_type_name 
+    begin match module_prefix with
+    | None  -> udt_type_name 
+    | Some module_prefix  -> module_prefix ^ "_types." ^ udt_type_name 
+    end
 
-let string_of_field_type = function 
+  | {Ot.udt_module = Some module_prefix; Ot.udt_type_name; _ } -> 
+    module_prefix ^ "_types." ^ udt_type_name 
+
+let string_of_field_type ?module_prefix = function 
   | Ot.Ft_unit -> "unit"
   | Ot.Ft_basic_type bt -> string_of_basic_type bt 
-  | Ot.Ft_user_defined_type ud -> string_of_user_defined ud  
+  | Ot.Ft_user_defined_type udt -> string_of_user_defined ?module_prefix udt
 
 let string_of_repeated_type = function
   | Ot.Rt_list -> "list"
@@ -33,25 +37,30 @@ let string_of_associative_type = function
   | Ot.At_list -> "list"
   | Ot.At_hashtable -> "Hashtbl.t"
 
-let string_of_record_field_type = function
+let string_of_record_field_type ?module_prefix = function
   | Ot.Rft_nolabel (field_type, _, _)
   | Ot.Rft_required (field_type, _, _, _) -> 
-      string_of_field_type field_type
+      string_of_field_type ?module_prefix field_type
   | Ot.Rft_optional (field_type, _, _, _) -> 
-      (string_of_field_type field_type) ^ " option"
-  | Ot.Rft_repeated_field (rt, field_type, _, _,_) -> 
-      (string_of_field_type field_type) ^ " " ^ (string_of_repeated_type rt)
-  | Ot.Rft_associative_field (Ot.At_list, _, (key_type, _), (value_type, _)) -> 
+      (string_of_field_type ?module_prefix field_type) ^ " option"
+  | Ot.Rft_repeated (rt, field_type, _, _,_) -> 
+      (string_of_field_type ?module_prefix field_type) ^ " " ^ 
+      (string_of_repeated_type rt)
+  | Ot.Rft_associative (Ot.At_list, _, (key_type, _), (value_type, _)) -> 
       Printf.sprintf "(%s * %s) %s" 
         (string_of_basic_type key_type)
-        (string_of_field_type value_type) 
+        (string_of_field_type ?module_prefix value_type) 
         (string_of_associative_type Ot.At_list) 
-  | Ot.Rft_associative_field (Ot.At_hashtable, _, (key_type, _), (value_type, _)) -> 
+  | Ot.Rft_associative
+                (Ot.At_hashtable, _, (key_type, _), (value_type, _)) -> 
       Printf.sprintf "(%s, %s) %s" 
         (string_of_basic_type key_type)
-        (string_of_field_type value_type) 
+        (string_of_field_type ?module_prefix value_type) 
         (string_of_associative_type Ot.At_hashtable) 
-  | Ot.Rft_variant_field {Ot.v_name; _ } -> v_name
+  | Ot.Rft_variant {Ot.v_name; _ } -> 
+    match module_prefix with 
+    | None -> v_name
+    | Some module_prefix -> module_prefix ^ "_types." ^ v_name
  
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`. 
@@ -60,19 +69,20 @@ let string_of_record_field_type = function
     (encode/decode/to_string) will call the same generated function for each 
     user defined field type. 
  *)
-let function_name_of_user_defined prefix = function 
-  | {Ot.udt_module = Some module_; Ot.udt_type_name; _} -> 
-    sp "%s.%s_%s" module_ prefix udt_type_name 
+let function_name_of_user_defined ~function_prefix ~module_suffix = function 
+  | {Ot.udt_module = Some module_prefix; Ot.udt_type_name; _} -> 
+    sp "%s_%s.%s_%s" module_prefix module_suffix function_prefix udt_type_name 
   | {Ot.udt_module = None; Ot.udt_type_name; _} -> 
-    sp "%s_%s" prefix udt_type_name 
+    sp "%s_%s" function_prefix udt_type_name 
 
-let caml_file_name_of_proto_file_name proto = 
-  let splitted = Pb_util.rev_split_by_char '.' proto in 
+let caml_file_name_of_proto_file_name ~proto_file_name ~file_suffix = 
+  let splitted = Pb_util.rev_split_by_char '.' proto_file_name in 
   if List.length splitted < 2 || 
      List.hd splitted <> "proto" 
-  then failwith "Proto file has no valid extension"
+  then 
+    failwith "Proto file has no valid extension"
   else 
-    String.concat "_" @@ List.rev @@ ("pb" :: (List.tl splitted)) 
+    String.concat "_" @@ List.rev @@ (file_suffix :: (List.tl splitted)) 
 
 let mutable_record_name s = s ^ "_mutable" 
 
@@ -167,11 +177,11 @@ let collect_modules_of_record_field_type modules = function
   | Ot.Rft_nolabel (field_type, _, _)
   | Ot.Rft_required (field_type, _, _, _)  
   | Ot.Rft_optional (field_type, _, _, _) 
-  | Ot.Rft_repeated_field (_, field_type, _, _, _) 
-  | Ot.Rft_associative_field (_, _ , _, (field_type, _)) ->
+  | Ot.Rft_repeated (_, field_type, _, _, _) 
+  | Ot.Rft_associative (_, _ , _, (field_type, _)) ->
     collect_modules_of_field_type modules field_type 
 
-  | Ot.Rft_variant_field variant -> 
+  | Ot.Rft_variant variant -> 
     collect_modules_of_variant modules variant 
 
 let collect_modules_of_record modules {Ot.r_fields; _} = 
@@ -189,3 +199,7 @@ let collect_modules_of_types ocaml_types =
     collect_modules_of_type_spec modules spec 
   ) [] ocaml_types 
   |> List.sort_uniq Pervasives.compare   
+
+(*let module_of_context module_prefix file_suffix = function
+  | `Single_file -> "" 
+  | `Multi_file -> Printf.sprintf "%s_%s." module_prefix file_suffix *)

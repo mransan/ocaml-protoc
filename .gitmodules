@@ -1,0 +1,6 @@
+[submodule "src/runtime-yojson"]
+	path = src/runtime-yojson
+	url = https://github.com/mransan/ocaml-protoc-yojson.git
+[submodule "src/runtime-bs"]
+	path = src/runtime-bs
+	url = https://github.com/mransan/bs-ocaml-protoc-json.git

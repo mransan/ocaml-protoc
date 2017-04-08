@@ -6,6 +6,7 @@ export CXX
 ifndef CPPFLAGS
     CPPFLAGS = 
 endif
+CPPFLAGS+=-Wno-deprecated
 export CPPFLAGS
 
 #
@@ -16,36 +17,36 @@ export CPPFLAGS
 
 # unit test of the ocaml-protoc internals  
 unit-tests: 		
-	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p2.native 
-	$(OCB) $(UNIT_TESTS_DIR)/test_typing.native
-	$(OCB) $(UNIT_TESTS_DIR)/verify_syntax_invariants.native
-	$(OCB) $(UNIT_TESTS_DIR)/parse_message.native 
-	$(OCB) $(UNIT_TESTS_DIR)/parse_extension_range.native
-	$(OCB) $(UNIT_TESTS_DIR)/parse_field_options.native 
-	$(OCB) $(UNIT_TESTS_DIR)/parse_file_options.native 
-	$(OCB) $(UNIT_TESTS_DIR)/parse_fields.native 
-	$(OCB) $(UNIT_TESTS_DIR)/parse_enum.native
-	$(OCB) $(UNIT_TESTS_DIR)/parse_import.native 
-	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p1.native 
-	$(OCB) $(UNIT_TESTS_DIR)/backend_ocaml_test.native
-	$(OCB) $(UNIT_TESTS_DIR)/ocaml_codegen_test.native
-	$(OCB) $(UNIT_TESTS_DIR)/graph_test.native
-	$(OCB) $(UNIT_TESTS_DIR)/pbrt_array.native
-	export OCAMLRUNPARAM="b" && ./test_typing.native
-	export OCAMLRUNPARAM="b" && ./verify_syntax_invariants.native
-	export OCAMLRUNPARAM="b" && ./parse_message.native
-	export OCAMLRUNPARAM="b" && ./parse_extension_range.native
-	export OCAMLRUNPARAM="b" && ./parse_field_options.native
-	export OCAMLRUNPARAM="b" && ./parse_file_options.native
-	export OCAMLRUNPARAM="b" && ./parse_fields.native
-	export OCAMLRUNPARAM="b" && ./parse_enum.native
-	export OCAMLRUNPARAM="b" && ./parse_import.native
-	export OCAMLRUNPARAM="b" && ./pbtt_compile_p1.native
-	export OCAMLRUNPARAM="b" && ./pbtt_compile_p2.native
-	export OCAMLRUNPARAM="b" && ./backend_ocaml_test.native
-	export OCAMLRUNPARAM="b" && ./ocaml_codegen_test.native
-	export OCAMLRUNPARAM="b" && ./graph_test.native
-	export OCAMLRUNPARAM="b" && ./pbrt_array.native
+	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p2.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/test_typing.byte
+	$(OCB) $(UNIT_TESTS_DIR)/verify_syntax_invariants.byte
+	$(OCB) $(UNIT_TESTS_DIR)/parse_message.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_extension_range.byte
+	$(OCB) $(UNIT_TESTS_DIR)/parse_field_options.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_file_options.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_fields.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/parse_enum.byte
+	$(OCB) $(UNIT_TESTS_DIR)/parse_import.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/pbtt_compile_p1.byte 
+	$(OCB) $(UNIT_TESTS_DIR)/backend_ocaml_test.byte
+	$(OCB) $(UNIT_TESTS_DIR)/ocaml_codegen_test.byte
+	$(OCB) $(UNIT_TESTS_DIR)/graph_test.byte
+	$(OCB) $(UNIT_TESTS_DIR)/pbrt_array.byte
+	export OCAMLRUNPARAM="b" && ./test_typing.byte
+	export OCAMLRUNPARAM="b" && ./verify_syntax_invariants.byte
+	export OCAMLRUNPARAM="b" && ./parse_message.byte
+	export OCAMLRUNPARAM="b" && ./parse_extension_range.byte
+	export OCAMLRUNPARAM="b" && ./parse_field_options.byte
+	export OCAMLRUNPARAM="b" && ./parse_file_options.byte
+	export OCAMLRUNPARAM="b" && ./parse_fields.byte
+	export OCAMLRUNPARAM="b" && ./parse_enum.byte
+	export OCAMLRUNPARAM="b" && ./parse_import.byte
+	export OCAMLRUNPARAM="b" && ./pbtt_compile_p1.byte
+	export OCAMLRUNPARAM="b" && ./pbtt_compile_p2.byte
+	export OCAMLRUNPARAM="b" && ./backend_ocaml_test.byte
+	export OCAMLRUNPARAM="b" && ./ocaml_codegen_test.byte
+	export OCAMLRUNPARAM="b" && ./graph_test.byte
+	export OCAMLRUNPARAM="b" && ./pbrt_array.byte
 
 #
 # Integration tests
@@ -63,50 +64,69 @@ PROTOC     = $(PB_INSTALL)/bin/protoc
 
 export LD_LIBRARY_PATH=$(PB_LINC)
 
-ML_PROTOC=./ocaml-protoc -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC)
+ML_PROTOC=./ocaml-protoc -binary -pp -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC)
 
 $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
-	cd $(OCAMLOPTIONS_HINC) && $(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
+	cd $(OCAMLOPTIONS_HINC) && \
+		$(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
-	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
+	$(CXX) $(CPPFLAGS) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
+		-L $(PB_LINC) -l protobuf \
+		$? \
+		-o $@
 
 $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10_cpp.cpp \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc 
-	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
+	$(CXX) $(CPPFLAGS) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) \
+		-L $(PB_LINC) -l protobuf \
+		$? \
+		-o $@ 
 
 .SECONDARY: 
 
 %.pb.cc: %.proto
-	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) $<
+	$(PROTOC) \
+		--cpp_out $(INTEGRATION_TESTS_DIR) \
+		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) \
+		$<
 
-%_pb.ml %_pb.mli : %.proto bin.native
-	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
+%_pb.ml %_pb.mli : %.proto bin.byte
+	export OCAMLRUNPARAM="b" && \
+		$(ML_PROTOC) \
+		-I $(INTEGRATION_TESTS_DIR) \
+		-ml_out $(INTEGRATION_TESTS_DIR) $<
 
 # Specialization of the above command is required for test01 since we add the extra 
 # cmd line argument "-ocaml_all_types_ppx" to test the override of custom file options from the 
 # cmd line. 
-$(INTEGRATION_TESTS_DIR)/test01_pb.ml $(INTEGRATION_TESTS_DIR)/test01_pb.mli : $(INTEGRATION_TESTS_DIR)/test01.proto bin.byte bin.native
-	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -ocaml_all_types_ppx "deriving show" -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
+$(INTEGRATION_TESTS_DIR)/test01_pb.ml $(INTEGRATION_TESTS_DIR)/test01_pb.mli : \
+	$(INTEGRATION_TESTS_DIR)/test01.proto bin.byte bin.byte
+	export OCAMLRUNPARAM="b" && \
+		$(ML_PROTOC) \
+		-ocaml_all_types_ppx "deriving show" \
+		-I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
 
-%_ml.native: %_pb.mli %_pb.ml %_ml.ml 
+%_ml.byte: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -pkg ppx_deriving.show -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
 
-test%: $(INTEGRATION_TESTS_DIR)/test%_ml.native \
+test%: $(INTEGRATION_TESTS_DIR)/test%_ml.byte \
 	     $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk 
 	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk encode
-	time ./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native decode
-	./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.native encode
+	time ./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.byte decode
+	./_build/$(INTEGRATION_TESTS_DIR)/test$*_ml.byte encode
 	time $(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk decode
 
 .PHONY: testCompat 
 
-testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/test04_ml.native 
+testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/test04_ml.byte
 	$(INTEGRATION_TESTS_DIR)/test03_cpp.tsk encode
-	./_build/$(INTEGRATION_TESTS_DIR)/test04_ml.native decode
-	./_build/$(INTEGRATION_TESTS_DIR)/test04_ml.native encode
+	./_build/$(INTEGRATION_TESTS_DIR)/test04_ml.byte decode
+	./_build/$(INTEGRATION_TESTS_DIR)/test04_ml.byte encode
 	$(INTEGRATION_TESTS_DIR)/test03_cpp.tsk decode
 
 .PHONY: integration
@@ -129,12 +149,34 @@ integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 google_unittest: bin.byte
 	$(ML_PROTOC) -I $(GOOGLE_UNITTEST_DIR) -ml_out $(GOOGLE_UNITTEST_DIR) $(GOOGLE_UNITTEST_DIR)/unittest_import.proto 
 	$(ML_PROTOC) -I $(GOOGLE_UNITTEST_DIR) -ml_out $(GOOGLE_UNITTEST_DIR) $(GOOGLE_UNITTEST_DIR)/unittest.proto 
-	$(OCB) -I $(GOOGLE_UNITTEST_DIR) google_unittest.native
-	./google_unittest.native
+	$(OCB) -I $(GOOGLE_UNITTEST_DIR) google_unittest.byte
+	./google_unittest.byte
+
+#
+# Yojson
+# ------
+
+YOJSON_DIR=src/tests/yojson
+OCB_YOJSON=-pkg yojson
+yojson: bin.byte 
+	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
+	$(PROTOC) \
+		--cpp_out $(YOJSON_DIR) \
+		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
+		$(YOJSON_DIR)/yojson_unittest.proto
+	$(OCB) $(OCB_YOJSON) -I $(YOJSON_DIR) yojson_unittest_ml.byte
+	$(CXX) \
+		$(CPPFLAGS) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
+		$(YOJSON_DIR)/yojson_unittest_cpp.cpp $(YOJSON_DIR)/yojson_unittest.pb.cc \
+		-L $(PB_LINC) \
+		-l protobuf \
+		-o $@
+	./yojson
+	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
 
 .PHONY: all-tests
-
-all-tests: unit-tests integration google_unittest testCompat 
+all-tests: unit-tests yojson integration google_unittest testCompat 
 
 #
 # Examples
@@ -145,17 +187,12 @@ all-tests: unit-tests integration google_unittest testCompat
 
 .PHONY: all-examples
 
-example%.native: src/examples/example%.ml src/examples/example%.proto bin.byte bin.native 
+example%.byte: src/examples/example%.ml src/examples/example%.proto bin.byte bin.byte
 	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
-	$(OCB) -I src/examples src/examples/example$*.native
+	$(OCB) -I src/examples src/examples/example$*.byte
 
-all-examples: example01.native example02.native example03.native example04.native example05.native
+all-examples: example01.byte example02.byte example03.byte example04.byte example05.byte
 
-it: bin.native
-	$(OCB) ./src/unit-tests/pbrt_array.native
-	time ./pbrt_array.native
-
-.PHONY: benchmark_single_ml.native
 
 #
 # Benchmarks
@@ -163,6 +200,9 @@ it: bin.native
 
 # In this section we build benchmark tasks 
 
+.PHONY: benchmark_single_ml.native
+
 benchmark_single_ml.native: bin.byte
 	$(ML_PROTOC) -I $(BENCHMARK_DIR) -ml_out $(BENCHMARK_DIR) $(BENCHMARK_DIR)/benchmark.proto
 	$(OCB) -use-ocamlfind -pkg unix -I src/tests/benchmark $@ 
+

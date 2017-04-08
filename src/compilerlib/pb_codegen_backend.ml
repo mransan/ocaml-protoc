@@ -142,7 +142,7 @@ let module_of_file_name file_name =
   let file_name = Filename.basename file_name in 
   match String.rindex file_name '.' with 
   | dot_index -> 
-    module_name @@ (String.sub file_name 0 dot_index ^ "_pb") 
+    module_name @@ (String.sub file_name 0 dot_index) 
   | exception Not_found -> E.invalid_file_name file_name  
 
 let type_name message_scope name = 
@@ -172,7 +172,7 @@ let type_name message_scope name =
     with the same name. 
  *)
 let user_defined_type_of_id all_types file_name i = 
-  let module_ = module_of_file_name file_name in 
+  let module_prefix = module_of_file_name file_name in 
   match Typing_util.type_of_id all_types i with
   | exception Not_found -> 
     E.programmatic_error E.No_type_found_for_id 
@@ -187,7 +187,7 @@ let user_defined_type_of_id all_types file_name i =
         let field_type_module = module_of_file_name file_name in  
         let {Tt.message_names; _ } = Typing_util.type_scope_of_type t in 
         let udt_type_name = type_name message_names (Typing_util.type_name_of_type t) in 
-        if field_type_module = module_ 
+        if field_type_module = module_prefix 
         then Ot.(Ft_user_defined_type {
           udt_type; 
           udt_module = None; 
@@ -235,7 +235,7 @@ let encoding_of_field all_types
 
   (pk, Typing_util.field_number field, packed, Typing_util.field_default field)
 
-let compile_field_type ?field_name all_types file_options field_options file_name field_type = 
+let compile_field_type all_types file_options field_options file_name field_type = 
 
   let ocaml_type = match Pb_option.get field_options "ocaml_type" with
     | Some (Pb_option.Constant_litteral "int_t") -> `Int_t
@@ -253,8 +253,8 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
   in 
 
   let module T = struct 
-    type b32 = [ `Int32 | `Uint32 | `Sint32 | `Fixed32 ] 
-    type b64 = [ `Int64 | `Uint64 | `Sint64 | `Fixed64 ] 
+    type b32 = [ `Int32 | `Uint32 | `Sint32 | `Fixed32 | `Sfixed32 ] 
+    type b64 = [ `Int64 | `Uint64 | `Sint64 | `Fixed64 | `Sfixed64 ] 
     type int = [ b32 | b64 ]
   end in 
 
@@ -269,10 +269,6 @@ let compile_field_type ?field_name all_types file_options field_options file_nam
   | `Bytes    , _ -> Ot.(Ft_basic_type Bt_bytes)
   | `User_defined id, _ -> 
     user_defined_type_of_id all_types file_name id
-  | `Sfixed32, _ -> 
-    E.unsupported_field_type ?field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
-  | `Sfixed64, _ -> 
-    E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () 
 
 let is_mutable ?field_name field_options = 
   match Pb_option.get field_options "ocaml_mutable"  with
@@ -297,7 +293,6 @@ let variant_of_oneof
   let v_constructors = List.map (fun field -> 
     let pbtt_field_type =  Typing_util.field_type field in 
     let field_type = compile_field_type 
-      ~field_name:(Typing_util.field_name field) 
       all_types 
       file_options 
       (Typing_util.field_options field) 
@@ -363,7 +358,7 @@ let compile_message
   (message: Pb_field_type.resolved Tt.message ) :
   Ot.type_ list   = 
 
-  let module_ = module_of_file_name file_name in 
+  let module_prefix = module_of_file_name file_name in 
   (* TODO maybe module_ should be resolved before `compile_message` since 
      it is common with compile_enum
    *)
@@ -389,7 +384,7 @@ let compile_message
   | Tt.Message_oneof_field f :: [] -> (
     let outer_message_names = message_names @ [message_name] in 
     let variant = variant_of_oneof ~outer_message_names all_types file_options file_name f in
-    [Ot.({module_; spec = Variant variant;type_level_ppx_extension})]
+    [Ot.({module_prefix; spec = Variant variant;type_level_ppx_extension})]
   ) 
 
   | _ -> 
@@ -407,7 +402,6 @@ let compile_message
         let field_options = Typing_util.field_options field in 
 
         let field_type = compile_field_type 
-          ~field_name
           all_types 
           file_options 
           field_options 
@@ -451,7 +445,7 @@ let compile_message
               | Some "repeated_field" -> Ot.Rt_repeated_field 
               | Some _ -> failwith "Invalid ocaml_container attribute value" 
             end in 
-            Ot.Rft_repeated_field (repeated_type, field_type, encoding_number, pk, packed) 
+            Ot.Rft_repeated (repeated_type, field_type, encoding_number, pk, packed) 
         in
 
         let record_field = Ot.({
@@ -475,10 +469,10 @@ let compile_message
              * enhancement should essentially propage from the parser all the way down 
              * to here. 
              *)
-          rf_field_type = Rft_variant_field variant; 
+          rf_field_type = Rft_variant variant; 
         }) in 
         
-        let variants = Ot.({module_; spec = Variant variant; type_level_ppx_extension})::variants in 
+        let variants = Ot.({module_prefix; spec = Variant variant; type_level_ppx_extension})::variants in 
 
         let fields   = record_field::fields in 
 
@@ -495,7 +489,6 @@ let compile_message
           map_options} = mf in 
 
         let key_type = compile_field_type 
-          ~field_name:(Printf.sprintf "key of %s" map_name)
           all_types 
           file_options 
           map_options
@@ -510,7 +503,6 @@ let compile_message
         in
         
         let value_type = compile_field_type 
-          ~field_name:(Printf.sprintf "value of %s" map_name)
           all_types 
           file_options 
           map_options
@@ -525,7 +517,7 @@ let compile_message
           | Some _ -> failwith "Invalid ocaml_container attribute value for map" 
         in 
 
-        let record_field_type = Ot.(Rft_associative_field 
+        let record_field_type = Ot.(Rft_associative
           (associative_type, map_number, (key_type, key_pk), (value_type, value_pk)) 
         ) in 
 
@@ -547,7 +539,7 @@ let compile_message
     }) in 
 
     let type_ = Ot.({
-      module_; 
+      module_prefix; 
       spec = Record record;
       type_level_ppx_extension;
     }) in 
@@ -557,11 +549,15 @@ let compile_message
 let compile_enum file_options file_name scope enum = 
 
   let {Tt.enum_name; enum_values; _ } = enum in
-  let module_ = module_of_file_name file_name in 
+  let module_prefix = module_of_file_name file_name in 
   let {Tt.message_names; Tt.packages = _ } = scope in 
 
   let cv_constructors = List.map (fun {Tt.enum_value_name; Tt.enum_value_int} -> 
-    (constructor_name enum_value_name,  enum_value_int)
+    {
+      Ot.cvc_name = constructor_name enum_value_name; 
+      Ot.cvc_binary_value = enum_value_int;
+      Ot.cvc_string_value = enum_value_name; 
+    } 
   ) enum_values in 
 
   let type_level_ppx_extension = 
@@ -571,7 +567,7 @@ let compile_enum file_options file_name scope enum =
   in
 
   Ot.({
-    module_; 
+    module_prefix; 
     spec = Const_variant {
       cv_name = type_name message_names enum_name; 
       cv_constructors;

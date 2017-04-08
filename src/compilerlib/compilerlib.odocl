@@ -22,8 +22,12 @@ Pb_codegen_util
 Pb_codegen_formatting
 Pb_codegen_sig
 Pb_codegen_ocaml_type
-Pb_codegen_type_code
-Pb_codegen_default_code
-Pb_codegen_encode_code
-Pb_codegen_decode_code
-Pb_codegen_pp_code
+Pb_codegen_types
+Pb_codegen_default
+Pb_codegen_encode_binary
+Pb_codegen_decode_binary 
+Pb_codegen_encode_yojson
+Pb_codegen_decode_yojson   
+Pb_codegen_encode_bs
+Pb_codegen_decode_bs   
+Pb_codegen_pp

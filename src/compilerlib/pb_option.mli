@@ -2,7 +2,7 @@
 
 (** Protobuf constance
     
-    As defined in: {{https://goo.gl/FzpQY2} Protobuf Language Spec}. *) 
+    As defined in: {{:https://goo.gl/FzpQY2} Protobuf Language Spec}. *) 
 type constant = 
   | Constant_string of string 
   | Constant_bool of bool 

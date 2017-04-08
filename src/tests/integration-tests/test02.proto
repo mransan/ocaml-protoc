@@ -11,8 +11,8 @@ message AllBasicsTypes {
   required sint64    o08 =  8;
   required fixed32   o09 =  9;
   required fixed64   o10 = 10;
-  // required sfixed32  o11 = 11;
-  // required sfixed64  o12 = 12;
+  required sfixed32  o11 = 11;
+  required sfixed64  o12 = 12;
   required bool      o13 = 13;
   required string    o14 = 14;
   required bytes     o15 = 15;
