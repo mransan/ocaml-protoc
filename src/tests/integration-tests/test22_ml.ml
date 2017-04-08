@@ -37,9 +37,9 @@ let () =
 
   match mode with 
   | Test_util.Decode -> 
-      Test_util.decode "test01.c2ml.data" Pb.decode_couple Pp.pp_couple (decode_ref_data  ()) 
+      Test_util.decode "test22.c2ml.data" Pb.decode_couple Pp.pp_couple (decode_ref_data  ()) 
   | Test_util.Encode -> 
-      Test_util.encode "test01.ml2c.data" Pb.encode_couple (decode_ref_data ())
+      Test_util.encode "test22.ml2c.data" Pb.encode_couple (decode_ref_data ())
 let () = 
 
   let expected_default_person = T.({

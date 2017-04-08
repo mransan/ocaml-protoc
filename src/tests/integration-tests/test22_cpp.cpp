@@ -47,11 +47,11 @@ int main(int argc, char const* const argv[]) {
     std::string mode(argv[1]);
 
     if(mode == "encode") {
-        return encode_to_file(create_test_couple(), "test01.c2ml.data");
+        return encode_to_file(create_test_couple(), "test22.c2ml.data");
     }
     else if(mode == "decode") {
         Couple cp; 
-        validate_decode(cp, "test01.ml2c.data");
+        validate_decode(cp, "test22.ml2c.data");
     }
     else {
         std::cerr << "Invalid second argument: " 

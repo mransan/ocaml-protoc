@@ -1,4 +1,3 @@
-first : bin.byte
 #
 # OCamlbuild configuration
 #
@@ -92,7 +91,6 @@ check_install: check_prefix
     fi;
 
 LIB_FILES+=pbrt
-LIB_FILES+=pbrt_json
 
 LIB_BUILD     =_build/src/runtime
 LIB_INSTALL   = META 

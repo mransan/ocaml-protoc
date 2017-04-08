@@ -99,7 +99,7 @@ int main() {
 
   {
     static const std::string filename("yojson.data");
-    std::ofstream out(filename); 
+    std::ofstream out(filename.c_str()); 
     out << json;
     if(!out.good()) {
       std::cerr << "Error writing to file " << filename << std::endl;

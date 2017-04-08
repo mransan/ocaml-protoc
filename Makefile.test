@@ -57,7 +57,7 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_INSTALL = /Users/maximeransan/Documents/protobuf
+PB_INSTALL = /usr/local
 PB_HINC    = $(PB_INSTALL)/include
 PB_LINC    = $(PB_INSTALL)/lib
 PROTOC     = $(PB_INSTALL)/bin/protoc 
@@ -67,30 +67,49 @@ export LD_LIBRARY_PATH=$(PB_LINC)
 ML_PROTOC=./ocaml-protoc -binary -pp -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC)
 
 $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
-	cd $(OCAMLOPTIONS_HINC) && $(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
+	cd $(OCAMLOPTIONS_HINC) && \
+		$(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
-	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@
+	$(CXX) $(CPPFLAGS) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
+		-L $(PB_LINC) -l protobuf \
+		$? \
+		-o $@
 
 $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10_cpp.cpp \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc 
-	$(CXX) $(CPPFLAGS) -I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) $? -L $(PB_LINC) -l protobuf -o $@ 
+	$(CXX) $(CPPFLAGS) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) \
+		-L $(PB_LINC) -l protobuf \
+		$? \
+		-o $@ 
 
 .SECONDARY: 
 
 %.pb.cc: %.proto
-	$(PROTOC) --cpp_out $(INTEGRATION_TESTS_DIR) -I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) $<
+	$(PROTOC) \
+		--cpp_out $(INTEGRATION_TESTS_DIR) \
+		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) \
+		$<
 
 %_pb.ml %_pb.mli : %.proto bin.byte
-	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
+	export OCAMLRUNPARAM="b" && \
+		$(ML_PROTOC) \
+		-I $(INTEGRATION_TESTS_DIR) \
+		-ml_out $(INTEGRATION_TESTS_DIR) $<
 
 # Specialization of the above command is required for test01 since we add the extra 
 # cmd line argument "-ocaml_all_types_ppx" to test the override of custom file options from the 
 # cmd line. 
-$(INTEGRATION_TESTS_DIR)/test01_pb.ml $(INTEGRATION_TESTS_DIR)/test01_pb.mli : $(INTEGRATION_TESTS_DIR)/test01.proto bin.byte bin.byte
-	export OCAMLRUNPARAM="b" && $(ML_PROTOC) -ocaml_all_types_ppx "deriving show" -I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
+$(INTEGRATION_TESTS_DIR)/test01_pb.ml $(INTEGRATION_TESTS_DIR)/test01_pb.mli : \
+	$(INTEGRATION_TESTS_DIR)/test01.proto bin.byte bin.byte
+	export OCAMLRUNPARAM="b" && \
+		$(ML_PROTOC) \
+		-ocaml_all_types_ppx "deriving show" \
+		-I $(INTEGRATION_TESTS_DIR) -ml_out $(INTEGRATION_TESTS_DIR) $<
 
 %_ml.byte: %_pb.mli %_pb.ml %_ml.ml 
 	$(OCB) -pkg ppx_deriving.show -tag debug -I $(INTEGRATION_TESTS_DIR) -pkg unix $@ 
@@ -133,20 +152,19 @@ google_unittest: bin.byte
 	$(OCB) -I $(GOOGLE_UNITTEST_DIR) google_unittest.byte
 	./google_unittest.byte
 
-.PHONY: all-tests
-
 #
 # Yojson
 # ------
 
 YOJSON_DIR=src/tests/yojson
+OCB_YOJSON=-pkg yojson
 yojson: bin.byte 
 	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
 	$(PROTOC) \
 		--cpp_out $(YOJSON_DIR) \
 		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
 		$(YOJSON_DIR)/yojson_unittest.proto
-	$(OCB) -pkg yojson -I $(YOJSON_DIR) yojson_unittest_ml.byte
+	$(OCB) $(OCB_YOJSON) -I $(YOJSON_DIR) yojson_unittest_ml.byte
 	$(CXX) \
 		$(CPPFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
@@ -157,6 +175,7 @@ yojson: bin.byte
 	./yojson
 	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
 
+.PHONY: all-tests
 all-tests: unit-tests yojson integration google_unittest testCompat 
 
 #
@@ -174,17 +193,14 @@ example%.byte: src/examples/example%.ml src/examples/example%.proto bin.byte bin
 
 all-examples: example01.byte example02.byte example03.byte example04.byte example05.byte
 
-it: bin.native
-	$(OCB) ./src/unit-tests/pbrt_array.native
-	time ./pbrt_array.native
-
-.PHONY: benchmark_single_ml.native
 
 #
 # Benchmarks
 # ----------
 
 # In this section we build benchmark tasks 
+
+.PHONY: benchmark_single_ml.native
 
 benchmark_single_ml.native: bin.byte
 	$(ML_PROTOC) -I $(BENCHMARK_DIR) -ml_out $(BENCHMARK_DIR) $(BENCHMARK_DIR)/benchmark.proto
