@@ -269,10 +269,6 @@ let compile_field_type all_types file_options field_options file_name field_type
   | `Bytes    , _ -> Ot.(Ft_basic_type Bt_bytes)
   | `User_defined id, _ -> 
     user_defined_type_of_id all_types file_name id
-(*  | `Sfixed32, _ -> 
-    E.unsupported_field_type ?field_name ~field_type:"sfixed32" ~backend_name:"OCaml" () 
-  | `Sfixed64, _ -> 
-    E.unsupported_field_type ?field_name ~field_type:"sfixed64" ~backend_name:"OCaml" () *)
 
 let is_mutable ?field_name field_options = 
   match Pb_option.get field_options "ocaml_mutable"  with
