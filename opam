@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "ocaml-protoc"
-version: "1.0.4"
+version: "1.1.0"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
 authors:[
   "Maxime Ransan <maxime.ransan@gmail.com>"
@@ -25,3 +25,4 @@ depends: [
   "ocamlbuild" {build}
   "ppx_deriving_protobuf"
 ]
+available: [ ocaml-version >= "4.02.1" & opam-version >= "1.2" ]
