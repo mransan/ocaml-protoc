@@ -72,8 +72,7 @@ let () =
   } in 
 
   let json_str = 
-    let dict = Js_dict.empty () in 
-    Bs_unittest_bs.encode_test test dict; 
+    let dict = Bs_unittest_bs.encode_test test in
     Js.log dict;
     Js_json.stringify (Js_json.object_ dict)
   in
