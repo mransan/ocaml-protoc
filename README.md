@@ -23,7 +23,7 @@ compiler**. See [here](https://github.com/mransan/bs-protobuf-demo) for complete
 
 
 
-### [A simple example](https://developers.google.com/protocol-buffers/docs/overview#how-do-they-work)
+### A simple example
 
 *  **Write** in `example.proto`
 
