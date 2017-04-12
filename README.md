@@ -175,7 +175,7 @@ When using `findlib`:
 ❯ ./example01
 ```
 
-#### All Generated Files and Encodings:
+### All Generated Files and Encodings:
 
 | file name | Command line switch | Description | Runtime | 
 | ------------- | ------------- | ----------| ------- |
