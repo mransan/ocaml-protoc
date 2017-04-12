@@ -80,7 +80,6 @@ val default_person :
 val encode_person : Example01_types.person -> Pbrt.Encoder.t -> unit
 (** [encode_person v encoder] encodes [v] with the given [encoder] *)
 
-
 (** {2 Protobuf Decoding} *)
 
 val decode_person : Pbrt.Decoder.t -> Example01_types.person
