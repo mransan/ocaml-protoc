@@ -34,9 +34,9 @@ Here is the list of OCaml files generates:
 [2]:http://opam.ocaml.org/packages/ocaml-protoc-yojson/
 [3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 
-### A simple example
+### [A simple example](https://developers.google.com/protocol-buffers/docs/overview#how-do-they-work)
 
-Let's take a similar example as the [google one](https://developers.google.com/protocol-buffers/docs/overview#how-do-they-work):
+*  **Write** in `example.proto`
 
 ```Protobuf
 message Person {
@@ -47,7 +47,7 @@ message Person {
 }
 ```
 
-**Run:**
+* **Run:**
 
 ```bash
 ❯ ocaml-protoc -binary -ml_out ./ example.proto
