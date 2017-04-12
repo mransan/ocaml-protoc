@@ -40,16 +40,16 @@ message Person {
 
 ```bash
 ❯ ocaml-protoc -binary -ml_out ./ example.proto
-.. Generating example01_types.mli
-.. Generating example01_types.ml
-.. Generating example01_pb.mli
-.. Generating example01_pb.ml
+.. Generating example_types.mli
+.. Generating example_types.ml
+.. Generating example_pb.mli
+.. Generating example_pb.ml
 ```
 
-* **example01_types.mli**:
+* **example_types.mli**:
 
 ```OCaml
-(** example01.proto Generated Types *)
+(** example.proto Generated Types *)
 
 (** {2 Types} *)
 
@@ -72,17 +72,17 @@ val default_person :
 (** [default_person ()] is the default value for type [person] *)
 ```
 
-* **example01_pb.mli**:
+* **example_pb.mli**:
 
 ```OCaml
 (** {2 Protobuf Encoding} *)
 
-val encode_person : Example01_types.person -> Pbrt.Encoder.t -> unit
+val encode_person : Example_types.person -> Pbrt.Encoder.t -> unit
 (** [encode_person v encoder] encodes [v] with the given [encoder] *)
 
 (** {2 Protobuf Decoding} *)
 
-val decode_person : Pbrt.Decoder.t -> Example01_types.person
+val decode_person : Pbrt.Decoder.t -> Example_types.person
 (** [decode_person decoder] decodes a [person] value from [decoder] *)
 ```
 
