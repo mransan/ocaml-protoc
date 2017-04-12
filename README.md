@@ -12,15 +12,15 @@
 
 ### Introduction 
 
-:white_check_mark: `ocaml-protoc` compiles [protobuf message files](https://goo.gl/YqNT7Q) into 
+⇨ `ocaml-protoc` compiles [protobuf message files](https://goo.gl/YqNT7Q) into 
 OCaml types along with serialization functions for a variety of encodings.
 
-:white_check_mark: `ocaml-protoc` supports **both** proto syntax **2 and 3** as well as **binary** and **JSON** encodings. 
+⇨ `ocaml-protoc` supports **both** proto syntax **2 and 3** as well as **binary** and **JSON** encodings. 
 
-:white_check_mark: `ocaml-protoc` supports **JavaScript** object encoding through the  **BuckleScript 
+⇨ `ocaml-protoc` supports **JavaScript** object encoding through the  **BuckleScript 
 compiler**. See [here](https://github.com/mransan/bs-protobuf-demo) for complete example.
 
-Here is the list of OCaml files generates:
+Generated Files:
 
 | file name | Command line switch | Description | Runtime | 
 | ------------- | ------------- | ----------| ------- |
@@ -57,7 +57,7 @@ message Person {
 .. Generating example01_pb.ml
 ```
 
-**example01_types.mli**:
+* **example01_types.mli**:
 
 ```OCaml
 (** example01.proto Generated Types *)
@@ -83,7 +83,7 @@ val default_person :
 (** [default_person ()] is the default value for type [person] *)
 ```
 
-**example01_pb.mli**:
+* **example01_pb.mli**:
 
 ```OCaml
 (** {2 Protobuf Encoding} *)
@@ -98,8 +98,7 @@ val decode_person : Pbrt.Decoder.t -> Example01_types.person
 (** [decode_person decoder] decodes a [person] value from [decoder] *)
 ```
 
-You can then use this OCaml module in your application to populate, serialize, and retrieve `person` protocol buffer messages.
-For example:
+* You can then use this OCaml module in your application to populate, serialize, and retrieve `person` protocol buffer messages: 
 
 ```OCaml
 let () =
@@ -122,7 +121,8 @@ let () =
   close_out oc
 ```
 
-Then later on you can read your message back in:
+* Then later on you can read your message back in:
+
 ```OCaml
 let () = 
   (* Read bytes from the file *) 
