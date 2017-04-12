@@ -47,10 +47,14 @@ message Person {
 }
 ```
 
-The following OCaml code will get generated after running:
+**Run:**
 
 ```bash
 ❯ ocaml-protoc -binary -ml_out ./ example.proto
+.. Generating example01_types.mli
+.. Generating example01_types.ml
+.. Generating example01_pb.mli
+.. Generating example01_pb.ml
 ```
 
 **example01_types.mli**:
