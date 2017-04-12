@@ -1,6 +1,8 @@
 # ocaml-protoc
+-----
+> ✅ **A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml.** 
+----
 
-> A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml. 
 
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
