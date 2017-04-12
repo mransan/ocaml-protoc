@@ -12,12 +12,12 @@
 
 ### Introduction 
 
-`ocaml-protoc` compiles [protobuf message files](https://goo.gl/YqNT7Q) into 
+:white_check_mark: `ocaml-protoc` compiles [protobuf message files](https://goo.gl/YqNT7Q) into 
 OCaml types along with serialization functions for a variety of encodings.
 
-`ocaml-protoc` supports **both** proto syntax **2 and 3** as well as **binary** and **JSON** encodings. 
+:white_check_mark: `ocaml-protoc` supports **both** proto syntax **2 and 3** as well as **binary** and **JSON** encodings. 
 
-Since OCaml also supports compilation to **JavaScript** with the **BuckleScript 
+:white_check_mark: Since OCaml also supports compilation to **JavaScript** with the **BuckleScript 
 compiler**, `ocaml-protoc` generates dedicated serialization functions for
 it, relying on the JavaScript built-in JSON support. See 
 [here](https://github.com/mransan/bs-protobuf-demo) for complete example.
