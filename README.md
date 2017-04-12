@@ -1,11 +1,10 @@
 # ocaml-protoc
-> **A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml.** 
-----
 
+> **A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml.** 
 
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
-* [Install & Build](#install-build)
+* [Install and Build](#install-and-build)
 * [Protobuf <-> OCaml mapping](doc/protobuf_ocaml_mapping.md)
 * [Compiler Internals](doc/compiler_internals.md)
 * [Protobuf extensions](doc/ocaml_extensions.md)
