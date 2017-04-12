@@ -5,6 +5,7 @@
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
 * [Install and Build](#install-and-build)
+* [All Generated Files and Encodings](#all-generated-files-and-encodings)
 * [Protobuf <-> OCaml mapping](doc/protobuf_ocaml_mapping.md)
 * [Compiler Internals](doc/compiler_internals.md)
 * [Protobuf extensions](doc/ocaml_extensions.md)
@@ -20,19 +21,7 @@ OCaml types along with serialization functions for a variety of encodings.
 ⇨ `ocaml-protoc` supports **JavaScript** object encoding through the  **BuckleScript 
 compiler**. See [here](https://github.com/mransan/bs-protobuf-demo) for complete example.
 
-Generated Files:
 
-| file name | Command line switch | Description | Runtime | 
-| ------------- | ------------- | ----------| ------- |
-| \<name\>_**types.**{ml\|mli} |  | Type definition along with a constructor function to conveniently create values of that type | | 
-| \<name\>_**pb.**{ml\|mli}  | -binary  | Binary encodings | [ocaml-protoc][1] |
-| \<name\>_**yojson.**{ml\|mli} | -yojson | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | [ocaml-protoc-yojson][2] |
-| \<name\>_**bs.**{ml\|mli} | -bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] | 
-|  \<name\>_**pp.**{ml\|mli} | -pp | pretty printing functions based on the Format module. | [ocaml-protoc][1] |
-
-[1]:http://opam.ocaml.org/packages/ocaml-protoc/
-[2]:http://opam.ocaml.org/packages/ocaml-protoc-yojson/
-[3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 
 ### [A simple example](https://developers.google.com/protocol-buffers/docs/overview#how-do-they-work)
 
@@ -184,6 +173,21 @@ When using `findlib`:
 ```Bash
 ❯ ./example01
 ```
+
+#### All Generated Files and Encodings:
+
+| file name | Command line switch | Description | Runtime | 
+| ------------- | ------------- | ----------| ------- |
+| \<name\>_**types.**{ml\|mli} |  | Type definition along with a constructor function to conveniently create values of that type | | 
+| \<name\>_**pb.**{ml\|mli}  | -binary  | Binary encodings | [ocaml-protoc][1] |
+| \<name\>_**yojson.**{ml\|mli} | -yojson | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | [ocaml-protoc-yojson][2] |
+| \<name\>_**bs.**{ml\|mli} | -bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] | 
+|  \<name\>_**pp.**{ml\|mli} | -pp | pretty printing functions based on the Format module. | [ocaml-protoc][1] |
+
+[1]:http://opam.ocaml.org/packages/ocaml-protoc/
+[2]:http://opam.ocaml.org/packages/ocaml-protoc-yojson/
+[3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
+
 ### Protobuf <-> OCaml mapping
 see [here](doc/protobuf_ocaml_mapping.md).
 
