@@ -17,30 +17,22 @@ OCaml types along with serialization functions for a variety of encodings.
 
 :white_check_mark: `ocaml-protoc` supports **both** proto syntax **2 and 3** as well as **binary** and **JSON** encodings. 
 
-:white_check_mark: Since OCaml also supports compilation to **JavaScript** with the **BuckleScript 
-compiler**, `ocaml-protoc` generates dedicated serialization functions for
-it, relying on the JavaScript built-in JSON support. See 
-[here](https://github.com/mransan/bs-protobuf-demo) for complete example.
+:white_check_mark: `ocaml-protoc` supports **JavaScript** object encoding through the  **BuckleScript 
+compiler**. See [here](https://github.com/mransan/bs-protobuf-demo) for complete example.
 
-For each `.proto` file, `ocaml-protoc` will generate multiple OCaml files, 
-depending on command line argument switch:
-* **\<proto file name\>_types.{ml|mli}**: contains the type definition along 
-  with a constructor function to conveniently create values of that type. Those
-  files are **always** generated. The generated code might rely on 
-  the `ocaml-protoc` runtime library.
-* **\<proto file name\>_pb.{ml|mli}**: contains the binary encoding, those files 
-  are triggered by the `-binary` command line switch. The generated code
-  depends on the `ocaml-protoc` runtime library.
-* **\<proto file name\>_yosjon.{ml|mli}**: contains the JSON encoding using the 
-  widely popular [yojson](https://github.com/mjambon/yojson) library. Those 
-  files are triggered by the `-yojson` command line switch. The generated code 
-  depends solely on the `ocaml-protoc-yojson` library.
-* **\<proto file name\>_bs.{ml|mli}**: contains the BuckleScript encoding using the
-  BuckleScript core binding to JS json library. Those files are triggered by 
-  the `-bs` command line switch.
-* **\<proto file name\>_pp.{ml|mli}**: contains pretty printing functions based
-  on the Format module. Those files are triggered by the `-pp` command 
-  line switch.
+Here is the list of OCaml files generates:
+
+| file name | Command line switch | Description | Runtime | 
+| ------------- | ------------- | ----------| ------- |
+| \<name\>_**types.**{ml\|mli} |  | Type definition along with a constructor function to conveniently create values of that type | | 
+| \<name\>_**pb.**{ml\|mli}  | -binary  | Binary encodings | [ocaml-protoc][1] |
+| \<name\>_**yojson.**{ml\|mli} | -yojson | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | [ocaml-protoc-yojson][2] |
+| \<name\>_**bs.**{ml\|mli} | -bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] | 
+|  \<name\>_**pp.**{ml\|mli} | -pp | pretty printing functions based on the Format module. | [ocaml-protoc][1] |
+
+[1]:http://opam.ocaml.org/packages/ocaml-protoc/
+[2]:http://opam.ocaml.org/packages/ocaml-protoc-yojson/
+[3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 
 ### A simple example
 
