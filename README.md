@@ -25,6 +25,9 @@ compiler**. See [here](https://github.com/mransan/bs-protobuf-demo) for complete
 
 ### A simple example
 
+> This example generates the binary encoding, if you are more interested in a **JavaScript** 
+> example, go [here](https://github.com/mransan/bs-protobuf-demo)
+
 *  **Write** in `example.proto`
 
 ```Protobuf
