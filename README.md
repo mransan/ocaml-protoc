@@ -1,6 +1,6 @@
 # ocaml-protoc
 
-A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml. 
+> A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml. 
 
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
@@ -24,21 +24,21 @@ it, relying on the JavaScript built-in JSON support. See
 
 For each `.proto` file, `ocaml-protoc` will generate multiple OCaml files, 
 depending on command line argument switch:
-* **<proto file name>_types.{ml|mli}**: contains the type definition along 
+* **\<proto file name\>_types.{ml|mli}**: contains the type definition along 
   with a constructor function to conveniently create values of that type. Those
   files are **always** generated. The generated code might rely on 
   the `ocaml-protoc` runtime library.
-* **<proto file name>_pb.{ml|mli}**: contains the binary encoding, those files 
+* **\<proto file name\>_pb.{ml|mli}**: contains the binary encoding, those files 
   are triggered by the `-binary` command line switch. The generated code
   depends on the `ocaml-protoc` runtime library.
-* **<proto file name>_yosjon.{ml|mli}**: contains the JSON encoding using the 
+* **\<proto file name\>_yosjon.{ml|mli}**: contains the JSON encoding using the 
   widely popular [yojson](https://github.com/mjambon/yojson) library. Those 
   files are triggered by the `-yojson` command line switch. The generated code 
   depends solely on the `ocaml-protoc-yojson` library.
-* **<proto file name>_bs.{ml|mli}**: contains the BuckleScript encoding using the
+* **\<proto file name\>_bs.{ml|mli}**: contains the BuckleScript encoding using the
   BuckleScript core binding to JS json library. Those files are triggered by 
   the `-bs` command line switch.
-* **<proto file name>_pp.{ml|mli}**: contains pretty printing functions based
+* **\<proto file name\>_pp.{ml|mli}**: contains pretty printing functions based
   on the Format module. Those files are triggered by the `-pp` command 
   line switch.
 
@@ -55,8 +55,11 @@ message Person {
 }
 ```
 
-The following OCaml code will get generated after running 
-`ocaml-protoc -binary -ml_out ./ example.proto`
+The following OCaml code will get generated after running:
+
+```bash
+❯ ocaml-protoc -binary -ml_out ./ example.proto`
+```
 
 **example01_types.mli**:
 
@@ -140,7 +143,7 @@ let () =
   Example_pb.decode_person (Pbrt.Decoder.of_bytes bytes)
 ```
 
-*OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice. One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
+**ℹ** *OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice. One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
 
 ### Install & Build
 
@@ -153,38 +156,37 @@ let () =
 **Intall from OPAM**
 
 ```bash
-opam install ocaml-protoc
+❯ opam install ocaml-protoc
 ```
 
 **Install from source with [ocamlfind](http://projects.camlcity.org/projects/findlib.html)**
 
 ```bash
-mkdir -p tmp/bin
-export PREFIX=`pwd`/tmp
-make install
+❯ mkdir -p tmp/bin
+❯ export PREFIX=`pwd`/tmp
+❯ make install
 ```
 
 **Build your program** 
 
 Here are the steps to build the example above where the source are in `src/examples/`. We now assume that `$PREFIX/bin` is in your path.
 
-```Bash
-# Generate the OCaml protobuf module 
-ocaml-protoc -ml_out ./ example01.proto
+```Bash 
+❯ ocaml-protoc -binary -ml_out ./ example01.proto
 ```
 
 When using `findlib`:
 ```Bash
-ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
-  -o example01 \
-  example01_types.mli example01_types.ml \
-  example01_types.mli example01_types.ml \
-  example01.ml
+❯ ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
+    -o example01 \
+    example01_types.mli example01_types.ml \
+    example01_types.mli example01_types.ml \
+    example01.ml
 ```
 
-You can now run the example
+🏁 You can now run the example
 ```Bash
-./example01
+❯ ./example01
 ```
 ### Protobuf <-> OCaml mapping
 see [here](doc/protobuf_ocaml_mapping.md).
