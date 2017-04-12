@@ -14,7 +14,7 @@
 ### Introduction 
 
 ⇨ `ocaml-protoc` compiles [protobuf message files](https://goo.gl/YqNT7Q) into 
-OCaml types along with serialization functions for a variety of encodings.
+**OCaml types** along with **serialization functions** for a variety of encodings.
 
 ⇨ `ocaml-protoc` supports **both** proto syntax **2 and 3** as well as **binary** and **JSON** encodings. 
 
