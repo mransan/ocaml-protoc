@@ -188,7 +188,8 @@ all-tests: unit-tests yojson integration google_unittest testCompat
 .PHONY: all-examples
 
 example%.byte: src/examples/example%.ml src/examples/example%.proto bin.byte bin.byte
-	$(ML_PROTOC) -ml_out src/examples/ ./src/examples/example$*.proto 
+	$(ML_PROTOC) -yojson -binary \
+		-ml_out src/examples/ ./src/examples/example$*.proto 
 	$(OCB) -I src/examples src/examples/example$*.byte
 
 all-examples: example01.byte example02.byte example03.byte example04.byte example05.byte

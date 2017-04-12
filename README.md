@@ -1,6 +1,6 @@
 # ocaml-protoc
 
-A [protobuf](https://developers.google.com/protocol-buffers/) compiler for OCaml. 
+A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml. 
 
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
@@ -12,19 +12,36 @@ A [protobuf](https://developers.google.com/protocol-buffers/) compiler for OCaml
 
 ### Introduction 
 
-`ocaml-protoc` compiles [protobuf message files](https://developers.google.com/protocol-buffers/docs/proto) into 
-[OCaml modules](http://caml.inria.fr/pub/docs/manual-ocaml/moduleexamples.html). Each message/enum/oneof protobuf type 
-has a corresponding OCaml type along with the following functions:
-* `encode_<type>` : encode the generated type to `bytes` following protobuf specification
-* `decode_<type>` : decode the generated type from `bytes` following protobuf specification
-* `default_<type>` : default value honoring [protobuf default attributes](https://developers.google.com/protocol-buffers/docs/proto#optional) or [protobuf version 3 default rules](https://developers.google.com/protocol-buffers/docs/proto3#default) 
-* `pp_<type>` : pretty print of the OCaml type
+`ocaml-protoc` compiles [protobuf message files](https://goo.gl/YqNT7Q) into 
+OCaml types along with serialization functions for a variety of encodings.
 
-The compiler relies on a runtime library `pbrt` which is itself implemented using the same runtime library as [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf/) for low level encoding/decoding. 
+`ocaml-protoc` supports **both** proto syntax **2 and 3** as well as binary 
+and JSON encodings. 
 
-OCaml users have now 2 complementary options to choose for protobuf serialization:
-* If your application is mainly OCaml then `ppx_deriving_protobuf` is usually the best tool. You can leverage the OCaml type system as a schema definition and minimum setup is required to support serialization.
-* If your application is using multiple languages and you are leveraging `Protobuf` as a language-independent data specification, then  `ocaml-protoc` is likely a more suitable option. `ocaml-protoc` guarantees that the generated OCaml types conform to the protobuf specifications.
+Since OCaml also supports compilation to JavaScript with the **BuckleScript 
+compiler**, `ocaml-protoc` generates dedicated serialization functions for
+it, relying on the JavaScript built-in JSON support. See 
+[here](https://github.com/mransan/bs-protobuf-demo) for complete example.
+
+For each `.proto` file, `ocaml-protoc` will generate multiple OCaml files, 
+depending on command line argument switch:
+* `<proto file name>_types.{ml|mli}`: contains the type definition along 
+  with a constructor function to conveniently create values of that type. Those
+  files are **always** generated. The generated code might rely on 
+  the `ocaml-protoc` runtime library.
+* `<proto file name>_pb.{ml|mli}`: contains the binary encoding, those files 
+  are triggered by the `-binary` command line switch. The generated code
+  depends on the `ocaml-protoc` runtime library.
+* `<proto file name>_yosjon.{ml|mli}`: contains the JSON encoding using the 
+  widely popular [yojson](https://github.com/mjambon/yojson) library. Those 
+  files are triggered by the `-yojson` command line switch. The generated code 
+  depends solely on the `ocaml-protoc-yojson` library.
+* `<proto file name>_bs.{ml|mli}`: contains the BuckleScript encoding using the
+  BuckleScript core binding to JS json library. Those files are triggered by 
+  the `-bs` command line switch.
+* `<proto file name>_pp.{ml|mli}`: contains pretty printing functions based
+  on the Format module. Those files are triggered by the `-pp` command 
+  line switch.
 
 ### A simple example
 
@@ -38,48 +55,48 @@ message Person {
   repeated string phone = 4;
 }
 ```
+
 The following OCaml code will get generated after running `ocaml-protoc -ml_out ./ example.proto`
+
+**example01_types.mli**:
+
 ```OCaml
-(** example01.proto Generated Types and Encoding *)
+(** example01.proto Generated Types *)
 
 (** {2 Types} *)
 
 type person = {
   name : string;
   id : int32;
-  email : string option;
+  email : string;
   phone : string list;
 }
-
 
 (** {2 Default values} *)
 
 val default_person : 
   ?name:string ->
   ?id:int32 ->
-  ?email:string option ->
+  ?email:string ->
   ?phone:string list ->
   unit ->
   person
 (** [default_person ()] is the default value for type [person] *)
+```
+
+**example01_pb.mli**:
+
+```OCaml
+(** {2 Protobuf Encoding} *)
+
+val encode_person : Example01_types.person -> Pbrt.Encoder.t -> unit
+(** [encode_person v encoder] encodes [v] with the given [encoder] *)
 
 
 (** {2 Protobuf Decoding} *)
 
-val decode_person : Pbrt.Decoder.t -> person
+val decode_person : Pbrt.Decoder.t -> Example01_types.person
 (** [decode_person decoder] decodes a [person] value from [decoder] *)
-
-
-(** {2 Protobuf Encoding} *)
-
-val encode_person : person -> Pbrt.Encoder.t -> unit
-(** [encode_person v encoder] encodes [v] with the given [encoder] *)
-
-
-(** {2 Formatters} *)
-
-val pp_person : Format.formatter -> person -> unit 
-(** [pp_person v] formats v] *)
 ```
 
 You can then use this OCaml module in your application to populate, serialize, and retrieve `person` protocol buffer messages.
@@ -89,7 +106,7 @@ For example:
 let () =
 
   (* Create OCaml value of generated type *) 
-  let person = Example_pb.({ 
+  let person = Example_types.({ 
     name = "John Doe"; 
     id = 1234l;
     email = Some "jdoe@example.com"; 
@@ -120,8 +137,7 @@ let () =
   in 
   
   (* Decode the person and Pretty-print it *)
-  let person = Example_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in
-  Format.fprintf Format.std_formatter "%a" Example_pb.pp_person person
+  Example_pb.decode_person (Pbrt.Decoder.of_bytes bytes)
 ```
 
 *OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice. One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
@@ -161,7 +177,9 @@ When using `findlib`:
 ```Bash
 ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
   -o example01 \
-  example01_pb.mli example01_pb.ml example01.ml
+  example01_types.mli example01_types.ml \
+  example01_types.mli example01_types.ml \
+  example01.ml
 ```
 
 You can now run the example
