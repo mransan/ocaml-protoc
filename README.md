@@ -58,7 +58,7 @@ message Person {
 The following OCaml code will get generated after running:
 
 ```bash
-❯ ocaml-protoc -binary -ml_out ./ example.proto`
+❯ ocaml-protoc -binary -ml_out ./ example.proto
 ```
 
 **example01_types.mli**:
