@@ -130,7 +130,7 @@ let () =
   Example_pb.decode_person (Pbrt.Decoder.of_bytes bytes)
 ```
 
-:heavy_exclamation_mark: Int32 vs int
+* :heavy_exclamation_mark: **Int32** vs **int**
 
 *OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice. One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
 
