@@ -136,19 +136,19 @@ let () =
 
 ### Install & Build
 
-* **Prerequesite**
+**Prerequesite**
 
 `ocaml-protoc` depends on :
- - the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
- - [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf) for the generated code runtime.
+* the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
+* [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf) for the generated code runtime.
 
-* **Intall from OPAM**
+**Intall from OPAM**
 
 ```bash
 ❯ opam install ocaml-protoc
 ```
 
-* **Or, install from source with [ocamlfind](http://projects.camlcity.org/projects/findlib.html)**
+**Or from source**
 
 ```bash
 ❯ mkdir -p tmp/bin
@@ -156,9 +156,9 @@ let () =
 ❯ make install
 ```
 
-* **Build your program** 
+**Build your program** 
 
-Using findlib one can build the program above with the following:
+Using [ocamlfind](http://projects.camlcity.org/projects/findlib.html) one can build the program above with the following:
 
 ```Bash
 ❯ ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
@@ -170,7 +170,7 @@ Using findlib one can build the program above with the following:
 
 🏁 You can now run the example
 ```Bash
-❯ ./example01
+❯ ./example
 ```
 
 ### All Generated Files and Encodings:
