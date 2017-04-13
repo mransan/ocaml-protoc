@@ -89,7 +89,7 @@ val decode_person : Pbrt.Decoder.t -> Example_types.person
 (** [decode_person decoder] decodes a [person] value from [decoder] *)
 ```
 
-* You can then use this OCaml module in your application to populate, serialize, and retrieve `person` protocol buffer messages: 
+* in `main.ml`, write the following to encode a person value and save it to a file: 
 
 ```OCaml
 let () =
@@ -112,7 +112,7 @@ let () =
   close_out oc
 ```
 
-* Then later on you can read your message back in:
+* then in the same `main.ml` append the following to read from the same file:
 
 ```OCaml
 let () = 
@@ -158,19 +158,14 @@ let () =
 
 **Build your program** 
 
-Here are the steps to build the example above where the source are in `src/examples/`. We now assume that `$PREFIX/bin` is in your path.
+Using findlib one can build the program above with the following:
 
-```Bash 
-❯ ocaml-protoc -binary -ml_out ./ example01.proto
-```
-
-When using `findlib`:
 ```Bash
 ❯ ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
-    -o example01 \
-    example01_types.mli example01_types.ml \
-    example01_types.mli example01_types.ml \
-    example01.ml
+    -o example \
+    example_types.mli example_types.ml \
+    example_types.mli example_types.ml \
+    main.ml
 ```
 
 🏁 You can now run the example
