@@ -57,7 +57,7 @@ unit-tests:
 # implementation
 
 # location of where the Google protoc compiler is installed  
-PB_INSTALL = /Users/maximeransan/Documents/protobuf
+PB_INSTALL = /usr/local/
 PB_HINC    = $(PB_INSTALL)/include
 PB_LINC    = $(PB_INSTALL)/lib
 PROTOC     = $(PB_INSTALL)/bin/protoc 
@@ -157,7 +157,7 @@ google_unittest: bin.byte
 # ------
 
 YOJSON_DIR=src/tests/yojson
-OCB_YOJSON=-pkg yojson
+OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
 yojson: bin.byte 
 	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
 	$(PROTOC) \
