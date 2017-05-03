@@ -78,7 +78,7 @@ let () =
   in
 
   let test'= 
-     match Js_json.decodeObject (Js_json.parse json_str) with
+     match Js_json.decodeObject (Js_json.parseExn json_str) with
      | Some dict -> Bs_unittest_bs.decode_test dict 
      | None -> assert(false)
   in 

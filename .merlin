@@ -11,14 +11,14 @@ B _build/src/runtime
 PKG ppx_deriving_protobuf.runtime
 
 ####{BSB GENERATED: NO EDIT
-FLG -ppx /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/bin/bsppx.exe
-S /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
-B /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
+FLG -ppx /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/bin/bsppx.exe
+S /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
+B /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
 FLG -nostdlib -no-alias-deps -color always -w -40+6+7+27+32..39+44+45
-S /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
-B /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
-S /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-ocaml-protoc-json/lib/ocaml
-B /Users/maximeransan/Documents/git/ocaml-protoc.git/node_modules/bs-ocaml-protoc-json/lib/ocaml
+S /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
+B /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
+S /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-ocaml-protoc-json/lib/ocaml
+B /Users/maxransan/Documents/git/ocaml-protoc.git/node_modules/bs-ocaml-protoc-json/lib/ocaml
 S src/tests/bs
 B lib/bs/src/tests/bs
 S src/runtime/

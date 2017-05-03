@@ -41,7 +41,7 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
   let value_expression = value_expression ~r_name ~rf_label field_type in
 
   F.linep sc "| \"%s\" -> " json_label; 
-  F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+  F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
   F.linep sc "  v.%s <- %s" rf_label value_expression
 
 (* Generate all the pattern matches for a repeated field *)
@@ -55,7 +55,7 @@ let gen_rft_repeated sc ~r_name ~rf_label repeated_field =
   F.scope sc (fun sc -> 
     F.line sc "let a = ";
     F.scope sc (fun sc -> 
-      F.linep sc "let a = Js_dict.unsafeGet json \"%s\" in " json_label;
+      F.linep sc "let a = Js.Dict.unsafeGet json \"%s\" in " json_label;
       F.linep sc "Pbrt_bs.array_ a \"%s\" \"%s\"" r_name rf_label; 
     ); 
     F.line sc "in";
@@ -75,7 +75,7 @@ let gen_rft_optional sc ~r_name ~rf_label optional_field =
   let value_expression = value_expression ~r_name ~rf_label field_type in
 
   F.linep sc "| \"%s\" -> " json_label; 
-  F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+  F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
   F.linep sc "  v.%s <- Some (%s)" rf_label value_expression
 
 (* Generate pattern match for a variant field *)
@@ -96,7 +96,7 @@ let gen_rft_variant sc ~r_name ~rf_label {Ot.v_constructors; _} =
         value_expression ~r_name ~rf_label field_type
       in
       F.linep sc "| \"%s\" -> " json_label;
-      F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+      F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
       F.linep sc "  v.%s <- %s (%s)" rf_label vc_constructor value_expression;
     
   ) v_constructors
@@ -110,7 +110,7 @@ let gen_record ?and_  module_prefix {Ot.r_name; r_fields} sc =
 
   F.scope sc (fun sc -> 
     F.linep sc "let v = default_%s () in" mutable_record_name;
-    F.line sc "let keys = Js_dict.keys json in"; 
+    F.line sc "let keys = Js.Dict.keys json in"; 
     F.line sc "let last_key_index = Array.length keys - 1 in"; 
     
     F.line sc "for i = 0 to last_key_index do";
@@ -179,7 +179,7 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
       in
 
       F.linep sc "| \"%s\" -> " json_label ;
-      F.linep sc "  let json = Js_dict.unsafeGet json \"%s\" in" json_label;
+      F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
       F.linep sc "  %s_types.%s (%s)" module_prefix vc_constructor value_expression;
   in
 
@@ -187,7 +187,7 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
     (Pb_codegen_util.let_decl_of_and and_) v_name; 
 
   F.scope sc (fun sc -> 
-    F.line sc "let keys = Js_dict.keys json in"; 
+    F.line sc "let keys = Js.Dict.keys json in"; 
     
     (* even though a variant should be an object with a single field, 
      * it is possible other fields are present in the JSON object. Therefore
@@ -212,7 +212,7 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
   ) 
 
 let gen_const_variant ?and_ module_prefix {Ot.cv_name; cv_constructors} sc = 
-  F.linep sc "%s decode_%s (json:Js_json.t) =" 
+  F.linep sc "%s decode_%s (json:Js.Json.t) =" 
     (Pb_codegen_util.let_decl_of_and and_) cv_name; 
 
   F.scope sc (fun sc -> 
@@ -247,7 +247,7 @@ let gen_sig ?and_ t sc =
   let {Ot.module_prefix; spec; _} = t in 
 
   let f type_name = 
-    F.linep sc "val decode_%s : Js_json.t Js_dict.t -> %s_types.%s" 
+    F.linep sc "val decode_%s : Js.Json.t Js.Dict.t -> %s_types.%s" 
                  type_name module_prefix type_name ; 
     F.linep sc ("(** [decode_%s decoder] decodes a " ^^ 
                      "[%s] value from [decoder] *)") type_name type_name; 
@@ -257,7 +257,7 @@ let gen_sig ?and_ t sc =
   | Ot.Record {Ot.r_name; _ } -> f r_name; true
   | Ot.Variant {Ot.v_name; _ } -> f v_name; true 
   | Ot.Const_variant {Ot.cv_name; _ } -> 
-    F.linep sc "val decode_%s : Js_json.t -> %s_types.%s" 
+    F.linep sc "val decode_%s : Js.Json.t -> %s_types.%s" 
       cv_name module_prefix cv_name ; 
     F.linep sc "(** [decode_%s value] decodes a [%s] from a Json value*)"
       cv_name cv_name;

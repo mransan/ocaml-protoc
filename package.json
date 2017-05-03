@@ -15,7 +15,7 @@
     "bs-ppx_deriving_protobuf": "^2.5.0"
   },
   "devDependencies": {
-    "bs-platform": "^1.6.0",
+    "bs-platform": "^1.x.x",
     "bs-ocaml-protoc-json":"^0.1.x"
   },
   "peerDependencies": {
