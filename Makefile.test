@@ -172,6 +172,7 @@ yojson: bin.byte
 		-L $(PB_LINC) \
 		-l protobuf \
 		-o $@
+	@# Rename cpp executable to something clearer (ie yojson-cpp)
 	./yojson
 	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
 

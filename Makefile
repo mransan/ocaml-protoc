@@ -20,7 +20,7 @@ INTEGRATION_TESTS_DIR = src/tests/integration-tests
 BENCHMARK_DIR         = src/tests/benchmark
 GOOGLE_UNITTEST_DIR   = src/tests/google_unittest
 OCAMLOPTIONS_HINC     = src/include/ocaml-protoc
-
+BUCKLESCRIPT_TEST_DIR = src/tests/bs
 .PHONY: doc ocaml_protoc.native bin.native bin.byte clean clean.gen default
 
 default:
@@ -39,6 +39,10 @@ clean.gen:
 	rm -f $(GOOGLE_UNITTEST_DIR)/*_types.ml*
 	rm -f $(OCAMLOPTIONS_HINC)/*.pb.*
 	rm -f src/examples/*_pb.ml*
+	rm -f $(BUCKLESCRIPT_TEST_DIR)/bs_unittest_bs.*
+	rm -f $(BUCKLESCRIPT_TEST_DIR)/bs_unittest_types.*
+	rm -f ./ocaml-protoc
+	rm -f ./yojson
 
 clean: clean.gen
 	$(OCB) -clean

@@ -18,9 +18,6 @@
     "bs-platform": "^1.x.x",
     "bs-ocaml-protoc-json":"^0.1.x"
   },
-  "peerDependencies": {
-    "bs-platform": "^1.6.0"
-  },
   "scripts" : {
     "build" : "npm run gen && bsb -make-world",
     "gen" : "./ocaml-protoc -bs -ml_out src/tests/bs src/tests/bs/bs_unittest.proto",
