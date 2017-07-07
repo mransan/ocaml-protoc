@@ -57,4 +57,5 @@ message Test {
   SingleOneOf single_one_of_enum = 7; 
   SingleOneOf single_one_of_small_message = 8; 
   SingleOneOf single_one_of_recursive = 9; 
+  repeated Enum repeated_enum = 10;
 }
