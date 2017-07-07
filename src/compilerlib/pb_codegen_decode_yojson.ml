@@ -209,8 +209,8 @@ let gen_const_variant ?and_ module_prefix {Ot.cv_name; cv_constructors} sc =
   F.scope sc (fun sc -> 
     F.line sc "match json with"; 
     List.iter (fun {Ot.cvc_name; cvc_string_value;  _} -> 
-      F.linep sc "| `String \"%s\" -> %s_types.%s"
-        cvc_string_value module_prefix cvc_name
+      F.linep sc "| `String \"%s\" -> (%s_types.%s : %s_types.%s)"
+        cvc_string_value module_prefix cvc_name module_prefix cv_name
     ) cv_constructors;  
     F.linep sc "| _ -> Pbrt_yojson.E.malformed_variant \"%s\"" cv_name;  
   ) 
