@@ -88,6 +88,9 @@ Test test() {
   *(ret.mutable_single_one_of_enum()) = single_one_of_enum();
   *(ret.mutable_single_one_of_small_message()) = single_one_of_small_message();
   *(ret.mutable_single_one_of_recursive()) = single_one_of_recursive();
+  ret.add_repeated_enum(test_enum0());
+  ret.add_repeated_enum(test_enum1());
+  ret.add_repeated_enum(test_enum2());
 
   return ret;
 }

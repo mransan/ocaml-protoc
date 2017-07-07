@@ -65,6 +65,7 @@ let test =
     single_one_of_enum = Some single_one_of_enum;
     single_one_of_small_message = Some single_one_of_small_message;
     single_one_of_recursive = Some single_one_of_recursive;
+    repeated_enum = [test_enum0; test_enum1; test_enum2];
   }
 
 let () = 
