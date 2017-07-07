@@ -126,7 +126,7 @@ let gen_rft_repeated sc rf_label repeated_field =
       end 
     
     (* User defined *)
-    | Ot.Ft_user_defined_type udt, Ot.Pk_bytes -> 
+    | Ot.Ft_user_defined_type udt, _ (* Ot.Pk_bytes *) -> 
       let f_name = 
         let function_prefix = "encode" in 
         let module_suffix = file_suffix in 
