@@ -8,7 +8,7 @@
 
 Int64T create_test_all_basic_types() {
     Int64T t;
-    t.set_i(1500922775590818816);
+    t.set_i((3L << 56));
     return t;
 }
 

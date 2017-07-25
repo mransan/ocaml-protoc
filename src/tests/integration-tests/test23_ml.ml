@@ -3,7 +3,7 @@ module Pp  = Test23_pp
 module Pb  = Test23_pb 
 
 let decode_ref_data () = {
-  T.i  = 1500922775590818816L;
+  T.i = Int64.(shift_left 3L 56);
 }
 
 let () = 
