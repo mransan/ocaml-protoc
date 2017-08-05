@@ -35,23 +35,23 @@ let test =
   let test_enum1 = Value1 in 
   let test_enum2 = Value_two in 
 
-  let single_one_of_string = 
+  let single_one_of_string : single_one_of = 
     String_value "This is the single one \"string\""
   in 
   
-  let single_one_of_int = 
+  let single_one_of_int : single_one_of = 
     Int_value 0xEFABABABl
   in 
 
-  let single_one_of_enum = 
+  let single_one_of_enum : single_one_of = 
     Enum_value test_enum0
   in 
 
-  let single_one_of_small_message = 
+  let single_one_of_small_message : single_one_of = 
     Small_message small_message
   in 
 
-  let single_one_of_recursive = 
+  let single_one_of_recursive : single_one_of = 
     Recursive_value single_one_of_small_message
   in 
 

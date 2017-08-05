@@ -47,6 +47,16 @@ message SingleOneOf {
   }
 }
 
+message SingleOneOfDuplicate {
+  oneof t {
+    string string_value = 1; 
+    int32  int_value = 2; 
+    Enum   enum_value = 3;
+    SmallMessage small_message = 4; 
+    SingleOneOf recursive_value = 5; 
+  }
+}
+
 message Test {
   AllBasicTypes all_basic_types = 1; 
   Enum test_enum0 = 2; 
