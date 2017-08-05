@@ -267,16 +267,22 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors;} sc =
 
     match vc_field_type with 
     | Ot.Vct_nullary -> (
-      F.linep sc 
-        "| Some (%i, _) -> (Pbrt.Decoder.empty_nested d ; %s_types.%s)" 
-        vc_encoding_number module_prefix vc_constructor
+      F.linep sc "| Some (%i, _) -> begin " vc_encoding_number;
+      F.scope sc (fun sc ->
+        F.line sc "Pbrt.Decoder.empty_nested d ;";
+        F.linep sc "(%s_types.%s : %s_types.%s)" module_prefix vc_constructor 
+          module_prefix v_name;
+      );
+      F.line sc "end";
     ) 
     | Ot.Vct_non_nullary_constructor field_type -> 
-      F.linep sc "| Some (%i, _) -> %s_types.%s (%s)" 
+      F.linep sc "| Some (%i, _) -> (%s_types.%s (%s) : %s_types.%s) " 
         vc_encoding_number 
         module_prefix 
         vc_constructor 
         (decode_field_f field_type pk) 
+        module_prefix
+        v_name
   in 
 
   F.linep sc "%s decode_%s d = " 
@@ -305,7 +311,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors;} sc =
 
 let gen_const_variant ?and_ module_prefix {Ot.cv_name; cv_constructors; } sc = 
 
-  F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) cv_name; 
+  F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) 
+      cv_name; 
   F.scope sc (fun sc -> 
     F.line sc "match Pbrt.Decoder.int_as_varint d with";
     List.iter (fun {Ot.cvc_name; cvc_binary_value; _} ->

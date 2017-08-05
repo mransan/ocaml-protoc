@@ -169,8 +169,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
 
     match vc_field_type with
     | Ot.Vct_nullary -> 
-      F.linep sc "| \"%s\" -> %s_types.%s" 
-        json_label module_prefix vc_constructor
+      F.linep sc "| \"%s\" -> (%s_types.%s : %s_types.%s)" 
+        json_label module_prefix vc_constructor module_prefix v_name
 
     | Ot.Vct_non_nullary_constructor field_type ->
       let value_expression = 
@@ -180,7 +180,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
 
       F.linep sc "| \"%s\" -> " json_label ;
       F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
-      F.linep sc "  %s_types.%s (%s)" module_prefix vc_constructor value_expression;
+      F.linep sc "  (%s_types.%s (%s) : %s_types.%s)" module_prefix 
+          vc_constructor value_expression module_prefix v_name
   in
 
   F.linep sc "%s decode_%s json =" 

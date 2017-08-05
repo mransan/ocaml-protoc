@@ -162,8 +162,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
 
     match vc_field_type with
     | Ot.Vct_nullary -> 
-      F.linep sc "| (\"%s\", _)::_-> %s_types.%s" 
-        json_label module_prefix vc_constructor 
+      F.linep sc "| (\"%s\", _)::_-> (%s_types.%s : %s_types.%s)" 
+        json_label module_prefix vc_constructor  module_prefix v_name
 
     | Ot.Vct_non_nullary_constructor field_type ->
       let match_, exp = 
@@ -172,7 +172,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
       in
 
       F.linep sc "| (\"%s\", %s)::_ -> " json_label match_;
-      F.linep sc "  %s_types.%s (%s)" module_prefix vc_constructor exp
+      F.linep sc "  (%s_types.%s (%s) : %s_types.%s)" 
+          module_prefix vc_constructor exp module_prefix v_name
   in
 
   F.linep sc "%s decode_%s json =" 
