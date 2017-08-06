@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message m {
+    repeated int32 f1 = 4;
+}

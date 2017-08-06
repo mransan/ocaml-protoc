@@ -130,8 +130,10 @@ val proto:
   ?extend:Pt.extend -> 
   unit -> 
   Pt.proto
+(** [proto ~message ~proto ()] will add [message] to [proto] and return a 
+    the updated proto value. *)
 
-val verify_syntax_invariants : Pt.proto -> unit 
+val finalize_proto_value : Pt.proto -> Pt.proto
 
 (** {2 Miscellaneous functionality } *)
 

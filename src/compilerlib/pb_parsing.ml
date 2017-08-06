@@ -45,8 +45,7 @@ let parse_single_file (file_name, file_content) =
       Pb_exception.unknown_parsing_error detail (Loc.from_lexbuf lexbuf)
   in  
   let proto = {proto with Pt.proto_file_name = Some file_name} in 
-  Parsing_util.verify_syntax_invariants proto;
-  proto 
+  Parsing_util.finalize_proto_value proto;
 
 type file_loader = string -> string * string 
 
