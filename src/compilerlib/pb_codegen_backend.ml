@@ -32,7 +32,8 @@ module Typing_util = Pb_typing_util
  *  coding style convention. The rule split are 
  *  {ul
  *  {- character ['_'] is a separator}
- *  {- the first uppercase letter after a lower case is a separator (ie FooBar will be split into [ ["Bar";"Foo"] ]}  
+ *  {- the first uppercase letter after a lower case is a separator 
+ *     (ie FooBar will be split into [ ["Bar";"Foo"] ]}  
  *  }
  *)
 let rev_split_by_naming_convention s =
@@ -127,7 +128,6 @@ let constructor_name s =
   |> String.concat "_"
   |> String.lowercase 
   |> String.capitalize [@@ocaml.warning "-3"] 
-
 
 let module_name = constructor_name 
 
