@@ -278,17 +278,29 @@ let finalize_syntax3 proto =
 
     let message_body = List.map (function
         | Pt.Message_field field ->
-          let {Pt.field_label; field_name; field_options; _} = field in
+            let {
+              Pt.field_label; 
+              field_type; 
+              field_name; 
+              field_options; _} = field in
           let field =
             match field_label with
             | `Required
             | `Optional -> E.invalid_proto3_field_label
                 ~field_name ~message_name
             | `Repeated -> 
-              let field_options = Pb_option.(add field_options "packed"
-                  (Constant_bool true))
-              in
-              {field with Pt.field_options}
+                begin match field_type with
+                (* only builtin type of varint int64, int32 encoding
+                   can be packed *)
+                | #Pb_field_type.builtin_type_int
+                | #Pb_field_type.builtin_type_floating_point
+                | `Bool -> 
+                  let field_options = Pb_option.(add field_options "packed"
+                      (Constant_bool true))
+                  in
+                  {field with Pt.field_options}
+                | _ -> field
+                end
             | `Nolabel -> field 
           in
           verify_no_default_field_options field_name message_name field_options;
