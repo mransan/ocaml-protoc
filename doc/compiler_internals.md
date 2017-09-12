@@ -48,10 +48,8 @@ This runtime is mostly based on previous work by [whiteshark](https://github.com
 |pbpt_util.mli             | Protobuf parse tree creator functions|
 |pbtt.ml                   | Protobuf typed tree AST|
 |pbtt_util.mli             | Protobuf typed tree utilities and type checking routines| 
-|graph.mli                 | graph algorithm with Strongly Connected Component algo 
-                             for deducing mutually recursive types|
-|encoding_util.mli         | Small type to keep track in the OCaml AST 
-                             of the rules for protobuf encoding|
+|graph.mli                 | graph algorithm with Strongly Connected Component algo for deducing mutually recursive types|
+|encoding_util.mli         | Small type to keep track in the OCaml AST of the rules for protobuf encoding|
 |exception.mli             | All compiler exceptions |
 |logger.mli                | Small logging utily|
 |util.mli                  | Classic missing standard library functions| 
