@@ -8,7 +8,7 @@ let file_suffix = Pb_codegen_decode_yojson.file_suffix
 let unsupported json_label = 
   failwith (sp "Unsupported field type for field: %s" json_label) 
 
-let setter_of_basic_type json_label basic_type pk = 
+let runtime_function_for_basic_type json_label basic_type pk = 
   match basic_type, pk with
   (* String *)
   | Ot.Bt_string, _ ->
@@ -49,6 +49,10 @@ let setter_of_basic_type json_label basic_type pk =
   | Ot.Bt_bytes, Ot.Pk_bytes -> unsupported json_label
   | _ -> unsupported json_label
 
+(* TODO Wrapper: add a runtime_function_for_wrapper_type  which will 
+   return the runtime function name which accepts an option field
+   and return the YoJson value (ie Null when value is None *)
+
 let gen_field var_name json_label field_type pk = 
 
   match field_type, pk with
@@ -57,14 +61,19 @@ let gen_field var_name json_label field_type pk =
 
   (* Basic types *)
   | Ot.Ft_basic_type basic_type, _ ->
-    let setter, map_function = setter_of_basic_type json_label basic_type pk in
+    let runtime_f, map_function = 
+        runtime_function_for_basic_type json_label basic_type pk 
+    in
     begin match map_function with
     | None -> 
-      Some (sp "(\"%s\", Pbrt_yojson.%s %s)" json_label setter var_name)
+      Some (sp "(\"%s\", Pbrt_yojson.%s %s)" json_label runtime_f var_name)
     | Some map_function ->
       Some (sp "(\"%s\", Pbrt_yojson.%s (%s %s))"
-               json_label setter map_function var_name)
+               json_label runtime_f map_function var_name)
     end
+
+  (* TODO Wrapper: add similar case for Ft_wrapper_type but calling a
+     a different runtime function *)
   
   (* User defined *)
   | Ot.Ft_user_defined_type udt, _ -> 
@@ -114,16 +123,17 @@ let gen_rft_repeated sc rf_label repeated_field =
       unsupported json_label
 
     | Ot.Ft_basic_type basic_type, _ ->
-      let setter, map_function = 
-        setter_of_basic_type json_label basic_type pk 
+      let runtime_f, map_function = 
+        runtime_function_for_basic_type json_label basic_type pk 
       in 
       begin match map_function with
       | None ->
-        F.linep sc "let l = %s |> List.map Pbrt_yojson.%s in" var_name setter
+        F.linep sc "let l = %s |> List.map Pbrt_yojson.%s in" var_name runtime_f
       | Some map_function ->
         F.linep sc "let l = %s |> List.map %s |> List.map Pbrt_yojson.%s in " 
-          var_name map_function setter
+          var_name map_function runtime_f
       end 
+    (* TODO Wrapper: add similar case for Ft_wrapper_type *)
     
     (* User defined *)
     | Ot.Ft_user_defined_type udt, _ -> 
@@ -270,4 +280,4 @@ let gen_sig ?and_ t sc =
   | {Ot.spec = Ot.Variant v; _ } -> f v.Ot.v_name; true 
   | {Ot.spec = Ot.Const_variant {Ot.cv_name; _ }; _ } -> f cv_name; true 
 
-let ocamldoc_title = "Protobuf JSON Encoding"
+let ocamldoc_title = "Protobuf YoJson Encoding"

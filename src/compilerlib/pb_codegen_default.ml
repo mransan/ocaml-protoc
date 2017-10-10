@@ -40,7 +40,7 @@ let default_value_of_field_type
     in 
 
     let same_file = gen_file_suffix = file_suffix in 
-    begin match same_file, udt.Ot.udt_module with
+    begin match same_file, udt.Ot.udt_module_prefix with
     | false, None -> module_prefix ^ "_" ^ file_suffix ^ "." ^ f_name  
     | _ -> f_name 
     end
@@ -49,6 +49,9 @@ let default_value_of_field_type
 
   | Ot.Ft_basic_type bt -> 
     default_value_of_basic_type ?field_name bt field_default
+
+  (* TODO Wrapper: add support to simply return "None" *)
+
 
 (* This function returns [(field_name, field_default_value, field_type)] for 
    a record field.  *)
@@ -102,7 +105,8 @@ let record_field_default_info ~gen_file_suffix ~module_prefix record_field =
   in
   (field_name, default_value, type_string)
 
-let gen_record_mutable ~gen_file_suffix ~module_prefix {Ot.r_name; r_fields} sc = 
+let gen_record_mutable 
+      ~gen_file_suffix ~module_prefix {Ot.r_name; r_fields} sc = 
 
   let fields_default_info = 
     List.map (fun r_field ->
@@ -218,12 +222,14 @@ let gen_sig ?and_ t sc =
   in 
 
   let {Ot.spec; module_prefix; _} = t in 
+
   let has_encoded = 
     match spec with 
     | Ot.Record r -> gen_sig_record sc module_prefix r; true
     | Ot.Variant v -> f v.Ot.v_name; true 
     | Ot.Const_variant {Ot.cv_name; _ ; } -> f cv_name; true
   in
+
   has_encoded
 
 let ocamldoc_title = "Default values" 
