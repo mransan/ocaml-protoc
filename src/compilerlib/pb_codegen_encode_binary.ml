@@ -36,7 +36,16 @@ let runtime_function_for_basic_type bt pk =
   | Ot.Pk_bytes, Ot.Bt_bytes -> "Pbrt.Encoder.bytes"
   | _ -> failwith "Invalid encoding/OCaml type combination"
 
-(* TODO Wrapper: add a function runtime_function_wrapper_type *)
+let runtime_function_for_wrapper_type {Ot.wt_type; wt_pk} = 
+  match wt_type, wt_pk with
+  | Ot.Bt_float, Ot.Pk_bits64 -> "Pbrt.Encoder.wrapper_double_value"
+  | Ot.Bt_float, Ot.Pk_bits32 -> "Pbrt.Encoder.wrapper_float_value"
+  | Ot.Bt_int64, Ot.Pk_varint _ -> "Pbrt.Encoder.wrapper_int64_value"
+  | Ot.Bt_int32, Ot.Pk_varint _ -> "Pbrt.Encoder.wrapper_int32_value"
+  | Ot.Bt_bool, Ot.Pk_varint _ -> "Pbrt.Encoder.wrapper_bool_value"
+  | Ot.Bt_string, Ot.Pk_bytes -> "Pbrt.Encoder.wrapper_string_value"
+  | Ot.Bt_bytes, Ot.Pk_bytes -> "Pbrt.Encoder.wrapper_bytes_value"
+  | _ -> assert(false)
 
 let gen_encode_field_type
       ?with_key sc var_name encoding_number pk is_packed field_type =
@@ -72,8 +81,10 @@ let gen_encode_field_type
     let rt = runtime_function_for_basic_type bt pk in
     F.linep sc "%s %s encoder;" rt var_name
 
-  (* TODO Wrapper: handle the case by calling the runtime function to
-     decode each possible wrapped type *)
+  | Ot.Ft_wrapper_type wt ->
+    encode_key sc;
+    let rt = runtime_function_for_wrapper_type wt in
+    F.linep sc "%s %s encoder;" rt var_name
 
 let gen_rft_nolabel sc var_name (field_type, encoding_number, pk) =
   gen_encode_field_type ~with_key:() sc var_name encoding_number pk

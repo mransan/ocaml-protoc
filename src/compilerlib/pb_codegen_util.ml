@@ -28,7 +28,8 @@ let string_of_field_type ?module_prefix = function
   | Ot.Ft_unit -> "unit"
   | Ot.Ft_basic_type bt -> string_of_basic_type bt
   | Ot.Ft_user_defined_type udt -> string_of_user_defined ?module_prefix udt
-  (* Add support for wrapper type to return an option *)
+  | Ot.Ft_wrapper_type {Ot.wt_type; wt_pk = _} ->
+    (string_of_basic_type wt_type) ^ " option"
 
 let string_of_repeated_type = function
   | Ot.Rt_list -> "list"

@@ -85,6 +85,7 @@ type error =
   | Default_field_option_not_supported of string * string 
   | Invalid_first_enum_value_proto3 of string * string option 
   | Invalid_key_type_for_map of string 
+  | Unsupported_wrapper_type of string 
 
 exception Compilation_error of error  
 (** Exception raised when a compilation error occurs *)
@@ -179,6 +180,11 @@ let string_of_error = function
       ) 
       field_name
 
+  | Unsupported_wrapper_type type_name -> 
+    P.sprintf
+      "Unsupported wrapper type %s, please raise issue on github."
+      type_name
+
 let () =
   Printexc.register_printer (fun exn ->
     match exn with
@@ -269,3 +275,6 @@ let invalid_first_enum_value_proto3 ?message_name ~enum_name () =
   
 let invalid_key_type_for_map field_name = 
   raise (Compilation_error (Invalid_key_type_for_map field_name)) 
+
+let unsupported_wrapper_type type_name = 
+  raise (Compilation_error (Unsupported_wrapper_type type_name)) 
