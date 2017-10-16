@@ -138,7 +138,7 @@ let label_name_of_field_name s =
   |> String.lowercase
   |> fix_ocaml_keyword_conflict [@@ocaml.warning "-3"]
 
-let module_of_file_name file_name =
+let module_prefix_of_file_name file_name =
   let file_name = Filename.basename file_name in
   match String.rindex file_name '.' with
   | dot_index ->
@@ -160,6 +160,18 @@ let type_name message_scope name =
   | hd::[] -> fix_ocaml_keyword_conflict hd
   | _      -> S.concat "_" all_names
 
+let wrapper_type_of_type_name = function
+  | "FloatValue" -> Ot.({wt_type = Bt_float; wt_pk = Pk_bits32})
+  | "DoubleValue" -> Ot.({wt_type = Bt_float; wt_pk = Pk_bits64})
+  | "Int64Value" -> Ot.({wt_type = Bt_int64; wt_pk = (Pk_varint false)})
+  | "UInt64Value" -> Ot.({wt_type = Bt_int64; wt_pk = (Pk_varint false)})
+  | "Int32Value" -> Ot.({wt_type = Bt_int32; wt_pk = (Pk_varint false)})
+  | "UInt32Value" -> Ot.({wt_type = Bt_int32; wt_pk = (Pk_varint false)})
+  | "BoolValue" -> Ot.({wt_type = Bt_bool; wt_pk = (Pk_varint false)})
+  | "StringValue" -> Ot.({wt_type = Bt_string; wt_pk = Pk_bytes})
+  | "BytesValue" -> Ot.({wt_type = Bt_bytes; wt_pk = Pk_bytes})
+  | type_name -> E.unsupported_wrapper_type type_name
+
 (** [user_defined_type_of_id module_ all_types i] returns the field type name
     for the type identied by [i] and which is expected to be in [all_types].
 
@@ -172,7 +184,7 @@ let type_name message_scope name =
     with the same name.
  *)
 let user_defined_type_of_id all_types file_name i =
-  let module_prefix = module_of_file_name file_name in
+  let module_prefix = module_prefix_of_file_name file_name in
   match Typing_util.type_of_id all_types i with
   | exception Not_found ->
     E.programmatic_error E.No_type_found_for_id
@@ -180,28 +192,30 @@ let user_defined_type_of_id all_types file_name i =
       if Typing_util.is_empty_message t
       then Ot.Ft_unit
       else
-        (* TODO Wrapper:
-           Add the check for the wrapper types and a code branch
-           which returns the Ot.Ft_wrapper_type. *)
-        let udt_type = match spec with
-          | Tt.Enum _ -> `Enum
-          | Tt.Message _ -> `Message
-        in
-        let field_type_module = module_of_file_name file_name in
-        let {Tt.message_names; _ } = Typing_util.type_scope_of_type t in
-        let udt_type_name =
-            type_name message_names (Typing_util.type_name_of_type t) in
-        if field_type_module = module_prefix
-        then Ot.(Ft_user_defined_type {
-          udt_type;
-          udt_module_prefix = None;
-          udt_type_name
-        })
-        else Ot.(Ft_user_defined_type {
-          udt_type;
-          udt_module_prefix = Some field_type_module;
-          udt_type_name
-        })
+        let field_type_module_prefix = module_prefix_of_file_name file_name in
+        if field_type_module_prefix = "Wrappers"
+        then 
+          Ot.Ft_wrapper_type (
+              wrapper_type_of_type_name (Typing_util.type_name_of_type t))
+        else 
+          let udt_type = match spec with
+            | Tt.Enum _ -> `Enum
+            | Tt.Message _ -> `Message
+          in
+          let {Tt.message_names; _ } = Typing_util.type_scope_of_type t in
+          let udt_type_name =
+              type_name message_names (Typing_util.type_name_of_type t) in
+          if field_type_module_prefix = module_prefix
+          then Ot.(Ft_user_defined_type {
+            udt_type;
+            udt_module_prefix = None;
+            udt_type_name
+          })
+          else Ot.(Ft_user_defined_type {
+            udt_type;
+            udt_module_prefix = Some field_type_module_prefix;
+            udt_type_name
+          })
 
 let encoding_info_of_field_type all_types field_type =
   match field_type with
@@ -374,7 +388,7 @@ let compile_message
     (message: Pb_field_type.resolved Tt.message ) :
     Ot.type_ list   =
 
-  let module_prefix = module_of_file_name file_name in
+  let module_prefix = module_prefix_of_file_name file_name in
   (* TODO maybe module_ should be resolved before `compile_message` since
      it is common with compile_enum
    *)
@@ -590,7 +604,7 @@ let compile_message
 let compile_enum file_options file_name scope enum =
 
   let {Tt.enum_name; enum_values; _ } = enum in
-  let module_prefix = module_of_file_name file_name in
+  let module_prefix = module_prefix_of_file_name file_name in
   let {Tt.message_names; Tt.packages = _ } = scope in
 
   let cv_constructors = List.map (fun {Tt.enum_value_name; Tt.enum_value_int} ->

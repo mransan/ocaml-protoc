@@ -12,6 +12,8 @@ let gen_field field_type =
     let function_prefix = "pp" in 
     let module_suffix = file_suffix in 
     function_name_of_user_defined ~function_prefix ~module_suffix udt  
+  | Ot.Ft_wrapper_type {Ot.wt_type; _} -> 
+    sp "Pbrt.Pp.pp_wrapper_%s" (string_of_basic_type wt_type)
   | _ ->  sp "Pbrt.Pp.pp_%s" (string_of_field_type field_type) 
 
 let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc = 

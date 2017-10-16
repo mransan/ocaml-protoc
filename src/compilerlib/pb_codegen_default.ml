@@ -50,7 +50,8 @@ let default_value_of_field_type
   | Ot.Ft_basic_type bt -> 
     default_value_of_basic_type ?field_name bt field_default
 
-  (* TODO Wrapper: add support to simply return "None" *)
+  | Ot.Ft_wrapper_type _ -> "None"
+
 
 
 (* This function returns [(field_name, field_default_value, field_type)] for 

@@ -170,9 +170,19 @@ module Decoder : sig
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
+  val wrapper_double_value : t -> float option 
 
-  (* TODO Wrapper: Add the function to decode the wrappers which will
-     return the corresponding option types *)
+  val wrapper_float_value : t -> float option 
+
+  val wrapper_int64_value : t -> int64 option 
+
+  val wrapper_int32_value : t -> int32 option 
+
+  val wrapper_bool_value : t -> bool option  
+
+  val wrapper_string_value : t -> string option  
+
+  val wrapper_bytes_value : t -> bytes option  
 
 end (* Decoder *)
 
@@ -256,8 +266,20 @@ module Encoder : sig
   val bytes : bytes -> t -> unit
   (** [string s e] encodes [s] in [e] *)
 
-  (* TODO Wrapper: Add the function to encode the wrappers which will
-     take an option type *)
+  val wrapper_double_value : float option -> t -> unit
+
+  val wrapper_float_value : float option -> t -> unit
+
+  val wrapper_int64_value : int64 option -> t -> unit
+
+  val wrapper_int32_value : int32 option -> t -> unit
+
+  val wrapper_bool_value : bool option -> t -> unit 
+
+  val wrapper_string_value : string option -> t -> unit 
+
+  val wrapper_bytes_value : bytes option -> t -> unit 
+
 end
 
 module Repeated_field : sig
@@ -364,6 +386,13 @@ module Pp : sig
   (** [pp_option f fmt o] formats an option value [o] using [f] formatter when
       [o] is a [Some x] value
    *)
+
+  val pp_wrapper_float : formatter -> float option -> unit
+  val pp_wrapper_bool : formatter -> bool option -> unit
+  val pp_wrapper_int32 : formatter -> int32 option -> unit
+  val pp_wrapper_int64 : formatter -> int64 option -> unit
+  val pp_wrapper_string : formatter -> string option -> unit
+  val pp_wrapper_bytes : formatter -> bytes option -> unit
 
   val pp_list : (formatter -> 'a -> unit) -> formatter -> 'a list -> unit
   (** [pp_list f fmt l] formats a list value [l] using [f] formatter on each
