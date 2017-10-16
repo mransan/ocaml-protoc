@@ -24,7 +24,16 @@ let runtime_function_for_basic_type bt pk =
   | Ot.Pk_bytes, Ot.Bt_bytes -> "Pbrt.Decoder.bytes"
   | _ -> failwith "Invalid encoding/OCaml type combination"
 
-(* TODO Wrapper: add a function runtime_function_wrapper_type *)
+let runtime_function_for_wrapper_type {Ot.wt_type; wt_pk} = 
+  match wt_type, wt_pk with
+  | Ot.Bt_float, Ot.Pk_bits64 -> "Pbrt.Decoder.wrapper_double_value"
+  | Ot.Bt_float, Ot.Pk_bits32 -> "Pbrt.Decoder.wrapper_float_value"
+  | Ot.Bt_int64, Ot.Pk_varint _ -> "Pbrt.Decoder.wrapper_int64_value"
+  | Ot.Bt_int32, Ot.Pk_varint _ -> "Pbrt.Decoder.wrapper_int32_value"
+  | Ot.Bt_bool, Ot.Pk_varint _ -> "Pbrt.Decoder.wrapper_bool_value"
+  | Ot.Bt_string, Ot.Pk_bytes -> "Pbrt.Decoder.wrapper_string_value"
+  | Ot.Bt_bytes, Ot.Pk_bytes -> "Pbrt.Decoder.wrapper_bytes_value"
+  | _ -> assert(false)
 
 let decode_field_expression field_type pk =
   match field_type with
@@ -42,8 +51,7 @@ let decode_field_expression field_type pk =
   | Ot.Ft_unit ->
       "Pbrt.Decoder.empty_nested d"
   | Ot.Ft_basic_type bt -> (runtime_function_for_basic_type bt pk) ^ " d"
-  (* TODO Wrapper: Add wrapper type decoding support by generating
-     a call to the appropriate runtime function *)
+  | Ot.Ft_wrapper_type wt -> (runtime_function_for_wrapper_type wt) ^ " d"
 
 let pbrt_payload_kind payload_kind is_packed =
   if is_packed

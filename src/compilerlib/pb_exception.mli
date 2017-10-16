@@ -108,3 +108,5 @@ val invalid_first_enum_value_proto3 :
   'a
 
 val invalid_key_type_for_map : string -> 'a
+
+val unsupported_wrapper_type : string -> 'a
