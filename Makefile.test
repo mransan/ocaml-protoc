@@ -32,6 +32,7 @@ unit-tests:
 	$(OCB) $(UNIT_TESTS_DIR)/ocaml_codegen_test.byte
 	$(OCB) $(UNIT_TESTS_DIR)/graph_test.byte
 	$(OCB) $(UNIT_TESTS_DIR)/pbrt_array.byte
+	$(OCB) $(UNIT_TESTS_DIR)/wrapper_encoding.byte
 	export OCAMLRUNPARAM="b" && ./test_typing.byte
 	export OCAMLRUNPARAM="b" && ./verify_syntax_invariants.byte
 	export OCAMLRUNPARAM="b" && ./parse_message.byte
@@ -47,6 +48,7 @@ unit-tests:
 	export OCAMLRUNPARAM="b" && ./ocaml_codegen_test.byte
 	export OCAMLRUNPARAM="b" && ./graph_test.byte
 	export OCAMLRUNPARAM="b" && ./pbrt_array.byte
+	export OCAMLRUNPARAM="b" && ./wrapper_encoding.byte
 
 #
 # Integration tests
@@ -133,7 +135,7 @@ testCompat: $(INTEGRATION_TESTS_DIR)/test03_cpp.tsk $(INTEGRATION_TESTS_DIR)/tes
 
 integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 	           test11 test12 test13 test14 test15 test16 test17 test18 \
-			       test19 test20 test21 test22 test24 testCompat 
+			       test19 test20 test21 test22 test24 test26 testCompat 
 
 #
 # Google Unittest 

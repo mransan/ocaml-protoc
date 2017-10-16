@@ -126,6 +126,47 @@ module Decoder = struct
 
   let bytes  = Protobuf.Decoder.bytes
 
+  let wrapper_double_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Bits64) -> Some (float_as_bits64 d)
+    | _ -> None
+
+  let wrapper_float_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Bits32) -> Some (float_as_bits32 d)
+    | _ -> None
+
+  let wrapper_int64_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Varint) -> Some (int64_as_varint d)
+    | _ -> None
+
+  let wrapper_int32_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Varint) -> Some (int32_as_varint d)
+    | _ -> None
+
+  let wrapper_bool_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Varint) -> Some (bool d)
+    | _ -> None
+
+  let wrapper_string_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Bytes) -> Some (string d)
+    | _ -> None
+
+  let wrapper_bytes_value d = 
+    let d = nested d in 
+    match key d with
+    | Some (1, Bytes) -> Some (bytes d)
+    | _ -> None
 end 
 
 module Encoder = struct 
@@ -189,6 +230,84 @@ module Encoder = struct
   let string s e = Protobuf.Encoder.bytes (Bytes.of_string s) e 
 
   let bytes = Protobuf.Encoder.bytes 
+
+  let double_value_key = (1, Protobuf.Bits64)
+
+  let wrapper_double_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key double_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some f -> float_as_bits64 f e 
+      end
+    ) e
+
+  let float_value_key = (1, Protobuf.Bits32)
+
+  let wrapper_float_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key float_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some f -> float_as_bits32 f e 
+      end
+    ) e
+
+  let int64_value_key = (1, Protobuf.Varint)
+
+  let wrapper_int64_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key int64_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some i -> int64_as_varint i e 
+      end
+    ) e
+
+  let int32_value_key = (1, Protobuf.Varint)
+
+  let wrapper_int32_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key int32_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some i -> int32_as_varint i e 
+      end
+    ) e
+
+  let bool_value_key = (1, Protobuf.Varint)
+
+  let wrapper_bool_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key bool_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some b -> bool b e 
+      end
+    ) e
+
+  let string_value_key = (1, Protobuf.Bytes)
+
+  let wrapper_string_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key string_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some s -> string s e 
+      end
+    ) e
+
+  let bytes_value_key = (1, Protobuf.Bytes)
+
+  let wrapper_bytes_value v e = 
+    Protobuf.Encoder.nested (fun e -> 
+      key bytes_value_key e; 
+      begin match v with
+      | None -> ()
+      | Some b -> bytes b e 
+      end
+    ) e
+
 end 
 
 module Repeated_field = struct 
@@ -369,7 +488,25 @@ module Pp = struct
   let pp_option pp_f fmt = function
     | None   -> F.fprintf fmt "@[None@]"
     | Some x -> F.fprintf fmt "@[Some(%a)@]" pp_f x 
+
+  let pp_wrapper_float fmt v = 
+    pp_option pp_float fmt v 
+
+  let pp_wrapper_bool fmt v = 
+    pp_option pp_bool fmt v 
+
+  let pp_wrapper_int32 fmt v = 
+    pp_option pp_int32 fmt v 
   
+  let pp_wrapper_int64 fmt v = 
+    pp_option pp_int64 fmt v 
+
+  let pp_wrapper_string fmt v = 
+    pp_option pp_string fmt v 
+
+  let pp_wrapper_bytes fmt v = 
+    pp_option pp_bytes fmt v 
+
   let pp_list pp_element fmt l = 
     let rec pp_i fmt = function
       | [h]  -> Format.fprintf fmt "%a" pp_element h

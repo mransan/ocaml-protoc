@@ -34,8 +34,16 @@ type payload_kind =
   | Pk_bytes
 
 type user_defined_type = {
+  (* since code generated is split in multiple file (type, binary, json, ..)
+     this defines the prefix for the given type, the suffix will 
+     be defined by each generator *)
   udt_module_prefix : string option;
-  udt_type_name : string;
+
+  (* OCaml type name ie not the type name in proto file *)
+  udt_type_name : string; 
+
+  (* Need to keep track of this since encoding logic in binary 
+     format is quite different *)
   udt_type : [`Message | `Enum ];
 }
 
@@ -48,24 +56,19 @@ type basic_type =
   | Bt_bytes
   | Bt_bool
 
-(* TODO Wrapper: add new wrapper type
 type wrapper_type = {
   wt_type : basic_type; (* basic type being wrapped *)
   wt_pk : payload_kind; (* encoding used for the basic type *)
 }
-*)
 
 type field_type =
   | Ft_unit
   | Ft_basic_type        of basic_type
   | Ft_user_defined_type of user_defined_type
-  (*
-    TODO Wrapper:
-    New wrapper type which indicates that the corresponding ocaml
-    type should be an `option` along with the fact that it is encoded with
-    special rules
+  (* New wrapper type which indicates that the corresponding ocaml
+     Type should be an `option` along with the fact that it is encoded with
+     special rules *)
   | Ft_wrapper_type      of wrapper_type
-   *)
 
 type default_value = Pb_option.constant option
 
