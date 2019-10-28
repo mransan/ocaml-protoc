@@ -41,7 +41,7 @@ let setter_of_basic_type json_label basic_type pk =
 
   (* bool *)
   | Ot.Bt_bool, Ot.Pk_varint _ ->
-    ("boolean", Some "Js_boolean.to_js_boolean")
+    ("boolean", None)
 
   (* bytes *)
   | Ot.Bt_bytes, Ot.Pk_bytes -> unsupported json_label
