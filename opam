@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "ocaml-protoc"
-version: "1.2.4"
+version: "1.2.5"
 synopsis: "Protobuf compiler for OCaml"
 description: "Protobuf compiler for OCaml"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
@@ -13,9 +13,8 @@ dev-repo:"git+https://github.com/mransan/ocaml-protoc.git"
 license: "MIT"
 build: [
   [make "lib.byte"]   
-  [make "lib.native"] { ocaml-native }
-  [make "bin.byte"]   {!ocaml-native }
-  [make "bin.native"] { ocaml-native }
+  [make "lib.native"]
+  [make "bin.native"]
 ]
 install: [
   [make "lib.install" ]
