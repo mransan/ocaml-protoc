@@ -1,6 +1,6 @@
 {
   "name": "bs-ocaml-protoc",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A Protocol Buffers compiler for OCaml",
   "keywords": [
     "protobuf",
