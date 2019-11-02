@@ -1,0 +1,22 @@
+(tests
+  (names 
+    graph_test 
+    format_play_ground 
+    lexer_comment
+    ocaml_codegen_test
+    parse_enum
+    pbtt_compile_p2
+    test_typing
+    verify_syntax_invariants
+    parse_message
+    parse_fields
+    parse_field_options
+    parse_file_options
+    parse_import
+    pbtt_compile_p1
+    backend_ocaml_test
+    pbrt_array
+    wrapper_encoding
+  )
+  (libraries pbrt compiler_lib)
+)

@@ -1,6 +1,5 @@
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
-module L = Pb_logger
 
 let file_suffix = Pb_codegen_decode_binary.file_suffix
 

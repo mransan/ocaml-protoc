@@ -43,6 +43,8 @@ let field_pattern_match ~r_name ~rf_label field_type =
     let value_expression = "(" ^ f_name ^ " json_value)" in
     ("json_value", value_expression)
 
+  | _ -> assert(false)
+
 (* Generate all the pattern matches for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
 

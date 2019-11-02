@@ -27,7 +27,12 @@ int decode_from_file(T& message, std::string const& file_name) {
                   << std::endl;
         return 1;
     }
+    else {
+      std::cout << "Success opening the file " << file_name << std::endl;
+    }
     bool success = message.ParseFromIstream(&in);
+    std::cout << "in.good(): " << std::boolalpha << in.good()
+        << ", in.eof(): " << in.eof() << std::endl;
     if(!success) {
         return 1;
     }

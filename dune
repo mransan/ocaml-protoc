@@ -1,0 +1,4 @@
+(env
+ (_
+   (flags -bin-annot -annot -safe-string 
+          -keep-locs -no-alias-deps -w A-4-42-41-48)))
