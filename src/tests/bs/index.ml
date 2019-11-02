@@ -69,6 +69,11 @@ let () =
     single_one_of_enum = Some single_one_of_enum;
     single_one_of_small_message = Some single_one_of_small_message;
     single_one_of_recursive = Some single_one_of_recursive;
+    repeated_small_message = [
+      {sm_string = "sm1"};
+      {sm_string = "sm2"};
+      {sm_string = "sm3"};
+    ];
   } in 
 
   let json_str = 
