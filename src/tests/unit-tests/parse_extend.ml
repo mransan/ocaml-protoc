@@ -1,5 +1,5 @@
 let parse s  = 
-  Parser.extend_ Lexer.lexer (Lexing.from_string s)
+  Pb_parsing_parser.extend_ Pb_parsing_lexer.lexer (Lexing.from_string s)
 
 let () = 
   let s ="extend M {} " in 

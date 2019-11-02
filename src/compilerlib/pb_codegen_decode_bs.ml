@@ -18,7 +18,7 @@ let value_expression ~r_name ~rf_label field_type =
   | Ot.Ft_basic_type Ot.Bt_bool -> basic_type "bool" 
   | Ot.Ft_basic_type Ot.Bt_bytes -> basic_type "bytes" 
   | Ot.Ft_unit -> "()"
-  | Ot.Ft_user_defined_type udt -> 
+  | Ot.Ft_user_defined_type udt -> begin
     let {Ot.udt_type; _} = udt in 
     let f_name = 
       let function_prefix = "decode" in 
@@ -33,6 +33,8 @@ let value_expression ~r_name ~rf_label field_type =
     | `Enum ->
       "(" ^ f_name ^ " json)"
     end
+  end
+    | _ -> assert(false)
 
 (* Generate the pattern match for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) = 

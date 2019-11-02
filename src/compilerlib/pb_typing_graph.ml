@@ -25,7 +25,7 @@
 
 module Int_map = Map.Make(struct 
   type t = int 
-  let  compare (x:int) (y:int) = Pervasives.compare x y
+  let  compare (x:int) (y:int) = Stdlib.compare x y
 end)
 
 type node = {

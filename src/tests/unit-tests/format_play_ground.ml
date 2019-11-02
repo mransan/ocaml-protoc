@@ -72,6 +72,7 @@ let pp_or_ fmt = function
   | R  x -> F.fprintf fmt "@[R(%a)@]" pp_r x 
   | Rp x -> F.fprintf fmt "@[Rp(%a)@]" (pp_list pp_r') x 
 
+(*
 let () = 
   F.fprintf 
     F.std_formatter 
@@ -81,6 +82,7 @@ let () =
       ({r = {x = 2; y = "2"; z = "two"  } ; i = Some 20;l = [1.2 ; 2.2; 3.2] }) :: 
       ({r = {x = 3; y = "3"; z = "three"} ; i = None   ;l = [1.3 ; 2.3; 3.3] }) :: [] 
     ))
+*)
 
 (*
 let rec decode_person_tel_number d =
@@ -127,7 +129,6 @@ let indentation_prefix = function
   | n -> "\n" ^ (String.make n ' ')
 
 let print scope = 
-
   let rec loop acc i = function
     | (Line s)::tl -> 
       loop ((indentation_prefix i )::s::acc) i tl  
@@ -160,8 +161,10 @@ let f sc =
   );  
   ()
 
+(*
 let () = 
   let scope = {items = []} in 
   f scope;
   Printf.printf "number of item: %i \n%!" (List.length scope.items);
   print_endline @@ print scope 
+*)

@@ -32,7 +32,7 @@ module type T_sig = sig
 end (* T_sig *) 
 
 module type Runner_sig = sig 
-  val run : Benchmark_pb.test_request -> Benchmark_pb.test_response
+  val run : Benchmark_types.test_request -> Benchmark_types.test_response
   (** [run request] execute the corresponding request and returns 
       the test response 
     *)

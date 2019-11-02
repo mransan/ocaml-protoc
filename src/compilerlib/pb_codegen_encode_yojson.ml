@@ -84,6 +84,7 @@ let gen_field var_name json_label field_type pk =
         ~function_prefix ~module_suffix udt 
     in
     Some (sp "(\"%s\", %s %s)" json_label f_name var_name)
+  | _ -> assert(false)
 
 let gen_rft_nolabel sc rf_label (field_type, _, pk) = 
   let var_name = sp "v.%s" rf_label in 

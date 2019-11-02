@@ -90,6 +90,8 @@ let gen_field sc var_name json_label field_type pk =
     end
     end
 
+    | _ -> assert(false)
+
 let gen_rft_nolabel sc var_name rf_label (field_type, _, pk) = 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in  
   gen_field sc var_name json_label field_type pk 
