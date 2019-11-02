@@ -10,6 +10,7 @@ let () =
 
   print_endline @@ Format.asprintf "person: %a" Example01_pp.pp_person person;
   
+  (*
   let json = 
     person 
     |> Example01_yojson.encode_person 
@@ -24,6 +25,7 @@ let () =
   in  
 
   assert(person = person');
+  *)
 
   let binary = 
     let encoder = Pbrt.Encoder.create () in 

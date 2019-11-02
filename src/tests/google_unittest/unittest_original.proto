@@ -41,7 +41,7 @@ option cc_generic_services = true;     // auto-added
 option java_generic_services = true;   // auto-added
 option py_generic_services = true;     // auto-added
 
-import "google/protobuf/unittest_import.proto";
+import "unittest_import.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -89,9 +89,10 @@ message TestAllTypes {
   optional   string optional_string   = 14;
   optional    bytes optional_bytes    = 15;
 
-  optional group OptionalGroup = 16 {
-    optional int32 a = 17;
-  }
+  // NOT SUPPORTED
+  // optional group OptionalGroup = 16 {
+  //   optional int32 a = 17;
+  // }
 
   optional NestedMessage                        optional_nested_message  = 18;
   optional ForeignMessage                       optional_foreign_message = 19;
@@ -127,9 +128,10 @@ message TestAllTypes {
   repeated   string repeated_string   = 44;
   repeated    bytes repeated_bytes    = 45;
 
-  repeated group RepeatedGroup = 46 {
-    optional int32 a = 47;
-  }
+  // NOT SUPPORTED
+  // repeated group RepeatedGroup = 46 {
+  //   optional int32 a = 47;
+  // }
 
   repeated NestedMessage                        repeated_nested_message  = 48;
   repeated ForeignMessage                       repeated_foreign_message = 49;
@@ -222,9 +224,10 @@ extend TestAllExtensions {
   optional   string optional_string_extension   = 14;
   optional    bytes optional_bytes_extension    = 15;
 
-  optional group OptionalGroup_extension = 16 {
-    optional int32 a = 17;
-  }
+  // NOT SUPPORTED
+  // optional group OptionalGroup_extension = 16 {
+  //   optional int32 a = 17;
+  // }
 
   optional TestAllTypes.NestedMessage optional_nested_message_extension = 18;
   optional ForeignMessage optional_foreign_message_extension = 19;
@@ -262,9 +265,10 @@ extend TestAllExtensions {
   repeated   string repeated_string_extension   = 44;
   repeated    bytes repeated_bytes_extension    = 45;
 
-  repeated group RepeatedGroup_extension = 46 {
-    optional int32 a = 47;
-  }
+  // NOT SUPPORTED
+  // repeated group RepeatedGroup_extension = 46 {
+  //   optional int32 a = 47;
+  // }
 
   repeated TestAllTypes.NestedMessage repeated_nested_message_extension = 48;
   repeated ForeignMessage repeated_foreign_message_extension = 49;
@@ -318,14 +322,15 @@ extend TestAllExtensions {
 }
 
 message TestNestedExtension {
-  extend TestAllExtensions {
-    // Check for bug where string extensions declared in tested scope did not
-    // compile.
-    optional string test = 1002 [default="test"];
-    // Used to test if generated extension name is correct when there are
-    // underscores.
-    optional string nested_string_extension = 1003;
-  }
+  // NOT SUPPORTED
+  // extend TestAllExtensions {
+  //   // Check for bug where string extensions declared in tested scope did not
+  //   // compile.
+  //   optional string test = 1002 [default="test"];
+  //   // Used to test if generated extension name is correct when there are
+  //   // underscores.
+  //   optional string nested_string_extension = 1003;
+  // }
 }
 
 // We have separate messages for testing required fields because it's
@@ -338,10 +343,11 @@ message TestRequired {
   optional int32 dummy2 = 2;
   required int32 b = 3;
 
-  extend TestAllExtensions {
-    optional TestRequired single = 1000;
-    repeated TestRequired multi  = 1001;
-  }
+  // NOT SUPPORTED
+  // extend TestAllExtensions {
+  //   optional TestRequired single = 1000;
+  //   repeated TestRequired multi  = 1001;
+  // }
 
   // Pad the field count to 32 so that we can test that IsInitialized()
   // properly checks multiple elements of has_bits_.
@@ -434,8 +440,8 @@ message TestMutualRecursionB {
 // in protobuf_unittest_proto.
 message TestDupFieldNumber {                        // NO_PROTO1
   optional int32 a = 1;                             // NO_PROTO1
-  optional group Foo = 2 { optional int32 a = 1; }  // NO_PROTO1
-  optional group Bar = 3 { optional int32 a = 1; }  // NO_PROTO1
+  // optional group Foo = 2 { optional int32 a = 1; }  // NO_PROTO1
+  // optional group Bar = 3 { optional int32 a = 1; }  // NO_PROTO1
 }                                                   // NO_PROTO1
 
 // Additional messages for testing lazy fields.
@@ -515,13 +521,15 @@ extend TestFieldOrderings {
 
 
 message TestExtremeDefaultValues {
-  optional bytes escaped_bytes = 1 [default = "\0\001\a\b\f\n\r\t\v\\\'\"\xfe"];
-  optional uint32 large_uint32 = 2 [default = 0xFFFFFFFF];
-  optional uint64 large_uint64 = 3 [default = 0xFFFFFFFFFFFFFFFF];
-  optional  int32 small_int32  = 4 [default = -0x7FFFFFFF];
-  optional  int64 small_int64  = 5 [default = -0x7FFFFFFFFFFFFFFF];
-  optional  int32 really_small_int32 = 21 [default = -0x80000000];
-  optional  int64 really_small_int64 = 22 [default = -0x8000000000000000];
+  // NOT SUPPORTED
+  //optional bytes escaped_bytes = 1 [default = "\0\001\a\b\f\n\r\t\v\\\'\"\xfe"];
+  // NOT SUPPORTED
+  // optional uint32 large_uint32 = 2 [default = 0xFFFFFFFF];
+  // optional uint64 large_uint64 = 3 [default = 0xFFFFFFFFFFFFFFFF];
+  // optional  int32 small_int32  = 4 [default = -0x7FFFFFFF];
+  // optional  int64 small_int64  = 5 [default = -0x7FFFFFFFFFFFFFFF];
+  // optional  int32 really_small_int32 = 21 [default = -0x80000000];
+  // optional  int64 really_small_int64 = 22 [default = -0x8000000000000000];
 
   // The default value here is UTF-8 for "\u1234".  (We could also just type
   // the UTF-8 text directly into this text file rather than escape it, but
@@ -555,7 +563,7 @@ message TestExtremeDefaultValues {
 
   // String defaults containing the character '\000'
   optional string string_with_zero       = 23 [default = "hel\000lo"];
-  optional  bytes bytes_with_zero        = 24 [default = "wor\000ld"];
+  // optional  bytes bytes_with_zero        = 24 [default = "wor\000ld"];
   optional string string_piece_with_zero = 25 [ctype=STRING_PIECE,
                                                default="ab\000c"];
   optional string cord_with_zero         = 26 [ctype=CORD,
@@ -611,10 +619,11 @@ message TestOneof {
     int32 foo_int = 1;
     string foo_string = 2;
     TestAllTypes foo_message = 3;
-    group FooGroup = 4 {
-      optional int32 a = 5;
-      optional string b = 6;
-    }
+    // NOT SUPPORTED
+    // group FooGroup = 4 {
+    //   optional int32 a = 5;
+    //   optional string b = 6;
+    // }
   }
 }
 
@@ -622,10 +631,11 @@ message TestOneofBackwardsCompatible {
   optional int32 foo_int = 1;
   optional string foo_string = 2;
   optional TestAllTypes foo_message = 3;
-  optional group FooGroup = 4 {
-    optional int32 a = 5;
-    optional string b = 6;
-  }
+  // NOT SUPPORTED
+  // optional group FooGroup = 4 {
+  //   optional int32 a = 5;
+  //   optional string b = 6;
+  // }
 }
 
 message TestOneof2 {
@@ -637,10 +647,11 @@ message TestOneof2 {
     bytes foo_bytes = 5;
     NestedEnum foo_enum = 6;
     NestedMessage foo_message = 7;
-    group FooGroup = 8 {
-      optional int32 a = 9;
-      optional string b = 10;
-    }
+    // NOT SUPPORTED
+    // group FooGroup = 8 {
+    //   optional int32 a = 9;
+    //   optional string b = 10;
+    // }
     NestedMessage foo_lazy_message = 11 [lazy=true];
   }
 
@@ -812,29 +823,33 @@ message TestParsingMerge {
     repeated TestAllTypes field1 = 1;
     repeated TestAllTypes field2 = 2;
     repeated TestAllTypes field3 = 3;
-    repeated group Group1 = 10 {
-      optional TestAllTypes field1 = 11;
-    }
-    repeated group Group2 = 20 {
-      optional TestAllTypes field1 = 21;
-    }
+    // NOT SUPPORTED
+    // repeated group Group1 = 10 {
+    //   optional TestAllTypes field1 = 11;
+    // }
+    // repeated group Group2 = 20 {
+    //   optional TestAllTypes field1 = 21;
+    // }
     repeated TestAllTypes ext1 = 1000;
     repeated TestAllTypes ext2 = 1001;
   }
   required TestAllTypes required_all_types = 1;
   optional TestAllTypes optional_all_types = 2;
   repeated TestAllTypes repeated_all_types = 3;
-  optional group OptionalGroup = 10 {
-    optional TestAllTypes optional_group_all_types = 11;
-  }
-  repeated group RepeatedGroup = 20 {
-    optional TestAllTypes repeated_group_all_types = 21;
-  }
+  // NOT SUPPORTED
+  // optional group OptionalGroup = 10 {
+  //   optional TestAllTypes optional_group_all_types = 11;
+  // }
+  // NOT SUPPORTED
+  // repeated group RepeatedGroup = 20 {
+  //   optional TestAllTypes repeated_group_all_types = 21;
+  // }
   extensions 1000 to max;
-  extend TestParsingMerge {
-    optional TestAllTypes optional_ext = 1000;
-    repeated TestAllTypes repeated_ext = 1001;
-  }
+  // NOT SUPPORTED
+  //extend TestParsingMerge {
+  //  optional TestAllTypes optional_ext = 1000;
+  //  repeated TestAllTypes repeated_ext = 1001;
+  //}
 }
 
 message TestCommentInjectionMessage {
@@ -850,10 +865,11 @@ message FooResponse {}
 message FooClientMessage {}
 message FooServerMessage{}
 
-service TestService {
-  rpc Foo(FooRequest) returns (FooResponse);
-  rpc Bar(BarRequest) returns (BarResponse);
-}
+// NOT SUPPORTED
+// service TestService {
+//   rpc Foo(FooRequest) returns (FooResponse);
+//   rpc Bar(BarRequest) returns (BarResponse);
+// }
 
 
 message BarRequest  {}

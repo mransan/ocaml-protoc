@@ -1,34 +1,32 @@
 
-let () = Logger.setup_from_out_channel stdout 
+let () = Pb_logger.setup_from_out_channel stdout 
 
 let string_of_token = function 
-  | Parser.REQUIRED     ->  "REQUIRED"
-  | Parser.OPTIONAL     ->  "OPTIONAL" 
-  | Parser.REPEATED     ->  "REPEATED" 
-  | Parser.ONE_OF       ->  "ONE_OF"
-  | Parser.MESSAGE      ->  "MESSAGE"
-  | Parser.ENUM         ->  "ENUM"
-  | Parser.PACKAGE      ->  "PACKAGE"
-  | Parser.RBRACE       ->  "RBRACE" 
-  | Parser.LBRACE       ->  "LBRACE" 
-  | Parser.RBRACKET     ->  "RBRACKET"
-  | Parser.LBRACKET     ->  "LBRACKET"
-  | Parser.RPAREN       ->  "RPAREN"
-  | Parser.LPAREN       ->  "LPAREN"
-  | Parser.RANGLEB      ->  "RANGLEB"
-  | Parser.LANGLEB      ->  "LANGLEB"
-  | Parser.EQUAL        ->  "EQUAL"
-  | Parser.SEMICOLON    ->  "SEMICOLON"
-  | Parser.COMMA        ->  "COMMA"
-  | Parser.STRING s     -> Printf.sprintf "string(%s)" s   
-  | Parser.INT i        -> Printf.sprintf "int(%i)" i
-  | Parser.FLOAT f      -> Printf.sprintf "float(%f)" f
-  | Parser.IDENT s      -> Printf.sprintf "ident(%s)" s        
-  | Parser.EOF          -> "eof" 
+  | Pb_parsing_parser.T_required     ->  "REQUIRED"
+  | Pb_parsing_parser.T_optional     ->  "OPTIONAL" 
+  | Pb_parsing_parser.T_repeated     ->  "REPEATED" 
+  | Pb_parsing_parser.T_message      ->  "MESSAGE"
+  | Pb_parsing_parser.T_enum         ->  "ENUM"
+  | Pb_parsing_parser.T_package      ->  "PACKAGE"
+  | Pb_parsing_parser.T_rbrace       ->  "RBRACE" 
+  | Pb_parsing_parser.T_lbrace       ->  "LBRACE" 
+  | Pb_parsing_parser.T_rbracket     ->  "RBRACKET"
+  | Pb_parsing_parser.T_lbracket     ->  "LBRACKET"
+  | Pb_parsing_parser.T_rparen       ->  "RPAREN"
+  | Pb_parsing_parser.T_lparen       ->  "LPAREN"
+  | Pb_parsing_parser.T_equal        ->  "EQUAL"
+  | Pb_parsing_parser.T_semi         ->  "SEMICOLON"
+  | Pb_parsing_parser.T_comma        ->  "COMMA"
+  | Pb_parsing_parser.T_string s     -> Printf.sprintf "string(%s)" s   
+  | Pb_parsing_parser.T_int i        -> Printf.sprintf "int(%i)" i
+  | Pb_parsing_parser.T_float f      -> Printf.sprintf "float(%f)" f
+  | Pb_parsing_parser.T_ident (_, s) -> Printf.sprintf "ident(%s)" s        
+  | Pb_parsing_parser.T_eof          -> "eof" 
+  | _ -> assert(false)
 
 let rec loop lexbuf = 
-  match Lexer.lexer lexbuf with 
-  | Parser.EOF -> () 
-  | _ as t -> 
-    print_endline @@ string_of_token t; 
+  match Pb_parsing_lexer.lexer lexbuf with 
+  | Pb_parsing_parser.T_eof -> () 
+  | _ (*as t*)-> 
+    (* print_endline @@ string_of_token t; *)
     loop lexbuf

@@ -5,7 +5,7 @@ let () =
   Hashtbl.add details "foo" "bar"; 
   Hashtbl.add details "blah" "blah";
 
-  let person = Example05_pb.({
+  let person = Example05_types.({
     name = "John Doe";
     id = 1234l;
     email = Some "jdoe@example.com";
@@ -34,5 +34,5 @@ let () =
     bytes
   in
   let person = Example05_pb.decode_person (Pbrt.Decoder.of_bytes bytes) in
-  Format.fprintf Format.std_formatter "%a" Example05_pb.pp_person person
+  Format.fprintf Format.std_formatter "%a" Example05_pp.pp_person person
 

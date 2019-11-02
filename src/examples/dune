@@ -1,0 +1,67 @@
+(rule
+  (targets
+    example01_types.ml
+    example01_pb.ml
+    example01_pp.ml
+    example01_types.mli
+    example01_pb.mli
+    example01_pp.mli
+  )
+  (deps example01.proto)
+  (action (run ocaml-protoc -binary -pp -ml_out ./ %{deps}))
+)
+
+(test
+  (name example01)
+  (modules example01 example01_types example01_pp example01_pb)
+  (libraries pbrt))
+
+(rule
+  (targets
+    example03_types.ml
+    example03_pp.ml
+    example03_types.mli
+    example03_pp.mli
+  )
+  (deps example03.proto)
+  (action (run ocaml-protoc -pp -ml_out ./ %{deps}))
+)
+
+(test
+  (name example03)
+  (modules example03 example03_types example03_pp)
+  (libraries pbrt))
+
+(rule
+  (targets
+    example04_types.ml
+    example04_pp.ml
+    example04_types.mli
+    example04_pp.mli
+  )
+  (deps example04.proto)
+  (action (run ocaml-protoc -pp -ml_out ./ %{deps}))
+)
+
+(test
+  (name example04)
+  (modules example04 example04_types example04_pp)
+  (libraries pbrt))
+
+(rule
+  (targets
+    example05_types.ml
+    example05_pb.ml
+    example05_pp.ml
+    example05_types.mli
+    example05_pb.mli
+    example05_pp.mli
+  )
+  (deps example05.proto)
+  (action (run ocaml-protoc -binary -pp -ml_out ./ %{deps}))
+)
+
+(test
+  (name example05)
+  (modules example05 example05_types example05_pp example05_pb)
+  (libraries pbrt))

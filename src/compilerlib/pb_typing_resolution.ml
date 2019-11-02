@@ -37,7 +37,7 @@ module Types_by_scope = struct
   
   module String_map = Map.Make(struct 
     type t = string 
-    let compare (x:string) (y:string) = Pervasives.compare x y  
+    let compare (x:string) (y:string) = Stdlib.compare x y  
   end) 
   
   type t = {
