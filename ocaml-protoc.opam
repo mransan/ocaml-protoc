@@ -18,6 +18,5 @@ build: [
 depends: [
   "ocaml" {>="4.02.1"}
   "dune"  {build}
-  "ppx_deriving_protobuf"
   "stdlib-shims"
 ]
