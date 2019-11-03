@@ -16,8 +16,6 @@ S /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
 B /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-platform/lib/ocaml
 FLG -nostdlib
 FLG -w -30-40+6+7+27+32..39+44+45+101
-S /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
-B /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-ppx_deriving_protobuf/lib/ocaml
 S /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-ocaml-protoc-json/lib/ocaml
 B /home/maxime_ransan/ocaml-protoc.git/node_modules/bs-ocaml-protoc-json/lib/ocaml
 S src/tests/bs

@@ -19,6 +19,6 @@
       ]
     }
   ],
-  "bs-dependencies": [ "bs-ppx_deriving_protobuf", "bs-ocaml-protoc-json" ],
+  "bs-dependencies": ["bs-ocaml-protoc-json"],
   "generate-merlin": true 
 }

@@ -21,7 +21,7 @@
   THE SOFTWARE.
 *)
 
-type payload_kind = Protobuf.payload_kind =
+type payload_kind =
   | Varint
   | Bits32
   | Bits64
@@ -31,11 +31,31 @@ module Decoder : sig
 
   (** {2 Types} *)
 
-  type t = Protobuf.Decoder.t
+  type t
 
   (** {2 Creator} *)
 
+  (** [of_bytes b] creates a decoder positioned at start of bytes [b]. *)
   val of_bytes : bytes -> t
+
+  (** [of_string s] creates a decoder positioned at start of string [s]. *)
+  val of_string : string -> t
+
+  (** {2 Errors} *)
+
+  type error =
+    | Incomplete
+    | Overlong_varint
+    | Malformed_field
+    | Overflow            of string
+    | Unexpected_payload  of string * payload_kind
+    | Missing_field       of string
+    | Malformed_variant   of string
+
+  (** [error_to_string e] converts error [e] to its string representation. *)
+  val error_to_string : error -> string
+
+  exception Failure of error
 
   val malformed_variant : string -> 'a
   (** [malformed_variant variant_name] raises the exception
@@ -51,7 +71,7 @@ module Decoder : sig
 
   (** {2 Decoding Functions} *)
 
-  val key : t -> (int * Protobuf.payload_kind) option
+  val key : t -> (int * payload_kind) option
   (** [key d] reads a key and a payload kind from [d].
       If [d] has exhausted its input when the function is called, returns [None].
       If [d] has exhausted its input while reading, raises
@@ -170,19 +190,19 @@ module Decoder : sig
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
-  val wrapper_double_value : t -> float option 
+  val wrapper_double_value : t -> float option
 
-  val wrapper_float_value : t -> float option 
+  val wrapper_float_value : t -> float option
 
-  val wrapper_int64_value : t -> int64 option 
+  val wrapper_int64_value : t -> int64 option
 
-  val wrapper_int32_value : t -> int32 option 
+  val wrapper_int32_value : t -> int32 option
 
-  val wrapper_bool_value : t -> bool option  
+  val wrapper_bool_value : t -> bool option
 
-  val wrapper_string_value : t -> string option  
+  val wrapper_string_value : t -> string option
 
-  val wrapper_bytes_value : t -> bytes option  
+  val wrapper_bytes_value : t -> bytes option
 
 end (* Decoder *)
 
@@ -190,7 +210,16 @@ module Encoder : sig
 
   (** {2 Types} *)
 
-  type t = Protobuf.Encoder.t
+  type t
+
+  (** {2 Error} *)
+
+  type error =
+    | Overflow of string
+
+  val error_to_string: error -> string
+
+  exception Failure of error
 
   (** {2 Creator} *)
 
@@ -199,6 +228,8 @@ module Encoder : sig
   (** {2 Convertion} *)
 
   val to_bytes : t -> bytes
+
+  val to_string : t -> string 
 
   (** {2 Encoding Functions} *)
 
@@ -274,11 +305,11 @@ module Encoder : sig
 
   val wrapper_int32_value : int32 option -> t -> unit
 
-  val wrapper_bool_value : bool option -> t -> unit 
+  val wrapper_bool_value : bool option -> t -> unit
 
-  val wrapper_string_value : string option -> t -> unit 
+  val wrapper_string_value : string option -> t -> unit
 
-  val wrapper_bytes_value : bytes option -> t -> unit 
+  val wrapper_bytes_value : bytes option -> t -> unit
 
 end
 

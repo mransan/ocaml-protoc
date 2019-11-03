@@ -23,7 +23,7 @@ default:
 	$(info use `make [clean|build]`)
 	
 clean.gen:
-	rm -f lib
+	rm -rf lib
 	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.*
 	rm -f $(INTEGRATION_TESTS_DIR)/*_types.ml*
 	rm -f $(INTEGRATION_TESTS_DIR)/*_pb.ml*
