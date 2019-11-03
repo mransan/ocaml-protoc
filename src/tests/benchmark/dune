@@ -1,0 +1,23 @@
+(rule
+  (targets
+    benchmark_types.ml
+    benchmark_pb.ml
+    benchmark_pp.ml
+    benchmark_types.mli
+    benchmark_pb.mli
+    benchmark_pp.mli
+  )
+  (deps benchmark.proto)
+  (action (run ocaml-protoc -binary -pp -ml_out ./ %{deps}))
+)
+
+(executable
+  (name benchmark_single_ml)
+  (modules 
+    benchmark_single_ml 
+    ocaml_test_types
+    ocaml_test_runner
+    benchmark_types
+    benchmark_pb
+    benchmark_pp)
+  (libraries pbrt unix))

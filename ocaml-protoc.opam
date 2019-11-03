@@ -12,17 +12,12 @@ bug-reports:"https://github.com/mransan/ocaml-protoc/issues"
 dev-repo:"git+https://github.com/mransan/ocaml-protoc.git"
 license: "MIT"
 build: [
-  [make "lib.byte"]   
-  [make "lib.native"]
-  [make "bin.native"]
-]
-install: [
-  [make "lib.install" ]
-  [make "bin.install" "PREFIX=%{prefix}%" "BINDIR=%{bin}%"]
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "ocaml" {>="4.02.1"}
-  "ocamlfind"  {build}
-  "ocamlbuild" {build}
+  "dune"  {build}
   "ppx_deriving_protobuf"
+  "stdlib-shims"
 ]

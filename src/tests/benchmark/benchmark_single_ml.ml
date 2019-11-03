@@ -1,10 +1,10 @@
 module type T_sig = Ocaml_test_runner.T_sig 
-module Bench_t    = Benchmark_pb
+module Bench_t    = Benchmark_types
 
 module Util = struct 
   let shuffle_array a n = 
     let len = Array.length a in 
-    for i=1 to n do 
+    for _=1 to n do 
       let pos = Random.int len in 
       let pos'= Random.int len in 
       let tmp = a.(pos) in 

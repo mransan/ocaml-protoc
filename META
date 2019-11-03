@@ -1,6 +1,0 @@
-version = "1.2.0.0"
-description = "Runtime support for ocaml-protoc"
-requires = "ppx_deriving_protobuf.runtime"
-archive(byte) = "pbrt.cma"
-archive(native) = "pbrt.cmxa"
-exists_if = "pbrt.cma"

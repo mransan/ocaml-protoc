@@ -167,7 +167,7 @@ let collect_modules_of_types ocaml_types =
   List.fold_left (fun modules {Ot.spec; _} ->
     collect_modules_of_type_spec modules spec
   ) [] ocaml_types
-  |> List.sort_uniq Pervasives.compare
+  |> List.sort_uniq Stdlib.compare
 
 (*let module_of_context module_prefix file_suffix = function
   | `Single_file -> ""
