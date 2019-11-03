@@ -1,0 +1,10 @@
+(executable 
+  (name ocaml_protoc)
+  (public_name ocaml-protoc)
+  (modules 
+    ocaml_protoc
+    ocaml_protoc_cmdline
+    ocaml_protoc_compilation 
+    ocaml_protoc_generation) 
+  (libraries compiler_lib)
+)

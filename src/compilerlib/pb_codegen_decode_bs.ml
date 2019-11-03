@@ -18,7 +18,7 @@ let value_expression ~r_name ~rf_label field_type =
   | Ot.Ft_basic_type Ot.Bt_bool -> basic_type "bool" 
   | Ot.Ft_basic_type Ot.Bt_bytes -> basic_type "bytes" 
   | Ot.Ft_unit -> "()"
-  | Ot.Ft_user_defined_type udt -> 
+  | Ot.Ft_user_defined_type udt -> begin
     let {Ot.udt_type; _} = udt in 
     let f_name = 
       let function_prefix = "decode" in 
@@ -33,6 +33,8 @@ let value_expression ~r_name ~rf_label field_type =
     | `Enum ->
       "(" ^ f_name ^ " json)"
     end
+  end
+    | _ -> assert(false)
 
 (* Generate the pattern match for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) = 
@@ -169,8 +171,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
 
     match vc_field_type with
     | Ot.Vct_nullary -> 
-      F.linep sc "| \"%s\" -> %s_types.%s" 
-        json_label module_prefix vc_constructor
+      F.linep sc "| \"%s\" -> (%s_types.%s : %s_types.%s)" 
+        json_label module_prefix vc_constructor module_prefix v_name
 
     | Ot.Vct_non_nullary_constructor field_type ->
       let value_expression = 
@@ -180,7 +182,8 @@ let gen_variant ?and_ module_prefix {Ot.v_name; v_constructors} sc =
 
       F.linep sc "| \"%s\" -> " json_label ;
       F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
-      F.linep sc "  %s_types.%s (%s)" module_prefix vc_constructor value_expression;
+      F.linep sc "  (%s_types.%s (%s) : %s_types.%s)" module_prefix 
+          vc_constructor value_expression module_prefix v_name
   in
 
   F.linep sc "%s decode_%s json =" 

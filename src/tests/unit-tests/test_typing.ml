@@ -16,7 +16,6 @@ message M2 { message M21 {} message M22 {} } \
   let t = List.fold_left  (fun t type_ -> 
     Pb_typing_resolution.Types_by_scope.add t type_
   ) (Pb_typing_resolution.Types_by_scope.empty) proto in 
-  Pb_typing_resolution.Types_by_scope.print t; 
   assert(is_found t ["foo"; "bar"] "M1");
   assert(is_found t ["foo"; "bar"] "M2");
   assert(is_found t ["foo"; "bar"; "M1"] "M11");

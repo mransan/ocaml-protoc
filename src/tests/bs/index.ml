@@ -69,16 +69,21 @@ let () =
     single_one_of_enum = Some single_one_of_enum;
     single_one_of_small_message = Some single_one_of_small_message;
     single_one_of_recursive = Some single_one_of_recursive;
+    repeated_small_message = [
+      {sm_string = "sm1"};
+      {sm_string = "sm2"};
+      {sm_string = "sm3"};
+    ];
   } in 
 
   let json_str = 
     let dict = Bs_unittest_bs.encode_test test in
     Js.log dict;
-    Js_json.stringify (Js_json.object_ dict)
+    Js.Json.stringify (Js.Json.object_ dict)
   in
 
   let test'= 
-     match Js_json.decodeObject (Js_json.parseExn json_str) with
+     match Js.Json.decodeObject (Js.Json.parseExn json_str) with
      | Some dict -> Bs_unittest_bs.decode_test dict 
      | None -> assert(false)
   in 

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+message A {
+  oneof x {
+    string value = 1;
+    string null = 2;
+  }
+}
+
+
+message B {
+  oneof x {
+    string value = 1;
+    string null = 2;
+  }
+}

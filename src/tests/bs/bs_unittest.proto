@@ -1,4 +1,4 @@
-syntax = "proto3"; 
+syntax = "proto3";
 
 message AllBasicTypes {
    double    field01 =  1;
@@ -36,29 +36,30 @@ message SmallMessage {
 }
 
 enum Enum {
-  VALUE0 = 0; 
-  Value1 = 1; 
+  VALUE0 = 0;
+  Value1 = 1;
   Value_Two = 2;
 }
 
 message SingleOneOf {
   oneof t {
-    string string_value = 1; 
-    int32  int_value = 2; 
+    string string_value = 1;
+    int32  int_value = 2;
     Enum   enum_value = 3;
-    SmallMessage small_message = 4; 
-    SingleOneOf recursive_value = 5; 
+    SmallMessage small_message = 4;
+    SingleOneOf recursive_value = 5;
   }
 }
 
 message Test {
-  AllBasicTypes all_basic_types = 1; 
-  Enum test_enum0 = 2; 
-  Enum test_enum1 = 3; 
-  Enum test_enum2 = 4; 
-  SingleOneOf single_one_of_string = 5; 
-  SingleOneOf single_one_of_int  = 6; 
-  SingleOneOf single_one_of_enum = 7; 
-  SingleOneOf single_one_of_small_message = 8; 
-  SingleOneOf single_one_of_recursive = 9; 
+  AllBasicTypes all_basic_types = 1;
+  Enum test_enum0 = 2;
+  Enum test_enum1 = 3;
+  Enum test_enum2 = 4;
+  SingleOneOf single_one_of_string = 5;
+  SingleOneOf single_one_of_int  = 6;
+  SingleOneOf single_one_of_enum = 7;
+  SingleOneOf single_one_of_small_message = 8;
+  SingleOneOf single_one_of_recursive = 9;
+  repeated SmallMessage repeated_small_message = 10;
 }

@@ -1,0 +1,5 @@
+(library
+ (name pbrt)
+ (public_name ocaml-protoc)
+ (wrapped false)
+)

@@ -7,8 +7,8 @@ let parse s =
 
 let () =
   let proto = parse "message M { string no_label = 1; }" in  
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> assert(false) 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
 (* invalid proto 2 field with setting the syntax explicitely *) 
@@ -20,8 +20,8 @@ let () =
       string no_label = 1; \
     }" in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> assert(false) 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
 (* valid proto 3 field *) 
@@ -38,8 +38,8 @@ let () =
       } \
     }" in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> ()
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> ()
   | exception E.Compilation_error _ -> assert(false)
 
 (* invalid proto 3 field label *)
@@ -51,8 +51,8 @@ let () =
       required string no_label = 1; \
     }" in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> assert(false) 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
 let () =
@@ -62,8 +62,8 @@ let () =
       required string no_label = 1; \
     }}" in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> assert(false) 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
 (* invalid proto3 first enum value *)
@@ -75,8 +75,8 @@ let () =
     message M { } \
     " in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> assert(false) 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> assert(false) 
   | exception E.Compilation_error _ -> () 
 
 let () =
@@ -86,8 +86,8 @@ let () =
       enum E { EN1 = 1; EN2 = 2; } \
     }" in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> assert(false) 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> assert(false) 
   | exception E.Compilation_error _ -> () 
   
 
@@ -100,8 +100,8 @@ let () =
       enum E { EN0 = 0; EN2 = 2; } \
     }" in  
 
-  match Pb_parsing_util.verify_syntax_invariants proto with
-  | () -> () 
+  match Pb_parsing_util.finalize_proto_value proto with
+  | _ -> () 
   | exception E.Compilation_error _ -> assert(false)
 
 let () =
