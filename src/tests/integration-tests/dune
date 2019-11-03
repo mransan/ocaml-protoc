@@ -607,6 +607,33 @@
 
 (rule
   (targets
+    test23_types.ml
+    test23_pb.ml
+    test23_pp.ml
+    test23_types.mli
+    test23_pb.mli
+    test23_pp.mli
+  )
+  (deps test23.proto ../../include/ocaml-protoc/ocamloptions.proto)
+  (action (run ocaml-protoc 
+    -binary -pp 
+    -ml_out 
+    ./
+    ./ test23.proto))
+)
+
+(executable
+  (name test23_ml)
+  (modules 
+    test23_ml
+    test23_types
+    test23_pb
+    test23_pp
+  )
+  (libraries test_util unix))
+
+(rule
+  (targets
     test24_types.ml
     test24_pb.ml
     test24_pp.ml
