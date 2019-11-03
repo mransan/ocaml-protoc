@@ -1,3 +1,4 @@
+#include <google/protobuf/util/message_differencer.h>
 #include <test05.pb.h>
 
 #include <test_util.h>
@@ -35,6 +36,13 @@ int main(int argc, char const* const argv[]) {
     else if(mode == "decode") {
         IntList t; 
         validate_decode(t, "test05.ml2c.data", false);
+        IntList expected = create_test();
+        assert(t.l().size() == expected.l().size());
+        for(std::size_t i=0; i < t.l().size(); ++i) {
+          assert(t.l()[i] == expected.l()[i]);
+        }
+        assert(google::protobuf::util::MessageDifferencer::ApproximatelyEquals(
+              t, expected));
     }
     else {
         std::cerr << "Invalid second argument: " 

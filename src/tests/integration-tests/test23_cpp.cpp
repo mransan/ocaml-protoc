@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cassert>
 
 
 Int64T create_test_all_basic_types() {
@@ -25,6 +26,7 @@ int main(int argc, char const* const argv[]) {
     else if(mode == "decode") {
         Int64T abt; 
         validate_decode(abt, "test23.ml2c.data");
+        assert(abt.i() == create_test_all_basic_types().i());
     }
     else {
         std::cerr << "Invalid second argument: " 
