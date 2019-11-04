@@ -3,9 +3,6 @@
 
 #include <test_util.h>
 
-#include <iostream>
-#include <cassert>
-
 using namespace foo::bar;
 
 Couple create_test_couple() {

@@ -713,3 +713,29 @@
     test26_pp
   )
   (libraries test_util unix))
+
+(rule
+  (targets
+    test27_types.ml
+    test27_pb.ml
+    test27_pp.ml
+    test27_types.mli
+    test27_pb.mli
+    test27_pp.mli
+  )
+  (deps test27.proto ../../include/ocaml-protoc/ocamloptions.proto)
+  (action (run ocaml-protoc 
+    -binary -pp 
+    -ml_out ./
+    test27.proto))
+)
+
+(executable
+  (name test27_ml)
+  (modules 
+    test27_ml
+    test27_types
+    test27_pb
+    test27_pp
+  )
+  (libraries test_util unix))

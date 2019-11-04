@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+// Issue 130: lack of support for field options in enum values.
+// https://github.com/mransan/ocaml-protoc/issues/130
+enum Enum1 {
+  VALUE_WITH_OPTION = 0 [deprecated = true];
+}
+
+// Issue 128: Unit is a reserved keyword
+// https://github.com/mransan/ocaml-protoc/issues/128
+message Unit {
+  int32 unit_field = 1;
+}
+
+// Issue 129: Allow proto keyword to be used in oneof field name
+// https://github.com/mransan/ocaml-protoc/issues/129
+message OneOfIsKeyword {
+  oneof message {
+    int32 one_of_is_keyword_field = 1;
+  }
+}
+
+message Test {
+  Enum1 enum1 = 1;
+  Unit unit = 2;
+  OneOfIsKeyword one_of_is_keyword = 3;
+}
+

@@ -186,13 +186,13 @@ extension_range_list :
   | extension_range T_comma extension_range_list {$1 :: $3}
 
 extension_range :
-  | T_int            { Pb_parsing_util.extension_range_single_number $1}
-  | T_int T_to T_int     { Pb_parsing_util.extension_range_range $1 (`Number $3) }
-  | T_int T_to T_max     { Pb_parsing_util.extension_range_range $1 `Max }
+  | T_int { Pb_parsing_util.extension_range_single_number $1}
+  | T_int T_to T_int { Pb_parsing_util.extension_range_range $1 (`Number $3) }
+  | T_int T_to T_max { Pb_parsing_util.extension_range_range $1 `Max }
 
 oneof :
-  | T_one_of T_ident T_lbrace oneof_field_list rbrace {
-    Pb_parsing_util.oneof ~fields:$4 (snd $2)
+  | T_one_of field_name T_lbrace oneof_field_list rbrace {
+    Pb_parsing_util.oneof ~fields:$4 $2
   }
   | T_one_of T_lbrace oneof_field_list rbrace {
     Pb_exception.missing_one_of_name $1
@@ -312,6 +312,7 @@ enum_body_content :
 
 enum_value :
   | T_ident T_equal T_int semicolon  { Pb_parsing_util.enum_value ~int_value:$3 (snd $1) }
+  | T_ident T_equal T_int field_options semicolon  { Pb_parsing_util.enum_value ~int_value:$3 (snd $1) }
   | T_ident T_equal T_int {
     Pb_exception.missing_semicolon_for_enum_value (snd $1) (fst $1)
   }

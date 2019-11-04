@@ -1,8 +1,12 @@
 
 #include <fstream>
 #include <iostream>
-
 #include <cstdlib>
+#include <cassert>
+
+#include <google/protobuf/util/message_differencer.h>
+
+using google::protobuf::util::MessageDifferencer;
 
 template <typename T>
 int encode_to_file(T const& message, std::string const& file_name) {
