@@ -108,6 +108,7 @@ let fix_ocaml_keyword_conflict s =
   | "true"
   | "try"
   | "type"
+  | "unit"
   | "val"
   | "virtual"
   | "when"
