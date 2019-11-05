@@ -17,7 +17,6 @@ build: [
 ]
 depends: [
   "ocaml" {>="4.02.1"}
-  "dune"  {build}
+  "dune"  {>="1.11"}
   "stdlib-shims"
-  "ocamlbuild" {build}
 ]
