@@ -70,7 +70,7 @@ let gen_field sc var_name json_label field_type pk =
     let {Ot.udt_type; _} = udt in
     let f_name =
       let function_prefix = "encode" in
-      let module_suffix = "pb" in
+      let module_suffix = "bs" in
       Pb_codegen_util.function_name_of_user_defined
         ~function_prefix ~module_suffix udt
      in
