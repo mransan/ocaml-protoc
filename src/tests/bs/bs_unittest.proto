@@ -1,34 +1,50 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 message AllBasicTypes {
-   double    field01 =  1;
-   float     field02 =  2;
-   int32     field03 =  3;
-   int64     field04 =  4;
-   uint32    field05 =  5;
-   uint64    field06 =  6;
-   sint32    field07 =  7;
-   sint64    field08 =  8;
-   fixed32   field09 =  9;
-   fixed64   field10 = 10;
-   sfixed32   field11 =  11;
-   sfixed64   field12 = 12;
-   bool      field13 = 13;
-   string    field14 = 14;
-   repeated double    repeated01 = 21;
-   repeated float     repeated02 = 22;
-   repeated int32     repeated03 = 23;
-   repeated int64     repeated04 = 24;
-   repeated uint32    repeated05 = 25;
-   repeated uint64    repeated06 = 26;
-   repeated sint32    repeated07 = 27;
-   repeated sint64    repeated08 = 28;
-   repeated fixed32   repeated09 = 29;
-   repeated fixed64   repeated10 = 30;
-   repeated sfixed32   repeated11 = 31;
-   repeated sfixed64   repeated12 = 32;
-   repeated bool      repeated13 = 33;
-   repeated string    repeated14 = 34;
+  double    field01 =  1;
+  float     field02 =  2;
+  int32     field03 =  3;
+  int64     field04 =  4;
+  uint32    field05 =  5;
+  uint64    field06 =  6;
+  sint32    field07 =  7;
+  sint64    field08 =  8;
+  fixed32   field09 =  9;
+  fixed64   field10 = 10;
+  sfixed32   field11 =  11;
+  sfixed64   field12 = 12;
+  bool      field13 = 13;
+  string    field14 = 14;
+
+  repeated double    repeated01 = 21;
+  repeated float     repeated02 = 22;
+  repeated int32     repeated03 = 23;
+  repeated int64     repeated04 = 24;
+  repeated uint32    repeated05 = 25;
+  repeated uint64    repeated06 = 26;
+  repeated sint32    repeated07 = 27;
+  repeated sint64    repeated08 = 28;
+  repeated fixed32   repeated09 = 29;
+  repeated fixed64   repeated10 = 30;
+  repeated sfixed32   repeated11 = 31;
+  repeated sfixed64   repeated12 = 32;
+  repeated bool      repeated13 = 33;
+  repeated string    repeated14 = 34;
+
+  google.protobuf.Int32Value int32_wrapped_value = 36;
+  google.protobuf.Int32Value int32_wrapped_none = 37;
+  google.protobuf.Int64Value int64_wrapped_value = 38;
+  google.protobuf.Int64Value int64_wrapped_none = 39;
+  google.protobuf.FloatValue float_wrapped_value = 40;
+  google.protobuf.FloatValue float_wrapped_none = 41;
+  google.protobuf.DoubleValue double_wrapped_value = 42;
+  google.protobuf.DoubleValue double_wrapped_none = 43;
+  google.protobuf.StringValue string_wrapped_value = 44;
+  google.protobuf.StringValue string_wrapped_none = 45;
+  google.protobuf.BoolValue bool_wrapped_value = 46;
+  google.protobuf.BoolValue bool_wrapped_none = 47;
 }
 
 message SmallMessage {

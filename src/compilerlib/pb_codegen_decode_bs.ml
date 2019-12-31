@@ -34,7 +34,18 @@ let value_expression ~r_name ~rf_label field_type =
       "(" ^ f_name ^ " json)"
     end
   end
-    | _ -> assert(false)
+    | Ot.Ft_wrapper_type {Ot.wt_type = Ot.Bt_int32; _}  -> 
+      basic_type "int32_wrapped"
+    | Ot.Ft_wrapper_type {Ot.wt_type = Ot.Bt_int64; _}  -> 
+      basic_type "int64_wrapped"
+    | Ot.Ft_wrapper_type {Ot.wt_type = Ot.Bt_float; _}  -> 
+      basic_type "float_wrapped"
+    | Ot.Ft_wrapper_type {Ot.wt_type = Ot.Bt_string; _}  -> 
+      basic_type "string_wrapped"
+    | Ot.Ft_wrapper_type {Ot.wt_type = Ot.Bt_bool; _}  -> 
+      basic_type "bool_wrapped"
+    | Ot.Ft_wrapper_type _ -> "None"
+    (* | _ -> assert(false) *)
 
 (* Generate the pattern match for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) = 

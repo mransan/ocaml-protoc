@@ -17,8 +17,14 @@
         "bs_unittest_bs.ml",
         "index.ml"
       ]
+    },
+    {
+      "dir": "src/runtime-bs/src",
+      "files": [
+        "pbrt_bs.mli",
+        "pbrt_bs.ml"
+      ]
     }
   ],
-  "bs-dependencies": ["bs-ocaml-protoc-json"],
   "generate-merlin": true 
 }

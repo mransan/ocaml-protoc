@@ -29,6 +29,18 @@ let () =
     repeated12 = [0xEBABABABABABABABL;         ]; 
     repeated13 = [true;                       ]; 
     repeated14 = ["This is a test \"string\"";]; 
+    int32_wrapped_value= Some(123l);
+    int32_wrapped_none = None;
+    int64_wrapped_value= Some(123L);
+    int64_wrapped_none = None;
+    float_wrapped_value= Some(123.456);
+    float_wrapped_none = None;
+    double_wrapped_value= Some(123.456);
+    double_wrapped_none = None;
+    string_wrapped_value= Some("This is an optional test string");
+    string_wrapped_none = None;
+    bool_wrapped_value= Some(false);
+    bool_wrapped_none = None;
   } in  
 
   let small_message = {

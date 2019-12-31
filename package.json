@@ -16,15 +16,14 @@
     "type": "git",
     "url": "https://github.com/mransan/ocaml-protoc"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "bs-platform": "^5.x.x",
     "bs-ocaml-protoc-json": "^0.1.x"
   },
   "scripts": {
     "build": "npm run gen && bsb -make-world",
-    "gen": "dune build && ./_build/install/default/bin/ocaml-protoc -bs -ml_out src/tests/bs src/tests/bs/bs_unittest.proto",
+    "gen": "dune build && ./_build/install/default/bin/ocaml-protoc -bs -I ~/Documents/protobuf/include -ml_out src/tests/bs src/tests/bs/bs_unittest.proto",
     "test": "npm run build && node lib/js/src/tests/bs/"
   }
 }

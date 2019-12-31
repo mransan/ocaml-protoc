@@ -6,6 +6,14 @@ let sp = Pb_codegen_util.sp
 let unsupported json_label =
   failwith (sp "Unsupported field type for field: %s" json_label)
 
+let unsupported2 json_label x y =
+  failwith (sp 
+    "Unsupported 2 field type for field: %s (%s, %s)" 
+    json_label
+    (Pb_codegen_util.string_of_basic_type x)
+    (Pb_codegen_util.string_of_payload_kind y false)
+  )
+
 let setter_of_basic_type json_label basic_type pk =
   match basic_type, pk with
   (* String *)
@@ -19,8 +27,7 @@ let setter_of_basic_type json_label basic_type pk =
     ("string", Some "Js.Float.toString")
 
   (* Int32 *)
-  | Ot.Bt_int32, Ot.Pk_varint _
-  | Ot.Bt_int32, Ot.Pk_bits32 ->
+  | Ot.Bt_int32, _ ->
     ("number", Some "Int32.to_float")
 
   (* Int64 *)
@@ -45,9 +52,22 @@ let setter_of_basic_type json_label basic_type pk =
 
   (* bytes *)
   | Ot.Bt_bytes, Ot.Pk_bytes -> unsupported json_label
-  | _ -> unsupported json_label
+  | x, y -> unsupported2 json_label x y 
 
 let gen_field sc var_name json_label field_type pk =
+  (* reusable function for both basic type and wrapped type which 
+   * are both based upon basic type *)
+  let basic_type_statement basic_type var_name pk = 
+    let setter, map_function = setter_of_basic_type json_label basic_type pk in
+    begin match map_function with
+    | None ->
+      Printf.sprintf "Js.Dict.set json \"%s\" (Js.Json.%s %s)"
+        json_label setter var_name
+    | Some map_function ->
+      Printf.sprintf "Js.Dict.set json \"%s\" (Js.Json.%s (%s %s))"
+        json_label setter map_function var_name
+    end
+  in
 
   match field_type, pk with
   | Ot.Ft_unit, _ ->
@@ -55,15 +75,8 @@ let gen_field sc var_name json_label field_type pk =
 
   (* Basic types *)
   | Ot.Ft_basic_type basic_type, _ ->
-    let setter, map_function = setter_of_basic_type json_label basic_type pk in
-    begin match map_function with
-    | None ->
-      F.linep sc "Js.Dict.set json \"%s\" (Js.Json.%s %s);"
-        json_label setter var_name
-    | Some map_function ->
-      F.linep sc "Js.Dict.set json \"%s\" (Js.Json.%s (%s %s));"
-        json_label setter map_function var_name
-    end
+    let statement = basic_type_statement basic_type var_name pk in
+    F.linep sc "%s;" statement
 
   (* User defined *)
   | Ot.Ft_user_defined_type udt, _ ->
@@ -89,8 +102,18 @@ let gen_field sc var_name json_label field_type pk =
         json_label f_name var_name
     end
     end
-  | Ot.Ft_wrapper_type _, _ ->
-    unsupported (Printf.sprintf "wrapper type %s" json_label)
+  | Ot.Ft_wrapper_type wrapper_type, _ -> begin
+    let {Ot.wt_type; Ot.wt_pk} = wrapper_type in
+    F.line sc "begin";
+    F.scope sc (fun sc ->
+      F.linep sc "match %s with" var_name;
+      F.linep sc "| None -> Js.Dict.set json \"%s\" Js.Json.null"
+        json_label;
+      let statement = basic_type_statement wt_type "__x__" wt_pk in
+      F.linep sc "| Some __x__ -> %s" statement;
+    );
+    F.line sc "end;"
+  end
 
 let gen_rft_nolabel sc var_name rf_label (field_type, _, pk) =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
