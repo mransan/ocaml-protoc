@@ -29,6 +29,7 @@ let () =
     repeated12 = [0xEBABABABABABABABL;         ]; 
     repeated13 = [true;                       ]; 
     repeated14 = ["This is a test \"string\"";]; 
+    empty = [];
     int32_wrapped_value= Some(123l);
     int32_wrapped_none = None;
     int64_wrapped_value= Some(123L);
@@ -86,6 +87,7 @@ let () =
       {sm_string = "sm2"};
       {sm_string = "sm3"};
     ];
+    repeated_small_message_empty = [];
   } in 
 
   let json_str = 

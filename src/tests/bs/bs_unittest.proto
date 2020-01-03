@@ -45,6 +45,8 @@ message AllBasicTypes {
   google.protobuf.StringValue string_wrapped_none = 45;
   google.protobuf.BoolValue bool_wrapped_value = 46;
   google.protobuf.BoolValue bool_wrapped_none = 47;
+
+  repeated string    empty = 48;
 }
 
 message SmallMessage {
@@ -78,4 +80,5 @@ message Test {
   SingleOneOf single_one_of_small_message = 8;
   SingleOneOf single_one_of_recursive = 9;
   repeated SmallMessage repeated_small_message = 10;
+  repeated SmallMessage repeated_small_message_empty = 11;
 }

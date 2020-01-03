@@ -140,38 +140,43 @@ let gen_rft_repeated sc var_name rf_label repeated_field =
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
 
-  match field_type, pk with
-  | Ot.Ft_unit, _ ->
-    unsupported json_label
+  F.linep sc "begin match %s with" var_name;
+  F.line  sc "| [] -> ()";
+  F.linep sc "| __x__ -> (* %s *)" json_label;
+  F.scope sc (fun sc ->
 
-  | Ot.Ft_basic_type basic_type, _ ->
-    let setter, map_function = setter_of_basic_type json_label basic_type pk in
-    begin match map_function with
-    | None ->
-      F.linep sc "let a = %s |> Array.of_list |> Array.map Js.Json.%s in"
-        var_name setter;
-    | Some map_function ->
-      F.line sc @@
-        sp ("let a = %s |> List.map %s |> Array.of_list " ^^
-            "|> Array.map Js.Json.%s in")
-        var_name map_function setter;
-    end;
-    F.linep sc "Js.Dict.set json \"%s\" (Js.Json.array a);"
-      json_label
+    match field_type, pk with
+    | Ot.Ft_unit, _ ->
+      unsupported json_label
 
-  (* User defined *)
-  | Ot.Ft_user_defined_type udt, Ot.Pk_bytes ->
-    let f_name =
-      let function_prefix = "encode" in
-      let module_suffix = "bs" in
-      Pb_codegen_util.function_name_of_user_defined
-        ~function_prefix ~module_suffix udt
-    in
-    F.linep sc "begin (* %s field *)" json_label;
-    F.scope sc (fun sc ->
+    | Ot.Ft_basic_type basic_type, _ ->
+      let (
+        setter, 
+        map_function) = setter_of_basic_type json_label basic_type pk in
+      begin match map_function with
+      | None ->
+        F.linep sc "let a = __x__ |> Array.of_list |> Array.map Js.Json.%s in"
+          setter;
+      | Some map_function ->
+        F.line sc @@
+          sp ("let a = __x__ |> List.map %s |> Array.of_list " ^^
+              "|> Array.map Js.Json.%s in")
+          map_function setter;
+      end;
+      F.linep sc "Js.Dict.set json \"%s\" (Js.Json.array a);"
+        json_label
+
+    (* User defined *)
+    | Ot.Ft_user_defined_type udt, Ot.Pk_bytes ->
+      let f_name =
+        let function_prefix = "encode" in
+        let module_suffix = "bs" in
+        Pb_codegen_util.function_name_of_user_defined
+          ~function_prefix ~module_suffix udt
+      in
       F.linep sc "let (%s':Js.Json.t) =" rf_label;
       F.scope sc (fun sc ->
-        F.linep sc "%s" var_name;
+        F.line sc "__x__";
         F.line sc "|> Array.of_list";
         F.linep sc "|> Array.map (fun v ->";
         F.scope sc (fun sc ->
@@ -181,12 +186,11 @@ let gen_rft_repeated sc var_name rf_label repeated_field =
         F.line sc "|> Js.Json.array";
       );
       F.line sc "in";
-      F.linep sc "Js.Dict.set json \"%s\" %s';"
-      json_label rf_label;
-    );
-    F.line sc "end;"
+      F.linep sc "Js.Dict.set json \"%s\" %s'" json_label rf_label;
 
-  | _ -> unsupported json_label
+    | _ -> unsupported json_label
+  );
+  F.linep sc "end;"
 
 let gen_rft_variant sc var_name rf_label {Ot.v_constructors; _} =
   F.linep sc "begin match %s with" var_name;
