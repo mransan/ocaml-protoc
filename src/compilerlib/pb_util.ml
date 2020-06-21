@@ -88,13 +88,13 @@ let read_file file_name =
   let b = Bytes.create len in 
   let offset = ref 0 in 
   let remaining = ref len in 
-  while !offset <> len do 
+  while !remaining > 0 do
     let i = input ic b !offset ! remaining in 
     offset:=(!offset + i); 
-    remaining:=(!remaining - i);
+    remaining:=(if i > 0 then !remaining - i else 0);
   done; 
   close_in ic;
-  Bytes.to_string b 
+  Bytes.sub_string b 0 !offset
 
 module List = struct 
   let rec pop_last = function 
