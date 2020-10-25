@@ -9,6 +9,7 @@
     test_typing
     verify_syntax_invariants
     parse_message
+    parse_service
     parse_fields
     parse_field_options
     parse_file_options

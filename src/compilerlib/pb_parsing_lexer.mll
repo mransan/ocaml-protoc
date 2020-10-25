@@ -40,18 +40,27 @@ let resolve_identifier loc ident =
   | "option"     , _   -> T_option
   | "extensions" , _   -> T_extensions
   | "extend"     , _   -> T_extend
+  | "returns"    , _   -> T_returns
+  | "rpc"        , _   -> T_rpc
+  | "service"    , _   -> T_service
   | "syntax"     , _   -> T_syntax
   | "public"     , _   -> T_public
   | "to"         , _   -> T_to
   | "max"        , _   -> T_max
   | "map"        , _   -> T_map
   | "reserved"   , _   -> T_reserved
-  | _ , loc -> T_ident (loc, ident)
-  (* Note than when updating the list of keywords,
-   * the [field_name] rule in pbparser.mly should
-   * also be updated to allow field name of the
-   * keyword.
-   *)
+  | _ , loc ->
+    (* prepend "p" to identifiers that start with underscore *)
+    let ident =
+      if ident.[0] = '_'
+      then "p" ^ ident
+      else ident in
+    T_ident (loc, ident)
+(* Note than when updating the list of keywords,
+ * the [field_name] rule in pb_parsing_parser.mly should
+ * also be updated to allow field name of the
+ * keyword.
+ **)
 
 type comment =
   | Comment_value of string
@@ -77,9 +86,9 @@ let update_loc lexbuf =
   })
 
 }
-let letter        = ['a'-'z' 'A'-'Z']
+let start_letter  = ['a'-'z' 'A'-'Z' '_']
 let identchar     = ['A'-'Z' 'a'-'z' '_' '0'-'9']
-let ident         = letter identchar *
+let ident         = start_letter identchar *
 let full_ident    = '.' ? ident ("." * ident) *
 (* let message_type  = '.' ? (ident '.') ident
  *)
@@ -107,6 +116,7 @@ rule lexer = parse
   | ">"         { T_greater }
   | "="         { T_equal }
   | ";"         { T_semi }
+  | ":"         { T_colon }
   | ","         { T_comma }
   | "//"        { match comment [] lexbuf with
     | Comment_eof     -> T_eof

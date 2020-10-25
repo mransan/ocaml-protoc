@@ -39,6 +39,9 @@
 %token T_extensions
 %token T_extend
 %token T_reserved
+%token T_returns
+%token T_rpc
+%token T_service
 %token T_syntax
 %token T_to
 %token T_max
@@ -53,6 +56,7 @@
 %token T_less
 %token T_equal
 %token T_semi
+%token T_colon
 %token T_comma
 %token <string> T_string
 %token <int>    T_int
@@ -74,6 +78,8 @@
 %type <Pb_parsing_parse_tree.oneof> oneof_
 %start message_
 %type <Pb_parsing_parse_tree.message> message_
+%start service_
+%type <Pb_parsing_parse_tree.service> service_
 %start proto_
 %type <Pb_parsing_parse_tree.proto> proto_
 %start import_
@@ -100,6 +106,7 @@ enum_value_      : enum_value    T_eof {$1}
 enum_            : enum          T_eof {$1}
 oneof_           : oneof         T_eof {$1}
 message_         : message       T_eof {$1}
+service_         : service       T_eof {$1}
 import_          : import        T_eof {$1}
 option_          : option        T_eof {$1}
 extension_range_list_ : extension_range_list T_eof {$1}
@@ -119,6 +126,7 @@ proto_content:
   | option              {Pb_parsing_util.proto ~file_option:$1  ()}
   | package_declaration {Pb_parsing_util.proto ~package:$1 ()}
   | message             {Pb_parsing_util.proto ~message:$1 ()}
+  | service             {Pb_parsing_util.proto ~service:$1 ()}
   | enum                {Pb_parsing_util.proto ~enum:$1 ()}
   | extend              {Pb_parsing_util.proto ~extend:$1 ()}
 
@@ -126,6 +134,7 @@ proto_content:
   | option              proto {Pb_parsing_util.proto ~file_option:$1  ~proto:$2 ()}
   | package_declaration proto {Pb_parsing_util.proto ~package:$1 ~proto:$2 ()}
   | message             proto {Pb_parsing_util.proto ~message:$1 ~proto:$2 ()}
+  | service             proto {Pb_parsing_util.proto ~service:$1 ~proto:$2 ()}
   | enum                proto {Pb_parsing_util.proto ~enum:$1 ~proto:$2 ()}
   | extend              proto {Pb_parsing_util.proto ~extend:$1 ~proto:$2 ()}
 
@@ -180,6 +189,67 @@ extension :
 reserved :
   | T_reserved extension_range_list semicolon {$2}
 /* T_toDO: incomplete, reserved field can also be defined by field names */
+
+service :
+  | T_service T_ident T_lbrace service_body_content_list rbrace {
+    Pb_parsing_util.service ~content:$4 (snd $2)
+  }
+  | T_service T_ident T_lbrace rbrace {
+    Pb_parsing_util.service ~content:[]  (snd $2)
+  }
+
+service_body_content_list :
+  | service_body_content  { [$1] }
+  | service_body_content service_body_content_list { $1::$2 }
+
+service_body_content :
+  | rpc          { Pb_parsing_util.service_body_rpc $1 }
+  | option       { Pb_parsing_util.service_body_option $1 }
+
+rpc :
+  | T_rpc T_ident T_lparen T_ident T_rparen T_returns T_lparen T_ident T_rparen semicolon {
+    Pb_parsing_util.rpc ~req:(snd $4) ~res:(snd $8) (snd $2)
+  }
+  | T_rpc T_ident T_lparen T_ident T_rparen T_returns T_lparen T_ident T_rparen rpc_options {
+    Pb_parsing_util.rpc ~req:(snd $4) ~res:(snd $8) ~options:$10 (snd $2)
+  }
+
+rpc_options :
+  | T_lbrace rpc_options_list T_rbrace           { $2 };
+  | T_lbrace rpc_options_list T_rbrace semicolon { $2 };
+  | T_lbrace T_rbrace                            { Pb_option.empty };
+  | T_lbrace T_rbrace semicolon                  { Pb_option.empty };
+
+rpc_options_list :
+  | rpc_option                          {
+    let option_name, option_value = $1 in
+    Pb_option.add Pb_option.empty option_name option_value
+  }
+  | rpc_option rpc_options_list  {
+    Pb_option.add $2 (fst $1) (snd $1)
+  }
+
+rpc_option :
+  | T_option option_identifier T_equal constant semicolon { ($2, $4) }
+  | T_option option_identifier T_equal rpc_option_content semicolon { ($2, $4) }
+
+rpc_option_content :
+    /*
+     * covers [option (google.api.http) = { get: "/v1/shelves/{shelf}" };]
+     * https://cloud.google.com/endpoints/docs/grpc/transcoding 
+     * the content is parsed as string since it is not used currently
+     * and options do not support (string, string) list
+     * if client and server generation is needed - support for proper maps should be added
+     */
+  | T_lbrace T_rbrace { Pb_option.Constant_string "" }
+  | T_lbrace rpc_option_content_map T_rbrace { Pb_parsing_util.rpc_option_map $2 }
+
+rpc_option_content_map :
+  | rpc_option_content_map_item  { [$1] }
+  | rpc_option_content_map_item rpc_option_content_map { $1::$2 }
+
+rpc_option_content_map_item :
+  | T_ident T_colon T_string  { snd $1, $3 }
 
 extension_range_list :
   | extension_range                            {$1 :: []}
