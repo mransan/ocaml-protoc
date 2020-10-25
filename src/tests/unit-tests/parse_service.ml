@@ -75,7 +75,7 @@ let test_services () =
     | Service_rpc {rpc_name; _} -> expect rpc_name "GetShelfWithSemicolon";
   in
   let () = match rpc_list with
-    | Service_option _ -> failwith "Expected option, but got rpc";
+    | Service_option _ -> failwith "Expected rpc, but got option";
     | Service_rpc {rpc_name; rpc_options;rpc_req; rpc_res} ->
       expect rpc_name "ListShelves";
       let req = match rpc_req with | `User_defined r -> r | _ -> failwith "Unexpected rpc req type" in
@@ -85,7 +85,7 @@ let test_services () =
       assert (rpc_options = Pb_option.empty);
   in
   let () = match rpc_get with
-    | Service_option _ -> failwith "Expected option, but got rpc";
+    | Service_option _ -> failwith "Expected rpc, but got option";
     | Service_rpc {rpc_name; rpc_options;rpc_req; rpc_res} ->
       expect rpc_name "GetShelf";
       let req = match rpc_req with | `User_defined r -> r | _ -> failwith "Unexpected rpc req type" in
