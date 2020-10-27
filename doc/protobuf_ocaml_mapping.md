@@ -57,7 +57,7 @@ functions are generated.*
 
 ##### [Message](https://developers.google.com/protocol-buffers/docs/proto#simple) 
 
-Message are compiled to OCaml `records` with all fields mutable, while `oneof` fields are compiled to OCaml variant.
+Message are compiled to OCaml `records` with all fields immutable, while `oneof` fields are compiled to OCaml variant.
 
 **Oneof optimization**
 
