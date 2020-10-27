@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -115,6 +115,30 @@ val message :
   string -> 
   Pt.message
 
+val rpc:
+  ?options:Pb_option.set ->
+  req:string ->
+  res:string ->
+  string -> 
+  Pt.rpc
+
+val rpc_option_map:
+  ((string * string) list) ->
+  Pb_option.constant
+
+val service_body_option : 
+  Pb_option.t -> 
+  Pt.service_body_content
+
+val service_body_rpc : 
+  Pt.rpc -> 
+  Pt.service_body_content
+
+val service :
+  content: Pt.service_body_content list ->
+  string ->
+  Pt.service
+
 val import : ?public:unit -> string -> Pt.import 
 
 val extend : string -> Pt.message_field list -> Pt.extend  
@@ -125,6 +149,7 @@ val proto:
   ?package:string -> 
   ?import:Pt.import -> 
   ?message:Pt.message ->
+  ?service:Pt.service ->
   ?enum:Pt.enum ->
   ?proto:Pt.proto -> 
   ?extend:Pt.extend -> 

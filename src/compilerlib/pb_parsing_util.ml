@@ -125,6 +125,29 @@ let message ~content message_name =
     message_body = content;
   })
 
+let service_body_option option_ = Pt.Service_option option_
+
+let service_body_rpc rpc = Pt.Service_rpc rpc
+
+let rpc ?(options=Pb_option.empty) ~req ~res rpc_name =
+  Pt.({
+      rpc_name;
+      rpc_options = options;
+      rpc_req = Pb_field_type.parse req;
+      rpc_res = Pb_field_type.parse res;
+    })
+
+let rpc_option_map items =
+  let s = items
+          |> List.map (fun (k, v) -> k ^ ":" ^ v)
+          |> String.concat "\n" in
+  Pb_option.Constant_string s
+
+let service ~content service_name = Pt.({
+    service_name;
+    service_body = content;
+  })
+
 let import ?public file_name = {
   Pt.public = (match public with | Some _ -> true | None -> false);
   Pt.file_name;
@@ -163,24 +186,26 @@ let rec message_printer ?level:(level = 0) {
     | Pt.Message_option _ -> ()
   ) message_body
 
-let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend () =
+let proto ?syntax ?file_option ?package ?import ?message ?service ?enum ?proto ?extend () =
 
   let proto = match proto with
     | None -> Pt.({
-      proto_file_name = None;
-      syntax;
-      imports = [];
-      package = None;
-      messages = [];
-      file_options = Pb_option.empty;
-      enums = [];
-      extends = [];
-    })
+        proto_file_name = None;
+        syntax;
+        imports = [];
+        package = None;
+        messages = [];
+        services = [];
+        file_options = Pb_option.empty;
+        enums = [];
+        extends = [];
+      })
     | Some proto -> proto
   in
 
   let {
     Pt.messages;
+    services;
     imports;
     file_options;
     enums;
@@ -199,6 +224,11 @@ let proto ?syntax ?file_option ?package ?import ?message ?enum ?proto ?extend ()
   let proto = match message with
     | None   -> proto
     | Some m -> Pt.({proto with messages = m :: messages})
+  in
+
+  let proto = match service with
+    | None   -> proto
+    | Some s -> Pt.({proto with services = s :: services})
   in
 
   let proto = match enum with

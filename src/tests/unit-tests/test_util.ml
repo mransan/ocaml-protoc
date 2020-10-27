@@ -1,4 +1,3 @@
-
 let () = Pb_logger.setup_from_out_channel stdout 
 
 let string_of_token = function 
@@ -16,6 +15,7 @@ let string_of_token = function
   | Pb_parsing_parser.T_lparen       ->  "LPAREN"
   | Pb_parsing_parser.T_equal        ->  "EQUAL"
   | Pb_parsing_parser.T_semi         ->  "SEMICOLON"
+  | Pb_parsing_parser.T_colon        ->  "COLON"
   | Pb_parsing_parser.T_comma        ->  "COMMA"
   | Pb_parsing_parser.T_string s     -> Printf.sprintf "string(%s)" s   
   | Pb_parsing_parser.T_int i        -> Printf.sprintf "int(%i)" i
