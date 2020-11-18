@@ -46,92 +46,94 @@ val map_field :
   key_type:string ->
   value_type:string ->
   string ->
-  Pt.map_field 
+  Pt.map_field
 
-val oneof_field : 
+val oneof_field :
   ?options:Pb_option.set ->
-  number:int -> 
-  type_:string -> 
-  string -> 
+  number:int ->
+  type_:string ->
+  string ->
   Pt.oneof_field
 
 val oneof :
-  fields:Pt.oneof_field list -> 
-  string -> 
-  Pt.oneof 
+  fields:Pt.oneof_field list ->
+  string ->
+  Pt.oneof
 
-val message_body_field : 
-  Pt.message_field  -> 
-  Pt.message_body_content  
+val message_body_field :
+  Pt.message_field  ->
+  Pt.message_body_content
 
-val message_body_map_field : 
+val message_body_map_field :
   Pt.map_field ->
-  Pt.message_body_content  
+  Pt.message_body_content
 
-val message_body_oneof_field  : 
-  Pt.oneof -> 
-  Pt.message_body_content 
+val message_body_oneof_field  :
+  Pt.oneof ->
+  Pt.message_body_content
 
 val enum_value :
-  int_value:int -> 
-  string -> 
+  int_value:int ->
+  string ->
   Pt.enum_body_content
 
 val enum_option :
-  Pb_option.t -> 
+  Pb_option.t ->
   Pt.enum_body_content
 
-val enum : 
-  ?enum_body:Pt.enum_body_content list -> 
-  string -> 
-  Pt.enum 
+val enum :
+  ?enum_body:Pt.enum_body_content list ->
+  string ->
+  Pt.enum
 
 val extension_range_single_number : int -> Pt.extension_range
 
-val extension_range_range : int -> [ `Max | `Number of int ] -> Pt.extension_range 
+val extension_range_range : int -> [ `Max | `Number of int ] -> Pt.extension_range
 
-val message_body_sub : 
-  Pt.message -> 
+val message_body_sub :
+  Pt.message ->
   Pt.message_body_content
 
-val message_body_enum: 
-  Pt.enum -> 
+val message_body_enum:
+  Pt.enum ->
   Pt.message_body_content
 
-val message_body_extension: 
-  Pt.extension_range list  -> 
+val message_body_extension:
+  Pt.extension_range list  ->
   Pt.message_body_content
 
-val message_body_reserved: 
-  Pt.extension_range list  -> 
+val message_body_reserved:
+  Pt.extension_range list  ->
   Pt.message_body_content
 
-val message_body_option : 
-  Pb_option.t -> 
+val message_body_option :
+  Pb_option.t ->
   Pt.message_body_content
 
-val message : 
-  content:Pt.message_body_content list -> 
-  string -> 
+val message :
+  content:Pt.message_body_content list ->
+  string ->
   Pt.message
 
 val rpc:
   ?options:Pb_option.set ->
+  req_stream:bool ->
   req:string ->
+  res_stream:bool ->
   res:string ->
-  string -> 
+  string ->
   Pt.rpc
 
 val rpc_option_map:
   ((string * string) list) ->
   Pb_option.constant
 
-val service_body_option : 
-  Pb_option.t -> 
+val service_body_option :
+  Pb_option.t ->
   Pt.service_body_content
 
-val service_body_rpc : 
-  Pt.rpc -> 
+val service_body_rpc :
+  Pt.rpc ->
   Pt.service_body_content
 
 val service :

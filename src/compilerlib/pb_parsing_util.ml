@@ -129,11 +129,13 @@ let service_body_option option_ = Pt.Service_option option_
 
 let service_body_rpc rpc = Pt.Service_rpc rpc
 
-let rpc ?(options=Pb_option.empty) ~req ~res rpc_name =
+let rpc ?(options=Pb_option.empty) ~req_stream ~req ~res_stream ~res rpc_name =
   Pt.({
       rpc_name;
       rpc_options = options;
+      rpc_req_stream = req_stream;
       rpc_req = Pb_field_type.parse req;
+      rpc_res_stream = res_stream;
       rpc_res = Pb_field_type.parse res;
     })
 

@@ -43,6 +43,7 @@ let resolve_identifier loc ident =
   | "returns"    , _   -> T_returns
   | "rpc"        , _   -> T_rpc
   | "service"    , _   -> T_service
+  | "stream"     , _   -> T_stream
   | "syntax"     , _   -> T_syntax
   | "public"     , _   -> T_public
   | "to"         , _   -> T_to
