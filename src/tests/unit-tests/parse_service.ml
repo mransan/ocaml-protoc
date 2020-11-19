@@ -34,6 +34,10 @@ let test_services () =
 
     rpc ListShelves (ListShelvesRequest) returns (ListShelvesResponse);
 
+    rpc ListShelvesStreamerClient (stream ListShelvesRequest) returns (ListShelvesResponse);
+    rpc ListShelvesStreamerServer (ListShelvesRequest) returns (stream ListShelvesResponse);
+    rpc ListShelvesStreamerBidi (stream ListShelvesRequest) returns (stream ListShelvesResponse);
+
     rpc GetShelf (GetShelfRequest) returns (GetShelfResponse) {
       option (const.config) = "rpc_shelf";
       option (google.api.http) = {
@@ -56,11 +60,14 @@ let test_services () =
   let v2 = List.nth services 1 in
   let { service_name; service_body } = v2 in
   expect service_name  "ShelfServiceV2";
-  assert (List.length service_body = 4);
+  assert (List.length service_body = 7);
   let opt = List.nth service_body 0 in
   let rpc_list = List.nth service_body 1 in
-  let rpc_get = List.nth service_body 2 in
-  let rpc_get_with_semicolon = List.nth service_body 3 in
+  let rpc_list_client_streaming = List.nth service_body 2 in
+  let rpc_list_server_streaming = List.nth service_body 3 in
+  let rpc_list_bidi_streaming = List.nth service_body 4 in
+  let rpc_get = List.nth service_body 5 in
+  let rpc_get_with_semicolon = List.nth service_body 6 in
   let () = match opt with
     | Service_rpc _ -> failwith "Expected option, but got rpc"
     | Service_option (key, value) -> (
@@ -79,6 +86,42 @@ let test_services () =
     | Service_rpc {rpc_name; rpc_options;rpc_req; rpc_res} ->
       expect rpc_name "ListShelves";
       let req = match rpc_req with | `User_defined r -> r | _ -> failwith "Unexpected rpc req type" in
+      let res = match rpc_res with | `User_defined r -> r | _ -> failwith "Unexpected rpc res type" in
+      expect req.Pb_field_type.type_name "ListShelvesRequest";
+      expect res.Pb_field_type.type_name "ListShelvesResponse";
+      assert (rpc_options = Pb_option.empty);
+  in
+  let () = match rpc_list_client_streaming with
+    | Service_option _ -> failwith "Expected rpc, but got option";
+    | Service_rpc {rpc_name; rpc_options;rpc_req; rpc_req_stream;rpc_res;rpc_res_stream} ->
+      expect rpc_name "ListShelvesStreamerClient";
+      if not rpc_req_stream then failwith "Expected request to be streaming";
+      let req = match rpc_req with | `User_defined r -> r | _ -> failwith "Unexpected rpc req type" in
+      if rpc_res_stream then failwith "Did not expect response to be streaming";
+      let res = match rpc_res with | `User_defined r -> r | _ -> failwith "Unexpected rpc res type" in
+      expect req.Pb_field_type.type_name "ListShelvesRequest";
+      expect res.Pb_field_type.type_name "ListShelvesResponse";
+      assert (rpc_options = Pb_option.empty);
+  in
+  let () = match rpc_list_server_streaming with
+    | Service_option _ -> failwith "Expected rpc, but got option";
+    | Service_rpc {rpc_name; rpc_options;rpc_req; rpc_req_stream;rpc_res;rpc_res_stream} ->
+      expect rpc_name "ListShelvesStreamerServer";
+      if rpc_req_stream then failwith "Did not expect response to be streaming";
+      let req = match rpc_req with | `User_defined r -> r | _ -> failwith "Unexpected rpc req type" in
+      if not rpc_res_stream then failwith "Expected request to be streaming";
+      let res = match rpc_res with | `User_defined r -> r | _ -> failwith "Unexpected rpc res type" in
+      expect req.Pb_field_type.type_name "ListShelvesRequest";
+      expect res.Pb_field_type.type_name "ListShelvesResponse";
+      assert (rpc_options = Pb_option.empty);
+  in
+  let () = match rpc_list_bidi_streaming with
+    | Service_option _ -> failwith "Expected rpc, but got option";
+    | Service_rpc {rpc_name; rpc_options;rpc_req; rpc_req_stream;rpc_res;rpc_res_stream} ->
+      expect rpc_name "ListShelvesStreamerBidi";
+      if not rpc_req_stream then failwith "Expected request to be streaming";
+      let req = match rpc_req with | `User_defined r -> r | _ -> failwith "Unexpected rpc req type" in
+      if not rpc_res_stream then failwith "Expected request to be streaming";
       let res = match rpc_res with | `User_defined r -> r | _ -> failwith "Unexpected rpc res type" in
       expect req.Pb_field_type.type_name "ListShelvesRequest";
       expect res.Pb_field_type.type_name "ListShelvesResponse";

@@ -42,6 +42,7 @@
 %token T_returns
 %token T_rpc
 %token T_service
+%token T_stream
 %token T_syntax
 %token T_to
 %token T_max
@@ -206,12 +207,16 @@ service_body_content :
   | rpc          { Pb_parsing_util.service_body_rpc $1 }
   | option       { Pb_parsing_util.service_body_option $1 }
 
+message_type :
+  | T_stream T_ident { (true, snd $2) }
+  | T_ident { (false, snd $1) }
+
 rpc :
-  | T_rpc T_ident T_lparen T_ident T_rparen T_returns T_lparen T_ident T_rparen semicolon {
-    Pb_parsing_util.rpc ~req:(snd $4) ~res:(snd $8) (snd $2)
+  | T_rpc T_ident T_lparen message_type T_rparen T_returns T_lparen message_type T_rparen semicolon {
+    Pb_parsing_util.rpc ~req_stream:(fst $4) ~req:(snd $4) ~res_stream:(fst $8) ~res:(snd $8) (snd $2)
   }
-  | T_rpc T_ident T_lparen T_ident T_rparen T_returns T_lparen T_ident T_rparen rpc_options {
-    Pb_parsing_util.rpc ~req:(snd $4) ~res:(snd $8) ~options:$10 (snd $2)
+  | T_rpc T_ident T_lparen message_type T_rparen T_returns T_lparen message_type T_rparen rpc_options {
+    Pb_parsing_util.rpc ~req_stream:(fst $4) ~req:(snd $4) ~res_stream:(fst $8) ~res:(snd $8) ~options:$10 (snd $2)
   }
 
 rpc_options :

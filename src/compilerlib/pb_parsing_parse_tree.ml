@@ -126,7 +126,9 @@ and message = {
 type rpc = {
   rpc_name: string;
   rpc_options: Pb_option.set;
+  rpc_req_stream: bool;
   rpc_req: Pb_field_type.unresolved_t;
+  rpc_res_stream: bool;
   rpc_res: Pb_field_type.unresolved_t;
 }
 
