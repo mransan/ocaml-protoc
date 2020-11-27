@@ -11,3 +11,5 @@ ocaml_protoc.byte
 ocaml_protoc.native
 
 .merlin
+
+*.orig
