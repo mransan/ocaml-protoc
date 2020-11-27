@@ -49,4 +49,15 @@ clean: clean.gen
 build:
 	$(DUNE) build
 
+.PHONY: tag distrib publish
+
+tag:
+	dune-release tag
+
+distrib:
+	dune-release distrib
+
+publish:
+	dune-release publish
+
 include Makefile.test
