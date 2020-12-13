@@ -143,10 +143,33 @@ let test_services () =
   in
   ()
 
+let test_services_same_name () =
+  let s = {|
+     message FileDescriptorProto {
+       repeated DescriptorProto rpc = 4;
+       repeated ServiceDescriptorProto service = 6;
+     }
+     |}
+  in
+  let open Pt in
+  let { messages; services; _ } = parse Pb_parsing_parser.proto_ s in 
+  assert (List.length messages = 1);
+  assert (List.length services = 0);
+;; 
+
 let () =
   Printexc.record_backtrace true;
-  match (test_services ()) with
-  | () -> print_endline "Parse Service ... Ok"
-  | exception e ->
-    Printf.eprintf "Parse Service ... FAIL\n%s\n" (Printexc.to_string e);
-    Printexc.print_backtrace stderr
+  let tests =
+    [ "Parse Service", test_services
+    ; "Parse Services Descriptor", test_services_same_name
+    ]
+  in
+  let _error = List.exists (fun (name, fn) ->
+      match (fn ()) with
+      | () -> Printf.printf "%s ... Ok\n" name; false
+      | exception e ->
+        Printf.eprintf ("%s ... FAIL\n%s\n") name (Printexc.to_string e);
+        Printexc.print_backtrace stderr;
+        true
+    ) tests in
+  ()
