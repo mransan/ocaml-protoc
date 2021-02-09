@@ -117,7 +117,7 @@ let camel_case_of_label s =
     else begin
       begin
         if !capitalize
-        then begin Bytes.set b !blen (Char.uppercase c) end
+        then begin Bytes.set b !blen (Char.uppercase_ascii c) end
         else begin Bytes.set b !blen c end;
       end;
       capitalize := false;
@@ -127,7 +127,7 @@ let camel_case_of_label s =
   Bytes.sub_string b 0 !blen
 
 let camel_case_of_constructor s =
-  camel_case_of_label (String.lowercase s)
+  camel_case_of_label (String.lowercase_ascii s)
 
 let collect_modules_of_field_type modules = function
   | Ot.Ft_user_defined_type {Ot.udt_module_prefix = Some m; _} ->

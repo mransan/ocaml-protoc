@@ -225,6 +225,16 @@ module Encoder : sig
 
   val create : unit -> t
 
+  val clear : t -> unit
+  (** Clear the content of the internal buffer(s), but does not release memory
+      @since 2.1 *)
+
+  val reset : t -> unit
+  (** Clears the content and resets internal storage
+      to its initial memory consumption. This is more costly than {!clear} but
+      can be useful after a very large message was encoded.
+      @since 2.1 *)
+
   (** {2 Convertion} *)
 
   val to_bytes : t -> bytes

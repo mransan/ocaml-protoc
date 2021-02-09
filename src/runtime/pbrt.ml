@@ -376,6 +376,9 @@ module Encoder = struct
   let create () =
     Buffer.create 16
 
+  let clear = Buffer.clear
+  let reset = Buffer.reset
+
   let to_string = Buffer.contents
 
   let to_bytes = Buffer.to_bytes
