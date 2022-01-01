@@ -1,4 +1,4 @@
-# ocaml-protoc
+# ocaml-protoc [![build](https://github.com/mransan/ocaml-protoc/actions/workflows/main.yml/badge.svg)](https://github.com/mransan/ocaml-protoc/actions/workflows/main.yml)
 
 > :dromedary_camel: **A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml :dromedary_camel:.** 
 
