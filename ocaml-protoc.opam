@@ -13,10 +13,13 @@ dev-repo:"git+https://github.com/mransan/ocaml-protoc.git"
 license: "MIT"
 build: [
   ["dune" "subst"] {pinned}
-  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "build" "@install" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
 ]
 depends: [
   "ocaml" {>="4.02.1"}
   "dune"  {>="1.11"}
   "stdlib-shims"
+  "odoc" {with-doc}
 ]
