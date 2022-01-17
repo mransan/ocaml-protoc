@@ -29,8 +29,8 @@ This page describes how the mapping between protobuf type system and OCaml is do
 | sint64       | int64       |  int       |       |
 | fixed32      | int32       |  int       |       |
 | fixed64      | int64       |  int       |       |
-| sfixed32     |             |            | This encoding is not supported |
-| sfixed64     |             |            | This encoding is not supported |
+| sfixed32     | int32       |            |  |
+| sfixed64     | int64       |            |  |
 | bool         | bool        |            |  |
 | string       | string      |            |  |
 | bytes        | bytes       |            |  |

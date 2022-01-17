@@ -81,8 +81,8 @@ message TestAllTypes {
   optional   sint64 optional_sint64   =  6;
   optional  fixed32 optional_fixed32  =  7;
   optional  fixed64 optional_fixed64  =  8;
-  // SFIXED optional sfixed32 optional_sfixed32 =  9;
-  // SFIXED optional sfixed64 optional_sfixed64 = 10;
+  optional sfixed32 optional_sfixed32 =  9;
+  optional sfixed64 optional_sfixed64 = 10;
   optional    float optional_float    = 11;
   optional   double optional_double   = 12;
   optional     bool optional_bool     = 13;
@@ -119,8 +119,8 @@ message TestAllTypes {
   repeated   sint64 repeated_sint64   = 36;
   repeated  fixed32 repeated_fixed32  = 37;
   repeated  fixed64 repeated_fixed64  = 38;
-  // SFIXED repeated sfixed32 repeated_sfixed32 = 39;
-  // SFIXED repeated sfixed64 repeated_sfixed64 = 40;
+  repeated sfixed32 repeated_sfixed32 = 39;
+  repeated sfixed64 repeated_sfixed64 = 40;
   repeated    float repeated_float    = 41;
   repeated   double repeated_double   = 42;
   repeated     bool repeated_bool     = 43;
@@ -153,8 +153,8 @@ message TestAllTypes {
   optional   sint64 default_sint64   = 66 [default =  46    ];
   optional  fixed32 default_fixed32  = 67 [default =  47    ];
   optional  fixed64 default_fixed64  = 68 [default =  48    ];
-  // SFIXED optional sfixed32 default_sfixed32 = 69 [default =  49    ];
-  // SFIXED optional sfixed64 default_sfixed64 = 70 [default = -50    ];
+  optional sfixed32 default_sfixed32 = 69 [default =  49    ];
+  optional sfixed64 default_sfixed64 = 70 [default = -50    ];
   optional    float default_float    = 71 [default =  51.5  ];
   optional   double default_double   = 72 [default =  52e3  ];
   optional     bool default_bool     = 73 [default = true   ];
@@ -214,8 +214,8 @@ extend TestAllExtensions {
   optional   sint64 optional_sint64_extension   =  6;
   optional  fixed32 optional_fixed32_extension  =  7;
   optional  fixed64 optional_fixed64_extension  =  8;
-  // SFIXED optional sfixed32 optional_sfixed32_extension =  9;
-  // SFIXED optional sfixed64 optional_sfixed64_extension = 10;
+  optional sfixed32 optional_sfixed32_extension =  9;
+  optional sfixed64 optional_sfixed64_extension = 10;
   optional    float optional_float_extension    = 11;
   optional   double optional_double_extension   = 12;
   optional     bool optional_bool_extension     = 13;
@@ -254,8 +254,8 @@ extend TestAllExtensions {
   repeated   sint64 repeated_sint64_extension   = 36;
   repeated  fixed32 repeated_fixed32_extension  = 37;
   repeated  fixed64 repeated_fixed64_extension  = 38;
-  // SFIXED repeated sfixed32 repeated_sfixed32_extension = 39;
-  // SFIXED repeated sfixed64 repeated_sfixed64_extension = 40;
+  repeated sfixed32 repeated_sfixed32_extension = 39;
+  repeated sfixed64 repeated_sfixed64_extension = 40;
   repeated    float repeated_float_extension    = 41;
   repeated   double repeated_double_extension   = 42;
   repeated     bool repeated_bool_extension     = 43;
@@ -291,8 +291,8 @@ extend TestAllExtensions {
   optional   sint64 default_sint64_extension   = 66 [default =  46    ];
   optional  fixed32 default_fixed32_extension  = 67 [default =  47    ];
   optional  fixed64 default_fixed64_extension  = 68 [default =  48    ];
-  // SFIXED optional sfixed32 default_sfixed32_extension = 69 [default =  49    ];
-  // SFIXED optional sfixed64 default_sfixed64_extension = 70 [default = -50    ];
+  optional sfixed32 default_sfixed32_extension = 69 [default =  49    ];
+  optional sfixed64 default_sfixed64_extension = 70 [default = -50    ];
   optional    float default_float_extension    = 71 [default =  51.5  ];
   optional   double default_double_extension   = 72 [default =  52e3  ];
   optional     bool default_bool_extension     = 73 [default = true   ];
