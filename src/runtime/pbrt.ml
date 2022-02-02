@@ -135,9 +135,10 @@ module Decoder = struct
     let continue = ref true in
     while !continue do
       let b = byte d in
-      if b land 0x80 <> 0 then (
+      let cur = b land 0x7f in
+      if cur <> b then (
         (* at least one byte follows this one *)
-        res := Int64.(logor !res (shift_left (logand (of_int b) 0x7fL) !shift));
+        res := Int64.(logor !res (shift_left (of_int cur) !shift));
         shift := !shift + 7;
       ) else if !shift < 63 || (b land 0x7f) <= 1 then (
         res := Int64.(logor !res (shift_left (of_int b) !shift));
