@@ -129,7 +129,7 @@ module Decoder = struct
     else
       Int64.to_int v
 
-  let varint d : int64 =
+  let[@inline] varint d : int64 =
     let shift = ref 0 in
     let res = ref 0L in
     let continue = ref true in
@@ -389,7 +389,7 @@ module Encoder = struct
 
   let to_bytes = Buffer.to_bytes
 
-  let varint (i:int64) e =
+  let[@inline] varint (i:int64) e =
     let i = ref i in
     let continue = ref true in
     while !continue do
