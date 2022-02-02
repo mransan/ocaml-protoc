@@ -37,12 +37,38 @@ module Enc = struct
       )
     done
 
+  let[@inline] varint_imp_coi (i:int64) e =
+    let i = ref i in
+    let continue = ref true in
+    while !continue do
+      let cur = Int64.(logand !i 0x7fL) in
+      if cur = !i
+      then (
+        continue := false;
+        Buffer.add_char e (Char.unsafe_chr Int64.(to_int cur))
+      ) else (
+        Buffer.add_char e
+          (Char.unsafe_chr Int64.( to_int (logor 0x80L cur)
+        ));
+        i := Int64.shift_right_logical !i 7;
+      )
+    done
+
   let test_imp buf n  =
     mk_t  "enc-varint-imp" @@ fun () ->
     Sys.opaque_identity (
       Buffer.clear buf;
       for i = 0 to n do
         varint_imp (Int64.of_int i) buf;
+      done
+    )
+
+  let test_imp_coi buf n  =
+    mk_t  "enc-varint-imp-coi" @@ fun () ->
+    Sys.opaque_identity (
+      Buffer.clear buf;
+      for i = 0 to n do
+        varint_imp_coi (Int64.of_int i) buf;
       done
     )
 
@@ -78,7 +104,11 @@ let test_enc n =
   let open B.Tree in
   let buf = Buffer.create 64 in
   Printf.sprintf "%d" n @> lazy (
-    B.throughputN ~repeat:3 4 [Enc.test_imp buf n; Enc.test_rec buf n]
+    B.throughputN ~repeat:3 4 [
+      Enc.test_imp buf n;
+      Enc.test_imp_coi buf n;
+      Enc.test_rec buf n;
+    ]
   )
 
 module Dec = struct
@@ -125,6 +155,27 @@ module Dec = struct
     done;
     !res
 
+  (* imperative no inline *)
+  let varint_imp_noinline d : int64 =
+    let shift = ref 0 in
+    let res = ref 0L in
+    let continue = ref true in
+    while !continue do
+      let b = byte d in
+      let cur = b land 0x7f in
+      if cur <> b then (
+        (* at least one byte follows this one *)
+        res := Int64.(logor !res (shift_left (of_int cur) !shift));
+        shift := !shift + 7;
+      ) else if !shift < 63 || (b land 0x7f) <= 1 then (
+        res := Int64.(logor !res (shift_left (of_int b) !shift));
+        continue := false;
+      ) else (
+        raise (Failure Overlong_varint)
+      );
+    done;
+    !res
+
   let[@inline] varint_rec d =
     let rec read s =
       let b = byte d in
@@ -136,6 +187,19 @@ module Dec = struct
         raise (Failure Overlong_varint)
     in
     read 0
+
+  let varint_rec_noinline d =
+    let rec read s =
+      let b = byte d in
+      if b land 0x80 <> 0 then
+        Int64.(logor (shift_left (logand (of_int b) 0x7fL) s) (read (s + 7)))
+      else if s < 63 || (b land 0x7f) <= 1 then
+        Int64.(shift_left (of_int b) s)
+      else
+        raise (Failure Overlong_varint)
+    in
+    read 0
+
 
   (* make a buffer with the integers from [0] to [n] inside *)
   let mk_buf_n n : string =
@@ -155,12 +219,32 @@ module Dec = struct
       done
     )
 
+  let test_imp2 n (s:string) =
+    mk_t  "dec-varint-imp-noinline" @@ fun () ->
+    Sys.opaque_identity (
+      let dec = of_string s in
+      for _i = 0 to n do
+        let _n = varint_imp_noinline dec in
+        ()
+      done
+    )
+
   let test_rec n (s:string) =
     mk_t "dec-varint-rec" @@ fun () ->
     Sys.opaque_identity (
       let dec = of_string s in
       for _i = 0 to n do
         let _n = varint_rec dec in
+        ()
+      done
+    )
+
+  let test_rec2 n (s:string) =
+    mk_t "dec-varint-rec-noinline" @@ fun () ->
+    Sys.opaque_identity (
+      let dec = of_string s in
+      for _i = 0 to n do
+        let _n = varint_rec_noinline dec in
         ()
       done
     )
@@ -188,7 +272,12 @@ let test_dec n =
   let open B.Tree in
   let s = Dec.mk_buf_n n in
   Printf.sprintf "%d" n @> lazy (
-    B.throughputN ~repeat:3 4 [Dec.test_imp n s; Dec.test_rec n s]
+    B.throughputN ~repeat:3 4 [
+      Dec.test_imp n s;
+      Dec.test_imp2 n s;
+      Dec.test_rec n s;
+      Dec.test_rec2 n s;
+    ]
   )
 
 let () =
