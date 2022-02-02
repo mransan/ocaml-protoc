@@ -1,4 +1,4 @@
 
 (executable
   (name benchs)
-  (libraries ocaml-protoc bechamel))
+  (libraries ocaml-protoc benchmark))
