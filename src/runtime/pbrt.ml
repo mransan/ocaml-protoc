@@ -389,7 +389,6 @@ module Encoder = struct
 
   let to_bytes = Buffer.to_bytes
 
-
   let varint (i:int64) e =
     let i = ref i in
     let continue = ref true in
@@ -398,10 +397,10 @@ module Encoder = struct
       if cur = !i
       then (
         continue := false;
-        Buffer.add_char e (char_of_int Int64.(to_int cur))
+        Buffer.add_char e (Char.unsafe_chr Int64.(to_int cur))
       ) else (
         Buffer.add_char e
-          (char_of_int Int64.( to_int (logor 0x80L cur)
+          (Char.unsafe_chr Int64.( to_int (logor 0x80L cur)
         ));
         i := Int64.shift_right_logical !i 7;
       )
