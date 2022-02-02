@@ -388,17 +388,19 @@ module Encoder = struct
 
   let to_bytes = Buffer.to_bytes
 
+
   let varint (i:int64) e =
     let i = ref i in
     let continue = ref true in
     while !continue do
-      if Int64.(logand !i (lognot 0x7fL)) = Int64.zero
+      let cur = Int64.(logand !i 0x7fL) in
+      if cur = !i
       then (
         continue := false;
-        Buffer.add_char e (char_of_int Int64.(to_int (logand 0x7fL !i)))
+        Buffer.add_char e (char_of_int Int64.(to_int cur))
       ) else (
-        Buffer.add_char e (char_of_int Int64.(
-            to_int (logor 0x80L (logand 0x7fL !i))
+        Buffer.add_char e
+          (char_of_int Int64.( to_int (logor 0x80L cur)
         ));
         i := Int64.shift_right_logical !i 7;
       )
