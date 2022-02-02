@@ -77,8 +77,8 @@ end
 let test_enc n =
   let open B.Tree in
   let buf = Buffer.create 64 in
-  Printf.sprintf "enc %d" n @> lazy (
-    B.throughputN 4 [Enc.test_imp buf n; Enc.test_rec buf n]
+  Printf.sprintf "%d" n @> lazy (
+    B.throughputN ~repeat:3 4 [Enc.test_imp buf n; Enc.test_rec buf n]
   )
 
 module Dec = struct
@@ -111,9 +111,10 @@ module Dec = struct
     let continue = ref true in
     while !continue do
       let b = byte d in
-      if b land 0x80 <> 0 then (
+      let cur = b land 0x7f in
+      if cur <> b then (
         (* at least one byte follows this one *)
-        res := Int64.(logor !res (shift_left (logand (of_int b) 0x7fL) !shift));
+        res := Int64.(logor !res (shift_left (of_int cur) !shift));
         shift := !shift + 7;
       ) else if !shift < 63 || (b land 0x7f) <= 1 then (
         res := Int64.(logor !res (shift_left (of_int b) !shift));
@@ -186,8 +187,8 @@ end
 let test_dec n =
   let open B.Tree in
   let s = Dec.mk_buf_n n in
-  Printf.sprintf "dec %d" n @> lazy (
-    B.throughputN 4 [Dec.test_imp n s; Dec.test_rec n s]
+  Printf.sprintf "%d" n @> lazy (
+    B.throughputN ~repeat:3 4 [Dec.test_imp n s; Dec.test_rec n s]
   )
 
 let () =
