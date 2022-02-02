@@ -382,24 +382,26 @@ module Encoder = struct
 
   let to_bytes = Buffer.to_bytes
 
-  let varint i e =
-    let rec write i =
-      if Int64.(logand i (lognot 0x7fL)) = Int64.zero
-      then
-        Buffer.add_char e (char_of_int Int64.(to_int (logand 0x7fL i)))
-      else begin
+  let varint (i:int64) e =
+    let i = ref i in
+    let continue = ref true in
+    while !continue do
+      if Int64.(logand !i (lognot 0x7fL)) = Int64.zero
+      then (
+        continue := false;
+        Buffer.add_char e (char_of_int Int64.(to_int (logand 0x7fL !i)))
+      ) else (
         Buffer.add_char e (char_of_int Int64.(
-            to_int (logor 0x80L (logand 0x7fL i))
+            to_int (logor 0x80L (logand 0x7fL !i))
         ));
-        write (Int64.shift_right_logical i 7)
-      end
-    in
-    write i
+        i := Int64.shift_right_logical !i 7;
+      )
+    done
 
-  let smallint i e =
+  let[@inline] smallint i e =
     varint (Int64.of_int i) e
 
-  let zigzag i e =
+  let[@inline] zigzag i e =
     varint Int64.(logxor (shift_left i 1) (shift_right i 63)) e
 
   let bits32 i e =
@@ -463,9 +465,9 @@ module Encoder = struct
 
   let empty_nested e = varint 0L e
 
-  let int_as_varint i e = varint (Int64.of_int i) e
+  let[@inline] int_as_varint i e = varint (Int64.of_int i) e
 
-  let int_as_zigzag i e = zigzag (Int64.of_int i) e
+  let[@inline] int_as_zigzag i e = zigzag (Int64.of_int i) e
 
   let int32_as_varint i e = varint (Int64.of_int32 i) e
 
