@@ -109,7 +109,7 @@ module Decoder = struct
     d.offset <- d.offset + 1;
     byte
 
-  let bool_of_int64 fld v =
+  let[@inline] bool_of_int64 fld v =
     if v = Int64.zero then false
     else if v = Int64.one then true
     else raise (Failure (Overflow fld))
@@ -122,27 +122,33 @@ module Decoder = struct
     else
       Int32.to_int v
 
-  let int_of_int64 fld v =
+  let[@inline] int_of_int64 fld v =
     if (v < min_int_as_int64 || v > max_int_as_int64)
     then
       raise (Failure (Overflow fld))
     else
       Int64.to_int v
 
-  (* TODO: could have a variant of this function which works with int type *)
-  let varint d =
-    let rec read s =
+  let varint d : int64 =
+    let shift = ref 0 in
+    let res = ref 0L in
+    let continue = ref true in
+    while !continue do
       let b = byte d in
-      if b land 0x80 <> 0 then
-        Int64.(logor (shift_left (logand (of_int b) 0x7fL) s) (read (s + 7)))
-      else if s < 63 || (b land 0x7f) <= 1 then
-        Int64.(shift_left (of_int b) s)
-      else
+      if b land 0x80 <> 0 then (
+        (* at least one byte follows this one *)
+        res := Int64.(logor !res (shift_left (logand (of_int b) 0x7fL) !shift));
+        shift := !shift + 7;
+      ) else if !shift < 63 || (b land 0x7f) <= 1 then (
+        res := Int64.(logor !res (shift_left (of_int b) !shift));
+        continue := false;
+      ) else (
         raise (Failure Overlong_varint)
-    in
-    read 0
+      );
+    done;
+    !res
 
-  let zigzag d =
+  let[@inline] zigzag d : int64 =
     let v = varint d in
     Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
 
