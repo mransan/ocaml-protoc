@@ -87,9 +87,8 @@ module Decoder = struct
       limit  = Bytes.length source; }
 
   let of_string source =
-    { source = Bytes.of_string source;
-      offset = 0;
-      limit  = String.length source; }
+    (* safe: we won't modify the bytes *)
+    of_bytes (Bytes.unsafe_of_string source)
 
   let malformed_variant variant_name =
     raise (Failure (Malformed_variant variant_name))
@@ -490,7 +489,10 @@ module Encoder = struct
 
   let int_as_bits64 i e = bits64 (Int64.of_int i) e
 
-  let string s e = bytes (Bytes.of_string s) e
+  let string s e =
+    (* safe: we're not going to modify the bytes, and [s] will
+       not change. *)
+    bytes (Bytes.unsafe_of_string s) e
 
   let double_value_key = (1, Bits64)
 
