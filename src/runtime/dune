@@ -1,5 +1,6 @@
 (library
  (name pbrt)
  (public_name ocaml-protoc)
+ ;(ocamlopt_flags :standard -S)
  (wrapped false)
 )
