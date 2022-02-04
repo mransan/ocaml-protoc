@@ -434,6 +434,72 @@ module Nested = struct
         Buffer.add_buffer e e'
     end)
 
+  type buffers_nested =  {
+    buf: Buffer.t;
+    mutable sub: buffers_nested option;
+  }
+
+  module Buffers_nested = Make_bench(struct
+      let name_of_enc = "nested-bufs"
+      type t = buffers_nested
+      let create () = {buf=Buffer.create 16; sub=None}
+      let[@inline] clear self = Buffer.clear self.buf
+      let[@inline] to_string self = Buffer.contents self.buf
+
+      let varint (i:int64) e =
+        let i = ref i in
+        let continue = ref true in
+        while !continue do
+          let cur = Int64.(logand !i 0x7fL) in
+          if cur = !i
+          then (
+            continue := false;
+            Buffer.add_char e.buf (Char.unsafe_chr Int64.(to_int cur))
+          ) else (
+            Buffer.add_char e.buf
+              (Char.unsafe_chr Int64.( to_int (logor 0x80L cur)
+            ));
+            i := Int64.shift_right_logical !i 7;
+          )
+        done
+
+      let int64_as_varint = varint
+      let int_as_varint i e =
+        (varint[@inlined]) (Int64.of_int i) e
+
+      let[@inline] key k pk f e =
+        let pk' =
+          match pk with
+          | Varint -> 0
+          | Bits64 -> 1
+          | Bytes  -> 2
+          | Bits32 -> 5
+        in
+        int_as_varint (pk' lor (k lsl 3)) e;
+        f e
+
+      let bytes b e =
+        int_as_varint (Bytes.length b) e;
+        Buffer.add_bytes e.buf b
+
+      let string s e = bytes (Bytes.unsafe_of_string s) e
+
+      let list f l e =
+        List.iter (fun x -> f x e) l
+
+      let nested f e =
+        let e' = match e.sub with
+          | None ->
+            let e' = create() in
+            e.sub <- Some e';
+            e'
+          | Some e' -> clear e'; e'
+        in
+        f e';
+        int_as_varint (Buffer.length e'.buf) e;
+        Buffer.add_buffer e.buf e'.buf
+    end)
+
   type from_back_end = {
     mutable b: bytes;
     mutable start: int;
@@ -552,28 +618,31 @@ module Nested = struct
     end)
 
   let bench_basic = Basic.bench
+  let bench_buffers_nested = Buffers_nested.bench
   let bench_from_back = From_back.bench
 
   (* sanity check *)
   let () =
     let s_basic = Basic.string_of_company (mk_company 1) in
+    let s_buffers_nested = Buffers_nested.string_of_company (mk_company 1) in
     let s_from_back = From_back.string_of_company (mk_company 1) in
     (*
     Printf.printf "basic: (len=%d) %S\n" (String.length s_basic) s_basic;
     Printf.printf "from_back: (len=%d) %S\n" (String.length s_from_back) s_from_back;
        *)
-    let c_basic = Pbrt.Decoder.(
-        let dec = of_string s_basic in
-        Foo_pb.decode_company dec)
-    and c_from_back= Pbrt.Decoder.(
-        let dec = of_string s_from_back in
-        Foo_pb.decode_company dec)
-    in
+    let dec_s s = Pbrt.Decoder.(
+        let dec = of_string s in
+        Foo_pb.decode_company dec) in
+    let c_basic = dec_s s_basic in
+    let c_buffers_nested = dec_s s_buffers_nested in
+    let c_from_back= dec_s s_from_back in
     (*
     Format.printf "c_basic=%a@." Foo_pp.pp_company c_basic;
     Format.printf "c_from_back=%a@." Foo_pp.pp_company c_from_back;
        *)
-    assert (c_basic = c_from_back)
+    assert (c_basic = c_buffers_nested);
+    assert (c_basic = c_from_back);
+    ()
 end
 
 let test_nested_enc n =
@@ -582,6 +651,7 @@ let test_nested_enc n =
   Printf.sprintf "%d" n @> lazy (
     B.throughputN ~repeat:2 4 [
       Nested.bench_basic company;
+      Nested.bench_buffers_nested company;
       Nested.bench_from_back company;
     ]
   )
@@ -590,7 +660,9 @@ let () =
   let open B.Tree in
   register @@ "nested" @>>> [
     "enc" @>>> [ test_nested_enc 2; test_nested_enc 5;
-                 test_nested_enc 10; test_nested_enc 20; ];
+                 test_nested_enc 10; test_nested_enc 20;
+                 test_nested_enc 50; test_nested_enc 100;
+               ];
     ]
 
 let () =
