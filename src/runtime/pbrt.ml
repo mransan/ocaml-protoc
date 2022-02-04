@@ -377,6 +377,8 @@ module Encoder = struct
       )
       | _ -> None)
 
+  (* TODO: nested buffer (with max depth + [sub: t option] added on demand)*)
+  (* TODO: start with a benchmark with a lot of nested *)
   type t = Buffer.t
 
   let create () =
@@ -448,7 +450,7 @@ module Encoder = struct
     int_as_varint (Buffer.length e') e;
     Buffer.add_buffer e e'
 
-  let key (k, pk) e =
+  let[@inline] key (k, pk) e =
     let pk' =
       match pk with
       | Varint -> 0
