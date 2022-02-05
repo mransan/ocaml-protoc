@@ -649,7 +649,7 @@ let test_nested_enc n =
   let open B.Tree in
   let company = Nested.mk_company n in
   Printf.sprintf "%d" n @> lazy (
-    B.throughputN ~repeat:2 4 [
+    B.throughputN ~repeat:4 3 [
       Nested.bench_basic company;
       Nested.bench_buffers_nested company;
       Nested.bench_from_back company;
