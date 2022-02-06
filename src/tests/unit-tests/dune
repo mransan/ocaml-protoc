@@ -18,6 +18,7 @@
     backend_ocaml_test
     pbrt_array
     wrapper_encoding
+    varint
   )
   (libraries pbrt compiler_lib)
 )
