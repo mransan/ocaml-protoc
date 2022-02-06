@@ -15,8 +15,11 @@ let encvarint (i:int64) : string =
   E.int64_as_varint i enc;
   E.to_string enc
 
-let str_to_l s = String.fold_left (fun l x -> x::l) [] s |> List.rev
-let str_to_il s = String.fold_left (fun l x -> x::l) [] s |> List.rev_map Char.code
+let str_to_l s =
+  let l = ref [] in
+  String.iter (fun x -> l := x :: !l) s;
+  List.rev !l
+let str_to_il s = str_to_l s |> List.map Char.code
 
 let () =
   let s = encvarint 12L in
