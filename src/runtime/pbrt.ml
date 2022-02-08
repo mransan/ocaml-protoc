@@ -377,19 +377,67 @@ module Encoder = struct
       )
       | _ -> None)
 
-  (* TODO: nested buffer (with max depth + [sub: t option] added on demand)*)
-  (* TODO: start with a benchmark with a lot of nested *)
-  type t = Buffer.t
+  type t = {
+    mutable b: bytes;
+    mutable len: int;
+    initial: bytes;
+    mutable sub: t option;
+  }
 
   let create () =
-    Buffer.create 16
+    let b = Bytes.create 16 in
+    { b;
+      len=0;
+      initial=b;
+      sub=None;
+    }
 
-  let clear = Buffer.clear
-  let reset = Buffer.reset
+  let[@inline] clear self = self.len <- 0
+  let[@inline] length self = self.len
+  let[@inline] cap self = Bytes.length self.b
 
-  let to_string = Buffer.contents
+  let reset self =
+    self.len <- 0;
+    self.b <- self.initial
 
-  let to_bytes = Buffer.to_bytes
+  let to_string self = Bytes.sub_string self.b 0 self.len
+
+  let to_bytes self = Bytes.sub self.b 0 self.len
+
+  let write_chunks w self =
+    w self.b 0 self.len
+
+  let next_cap_ self =
+    min Sys.max_string_length (let n=cap self in n + n lsr 1)
+
+  let[@inline never] grow_to_ self newcap =
+    if newcap = self.len then raise (Failure (Overflow "encoder size reached its max"));
+    let b' = Bytes.create newcap in
+    Bytes.blit self.b 0 b' 0 self.len;
+    self.b <- b'
+
+  let[@inline never] grow_ self = grow_to_ self (next_cap_ self)
+
+  let[@inline] add_char self c =
+    if self.len = cap self then grow_ self;
+    Bytes.unsafe_set self.b self.len c;
+    self.len <- 1 + self.len
+
+  let add_bytes self b =
+    let n = Bytes.length b in
+    if cap self < self.len + n then (
+      grow_to_ self (max (next_cap_ self) (self.len + n));
+    );
+    Bytes.blit b 0 self.b self.len n;
+    self.len <- n + self.len
+
+  let add_buffer self sub =
+    let n = sub.len in
+    if cap self < self.len + n then (
+      grow_to_ self (max (next_cap_ self) (self.len + n));
+    );
+    Bytes.blit sub.b 0 self.b self.len n;
+    self.len <- n + self.len
 
   let varint (i:int64) e =
     let i = ref i in
@@ -399,9 +447,9 @@ module Encoder = struct
       if cur = !i
       then (
         continue := false;
-        Buffer.add_char e (Char.unsafe_chr Int64.(to_int cur))
+        add_char e (Char.unsafe_chr Int64.(to_int cur))
       ) else (
-        Buffer.add_char e
+        add_char e
           (Char.unsafe_chr Int64.( to_int (logor 0x80L cur)
         ));
         i := Int64.shift_right_logical !i 7;
@@ -415,40 +463,47 @@ module Encoder = struct
     (varint[@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
 
   let bits32 i e =
-    Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
-    Buffer.add_char e (char_of_int Int32.(to_int (
+    add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
+    add_char e (char_of_int Int32.(to_int (
       logand 0xffl (shift_right i 8))));
-    Buffer.add_char e (char_of_int Int32.(to_int (
+    add_char e (char_of_int Int32.(to_int (
       logand 0xffl (shift_right i 16))));
-    Buffer.add_char e (char_of_int Int32.(to_int (
+    add_char e (char_of_int Int32.(to_int (
       logand 0xffl (shift_right i 24))))
 
   let bits64 i e =
-    Buffer.add_char e (char_of_int Int64.(to_int (logand 0xffL i)));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (logand 0xffL i)));
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 8))));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 16))));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 24))));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 32))));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 40))));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 48))));
-    Buffer.add_char e (char_of_int Int64.(to_int (
+    add_char e (char_of_int Int64.(to_int (
       logand 0xffL (shift_right i 56))))
 
   let bytes b e =
     int_as_varint (Bytes.length b) e;
-    Buffer.add_bytes e b
+    add_bytes e b
 
   let nested f e =
-    let e' = Buffer.create 16 in
+    let e' = match e.sub with
+      | Some e' -> e'
+      | None ->
+        let e' = create () in
+        e.sub <- Some e';
+        e'
+    in
     f e';
-    int_as_varint (Buffer.length e') e;
-    Buffer.add_buffer e e'
+    int_as_varint (length e') e;
+    add_buffer e e';
+    clear e'
 
   let[@inline] key (k, pk) e =
     let pk' =
@@ -473,7 +528,7 @@ module Encoder = struct
       encode_value value_value t;
     ) t
 
-  let empty_nested e = Buffer.add_char e (Char.unsafe_chr 0)
+  let empty_nested e = add_char e (Char.unsafe_chr 0)
 
   let int_as_zigzag i e = (zigzag[@inlined]) (Int64.of_int i) e
 
@@ -489,7 +544,7 @@ module Encoder = struct
 
   let int64_as_bits64 = bits64
 
-  let bool b e = Buffer.add_char e (Char.unsafe_chr (if b then 1 else 0))
+  let bool b e = add_char e (Char.unsafe_chr (if b then 1 else 0))
 
   let float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
 
