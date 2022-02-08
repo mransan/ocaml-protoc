@@ -87,9 +87,8 @@ module Decoder = struct
       limit  = Bytes.length source; }
 
   let of_string source =
-    { source = Bytes.of_string source;
-      offset = 0;
-      limit  = String.length source; }
+    (* safe: we won't modify the bytes *)
+    of_bytes (Bytes.unsafe_of_string source)
 
   let malformed_variant variant_name =
     raise (Failure (Malformed_variant variant_name))
@@ -110,7 +109,7 @@ module Decoder = struct
     d.offset <- d.offset + 1;
     byte
 
-  let bool_of_int64 fld v =
+  let[@inline] bool_of_int64 fld v =
     if v = Int64.zero then false
     else if v = Int64.one then true
     else raise (Failure (Overflow fld))
@@ -123,28 +122,35 @@ module Decoder = struct
     else
       Int32.to_int v
 
-  let int_of_int64 fld v =
+  let[@inline] int_of_int64 fld v =
     if (v < min_int_as_int64 || v > max_int_as_int64)
     then
       raise (Failure (Overflow fld))
     else
       Int64.to_int v
 
-  (* TODO: could have a variant of this function which works with int type *)
-  let varint d =
-    let rec read s =
+  let varint d : int64 =
+    let shift = ref 0 in
+    let res = ref 0L in
+    let continue = ref true in
+    while !continue do
       let b = byte d in
-      if b land 0x80 <> 0 then
-        Int64.(logor (shift_left (logand (of_int b) 0x7fL) s) (read (s + 7)))
-      else if s < 63 || (b land 0x7f) <= 1 then
-        Int64.(shift_left (of_int b) s)
-      else
+      let cur = b land 0x7f in
+      if cur <> b then (
+        (* at least one byte follows this one *)
+        res := Int64.(logor !res (shift_left (of_int cur) !shift));
+        shift := !shift + 7;
+      ) else if !shift < 63 || (b land 0x7f) <= 1 then (
+        res := Int64.(logor !res (shift_left (of_int b) !shift));
+        continue := false;
+      ) else (
         raise (Failure Overlong_varint)
-    in
-    read 0
+      );
+    done;
+    !res
 
-  let zigzag d =
-    let v = varint d in
+  let zigzag d : int64 =
+    let v = (varint[@inlined]) d in
     Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
 
   let bits32 d =
@@ -175,9 +181,12 @@ module Decoder = struct
                 (add (shift_left (of_int b2) 8)
                  (of_int b1))))))))
 
+  let int_as_varint d =
+    Int64.to_int @@ (varint[@inlined]) d
+
   let bytes d =
     (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = int_as_varint d in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let str = Bytes.sub d.source d.offset len in
@@ -186,7 +195,7 @@ module Decoder = struct
 
   let nested d =
     (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = int_as_varint d in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let d' = { d with limit = d.offset + len; } in
@@ -199,7 +208,7 @@ module Decoder = struct
     else
       (* keys are always in the range of int,
        * but prefix might only fit into int32 *)
-      let prefix  = varint d in
+      let prefix  = (varint[@inlined]) d in
       let key, ty =
         Int64.(to_int (shift_right prefix 3)),
         Int64.logand 0x7L prefix in
@@ -226,7 +235,7 @@ module Decoder = struct
     | Bits32 -> skip_len 4
     | Bits64 -> skip_len 8
     (* strings are always shorter than range of int *)
-    | Bytes  -> skip_len (Int64.to_int (varint d))
+    | Bytes  -> skip_len (int_as_varint d)
     | Varint -> skip_varint ()
 
   let map_entry d ~decode_key ~decode_value =
@@ -251,8 +260,8 @@ module Decoder = struct
     | _ -> failwith "Missing key or value for map entry"
 
   let empty_nested d =
-    let len = varint d in
-    if len <> 0L
+    let len = int_as_varint d in
+    if len <> 0
     then raise (Failure Incomplete)
     else ()
 
@@ -265,17 +274,14 @@ module Decoder = struct
     in
     loop e0
 
-  let int_as_varint d =
-    Int64.to_int @@ varint d
-
   let int_as_zigzag d =
-    Int64.to_int @@ zigzag d
+    Int64.to_int @@ (zigzag[@inlined]) d
 
   let int32_as_varint d =
-    Int64.to_int32 (varint d)
+    Int64.to_int32 ((varint[@inlined]) d)
 
   let int32_as_zigzag d =
-    Int64.to_int32 (zigzag d)
+    Int64.to_int32 ((zigzag[@inlined]) d)
 
   let int64_as_varint = varint
 
@@ -286,7 +292,7 @@ module Decoder = struct
   let int64_as_bits64  = bits64
 
   let bool d =
-    bool_of_int64 "" (varint d)
+    bool_of_int64 "" ((varint[@inlined]) d)
 
   let float_as_bits32 d =
     Int32.float_of_bits (bits32 d)
@@ -302,7 +308,7 @@ module Decoder = struct
 
   let string d =
     (* strings are always shorter than range of int *)
-    let len = Int64.to_int (varint d) in
+    let len = int_as_varint d in
     if d.offset + len > d.limit then
       raise (Failure Incomplete);
     let str = Bytes.sub_string d.source d.offset len in
@@ -371,6 +377,8 @@ module Encoder = struct
       )
       | _ -> None)
 
+  (* TODO: nested buffer (with max depth + [sub: t option] added on demand)*)
+  (* TODO: start with a benchmark with a lot of nested *)
   type t = Buffer.t
 
   let create () =
@@ -383,25 +391,28 @@ module Encoder = struct
 
   let to_bytes = Buffer.to_bytes
 
-  let varint i e =
-    let rec write i =
-      if Int64.(logand i (lognot 0x7fL)) = Int64.zero
-      then
-        Buffer.add_char e (char_of_int Int64.(to_int (logand 0x7fL i)))
-      else begin
-        Buffer.add_char e (char_of_int Int64.(
-            to_int (logor 0x80L (logand 0x7fL i))
+  let varint (i:int64) e =
+    let i = ref i in
+    let continue = ref true in
+    while !continue do
+      let cur = Int64.(logand !i 0x7fL) in
+      if cur = !i
+      then (
+        continue := false;
+        Buffer.add_char e (Char.unsafe_chr Int64.(to_int cur))
+      ) else (
+        Buffer.add_char e
+          (Char.unsafe_chr Int64.( to_int (logor 0x80L cur)
         ));
-        write (Int64.shift_right_logical i 7)
-      end
-    in
-    write i
+        i := Int64.shift_right_logical !i 7;
+      )
+    done
 
-  let smallint i e =
-    varint (Int64.of_int i) e
+  let int_as_varint i e =
+    (varint[@inlined]) (Int64.of_int i) e
 
   let zigzag i e =
-    varint Int64.(logxor (shift_left i 1) (shift_right i 63)) e
+    (varint[@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
 
   let bits32 i e =
     Buffer.add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
@@ -430,16 +441,16 @@ module Encoder = struct
       logand 0xffL (shift_right i 56))))
 
   let bytes b e =
-    smallint (Bytes.length b) e;
+    int_as_varint (Bytes.length b) e;
     Buffer.add_bytes e b
 
   let nested f e =
     let e' = Buffer.create 16 in
     f e';
-    smallint (Buffer.length e') e;
+    int_as_varint (Buffer.length e') e;
     Buffer.add_buffer e e'
 
-  let key (k, pk) e =
+  let[@inline] key (k, pk) e =
     let pk' =
       match pk with
       | Varint -> 0
@@ -447,7 +458,7 @@ module Encoder = struct
       | Bytes  -> 2
       | Bits32 -> 5
     in
-    smallint (pk' lor (k lsl 3)) e
+    int_as_varint (pk' lor (k lsl 3)) e
 
   let map_entry ~encode_key ~encode_value kv t =
     let (
@@ -462,15 +473,13 @@ module Encoder = struct
       encode_value value_value t;
     ) t
 
-  let empty_nested e = varint 0L e
+  let empty_nested e = Buffer.add_char e (Char.unsafe_chr 0)
 
-  let int_as_varint i e = varint (Int64.of_int i) e
+  let int_as_zigzag i e = (zigzag[@inlined]) (Int64.of_int i) e
 
-  let int_as_zigzag i e = zigzag (Int64.of_int i) e
+  let int32_as_varint i e = (varint[@inlined]) (Int64.of_int32 i) e
 
-  let int32_as_varint i e = varint (Int64.of_int32 i) e
-
-  let int32_as_zigzag i e = zigzag (Int64.of_int32 i) e
+  let int32_as_zigzag i e = (zigzag[@inlined]) (Int64.of_int32 i) e
 
   let int64_as_varint = varint
 
@@ -480,7 +489,7 @@ module Encoder = struct
 
   let int64_as_bits64 = bits64
 
-  let bool b e = varint (if b then 1L else 0L) e
+  let bool b e = Buffer.add_char e (Char.unsafe_chr (if b then 1 else 0))
 
   let float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
 
@@ -490,7 +499,10 @@ module Encoder = struct
 
   let int_as_bits64 i e = bits64 (Int64.of_int i) e
 
-  let string s e = bytes (Bytes.of_string s) e
+  let string s e =
+    (* safe: we're not going to modify the bytes, and [s] will
+       not change. *)
+    bytes (Bytes.unsafe_of_string s) e
 
   let double_value_key = (1, Bits64)
 

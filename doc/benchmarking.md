@@ -59,3 +59,19 @@ The results above are completely expected and can be explained:
 * Using `int` is more efficient than `int32` in OCaml. This is because int32 is boxed.
 * Using the Runtime `Pbrt.Repeated_field` container improves performance over list. This data imperative data structure is optimzed for push back operation.
 * Using `packed` encoding improve performance: As explained by the protobuffer documentation, this encoding is more efficient.
+
+
+### Test 02: varint encoding and decoding
+
+The program `benchs/bench.ml` can be used to run a suite of benchmarks.
+For example, to run them all:
+
+```sh
+$ dune exec --profile=release benchs/benchs.exe -- --all
+```
+
+or to run only the varint encoding benchmarks:
+
+```sh
+dune exec --profile=release benchs/benchs.exe -- -p varint.enc
+```

@@ -1,0 +1,5 @@
+
+(executable
+  (name benchs)
+  (ocamlopt_flags :standard -inline 100)
+  (libraries ocaml-protoc benchmark))

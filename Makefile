@@ -2,6 +2,7 @@
 # OCamlbuild configuration
 #
 DUNE=dune
+DUNE_OPTS=--profile=release
 
 ifeq "$(shell ocamlc -config | grep os_type)" "os_type: Win32"
 	@EXE=.exe
@@ -20,7 +21,7 @@ BUCKLESCRIPT_TEST_DIR = src/tests/bs
 .PHONY: default clean build
 
 default:
-	$(info use `make [clean|build]`)
+	$(info use `make [clean|build|test]`)
 	
 clean.gen:
 	rm -rf lib
@@ -47,7 +48,10 @@ clean: clean.gen
 	rm -f $(INTEGRATION_TESTS_DIR)/*.tsk  
 
 build:
-	$(DUNE) build
+	$(DUNE) build $(DUNE_OPTS)
+
+test:
+	$(DUNE) runtest $(DUNE_OPTS)
 
 .PHONY: tag distrib publish
 
