@@ -239,7 +239,13 @@ module Encoder : sig
 
   val to_bytes : t -> bytes
 
-  val to_string : t -> string 
+  val to_string : t -> string
+
+  val write_chunks : (bytes -> int -> int -> unit) -> t -> unit
+  (** [write_chunks w e] calls the write function [w]
+      (e.g [output oc] for some output channel [oc]) on every chunk
+      inside [e]. The number of chunks is an implementation detail.
+      @since 2.1 *)
 
   (** {2 Encoding Functions} *)
 

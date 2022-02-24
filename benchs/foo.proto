@@ -1,0 +1,18 @@
+
+syntax = "proto3";
+
+message Person {
+  string name = 1;
+  sint64 age = 2;
+}
+
+message Store {
+  string address = 1;
+  repeated Person employees = 2;
+  repeated Person clients = 3;
+}
+
+message Company {
+  string name = 1;
+  repeated Store stores = 2;
+}
