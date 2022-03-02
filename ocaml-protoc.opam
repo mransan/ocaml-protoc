@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "ocaml-protoc"
-version: "2.0.2"
+version: "2.1"
 synopsis: "Protobuf compiler for OCaml"
 description: "Protobuf compiler for OCaml"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
@@ -18,7 +18,7 @@ build: [
   ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
 ]
 depends: [
-  "ocaml" {>="4.02.1"}
+  "ocaml" {>="4.03.0"}
   "dune"  {>="1.11"}
   "stdlib-shims"
   "odoc" {with-doc}
