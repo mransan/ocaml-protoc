@@ -1,11 +1,14 @@
 opam-version: "2.0"
-name: "ocaml-protoc"
+name: "pbrt"
 version: "2.1"
-synopsis: "Protobuf compiler for OCaml"
-description: "Protobuf compiler for OCaml"
+synopsis: "Runtime library for Protobuf tooling"
+description: "Runtime library for Protobuf tooling"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
 post-messages: [
-"The runtime library is now called \"pbrt\"."
+"Pbrt: runtime library for ocaml-protoc.
+
+A shim library named \"ocaml-protoc\" still exists, to ease the
+migration."
 ]
 authors:[
   "Maxime Ransan <maxime.ransan@gmail.com>"
@@ -24,6 +27,5 @@ depends: [
   "ocaml" {>="4.03.0"}
   "dune"  {>="1.11"}
   "stdlib-shims"
-  "pbrt" {= version}
   "odoc" {with-doc}
 ]
