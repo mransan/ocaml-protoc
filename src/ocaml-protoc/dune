@@ -15,5 +15,4 @@
   (name ocaml_protoc)
   (public_name ocaml-protoc)
   (modules)
-  ; (re_export pbrt) ; this seems to require dune 3.0
-  (libraries pbrt))
+  (libraries (re_export pbrt)))
