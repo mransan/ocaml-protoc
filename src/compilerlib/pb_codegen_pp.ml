@@ -26,6 +26,7 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
     F.scope sc (fun sc -> 
       List.iteri (fun i record_field -> 
 
+        let first = i=0 in
         let {Ot.rf_label; rf_field_type; _ } = record_field in 
 
         let var_name = sp "v.%s_types.%s" module_prefix rf_label in 
@@ -35,15 +36,15 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
         | Ot.Rft_required (field_type, _, _, _) -> ( 
           let field_string_of = gen_field field_type in 
           F.line sc @@ sp 
-            "Pbrt.Pp.pp_record_field \"%s\" %s fmt %s;" 
-            rf_label field_string_of var_name
+            "Pbrt.Pp.pp_record_field ~first:%b \"%s\" %s fmt %s;" 
+            first rf_label field_string_of var_name
         ) (* Rft_required *)
 
         | Ot.Rft_optional (field_type, _, _, _) -> (
           let field_string_of = gen_field field_type in 
           F.line sc @@ sp 
             "Pbrt.Pp.pp_record_field ~first:%b \"%s\" (Pbrt.Pp.pp_option %s) fmt %s;" 
-            (i=0) rf_label field_string_of var_name
+            first rf_label field_string_of var_name
         ) (* Rft_optional *) 
 
         | Ot.Rft_repeated (rt, field_type, _, _, _) ->  (
@@ -51,13 +52,14 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
           begin match rt with 
           | Ot.Rt_list -> (
             F.line sc @@ sp 
-              "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_list %s) fmt %s;" 
-              rf_label field_string_of var_name
+              "Pbrt.Pp.pp_record_field ~first:%b \"%s\" (Pbrt.Pp.pp_list %s) fmt %s;" 
+              first rf_label field_string_of var_name
           ) 
           | Ot.Rt_repeated_field -> (
             F.line sc @@ sp 
-              "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_list %s) fmt (Pbrt.Repeated_field.to_list %s);" 
-              rf_label field_string_of var_name
+              "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+               (Pbrt.Pp.pp_list %s) fmt (Pbrt.Repeated_field.to_list %s);" 
+              first rf_label field_string_of var_name
           ) 
           end
         ) (* Rft_repeated_field *)
@@ -70,8 +72,8 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
            * requirement is indeed comming from the imposed Protobuf format) 
            *)
           F.line sc @@ sp 
-            "Pbrt.Pp.pp_record_field \"%s\" %s fmt %s;" 
-            rf_label ("pp_" ^ v_name) var_name
+            "Pbrt.Pp.pp_record_field ~first:%b \"%s\" %s fmt %s;" 
+            first rf_label ("pp_" ^ v_name) var_name
         ) (* Rft_variant_field *)
 
         | Ot.Rft_associative (at, _, (key_type,_), (value_type, _)) -> (
@@ -82,8 +84,9 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
           in
           let pp_key = gen_field (Ot.Ft_basic_type key_type) in 
           let pp_value = gen_field value_type in 
-          F.line sc @@ sp "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.%s %s %s) fmt %s;"
-            rf_label pp_runtime_function pp_key pp_value var_name  
+          F.line sc @@ sp "Pbrt.Pp.pp_record_field ~first:%b \
+                           \"%s\" (Pbrt.Pp.%s %s %s) fmt %s;"
+            first rf_label pp_runtime_function pp_key pp_value var_name  
         ) (* Associative_list *)
 
       ) r_fields;
@@ -107,7 +110,7 @@ let gen_variant ?and_ module_prefix {Ot.v_name; Ot.v_constructors; } sc =
       | Ot.Vct_non_nullary_constructor field_type -> (  
         let field_string_of = gen_field field_type in 
         F.line sc @@ sp  
-          "| %s_types.%s x -> Format.fprintf fmt \"@[<hv2>%s(%%a)@]\" %s x" 
+          "| %s_types.%s x -> Format.fprintf fmt \"@[<hv2>%s(@,%%a)@]\" %s x" 
           module_prefix vc_constructor vc_constructor field_string_of 
       )
     ) v_constructors;

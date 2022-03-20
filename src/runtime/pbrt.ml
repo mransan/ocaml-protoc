@@ -862,7 +862,7 @@ module Pp = struct
     F.fprintf fmt "@[<hv2>%s =@ %a;@]" field_name pp_val val_
 
   let pp_brk pp_record (fmt:F.formatter) r : unit =
-    F.fprintf fmt "@[<hv2>{%a@;<0 -2>@]}" pp_record r
+    F.fprintf fmt "@[<hv2>{ %a@;<1 -2>@]}" pp_record r
 
 
 
