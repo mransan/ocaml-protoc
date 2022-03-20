@@ -24,8 +24,7 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
   F.scope sc (fun sc ->
     F.line sc "let pp_i fmt () ="; 
     F.scope sc (fun sc -> 
-      F.line sc "Format.pp_open_vbox fmt 1;";
-      List.iter (fun record_field -> 
+      List.iteri (fun i record_field -> 
 
         let {Ot.rf_label; rf_field_type; _ } = record_field in 
 
@@ -43,8 +42,8 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
         | Ot.Rft_optional (field_type, _, _, _) -> (
           let field_string_of = gen_field field_type in 
           F.line sc @@ sp 
-            "Pbrt.Pp.pp_record_field \"%s\" (Pbrt.Pp.pp_option %s) fmt %s;" 
-            rf_label field_string_of var_name
+            "Pbrt.Pp.pp_record_field ~first:%b \"%s\" (Pbrt.Pp.pp_option %s) fmt %s;" 
+            (i=0) rf_label field_string_of var_name
         ) (* Rft_optional *) 
 
         | Ot.Rft_repeated (rt, field_type, _, _, _) ->  (
@@ -87,8 +86,7 @@ let gen_record  ?and_ module_prefix {Ot.r_name; r_fields} sc =
             rf_label pp_runtime_function pp_key pp_value var_name  
         ) (* Associative_list *)
 
-      ) r_fields; 
-      F.line sc "Format.pp_close_box fmt ()";
+      ) r_fields;
     );
     F.line sc "in";
     F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()";
@@ -109,7 +107,7 @@ let gen_variant ?and_ module_prefix {Ot.v_name; Ot.v_constructors; } sc =
       | Ot.Vct_non_nullary_constructor field_type -> (  
         let field_string_of = gen_field field_type in 
         F.line sc @@ sp  
-          "| %s_types.%s x -> Format.fprintf fmt \"@[%s(%%a)@]\" %s x" 
+          "| %s_types.%s x -> Format.fprintf fmt \"@[<hv2>%s(%%a)@]\" %s x" 
           module_prefix vc_constructor vc_constructor field_string_of 
       )
     ) v_constructors;

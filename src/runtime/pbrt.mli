@@ -459,6 +459,7 @@ module Pp : sig
     unit
 
   val pp_record_field :
+    ?first:bool ->
     string ->
     (formatter -> 'a -> unit) ->
     formatter ->
