@@ -577,7 +577,7 @@ module Nested = struct
         done
          *)
 
-      let[@inline] int64_as_varint = varint
+      let int64_as_varint = varint
       let int_as_varint i e =
         (varint[@inlined]) (Int64.of_int i) e
 
