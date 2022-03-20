@@ -816,7 +816,7 @@ module Pp = struct
 
   let pp_option pp_f fmt = function
     | None   -> F.fprintf fmt "@[None@]"
-    | Some x -> F.fprintf fmt "@[Some(%a)@]" pp_f x
+    | Some x -> F.fprintf fmt "@[<hv2>Some(@,%a)@]" pp_f x
 
   let pp_wrapper_float fmt v =
     pp_option pp_float fmt v
@@ -843,11 +843,11 @@ module Pp = struct
         Format.fprintf fmt "%a;@,%a" pp_element h pp_i t
       | []   -> ()
     in
-    F.fprintf fmt "@[<v 1>[%a@,@]]" pp_i l
+    F.fprintf fmt "[@[<hv>%a@,@]]" pp_i l
 
   let pp_associative_list pp_key pp_value fmt l =
     let pp_element fmt (k, v) =
-      F.fprintf fmt "(%a, %a)" pp_key k pp_value v
+      F.fprintf fmt "(@[%a,@ %a@])" pp_key k pp_value v
     in
     pp_list pp_element fmt l
 
@@ -857,11 +857,12 @@ module Pp = struct
     ) h [] in
     pp_associative_list pp_key pp_value fmt l
 
-  let pp_record_field field_name pp_val fmt val_ =
-    F.fprintf fmt "@,@[<h>%s = %a;@]" field_name pp_val val_
+  let pp_record_field ?(first=false) field_name pp_val fmt val_ =
+    if not first then F.fprintf fmt "@ ";
+    F.fprintf fmt "@[<hv2>%s =@ %a;@]" field_name pp_val val_
 
   let pp_brk pp_record (fmt:F.formatter) r : unit =
-    F.fprintf fmt "@[<v>{%a@,@]}" pp_record r
+    F.fprintf fmt "@[<hv2>{%a@;<0 -2>@]}" pp_record r
 
 
 
