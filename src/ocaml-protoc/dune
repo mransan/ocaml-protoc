@@ -1,10 +1,19 @@
-(executable 
+(executable
   (name ocaml_protoc)
   (public_name ocaml-protoc)
-  (modules 
+  (package ocaml-protoc)
+  (modules
     ocaml_protoc
     ocaml_protoc_cmdline
-    ocaml_protoc_compilation 
-    ocaml_protoc_generation) 
+    ocaml_protoc_compilation
+    ocaml_protoc_generation)
   (libraries compiler_lib)
 )
+
+(library
+  (synopsis "Shim to depend on pbrt")
+  (name ocaml_protoc)
+  (public_name ocaml-protoc)
+  (modules)
+  ; (re_export pbrt) ; this seems to require dune 3.0
+  (libraries pbrt))

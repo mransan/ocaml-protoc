@@ -1,4 +1,4 @@
 (env
  (_
-   (flags -bin-annot -annot -safe-string 
-          -keep-locs -no-alias-deps -w A-4-42-41-48)))
+   (flags -bin-annot -annot -safe-string -strict-sequence
+          -keep-locs -no-alias-deps -w A-4-42-41-48-70)))
