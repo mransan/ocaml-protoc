@@ -812,7 +812,7 @@ module Pp = struct
     F.fprintf fmt "\"%a\"" F.pp_print_string s
 
   let pp_bytes fmt b =
-    pp_string fmt (Bytes.to_string b)
+    F.fprintf fmt "<bytes len=%d>" (Bytes.length b)
 
   let pp_option pp_f fmt = function
     | None   -> F.fprintf fmt "@[None@]"
