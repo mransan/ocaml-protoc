@@ -29,6 +29,24 @@ let () =
   ()
 
 let () =
+  let do_test s = 
+    let {
+      Pt.field_name; 
+      field_type; 
+      field_label; 
+      field_options; 
+      field_number
+    } = parse Pb_parsing_parser.normal_field_ s in 
+    assert (field_name = "stream"); 
+    assert (field_label = `Optional); 
+    assert (field_type = `Int32);
+    assert (field_number = 1); 
+    assert (has_option field_options "default"); 
+  in
+  do_test "optional int32 stream = 1 [default=1];"; 
+  ()
+
+let () =
   let {
     Pt.field_name; 
     field_type; 
