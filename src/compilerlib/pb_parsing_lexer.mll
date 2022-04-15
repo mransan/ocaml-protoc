@@ -94,7 +94,7 @@ let full_ident    = '.' ? ident ("." * ident) *
 (* let message_type  = '.' ? (ident '.') ident
  *)
 let int_litteral  = ['+' '-']? ['0'-'9']+
-let hex_litteral = ['+' '-']? "0x" ['0'-'9' 'a'-'f']+
+let hex_litteral = ['+' '-']? "0x" ['0'-'9' 'a'-'f' 'A'-'F']+
 let inf_litteral  = ['+' '-']? "inf"
 
 (* TODO fix: somehow E1 for field identified get lexed into a float.
