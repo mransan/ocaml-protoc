@@ -34,7 +34,7 @@ let () =
   message TestM { \
     enum TestE {\
       TestE_Value1 = 1; \
-      TestE_Value2 = 2; \
+      TestE_Value2 = 0x2; \
     }\
     required TestE teste_field = 1; \
   }"
