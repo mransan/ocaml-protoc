@@ -94,6 +94,7 @@ let full_ident    = '.' ? ident ("." * ident) *
 (* let message_type  = '.' ? (ident '.') ident
  *)
 let int_litteral  = ['+' '-']? ['0'-'9']+
+let hex_litteral = ['+' '-']? "0x" ['0'-'9' 'a'-'f' 'A'-'F']+
 let inf_litteral  = ['+' '-']? "inf"
 
 (* TODO fix: somehow E1 for field identified get lexed into a float.
@@ -132,6 +133,7 @@ rule lexer = parse
     | String_value s -> T_string s
   }
   | int_litteral  { T_int (int_of_string @@ Lexing.lexeme lexbuf) }
+  | hex_litteral  { T_int (int_of_string @@ Lexing.lexeme lexbuf) }
   | float_literal { T_float (float_of_string @@ Lexing.lexeme lexbuf) }
   | inf_litteral  { T_float nan }
   | newline       { update_loc lexbuf; lexer lexbuf }
