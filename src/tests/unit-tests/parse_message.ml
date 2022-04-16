@@ -152,6 +152,26 @@ let () =
     assert ("Missing oneof name" = s) 
 *)
 
+(* regression test for #179 *)
+let () = 
+  let s = {|
+  message Outer {
+    oneof stream_option {
+      Option stream = 4;
+    }
+  }|}
+  in
+  (*
+  Printf.printf "---- MESSAGE ----\n";
+  *)
+  let {
+    Pt.message_name; 
+    Pt.message_body; _;
+  } = parse Pb_parsing_parser.message_ s in 
+  assert (message_name  = "Outer");
+  assert (List.length message_body= 1);
+  ()
+
 let () = 
   print_endline "Parse Message ... Ok"
 
