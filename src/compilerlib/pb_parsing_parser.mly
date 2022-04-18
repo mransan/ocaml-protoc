@@ -327,6 +327,7 @@ field_name :
   | T_syntax    {"syntax"}
   | T_message   {"message"}
   | T_service   {"service"}
+  | T_stream    {"stream"}
   | T_rpc       {"rpc"}
   | T_to        {"to"}
   | T_max       {"max"}
