@@ -18,7 +18,7 @@
   (action (run ocaml-protoc 
     -I ./
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ocaml_all_types_ppx "deriving show"
     -ml_out 
@@ -381,7 +381,7 @@
   (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -410,7 +410,7 @@
   (deps test16.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -439,7 +439,7 @@
   (deps test17.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -468,7 +468,7 @@
   (deps test18.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -497,7 +497,7 @@
   (deps test19.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -526,7 +526,7 @@
   (deps test20.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -558,7 +558,7 @@
   (deps test21.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
     -I ../../include/ocaml-protoc
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./
@@ -697,7 +697,7 @@
   )
   (deps test26.proto ../../include/ocaml-protoc/ocamloptions.proto)
   (action (run ocaml-protoc 
-    -I /usr/local/include
+    -I /usr/include
     -binary -pp 
     -ml_out 
     ./

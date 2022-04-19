@@ -39,8 +39,8 @@ clean.gen:
 	rm -f src/examples/*_pb.ml*
 	rm -f $(BUCKLESCRIPT_TEST_DIR)/bs_unittest_bs.*
 	rm -f $(BUCKLESCRIPT_TEST_DIR)/bs_unittest_types.*
-	rm -f ./ocaml-protoc
-	rm -f ./yojson
+	rm -f ./ocaml-protoc || true
+	rm -f ./yojson || true
 
 clean: clean.gen
 	$(DUNE) clean
