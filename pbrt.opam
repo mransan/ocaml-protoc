@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "pbrt"
-version: "2.1"
+version: "2.2"
 synopsis: "Runtime library for Protobuf tooling"
 description: "Runtime library for Protobuf tooling"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
@@ -20,12 +20,12 @@ license: "MIT"
 build: [
   ["dune" "subst"] {dev}
   ["dune" "build" "@install" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "runtest" "-p" "pbrt,ocaml-protoc" "-j" jobs] {with-test}
   ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
 ]
 depends: [
   "ocaml" {>="4.03.0"}
-  "dune"  {>="1.11"}
+  "dune"  {>="2.0"}
   "stdlib-shims"
   "odoc" {with-doc}
 ]
