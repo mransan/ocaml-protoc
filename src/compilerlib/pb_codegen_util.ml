@@ -100,7 +100,7 @@ let string_of_payload_kind ?capitalize payload_kind packed =
   in
   match capitalize with
   | None -> s
-  | Some () -> String.capitalize s [@@ocaml.warning "-3"]
+  | Some () -> String.capitalize_ascii s
 
 (* this function transforms a `lower_case_like_this` into an
  * ocamlCaseLikeThis *)
