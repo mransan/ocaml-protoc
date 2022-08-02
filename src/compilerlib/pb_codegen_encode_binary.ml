@@ -4,7 +4,7 @@ module F = Pb_codegen_formatting
 let file_suffix = Pb_codegen_decode_binary.file_suffix
 
 let constructor_name s =
-  (String.capitalize @@ String.lowercase s) [@@ocaml.warning "-3"]
+  (String.capitalize_ascii @@ String.lowercase_ascii s)
 
 let sp = Pb_codegen_util.sp
 

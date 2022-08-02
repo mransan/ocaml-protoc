@@ -127,8 +127,8 @@ let constructor_name s =
   rev_split_by_naming_convention s
   |> List.rev
   |> String.concat "_"
-  |> String.lowercase
-  |> String.capitalize [@@ocaml.warning "-3"]
+  |> String.lowercase_ascii
+  |> String.capitalize_ascii
 
 let module_name = constructor_name
 
@@ -136,8 +136,8 @@ let label_name_of_field_name s =
   rev_split_by_naming_convention s
   |> List.rev
   |> String.concat "_"
-  |> String.lowercase
-  |> fix_ocaml_keyword_conflict [@@ocaml.warning "-3"]
+  |> String.lowercase_ascii
+  |> fix_ocaml_keyword_conflict
 
 let module_prefix_of_file_name file_name =
   let file_name = Filename.basename file_name in
@@ -152,8 +152,8 @@ let type_name message_scope name =
   let all_names = List.map (fun s ->
     rev_split_by_naming_convention s
     |> List.rev
-    |> List.map String.lowercase
-  ) all_names [@ocaml.warning "-3"]  in
+    |> List.map String.lowercase_ascii
+  ) all_names in
   let all_names = List.flatten all_names in
 
   match all_names with
