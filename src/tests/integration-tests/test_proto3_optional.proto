@@ -1,0 +1,9 @@
+
+syntax="proto3";
+
+message Foo {
+  int32 x = 1;
+  optional int32 y = 2;
+  optional string name = 3;
+}
+

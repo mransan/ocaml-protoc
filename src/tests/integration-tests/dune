@@ -739,3 +739,25 @@
     test27_pp
   )
   (libraries test_util unix))
+
+(rule
+  (targets
+    test_proto3_optional_types.ml
+    test_proto3_optional_pb.ml
+    test_proto3_optional_pp.ml
+    test_proto3_optional_types.mli
+    test_proto3_optional_pb.mli
+    test_proto3_optional_pp.mli
+  )
+  (deps (:proto test_proto3_optional.proto) ../../include/ocaml-protoc/ocamloptions.proto)
+  (action (run ocaml-protoc 
+    -binary -pp 
+    -ml_out ./
+    %{proto}))
+)
+
+(executable
+ (name test_proto3_optional)
+ (libraries pbrt)
+ (modules test_proto3_optional_types test_proto3_optional
+   test_proto3_optional_pb test_proto3_optional_pp))
