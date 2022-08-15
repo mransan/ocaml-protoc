@@ -284,9 +284,9 @@ let verify_syntax2 proto =
 let finalize_syntax3 proto =
   let {Pt.messages; enums; _ } = proto in
 
-  (* make sure there are no `Required` or `Optional`` fields
-   * in messages *)
-
+  (* make sure there are no `Required` fields
+    in messages. Optional is now allowed, but default values might
+    not be. *)
   let verify_no_default_field_options field_name message_name field_options =
     match Pb_option.get field_options "default" with
     | None -> ()
@@ -317,9 +317,8 @@ let finalize_syntax3 proto =
               field_options; _} = field in
           let field =
             match field_label with
-            | `Required
-            | `Optional -> E.invalid_proto3_field_label
-                ~field_name ~message_name
+            | `Required ->
+                E.invalid_proto3_field_label ~field_name ~message_name
             | `Repeated -> 
                 begin match field_type with
                 (* only builtin type of varint int64, int32 encoding
@@ -333,6 +332,9 @@ let finalize_syntax3 proto =
                   {field with Pt.field_options}
                 | _ -> field
                 end
+            | `Optional ->
+                (* optional is now allowed *)
+                field
             | `Nolabel -> field 
           in
           verify_no_default_field_options field_name message_name field_options;
