@@ -13,3 +13,4 @@ ocaml_protoc.native
 .merlin
 
 *.orig
+_opam
