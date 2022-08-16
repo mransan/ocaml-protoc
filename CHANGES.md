@@ -1,4 +1,9 @@
 
+## 2.3
+
+- allow `optional` in proto3 files
+- improve compatibility with OCaml 5
+
 ## 2.2
 
 - handle `stream` as a name (#179)
