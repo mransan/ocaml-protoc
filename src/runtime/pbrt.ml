@@ -818,8 +818,14 @@ module Pp = struct
   let pp_int32 fmt i =
     F.pp_print_string fmt (Int32.to_string i)
 
+  let pp_unsigned_of_int32 fmt = function
+    | `unsigned i -> F.fprintf fmt "%lu" i
+
   let pp_int64 fmt i =
     F.pp_print_string fmt (Int64.to_string i)
+
+  let pp_unsigned_of_int64 fmt = function
+    | `unsigned i -> F.fprintf fmt "%Lu" i
 
   let pp_string fmt s =
     F.fprintf fmt "\"%a\"" F.pp_print_string s
