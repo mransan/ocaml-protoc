@@ -10,7 +10,9 @@ let string_of_basic_type = function
   | Ot.Bt_float  -> "float"
   | Ot.Bt_int    -> "int"
   | Ot.Bt_int32  -> "int32"
+  | Ot.Bt_uint32  -> "[`unsigned of int32]"
   | Ot.Bt_int64  -> "int64"
+  | Ot.Bt_uint64  -> "[`unsigned of int64]"
   | Ot.Bt_bytes  -> "bytes"
   | Ot.Bt_bool   -> "bool"
 

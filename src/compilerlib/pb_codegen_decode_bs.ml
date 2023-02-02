@@ -15,6 +15,8 @@ let value_expression ~r_name ~rf_label field_type =
   | Ot.Ft_basic_type Ot.Bt_int -> basic_type "int" 
   | Ot.Ft_basic_type Ot.Bt_int32 -> basic_type "int32" 
   | Ot.Ft_basic_type Ot.Bt_int64 -> basic_type "int64" 
+  | Ot.Ft_basic_type Ot.Bt_uint32 -> basic_type "[`unsigned of int32]" 
+  | Ot.Ft_basic_type Ot.Bt_uint64 -> basic_type "[`unsigned of int64]" 
   | Ot.Ft_basic_type Ot.Bt_bool -> basic_type "bool" 
   | Ot.Ft_basic_type Ot.Bt_bytes -> basic_type "bytes" 
   | Ot.Ft_unit -> "()"

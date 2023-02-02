@@ -129,6 +129,7 @@ module Cmdline = struct
       (* whether pretty printing is enabled *)
     mutable cmd_line_file_options : File_options.t;
       (* file options override from the cmd line *)
+    unsigned_tag : bool ref;
   }
 
   let make () = {
@@ -140,6 +141,7 @@ module Cmdline = struct
     bs = ref false;
     pp = ref false;
     cmd_line_file_options = File_options.make ();
+    unsigned_tag = ref false
   }
 
   let cmd_line_args t = [
@@ -173,6 +175,13 @@ module Cmdline = struct
       Arg.String (fun s-> t.ml_out <- s), 
       "output directory"
     );  
+    (
+      "-unsigned", 
+      Arg.Set t.unsigned_tag,
+      "tag uint32 and uint64 types with `unsigned"
+    );  
+
+
   ] @ File_options.cmd_line_args t.cmd_line_file_options  
 
   let usage = "ocaml-protoc -ml_out <output_directory> <file_name>.proto"

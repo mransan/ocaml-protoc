@@ -52,7 +52,9 @@ type basic_type =
   | Bt_float
   | Bt_int
   | Bt_int32
+  | Bt_uint32
   | Bt_int64
+  | Bt_uint64
   | Bt_bytes
   | Bt_bool
 

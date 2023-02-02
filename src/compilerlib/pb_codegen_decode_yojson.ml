@@ -19,6 +19,8 @@ let field_pattern_match ~r_name ~rf_label field_type =
       | Ot.Bt_int ->  "int"
       | Ot.Bt_int32 ->  "int32"
       | Ot.Bt_int64 ->  "int64"
+      | Ot.Bt_uint32 ->  "[`unsigned of int32]"
+      | Ot.Bt_uint64 ->  "[`unsigned of int64]"
       | Ot.Bt_bool ->  "bool"
       | Ot.Bt_bytes ->  "bytes"
     in

@@ -29,10 +29,14 @@ let setter_of_basic_type json_label basic_type pk =
   (* Int32 *)
   | Ot.Bt_int32, _ ->
     ("number", Some "Int32.to_float")
+  | Ot.Bt_uint32, _ ->
+    ("number", Some "Int32.to_float")
 
   (* Int64 *)
   | Ot.Bt_int64, Ot.Pk_varint _
-  | Ot.Bt_int64, Ot.Pk_bits64 ->
+  | Ot.Bt_int64, Ot.Pk_bits64 
+  | Ot.Bt_uint64, Ot.Pk_varint _
+  | Ot.Bt_uint64, Ot.Pk_bits64 ->
     ("string", Some "Int64.to_string")
     (* 64 bit integer are always encoded as string since
        only support up to 51 bits integer. An improvement

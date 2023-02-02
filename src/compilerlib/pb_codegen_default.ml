@@ -16,8 +16,12 @@ let default_value_of_basic_type ?field_name basic_type field_default =
   | Ot.Bt_int   , Some (Pb_option.Constant_int i) -> string_of_int i
   | Ot.Bt_int32 , None -> "0l"
   | Ot.Bt_int32 , Some (Pb_option.Constant_int i) -> sp "%il" i
+  | Ot.Bt_uint32 , None -> "(`unsigned 0l)"
+  | Ot.Bt_uint32 , Some (Pb_option.Constant_int i) -> sp "(`unsigned %il)" i
   | Ot.Bt_int64 , None -> "0L"
   | Ot.Bt_int64 , Some (Pb_option.Constant_int i) -> sp "%iL" i
+  | Ot.Bt_uint64 , None -> "(`unsigned 0L)"
+  | Ot.Bt_uint64 , Some (Pb_option.Constant_int i) -> sp "(`unsigned %iL)" i
   | Ot.Bt_bytes , None -> "Bytes.create 0"  
   | Ot.Bt_bytes , Some (Pb_option.Constant_string s) -> 
         sp "Bytes.of_string \"%s\"" s  

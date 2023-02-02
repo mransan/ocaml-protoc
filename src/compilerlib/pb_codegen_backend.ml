@@ -259,8 +259,7 @@ let encoding_of_field all_types
     Typing_util.field_default field
   )
 
-let compile_field_type
-      all_types file_options field_options file_name field_type =
+let compile_field_type ~unsigned_tag all_types file_options field_options file_name field_type =
 
   let ocaml_type = match Pb_option.get field_options "ocaml_type" with
     | Some (Pb_option.Constant_litteral "int_t") -> `Int_t
@@ -272,21 +271,36 @@ let compile_field_type
     | _ -> Ot.(Ft_basic_type Bt_int32)
   in
 
+  let uint32_type = match Pb_option.get file_options "int32_type" with
+    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | _ -> Ot.(Ft_basic_type Bt_uint32)
+ 
+  in
+
   let int64_type = match Pb_option.get file_options "int64_type" with
     | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in
 
+  let uint64_type = match Pb_option.get file_options "int64_type" with
+    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | _ -> Ot.(Ft_basic_type Bt_uint64)
+  in
+
   let module T = struct
-    type b32 = [ `Int32 | `Uint32 | `Sint32 | `Fixed32 | `Sfixed32 ]
-    type b64 = [ `Int64 | `Uint64 | `Sint64 | `Fixed64 | `Sfixed64 ]
-    type int = [ b32 | b64 ]
+    type signed_b32 = [ `Int32 | `Sint32 | `Fixed32 | `Sfixed32 ]
+    type signed_b64 = [ `Int64 | `Sint64 | `Fixed64 | `Sfixed64 ]
+    type unsigned_b32 = [ `Uint32 ]
+    type unsigned_b64 = [ `Uint64 ]
+    type int = [ signed_b32 | unsigned_b32 | signed_b64 | unsigned_b64 ]
   end in
 
   match field_type, ocaml_type with
   | #T.int    , `Int_t ->  Ot.(Ft_basic_type Bt_int)
-  | #T.b32    , _ -> int32_type
-  | #T.b64    , _ -> int64_type
+  | #T.signed_b32    , _ -> int32_type
+  | #T.signed_b64    , _ -> int64_type
+  | #T.unsigned_b32    , _ -> if unsigned_tag then uint32_type else int32_type
+  | #T.unsigned_b64    , _ -> if unsigned_tag then uint64_type else int64_type
   | `Double   , _ -> Ot.(Ft_basic_type Bt_float)
   | `Float    , _ -> Ot.(Ft_basic_type Bt_float)
   | `Bool     , _ -> Ot.(Ft_basic_type Bt_bool)
@@ -310,6 +324,7 @@ let ocaml_container field_options =
 let variant_of_oneof
         ?include_oneof_name
         ~outer_message_names
+        ~unsigned_tag
         all_types
         file_options
         file_name
@@ -318,6 +333,7 @@ let variant_of_oneof
   let v_constructors = List.map (fun field ->
     let pbtt_field_type =  Typing_util.field_type field in
     let field_type = compile_field_type
+      ~unsigned_tag
       all_types
       file_options
       (Typing_util.field_options field)
@@ -382,6 +398,7 @@ let process_all_types_ppx_extension
     |> string_of_string_option file_name
 
 let compile_message
+    ~(unsigned_tag : bool)
     (file_options: Pb_option.set)
     (all_types: Pb_field_type.resolved Tt.proto)
     (file_name:string)
@@ -414,7 +431,7 @@ let compile_message
 
   | Tt.Message_oneof_field f :: [] -> (
     let outer_message_names = message_names @ [message_name] in
-    let variant = variant_of_oneof
+    let variant = variant_of_oneof ~unsigned_tag
         ~outer_message_names all_types file_options file_name f in
     [Ot.({module_prefix; spec = Variant variant;type_level_ppx_extension})]
   )
@@ -436,6 +453,7 @@ let compile_message
         let field_type = Typing_util.field_type field in
 
         let ocaml_field_type = compile_field_type
+          ~unsigned_tag
           all_types
           file_options
           field_options
@@ -505,6 +523,7 @@ let compile_message
       | Tt.Message_oneof_field field -> (
         let outer_message_names = message_names @ [message_name] in
         let variant = variant_of_oneof
+            ~unsigned_tag
             ~include_oneof_name:()
             ~outer_message_names
             all_types
@@ -545,6 +564,7 @@ let compile_message
           map_options} = mf in
 
         let key_type = compile_field_type
+          ~unsigned_tag
           all_types
           file_options
           map_options
@@ -559,6 +579,7 @@ let compile_message
         in
 
         let value_type = compile_field_type
+          ~unsigned_tag
           all_types
           file_options
           map_options
@@ -631,9 +652,9 @@ let compile_enum file_options file_name scope enum =
     type_level_ppx_extension;
   })
 
-let compile all_types = function
+let compile ~unsigned_tag all_types = function
   | {Tt.spec = Tt.Message m ; file_name; file_options; scope; _ } ->
-    compile_message file_options all_types file_name scope m
+    compile_message ~unsigned_tag file_options all_types file_name scope m
 
   | {Tt.spec = Tt.Enum e ; file_name; scope; file_options; _ } ->
     [compile_enum file_options file_name scope e]

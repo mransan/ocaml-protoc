@@ -11,10 +11,16 @@ let runtime_function_for_basic_type bt pk =
   | Ot.Pk_varint true , Ot.Bt_int   -> "Pbrt.Decoder.int_as_zigzag"
   | Ot.Pk_varint false, Ot.Bt_int32 -> "Pbrt.Decoder.int32_as_varint"
   | Ot.Pk_varint true , Ot.Bt_int32 -> "Pbrt.Decoder.int32_as_zigzag"
+  | Ot.Pk_varint false, Ot.Bt_uint32 -> "Pbrt.Decoder.uint32_as_varint"
+  | Ot.Pk_varint true , Ot.Bt_uint32 -> "Pbrt.Decoder.uint32_as_zigzag"
   | Ot.Pk_varint false, Ot.Bt_int64 -> "Pbrt.Decoder.int64_as_varint"
   | Ot.Pk_varint true , Ot.Bt_int64 -> "Pbrt.Decoder.int64_as_zigzag"
+  | Ot.Pk_varint false, Ot.Bt_uint64 -> "Pbrt.Decoder.uint64_as_varint"
+  | Ot.Pk_varint true , Ot.Bt_uint64 -> "Pbrt.Decoder.uint64_as_zigzag"
   | Ot.Pk_bits32, Ot.Bt_int32 -> "Pbrt.Decoder.int32_as_bits32"
   | Ot.Pk_bits64, Ot.Bt_int64 -> "Pbrt.Decoder.int64_as_bits64"
+  | Ot.Pk_bits32, Ot.Bt_uint32 -> "Pbrt.Decoder.uint32_as_bits32"
+  | Ot.Pk_bits64, Ot.Bt_uint64 -> "Pbrt.Decoder.uint64_as_bits64"
   | Ot.Pk_varint false, Ot.Bt_bool -> "Pbrt.Decoder.bool"
   | Ot.Pk_bits32, Ot.Bt_float -> "Pbrt.Decoder.float_as_bits32"
   | Ot.Pk_bits64, Ot.Bt_float -> "Pbrt.Decoder.float_as_bits64"
@@ -22,7 +28,7 @@ let runtime_function_for_basic_type bt pk =
   | Ot.Pk_bits64, Ot.Bt_int -> "Pbrt.Decoder.int_as_bits64"
   | Ot.Pk_bytes, Ot.Bt_string -> "Pbrt.Decoder.string"
   | Ot.Pk_bytes, Ot.Bt_bytes -> "Pbrt.Decoder.bytes"
-  | _ -> failwith "Invalid encoding/OCaml type combination"
+  | _ -> failwith "Invalid decoding/OCaml type combination"
 
 let runtime_function_for_wrapper_type {Ot.wt_type; wt_pk} = 
   match wt_type, wt_pk with
