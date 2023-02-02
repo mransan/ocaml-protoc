@@ -293,7 +293,7 @@ module Decoder = struct
   let uint32_as_varint d = `unsigned (int32_as_varint d)
   let uint32_as_zigzag d = (`unsigned (int32_as_zigzag d))
   let uint64_as_varint d = (`unsigned (varint d))
-  let uint64_as_varint d = (`unsigned (zigzag d))
+  let uint64_as_zigzag d = (`unsigned (zigzag d))
   let uint32_as_bits32 d = (`unsigned (bits32 d))
   let uint64_as_bits64 d = (`unsigned (bits64 d))
 
@@ -549,10 +549,11 @@ module Encoder = struct
   let int32_as_bits32 = bits32
 
   let int64_as_bits64 = bits64
+
   let uint32_as_varint = function `unsigned d -> int32_as_varint d
   let uint32_as_zigzag = function `unsigned d -> int32_as_zigzag d
   let uint64_as_varint = function `unsigned d -> varint d
-  let uint64_as_varint = function `unsigned d -> zigzag d
+  let uint64_as_zigzag = function `unsigned d -> zigzag d
   let uint32_as_bits32  = function `unsigned x -> bits32 x
   let uint64_as_bits64  = function `unsigned x -> bits64 x
 

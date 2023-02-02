@@ -149,6 +149,16 @@ module Decoder : sig
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
+  (* These uint functions are like their int counterparts above, except they
+     wrap their values in an [`unsigned of d] tag. *)
+  val uint32_as_varint : t -> [`unsigned of int32]
+  val uint32_as_zigzag : t -> [`unsigned of int32]
+  val uint64_as_varint : t -> [`unsigned of int64]
+  val uint64_as_zigzag : t -> [`unsigned of int64]
+  val uint32_as_bits32 : t -> [`unsigned of int32]
+  val uint64_as_bits64 : t -> [`unsigned of int64]
+
+
   val bool : t -> bool
   (** [bool d] reads a [bool] value from [d] with varing encoding.
       If the boolean value in [d] is neither 0 or 1 raises
@@ -288,6 +298,13 @@ module Encoder : sig
 
   val int64_as_bits64 : int64 -> t -> unit
   (** [int64_as_varint i e] encodes [i] in [e] with [Bits64] encoding *)
+
+  val uint32_as_varint : [ `unsigned of int32 ] -> t -> unit
+  val uint32_as_zigzag : [ `unsigned of int32 ] -> t -> unit
+  val uint64_as_varint : [ `unsigned of int64 ] -> t -> unit
+  val uint64_as_zigzag : [ `unsigned of int64 ] -> t -> unit
+  val uint32_as_bits32 : [ `unsigned of int32 ] -> t -> unit
+  val uint64_as_bits64 : [ `unsigned of int64 ] -> t -> unit
 
   val bool :  bool -> t -> unit
   (** [encode b e] encodes [b] in [e] with [Varint] encoding *)
