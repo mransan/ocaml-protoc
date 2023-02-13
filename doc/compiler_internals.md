@@ -36,7 +36,7 @@
 ##### Runtime 
 
 The generated code relies a [runtime library](src/runtime/pbrt.mli) called `pbrt`. 
-This runtime is mostly based on previous work by [whiteshark](https://github.com/whitequark/).
+This runtime is mostly based on previous work by [whitequark](https://github.com/whitequark/).
 
 #### Code structure 
 
