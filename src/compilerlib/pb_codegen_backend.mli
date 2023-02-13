@@ -41,8 +41,13 @@ val compile :
   Pb_field_type.resolved Tt.proto_type -> 
   Ot.type_ list 
 
-(** Internal helpers
-  @since 2.4 *)
+(** Internal helpers.
+
+    For now there are no guarantees of stability within this module.
+    It's unlikely that the signatures will change, but the possibility
+    is still there.
+
+    @since 2.4 *)
 module Internal : sig
   val is_mutable : ?field_name:string -> Pb_option.set -> bool
 
