@@ -2,8 +2,9 @@
 (ocamlyacc pb_parsing_parser)
 
 (library
- (name compiler_lib)
- (wrapped false)
+ (name ocaml_protoc_compiler_lib)
+ (public_name ocaml-protoc.compiler-lib)
+ (wrapped true)
  (modules 
   pb_codegen_backend
   pb_codegen_decode_binary

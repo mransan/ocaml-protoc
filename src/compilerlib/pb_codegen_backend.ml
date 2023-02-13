@@ -638,3 +638,13 @@ let compile all_types = function
   | {Tt.spec = Tt.Enum e ; file_name; scope; file_options; _ } ->
     [compile_enum file_options file_name scope e]
 
+
+module Internal = struct
+  let is_mutable = is_mutable
+  let constructor_name = constructor_name
+  let module_name = module_name
+  let label_name_of_field_name = label_name_of_field_name
+  let type_name = type_name
+  let variant_of_oneof = variant_of_oneof
+
+end
