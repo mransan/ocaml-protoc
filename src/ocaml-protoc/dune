@@ -7,7 +7,8 @@
     ocaml_protoc_cmdline
     ocaml_protoc_compilation
     ocaml_protoc_generation)
-  (libraries compiler_lib)
+  (libraries ocaml-protoc.compiler-lib)
+  (flags :standard -open OCaml_protoc_compiler_lib)
 )
 
 (library
