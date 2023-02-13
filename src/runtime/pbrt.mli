@@ -438,12 +438,14 @@ module Pp : sig
   (** [pp_unit fmt i] formats [i] value *)
 
   val pp_unsigned_of_int32 : formatter -> [`unsigned of int32]  -> unit
- 
+  (* @since 2.4 *)
+
   val pp_int64 : formatter -> int64  -> unit
   (** [pp_unit fmt i] formats [i] value *)
 
   val pp_unsigned_of_int64 : formatter -> [`unsigned of int64] -> unit
- 
+  (* @since 2.4 *)
+
   val pp_string : formatter -> string  -> unit
   (** [pp_unit fmt s] formats [s] value *)
 
