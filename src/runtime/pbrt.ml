@@ -282,14 +282,20 @@ module Decoder = struct
 
   let int32_as_zigzag d =
     Int64.to_int32 ((zigzag[@inlined]) d)
-
-  let int64_as_varint = varint
+ let int64_as_varint = varint
 
   let int64_as_zigzag  = zigzag
 
   let int32_as_bits32  = bits32
 
   let int64_as_bits64  = bits64
+
+  let uint32_as_varint d = `unsigned (int32_as_varint d)
+  let uint32_as_zigzag d = (`unsigned (int32_as_zigzag d))
+  let uint64_as_varint d = (`unsigned (varint d))
+  let uint64_as_zigzag d = (`unsigned (zigzag d))
+  let uint32_as_bits32 d = (`unsigned (bits32 d))
+  let uint64_as_bits64 d = (`unsigned (bits64 d))
 
   let bool d =
     bool_of_int64 "" ((varint[@inlined]) d)
@@ -543,6 +549,13 @@ module Encoder = struct
   let int32_as_bits32 = bits32
 
   let int64_as_bits64 = bits64
+
+  let uint32_as_varint = function `unsigned d -> int32_as_varint d
+  let uint32_as_zigzag = function `unsigned d -> int32_as_zigzag d
+  let uint64_as_varint = function `unsigned d -> varint d
+  let uint64_as_zigzag = function `unsigned d -> zigzag d
+  let uint32_as_bits32  = function `unsigned x -> bits32 x
+  let uint64_as_bits64  = function `unsigned x -> bits64 x
 
   let bool b e = add_char e (Char.unsafe_chr (if b then 1 else 0))
 
@@ -805,8 +818,14 @@ module Pp = struct
   let pp_int32 fmt i =
     F.pp_print_string fmt (Int32.to_string i)
 
+  let pp_unsigned_of_int32 fmt = function
+    | `unsigned i -> F.fprintf fmt "%lu" i
+
   let pp_int64 fmt i =
     F.pp_print_string fmt (Int64.to_string i)
+
+  let pp_unsigned_of_int64 fmt = function
+    | `unsigned i -> F.fprintf fmt "%Lu" i
 
   let pp_string fmt s =
     F.fprintf fmt "\"%a\"" F.pp_print_string s

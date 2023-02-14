@@ -13,9 +13,10 @@ val string_of_record_field_type :
   Pb_codegen_ocaml_type.record_field_type ->
   string
 
-val string_of_basic_type : Pb_codegen_ocaml_type.basic_type -> string
+val string_of_basic_type : ?for_pp:bool -> Pb_codegen_ocaml_type.basic_type -> string
 
 val string_of_field_type :
+  ?for_pp:bool ->
   ?module_prefix:string ->
   Pb_codegen_ocaml_type.field_type ->
   string

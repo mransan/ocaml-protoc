@@ -5,12 +5,14 @@ let sp x =  Printf.sprintf x
 
 let let_decl_of_and = function | Some _ -> "and" | None -> "let rec"
 
-let string_of_basic_type = function
+let string_of_basic_type ?(for_pp=false) = function
   | Ot.Bt_string -> "string"
   | Ot.Bt_float  -> "float"
   | Ot.Bt_int    -> "int"
   | Ot.Bt_int32  -> "int32"
+  | Ot.Bt_uint32  -> if for_pp then "unsigned_of_int32" else "[`unsigned of int32]"
   | Ot.Bt_int64  -> "int64"
+  | Ot.Bt_uint64  -> if for_pp then "unsigned_of_int64" else "[`unsigned of int64]"
   | Ot.Bt_bytes  -> "bytes"
   | Ot.Bt_bool   -> "bool"
 
@@ -24,12 +26,12 @@ let string_of_user_defined ?module_prefix = function
   | {Ot.udt_module_prefix = Some module_prefix; Ot.udt_type_name; _ } ->
     module_prefix ^ "_types." ^ udt_type_name
 
-let string_of_field_type ?module_prefix = function
+let string_of_field_type ?for_pp ?module_prefix = function
   | Ot.Ft_unit -> "unit"
-  | Ot.Ft_basic_type bt -> string_of_basic_type bt
+  | Ot.Ft_basic_type bt -> string_of_basic_type ?for_pp bt
   | Ot.Ft_user_defined_type udt -> string_of_user_defined ?module_prefix udt
   | Ot.Ft_wrapper_type {Ot.wt_type; wt_pk = _} ->
-    (string_of_basic_type wt_type) ^ " option"
+    (string_of_basic_type ?for_pp wt_type) ^ " option"
 
 let string_of_repeated_type = function
   | Ot.Rt_list -> "list"

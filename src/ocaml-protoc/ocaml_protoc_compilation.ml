@@ -58,7 +58,9 @@ let compile cmdline cmd_line_files_options =
 
   let {
     Cmdline.include_dirs; 
-    Cmdline.proto_file_name; _} = cmdline in
+    proto_file_name;
+    unsigned_tag;
+     _} = cmdline in
 
   (* parsing *) 
 
@@ -98,7 +100,7 @@ let compile cmdline cmd_line_files_options =
 
   let ocaml_types = List.rev @@ List.fold_left (fun ocaml_types types -> 
     let l = List.flatten @@ List.map (fun t -> 
-      BO.compile all_typed_protos t
+      BO.compile ~unsigned_tag:(!unsigned_tag) all_typed_protos t
     ) types in 
     l :: ocaml_types 
   ) [] grouped_proto  in 
