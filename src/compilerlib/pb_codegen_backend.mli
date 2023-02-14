@@ -51,7 +51,6 @@ val compile :
     @since 2.4 *)
 module Internal : sig
   val is_mutable : ?field_name:string -> Pb_option.set -> bool
-
   val constructor_name : string -> string
   val module_name : string -> string
   val label_name_of_field_name : string -> string
@@ -61,5 +60,9 @@ module Internal : sig
     ?include_oneof_name:unit ->
     outer_message_names:string list ->
     unsigned_tag:bool ->
-    'a Tt.proto -> Pb_option.set -> string -> int Tt.oneof -> Ot.variant
+    'a Tt.proto ->
+    Pb_option.set ->
+    string ->
+    int Tt.oneof ->
+    Ot.variant
 end

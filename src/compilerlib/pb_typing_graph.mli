@@ -27,15 +27,15 @@
 
 (** {2 Types} *)
 
-type node 
+type node
 (** Node in a graph, each node is identified using a unique [int] id *)
 
-type graph 
+type graph
 (** Graph. *)
 
-(** {2 Creators } *) 
+(** {2 Creators } *)
 
-val create_node : int -> int list -> node 
+val create_node : int -> int list -> node
 (** [create_node id sub] create a node uniquely identified with [id] 
     and connections to other nodes in [sub]. 
 
@@ -44,16 +44,16 @@ val create_node : int -> int list -> node
     graph later. 
   *)
 
-val empty_graph : graph 
+val empty_graph : graph
 (** [empty_graph ()] create a new empty graph.*)
 
-val add_node : node -> graph -> graph 
+val add_node : node -> graph -> graph
 (** [add_node node graph] add [node] to [graph] 
  *)
 
 (** {2 Algorithms} *)
 
-val tarjan : graph -> int list list  
+val tarjan : graph -> int list list
 (** [tarjan graph] compute the ordered list of strongly connected components of
     a graph. 
 

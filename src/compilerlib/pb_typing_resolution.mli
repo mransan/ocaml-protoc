@@ -23,7 +23,7 @@
 
 *)
 
-(** Type resolution *) 
+(** Type resolution *)
 
 (** This module resolves all the user defined for the protobuf message 
     fields; while built-in types were previously valided in 
@@ -37,7 +37,7 @@
     raised.
   *)
 
-module Tt = Pb_typing_type_tree 
+module Tt = Pb_typing_type_tree
 
 (** Custom container for all the types (message or enums) which are 
     organized by their scope. This allow efficient search of a type given 
@@ -45,35 +45,31 @@ module Tt = Pb_typing_type_tree
     
     The construction of this container is the first step in the type
     resolution. *)
-module Types_by_scope : sig 
-
-  type t 
+module Types_by_scope : sig
+  type t
   (** container type *)
 
-  val empty : t 
+  val empty : t
   (** empty container *)
 
-  val add : 
-    t -> 
-    Pb_field_type.unresolved Tt.proto_type -> 
-    t 
+  val add : t -> Pb_field_type.unresolved Tt.proto_type -> t
   (** add a protobuf type *)
-  
-  val find : 
-    t -> 
-    Pb_field_type.type_path -> 
-    string -> 
-    Pb_field_type.unresolved Tt.proto_type  
+
+  val find :
+    t ->
+    Pb_field_type.type_path ->
+    string ->
+    Pb_field_type.unresolved Tt.proto_type
   (** find a protobuf type given its type path *)
 
-  val print : t -> unit 
+  val print : t -> unit
   (** pretty print of the container *)
+end
+(* Types_by_scope *)
 
-end (* Types_by_scope *) 
-
-val resolve_types : 
+val resolve_types :
   Pb_field_type.unresolved Tt.proto_type list ->
-  Pb_field_type.resolved Tt.proto_type list  
+  Pb_field_type.resolved Tt.proto_type list
 (** [resolve_types types] resolves all the field types for all the [types]. 
     If a field cannot be resolved then [Pb_exception.Compilation_error] is 
     raised. *)

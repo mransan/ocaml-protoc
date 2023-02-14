@@ -25,7 +25,7 @@
 
 (** Standard library missing functions *)
 
-val rev_split_by_char : char -> string -> string list 
+val rev_split_by_char : char -> string -> string list
 (** [rev_split_by_char c s] will split the string [s] using the delimieter [c]
     and return the component in reverse order (ie from right to left). 
     
@@ -33,56 +33,53 @@ val rev_split_by_char : char -> string -> string list
     extension will be the head of the returned list. 
  *)
 
-val string_of_string_list : string list -> string 
+val string_of_string_list : string list -> string
 (** [string_of_string_list l] returns a debug string of [l] *)
 
-val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a 
+val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a
 (** [string_fold_lefti f e0 s] will fold over each string character *)
 
-
-val indentation_prefix : int -> string 
+val indentation_prefix : int -> string
 (** [indentation_prefix level] returns a string of [2 * level] spaces *)
 
-module Option : sig 
-
-  val default : 'a -> 'a option -> 'a 
+module Option : sig
+  val default : 'a -> 'a option -> 'a
   (** [option_default x o] returns [x] is [o] is [None] otherwise [y] 
       when [o] is [Some y]. 
    *)
-  
+
   val min_value : 'a option -> 'a option -> 'a option
   (** [min_value x y] returns the min value of the x and y if x and y are of 
       the form [Some _]. If [x] or [y] is [None] then [Invalid_argument]
       exception is raised *)
-  
+
   val eq_value : 'a option -> 'a option -> bool
   (** [eq_value x y] returns [true] if both [x] and [y] are of 
       the form [Some _]. If [x] or [y] is [None] then [Invalid_argument]
       exception is raised *)
 
-  val string_of_option : ('a -> string) -> 'a option -> string 
+  val string_of_option : ('a -> string) -> 'a option -> string
   (** [string_of_option f x] returns string representation of [x] using 
       [f] when [x] is of the form [Some _]. *)
+end
+(* Option *)
 
-end (* Option *)
+val read_file : string -> string
 
-val read_file : string -> string 
-
-module List : sig 
-
-  val pop_last : 'a list -> 'a list 
+module List : sig
+  val pop_last : 'a list -> 'a list
   (** [pop_last l] removes the last element from the list *)
-  
-  val apply_until : ('a -> 'b option) -> 'a list -> 'b option 
+
+  val apply_until : ('a -> 'b option) -> 'a list -> 'b option
   (** [apply_until f l] applies [f ei] until it returns [Some x] 
       
       If the end of the list is reached without [f] returning [Some _] then 
       [None] is returned. 
    *)
 
-  val filter_map : ('a -> 'b option) -> 'a list -> 'b list 
+  val filter_map : ('a -> 'b option) -> 'a list -> 'b list
   (** [filter_map f l] returns the list of element [x] for which [f] returned
       [Some x]. The length of the returned list will be less or equal than 
-      the length of the input list [l]. *) 
-
-end (* List *) 
+      the length of the input list [l]. *)
+end
+(* List *)

@@ -23,14 +23,16 @@
 
 *)
 
-module Tt = Pb_typing_type_tree 
+module Tt = Pb_typing_type_tree
 
-let perform_typing protos = 
+let perform_typing protos =
+  let typed_protos =
+    List.fold_left
+      (fun typed_protos proto ->
+        typed_protos @ Pb_typing_validation.validate proto)
+      [] protos
+  in
 
-  let typed_protos = List.fold_left (fun typed_protos proto -> 
-    typed_protos @ Pb_typing_validation.validate proto
-  ) [] protos in   
-
-  let typed_protos = Pb_typing_resolution.resolve_types typed_protos in 
+  let typed_protos = Pb_typing_resolution.resolve_types typed_protos in
 
   List.rev @@ Pb_typing_recursion.group typed_protos

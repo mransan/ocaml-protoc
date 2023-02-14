@@ -26,27 +26,22 @@
 module E = Pb_exception
 module Pt = Pb_parsing_parse_tree
 
-let field ?options:(options = Pb_option.empty) ~label ~number ~type_ name = {
-  Pt.field_name = name;
-  Pt.field_number = number;
-  Pt.field_type = Pb_field_type.parse type_;
-  Pt.field_label = label;
-  Pt.field_options = options;
-}
+let field ?(options = Pb_option.empty) ~label ~number ~type_ name =
+  {
+    Pt.field_name = name;
+    Pt.field_number = number;
+    Pt.field_type = Pb_field_type.parse type_;
+    Pt.field_label = label;
+    Pt.field_options = options;
+  }
 
-let map_field ?options:(map_options = Pb_option.empty) ~number
-        ~key_type ~value_type name =
-
+let map_field ?options:(map_options = Pb_option.empty) ~number ~key_type
+    ~value_type name =
   let map_key_type =
-    Pb_field_type.parse key_type
-    |> (function
-        | #Pb_field_type.map_key_type as t -> t
-
-        | `Bytes
-        | #Pb_field_type.builtin_type_floating_point
-        | `User_defined _ ->
-           E.invalid_key_type_for_map name
-    )
+    Pb_field_type.parse key_type |> function
+    | #Pb_field_type.map_key_type as t -> t
+    | `Bytes | #Pb_field_type.builtin_type_floating_point | `User_defined _ ->
+      E.invalid_key_type_for_map name
   in
 
   let map_value_type = Pb_field_type.parse value_type in
@@ -59,54 +54,41 @@ let map_field ?options:(map_options = Pb_option.empty) ~number
     Pt.map_options;
   }
 
-let oneof_field ?options:(options = Pb_option.empty) ~number ~type_ name = {
-  Pt.field_name = name;
-  Pt.field_number = number;
-  Pt.field_type = (Pb_field_type.parse type_);
-  Pt.field_options = options;
-  Pt.field_label = ();
-}
+let oneof_field ?(options = Pb_option.empty) ~number ~type_ name =
+  {
+    Pt.field_name = name;
+    Pt.field_number = number;
+    Pt.field_type = Pb_field_type.parse type_;
+    Pt.field_options = options;
+    Pt.field_label = ();
+  }
 
-let oneof ~fields name = {
-  Pt.oneof_name = name;
-  Pt.oneof_fields = fields;
-}
-
+let oneof ~fields name = { Pt.oneof_name = name; Pt.oneof_fields = fields }
 let message_counter = ref 0
 
-let enum_value ~int_value name = Pt.(Enum_value {
-  enum_value_name = name;
-  enum_value_int = int_value;
-})
+let enum_value ~int_value name =
+  Pt.(Enum_value { enum_value_name = name; enum_value_int = int_value })
 
 let enum_option option_ = Pt.Enum_option option_
 
-let enum ?enum_body:(enum_body= []) enum_name =
+let enum ?(enum_body = []) enum_name =
   incr message_counter;
-  {
-    Pt.enum_id  = !message_counter;
-    Pt.enum_name;
-    Pt.enum_body;
-  }
+  { Pt.enum_id = !message_counter; Pt.enum_name; Pt.enum_body }
 
-let extension_range_single_number number =
-  Pt.Extension_single_number number
+let extension_range_single_number number = Pt.Extension_single_number number
 
 let extension_range_range from to_ =
-  let to_ = match to_ with
-    | `Max      -> Pt.To_max
+  let to_ =
+    match to_ with
+    | `Max -> Pt.To_max
     | `Number i -> Pt.To_number i
   in
   Pt.Extension_range (from, to_)
 
-let message_body_field field =  Pt.Message_field field
-
+let message_body_field field = Pt.Message_field field
 let message_body_map_field field = Pt.Message_map_field field
-
-let message_body_oneof_field field =  Pt.Message_oneof_field   field
-
-let message_body_sub message  =  Pt.Message_sub message
-
+let message_body_oneof_field field = Pt.Message_oneof_field field
+let message_body_sub message = Pt.Message_sub message
 let message_body_enum enum = Pt.Message_enum enum
 
 let message_body_extension extension_ranges =
@@ -119,246 +101,243 @@ let message_body_option option_ = Pt.Message_option option_
 
 let message ~content message_name =
   incr message_counter;
-  Pt.({
-    id = !message_counter;
-    message_name;
-    message_body = content;
-  })
+  Pt.{ id = !message_counter; message_name; message_body = content }
 
 let service_body_option option_ = Pt.Service_option option_
-
 let service_body_rpc rpc = Pt.Service_rpc rpc
 
-let rpc ?(options=Pb_option.empty) ~req_stream ~req ~res_stream ~res rpc_name =
-  Pt.({
+let rpc ?(options = Pb_option.empty) ~req_stream ~req ~res_stream ~res rpc_name
+    =
+  Pt.
+    {
       rpc_name;
       rpc_options = options;
       rpc_req_stream = req_stream;
       rpc_req = Pb_field_type.parse req;
       rpc_res_stream = res_stream;
       rpc_res = Pb_field_type.parse res;
-    })
+    }
 
 let rpc_option_map items =
-  let s = items
-          |> List.map (fun (k, v) -> k ^ ":" ^ v)
-          |> String.concat "\n" in
+  let s = items |> List.map (fun (k, v) -> k ^ ":" ^ v) |> String.concat "\n" in
   Pb_option.Constant_string s
 
-let service ~content service_name = Pt.({
-    service_name;
-    service_body = content;
-  })
+let service ~content service_name = Pt.{ service_name; service_body = content }
 
-let import ?public file_name = {
-  Pt.public = (match public with | Some _ -> true | None -> false);
-  Pt.file_name;
-}
+let import ?public file_name =
+  {
+    Pt.public =
+      (match public with
+      | Some _ -> true
+      | None -> false);
+    Pt.file_name;
+  }
 
 let extend extend_name extend_body =
   incr message_counter;
-  Pt.({
-    id = !message_counter;
-    extend_name;
-    extend_body;
-  })
+  Pt.{ id = !message_counter; extend_name; extend_body }
 
-let rec message_printer ?level:(level = 0) {
-  Pt.message_name;
-  Pt.message_body; _ } =
-
+let rec message_printer ?(level = 0) { Pt.message_name; Pt.message_body; _ } =
   let prefix () =
-    for _ =0 to level  - 1 do
-      Printf.printf " ";
-    done;
+    for _ = 0 to level - 1 do
+      Printf.printf " "
+    done
   in
-  prefix (); print_endline message_name;
-  List.iter (function
-    | Pt.Message_field {Pt.field_name; _ } ->
-        prefix (); Printf.printf "- field [%s]\n" field_name
-    | Pt.Message_map_field {Pt.map_name; _ } ->
-        prefix (); Printf.printf "- map [%s]\n" map_name
-    | Pt.Message_oneof_field {Pt.oneof_name ; _ } ->
-        prefix (); Printf.printf "- one of field [%s]\n" oneof_name
-    | Pt.Message_enum {Pt.enum_name; _ } ->
-        prefix (); Printf.printf "- enum type [%s]\n" enum_name
-    | Pt.Message_sub m -> message_printer ~level:(level + 2) m
-    | Pt.Message_extension _ -> ()
-    | Pt.Message_reserved _ -> ()
-    | Pt.Message_option _ -> ()
-  ) message_body
+  prefix ();
+  print_endline message_name;
+  List.iter
+    (function
+      | Pt.Message_field { Pt.field_name; _ } ->
+        prefix ();
+        Printf.printf "- field [%s]\n" field_name
+      | Pt.Message_map_field { Pt.map_name; _ } ->
+        prefix ();
+        Printf.printf "- map [%s]\n" map_name
+      | Pt.Message_oneof_field { Pt.oneof_name; _ } ->
+        prefix ();
+        Printf.printf "- one of field [%s]\n" oneof_name
+      | Pt.Message_enum { Pt.enum_name; _ } ->
+        prefix ();
+        Printf.printf "- enum type [%s]\n" enum_name
+      | Pt.Message_sub m -> message_printer ~level:(level + 2) m
+      | Pt.Message_extension _ -> ()
+      | Pt.Message_reserved _ -> ()
+      | Pt.Message_option _ -> ())
+    message_body
 
-let proto ?syntax ?file_option ?package ?import ?message ?service ?enum ?proto ?extend () =
-
-  let proto = match proto with
-    | None -> Pt.({
-        proto_file_name = None;
-        syntax;
-        imports = [];
-        package = None;
-        messages = [];
-        services = [];
-        file_options = Pb_option.empty;
-        enums = [];
-        extends = [];
-      })
+let proto ?syntax ?file_option ?package ?import ?message ?service ?enum ?proto
+    ?extend () =
+  let proto =
+    match proto with
+    | None ->
+      Pt.
+        {
+          proto_file_name = None;
+          syntax;
+          imports = [];
+          package = None;
+          messages = [];
+          services = [];
+          file_options = Pb_option.empty;
+          enums = [];
+          extends = [];
+        }
     | Some proto -> proto
   in
 
-  let {
-    Pt.messages;
-    services;
-    imports;
-    file_options;
-    enums;
-    extends; _ } = proto in
-
-  let proto = match syntax with
-    | None   -> proto
-    | Some _ -> Pt.({proto with syntax; })
+  let { Pt.messages; services; imports; file_options; enums; extends; _ } =
+    proto
   in
 
-  let proto = match package with
-    | None   -> proto
-    | Some _ -> Pt.({proto with package; })
+  let proto =
+    match syntax with
+    | None -> proto
+    | Some _ -> Pt.{ proto with syntax }
   in
 
-  let proto = match message with
-    | None   -> proto
-    | Some m -> Pt.({proto with messages = m :: messages})
+  let proto =
+    match package with
+    | None -> proto
+    | Some _ -> Pt.{ proto with package }
   in
 
-  let proto = match service with
-    | None   -> proto
-    | Some s -> Pt.({proto with services = s :: services})
+  let proto =
+    match message with
+    | None -> proto
+    | Some m -> Pt.{ proto with messages = m :: messages }
   in
 
-  let proto = match enum with
-    | None   -> proto
-    | Some m -> Pt.({proto with enums = m :: enums})
+  let proto =
+    match service with
+    | None -> proto
+    | Some s -> Pt.{ proto with services = s :: services }
   in
 
-  let proto = match import with
-    | None   -> proto
-    | Some i -> Pt.({proto with imports = i :: imports})
+  let proto =
+    match enum with
+    | None -> proto
+    | Some m -> Pt.{ proto with enums = m :: enums }
   in
 
-  let proto = match file_option with
-    | None   -> proto
+  let proto =
+    match import with
+    | None -> proto
+    | Some i -> Pt.{ proto with imports = i :: imports }
+  in
+
+  let proto =
+    match file_option with
+    | None -> proto
     | Some i ->
-      let file_options =
-        Pb_option.add file_options (fst i) (snd i)
-      in
-      Pt.({proto with file_options})
+      let file_options = Pb_option.add file_options (fst i) (snd i) in
+      Pt.{ proto with file_options }
   in
 
-  let proto = match extend with
-    | None   -> proto
-    | Some e -> Pt.({proto with extends = e :: extends })
+  let proto =
+    match extend with
+    | None -> proto
+    | Some e -> Pt.{ proto with extends = e :: extends }
   in
   proto
 
 let verify_syntax2 proto =
-  let {Pt.messages; _} = proto in
+  let { Pt.messages; _ } = proto in
 
   (* make sure there are no `Nolabel` fields in messages *)
+  let rec verify_message m =
+    let { Pt.message_name; message_body; _ } = m in
 
-  let rec verify_message m  =
-    let {Pt.message_name; message_body; _} = m in
-
-    List.iter (function
-      | Pt.Message_field field ->
-        let {Pt.field_label; field_name; _} = field in
-        begin match field_label with
-        | `Nolabel -> E.missing_field_label ~field_name ~message_name
-        | _ -> ()
-        end
-      | Pt.Message_sub m' -> verify_message m'
-      | _ -> ()
-    ) message_body
-
+    List.iter
+      (function
+        | Pt.Message_field field ->
+          let { Pt.field_label; field_name; _ } = field in
+          (match field_label with
+          | `Nolabel -> E.missing_field_label ~field_name ~message_name
+          | _ -> ())
+        | Pt.Message_sub m' -> verify_message m'
+        | _ -> ())
+      message_body
   in
+
   List.iter verify_message messages;
   ()
 
 let finalize_syntax3 proto =
-  let {Pt.messages; enums; _ } = proto in
+  let { Pt.messages; enums; _ } = proto in
 
   (* make sure there are no `Required` fields
-    in messages. Optional is now allowed, but default values might
-    not be. *)
+     in messages. Optional is now allowed, but default values might
+     not be. *)
   let verify_no_default_field_options field_name message_name field_options =
     match Pb_option.get field_options "default" with
     | None -> ()
     | Some _ -> E.default_field_option_not_supported ~field_name ~message_name
   in
 
-  let verify_enum ?message_name {Pt.enum_name; enum_body; _} =
+  let verify_enum ?message_name { Pt.enum_name; enum_body; _ } =
     let rec aux = function
-      | (Pt.Enum_option _) :: tl -> aux tl
-      | (Pt.Enum_value {Pt.enum_value_int; _}) :: _ ->
-        if enum_value_int != 0
-        then E.invalid_first_enum_value_proto3 ?message_name ~enum_name ()
-        else ()
-      | [] -> assert(false)
+      | Pt.Enum_option _ :: tl -> aux tl
+      | Pt.Enum_value { Pt.enum_value_int; _ } :: _ ->
+        if enum_value_int != 0 then
+          E.invalid_first_enum_value_proto3 ?message_name ~enum_name ()
+        else
+          ()
+      | [] -> assert false
     in
     aux enum_body
   in
 
-  let rec finalize_message m  =
-    let {Pt.message_name; message_body; _} = m in
+  let rec finalize_message m =
+    let { Pt.message_name; message_body; _ } = m in
 
-    let message_body = List.map (function
-        | Pt.Message_field field ->
-            let {
-              Pt.field_label; 
-              field_type; 
-              field_name; 
-              field_options; _} = field in
-          let field =
-            match field_label with
-            | `Required ->
+    let message_body =
+      List.map
+        (function
+          | Pt.Message_field field ->
+            let { Pt.field_label; field_type; field_name; field_options; _ } =
+              field
+            in
+            let field =
+              match field_label with
+              | `Required ->
                 E.invalid_proto3_field_label ~field_name ~message_name
-            | `Repeated -> 
-                begin match field_type with
+              | `Repeated ->
+                (match field_type with
                 (* only builtin type of varint int64, int32 encoding
                    can be packed *)
                 | #Pb_field_type.builtin_type_int
                 | #Pb_field_type.builtin_type_floating_point
-                | `Bool -> 
-                  let field_options = Pb_option.(add field_options "packed"
-                      (Constant_bool true))
+                | `Bool ->
+                  let field_options =
+                    Pb_option.(add field_options "packed" (Constant_bool true))
                   in
-                  {field with Pt.field_options}
-                | _ -> field
-                end
-            | `Optional ->
+                  { field with Pt.field_options }
+                | _ -> field)
+              | `Optional ->
                 (* optional is now allowed *)
                 field
-            | `Nolabel -> field 
-          in
-          verify_no_default_field_options field_name message_name field_options;
-          Pt.Message_field field
-        | Pt.Message_sub m' -> Pt.Message_sub (finalize_message m')
-        | Pt.Message_enum enum -> begin 
-          verify_enum ~message_name enum;
-          Pt.Message_enum enum
-        end
-        | x-> x
-      ) message_body
+              | `Nolabel -> field
+            in
+            verify_no_default_field_options field_name message_name
+              field_options;
+            Pt.Message_field field
+          | Pt.Message_sub m' -> Pt.Message_sub (finalize_message m')
+          | Pt.Message_enum enum ->
+            verify_enum ~message_name enum;
+            Pt.Message_enum enum
+          | x -> x)
+        message_body
     in
-    {m with Pt.message_body}
+    { m with Pt.message_body }
   in
-  let messages = List.map finalize_message messages in 
+  let messages = List.map finalize_message messages in
   List.iter verify_enum enums;
-  {proto with Pt.messages}
+  { proto with Pt.messages }
 
-let finalize_proto_value ({Pt.syntax; _} as proto) =
+let finalize_proto_value ({ Pt.syntax; _ } as proto) =
   match syntax with
-  | None
-  | Some "proto2" -> begin 
+  | None | Some "proto2" ->
     verify_syntax2 proto;
     proto
-  end
   | Some "proto3" -> finalize_syntax3 proto
   | Some s -> E.invalid_protobuf_syntax s

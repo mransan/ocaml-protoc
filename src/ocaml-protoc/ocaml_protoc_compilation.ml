@@ -25,84 +25,96 @@
 
 module E = Pb_exception
 module Loc = Pb_location
-module Pt = Pb_parsing_parse_tree 
+module Pt = Pb_parsing_parse_tree
 module Parsing_util = Pb_parsing_util
-module Tt = Pb_typing_type_tree 
+module Tt = Pb_typing_type_tree
 module Typing_util = Pb_typing_util
-module Ot = Pb_codegen_ocaml_type 
+module Ot = Pb_codegen_ocaml_type
 module Cmdline = Ocaml_protoc_cmdline.Cmdline
 
-let find_imported_file include_dirs file_name = 
-  if Sys.file_exists file_name
-  then file_name
-  else 
-    let found_file = List.fold_left (fun found_file include_dir -> 
-      let try_file_name = Filename.concat include_dir file_name in 
-      match found_file, Sys.file_exists try_file_name with 
-      | None , true  -> Some try_file_name 
-      | Some previous, true  -> (
-        Printf.eprintf 
-            ("[Warning] Imported file %s found in 2 directories, " ^^ 
-             "picking: %s\n")
-            file_name previous; 
-        found_file
-      )
-      | _, false -> found_file  
-    ) None include_dirs in
+let find_imported_file include_dirs file_name =
+  if Sys.file_exists file_name then
+    file_name
+  else (
+    let found_file =
+      List.fold_left
+        (fun found_file include_dir ->
+          let try_file_name = Filename.concat include_dir file_name in
+          match found_file, Sys.file_exists try_file_name with
+          | None, true -> Some try_file_name
+          | Some previous, true ->
+            Printf.eprintf
+              ("[Warning] Imported file %s found in 2 directories, "
+             ^^ "picking: %s\n")
+              file_name previous;
+            found_file
+          | _, false -> found_file)
+        None include_dirs
+    in
 
     match found_file with
-    | None -> E.import_file_not_found file_name 
-    | Some file_name -> file_name 
+    | None -> E.import_file_not_found file_name
+    | Some file_name -> file_name
+  )
 
-let compile cmdline cmd_line_files_options = 
+let compile cmdline cmd_line_files_options =
+  let { Cmdline.include_dirs; proto_file_name; unsigned_tag; _ } = cmdline in
 
-  let {
-    Cmdline.include_dirs; 
-    proto_file_name;
-    unsigned_tag;
-     _} = cmdline in
-
-  (* parsing *) 
-
-  let protos = Pb_parsing.parse_file (fun file_name -> 
-    let file_name = find_imported_file include_dirs file_name in 
-    (file_name, Pb_util.read_file file_name)  
-  ) proto_file_name in 
+  (* parsing *)
+  let protos =
+    Pb_parsing.parse_file
+      (fun file_name ->
+        let file_name = find_imported_file include_dirs file_name in
+        file_name, Pb_util.read_file file_name)
+      proto_file_name
+  in
 
   (* file options can be overriden/added with command line arguments *)
-  let protos = List.map (fun proto -> 
-    {proto with 
-      Pt.file_options = 
-        Pb_option.merge proto.Pt.file_options cmd_line_files_options 
-    }
-  ) protos in
+  let protos =
+    List.map
+      (fun proto ->
+        {
+          proto with
+          Pt.file_options =
+            Pb_option.merge proto.Pt.file_options cmd_line_files_options;
+        })
+      protos
+  in
 
-  let proto_file_options = 
-    let main_proto = List.hd protos in 
+  let proto_file_options =
+    let main_proto = List.hd protos in
     main_proto.Pt.file_options
-  in 
+  in
 
-  (* typing *) 
-
-  let grouped_protos = Pb_typing.perform_typing protos in 
-  let all_typed_protos = List.flatten grouped_protos in 
+  (* typing *)
+  let grouped_protos = Pb_typing.perform_typing protos in
+  let all_typed_protos = List.flatten grouped_protos in
 
   (* Only get the types which are part of the given proto file 
    * (compilation unit) *)
-  let grouped_proto = List.filter (function
-    | {Tt.file_name; _ }::_ when file_name = proto_file_name -> true 
-    | _ -> false
-  ) grouped_protos in 
+  let grouped_proto =
+    List.filter
+      (function
+        | { Tt.file_name; _ } :: _ when file_name = proto_file_name -> true
+        | _ -> false)
+      grouped_protos
+  in
 
   (* -- OCaml Backend -- *)
+  let module BO = Pb_codegen_backend in
+  let ocaml_types =
+    List.rev
+    @@ List.fold_left
+         (fun ocaml_types types ->
+           let l =
+             List.flatten
+             @@ List.map
+                  (fun t ->
+                    BO.compile ~unsigned_tag:!unsigned_tag all_typed_protos t)
+                  types
+           in
+           l :: ocaml_types)
+         [] grouped_proto
+  in
 
-  let module BO = Pb_codegen_backend in 
-
-  let ocaml_types = List.rev @@ List.fold_left (fun ocaml_types types -> 
-    let l = List.flatten @@ List.map (fun t -> 
-      BO.compile ~unsigned_tag:(!unsigned_tag) all_typed_protos t
-    ) types in 
-    l :: ocaml_types 
-  ) [] grouped_proto  in 
-
-  (ocaml_types, proto_file_options)
+  ocaml_types, proto_file_options

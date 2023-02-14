@@ -29,23 +29,23 @@
     the manipulation of the type tree. *)
 
 module Pt = Pb_parsing_parse_tree
-module Tt = Pb_typing_type_tree 
+module Tt = Pb_typing_type_tree
 
 (** {2 Accessors for Tt.field type } *)
 
-val field_name   : ('a, 'b)  Tt.field -> string 
+val field_name : ('a, 'b) Tt.field -> string
 (** [field_name field] returns the name [field] *)
 
-val field_number : ('a, 'b)  Tt.field -> int
+val field_number : ('a, 'b) Tt.field -> int
 (** [field_number field] returns the number of [field] *)
 
-val field_type   : ('a, 'b)  Tt.field -> 'a Pb_field_type.t
+val field_type : ('a, 'b) Tt.field -> 'a Pb_field_type.t
 (** [field_type field] returns the type of [field] *)
 
-val field_label  : ('a, 'b)  Tt.field -> 'b 
+val field_label : ('a, 'b) Tt.field -> 'b
 (** [field_label field] returns the label of [field] *)
 
-val field_default : ('a, 'b)  Tt.field -> Pb_option.constant option
+val field_default : ('a, 'b) Tt.field -> Pb_option.constant option
 (** [field_default field] returns the default value of [field] *)
 
 val field_options : ('a, 'b) Tt.field -> Pb_option.set
@@ -56,18 +56,16 @@ val field_option : ('a, 'b) Tt.field -> string -> Pb_option.constant option
     is returned.
   *)
 
-val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type 
+val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type
 (** [type_of_id all_types id] returns the type associated with the given id, 
     raise [Not_found] if the type is not in the all_types. 
   *)
 
-val string_of_message : int -> Tt.type_scope -> 'a Tt.message -> string 
+val string_of_message : int -> Tt.type_scope -> 'a Tt.message -> string
+val message_option : 'a Tt.message -> string -> Pb_option.constant option
+val enum_option : Tt.enum -> string -> Pb_option.constant option
 
-val message_option : 'a Tt.message -> string -> Pb_option.constant option 
-
-val enum_option : Tt.enum -> string -> Pb_option.constant option 
-
-(** {2 Accessor for Tt.type} *) 
+(** {2 Accessor for Tt.type} *)
 
 val type_name_of_type : 'a Tt.proto_type -> string
 (** [type_name_of_type t] returns the type name (as defined in the 
@@ -77,11 +75,11 @@ val type_name_of_type : 'a Tt.proto_type -> string
 val type_scope_of_type : 'a Tt.proto_type -> Tt.type_scope
 (** [type_scope_of_type t] returns the scope of type [t]. *)
 
-val is_empty_message : 'a Tt.proto_type -> bool 
+val is_empty_message : 'a Tt.proto_type -> bool
 (** [is_empty_message t] returns true if [t] is a message type and 
     has no fields defined. 
  *)
 
-(** {2 Creator} *) 
+(** {2 Creator} *)
 
-val empty_scope : Tt.type_scope 
+val empty_scope : Tt.type_scope
