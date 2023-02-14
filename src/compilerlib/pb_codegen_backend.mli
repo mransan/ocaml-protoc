@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -25,22 +25,22 @@
 
 (** Compile protobuf parse tree to the ocaml type *)
 
-(** This module focuses on the compilation steps which transforms a 
-    fully resolved Protobuf message into an OCaml representation. 
+(** This module focuses on the compilation steps which transforms a
+    fully resolved Protobuf message into an OCaml representation.
 
-    After compilation this module also expose code generation 
+    After compilation this module also expose code generation
     functionality.  *)
 
-module Tt = Pb_typing_type_tree 
-module Ot = Pb_codegen_ocaml_type  
+module Tt = Pb_typing_type_tree
+module Ot = Pb_codegen_ocaml_type
 
-(** {2 Compilation } *) 
+(** {2 Compilation } *)
 
 val compile :
   unsigned_tag:bool ->
   Pb_field_type.resolved Tt.proto ->
-  Pb_field_type.resolved Tt.proto_type -> 
-  Ot.type_ list 
+  Pb_field_type.resolved Tt.proto_type ->
+  Ot.type_ list
 
 (** Internal helpers.
 
@@ -60,5 +60,6 @@ module Internal : sig
   val variant_of_oneof :
     ?include_oneof_name:unit ->
     outer_message_names:string list ->
+    unsigned_tag:bool ->
     'a Tt.proto -> Pb_option.set -> string -> int Tt.oneof -> Ot.variant
 end
