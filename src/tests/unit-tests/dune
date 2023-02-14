@@ -21,5 +21,6 @@
     wrapper_encoding
     varint
   )
-  (libraries pbrt compiler_lib)
+  (libraries pbrt ocaml-protoc.compiler-lib)
+  (flags :standard -open Ocaml_protoc_compiler_lib)
 )

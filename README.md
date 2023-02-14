@@ -138,9 +138,10 @@ let () =
 
 **Prerequesite**
 
-`ocaml-protoc` depends on :
-* the OCaml compiler distribution (byte code/native compiler and ocamlbuild).
-* [ppx_deriving_protobuf](https://github.com/whitequark/ppx_deriving_protobuf) for the generated code runtime.
+`ocaml-protoc` only depends on
+* the OCaml compiler distribution (byte code/native compiler).
+* dune
+* stdlib-shims
 
 **Intall from OPAM**
 
