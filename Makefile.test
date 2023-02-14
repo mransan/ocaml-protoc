@@ -6,7 +6,7 @@ export CXX
 ifndef CPPFLAGS
     CPPFLAGS =
 endif
-CPPFLAGS+=-Wno-deprecated
+CPPFLAGS+=-Wno-deprecated -std=c++11
 export CPPFLAGS
 
 #
@@ -22,13 +22,13 @@ tests:
 #
 # Integration tests
 # -----------------
-			
+
 # Integration tests with Google protoc (C++ target) to ensure that
 # the generated OCaml code can encode/decode message compatible with Google
 # implementation
 
 # location of where the Google protoc compiler is installed
-PB_INSTALL = /usr/local
+PB_INSTALL ?= /usr/
 PB_HINC    = $(PB_INSTALL)/include
 PB_LINC    = $(PB_INSTALL)/lib
 PROTOC     = $(PB_INSTALL)/bin/protoc
@@ -66,7 +66,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 
 
 test%: $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk
-	$(DUNE) build $(INTEGRATION_TESTS_DIR)/test$*_ml.exe
+	INCLUDE=$(PB_HINC)/ $(DUNE) build $(INTEGRATION_TESTS_DIR)/test$*_ml.exe
 	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk encode
 	time ./_build/default/$(INTEGRATION_TESTS_DIR)/test$*_ml.exe decode
 	./_build/default/$(INTEGRATION_TESTS_DIR)/test$*_ml.exe encode
@@ -103,4 +103,4 @@ yojson:
 	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
 
 .PHONY: all-tests
-all-tests: tests yojson integration 
+all-tests: tests yojson integration
