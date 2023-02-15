@@ -30,14 +30,14 @@
 
 module Pt = Pb_parsing_parse_tree
 
-(** {2 Creators } *) 
+(** {2 Creators } *)
 
-val field : 
+val field :
   ?options:Pb_option.set ->
-  label:Pt.message_field_label-> 
-  number:int -> 
-  type_:string -> 
-  string -> 
+  label:Pt.message_field_label ->
+  number:int ->
+  type_:string ->
+  string ->
   Pt.message_field
 
 val map_field :
@@ -55,67 +55,26 @@ val oneof_field :
   string ->
   Pt.oneof_field
 
-val oneof :
-  fields:Pt.oneof_field list ->
-  string ->
-  Pt.oneof
-
-val message_body_field :
-  Pt.message_field  ->
-  Pt.message_body_content
-
-val message_body_map_field :
-  Pt.map_field ->
-  Pt.message_body_content
-
-val message_body_oneof_field  :
-  Pt.oneof ->
-  Pt.message_body_content
-
-val enum_value :
-  int_value:int ->
-  string ->
-  Pt.enum_body_content
-
-val enum_option :
-  Pb_option.t ->
-  Pt.enum_body_content
-
-val enum :
-  ?enum_body:Pt.enum_body_content list ->
-  string ->
-  Pt.enum
-
+val oneof : fields:Pt.oneof_field list -> string -> Pt.oneof
+val message_body_field : Pt.message_field -> Pt.message_body_content
+val message_body_map_field : Pt.map_field -> Pt.message_body_content
+val message_body_oneof_field : Pt.oneof -> Pt.message_body_content
+val enum_value : int_value:int -> string -> Pt.enum_body_content
+val enum_option : Pb_option.t -> Pt.enum_body_content
+val enum : ?enum_body:Pt.enum_body_content list -> string -> Pt.enum
 val extension_range_single_number : int -> Pt.extension_range
 
-val extension_range_range : int -> [ `Max | `Number of int ] -> Pt.extension_range
+val extension_range_range :
+  int -> [ `Max | `Number of int ] -> Pt.extension_range
 
-val message_body_sub :
-  Pt.message ->
-  Pt.message_body_content
+val message_body_sub : Pt.message -> Pt.message_body_content
+val message_body_enum : Pt.enum -> Pt.message_body_content
+val message_body_extension : Pt.extension_range list -> Pt.message_body_content
+val message_body_reserved : Pt.extension_range list -> Pt.message_body_content
+val message_body_option : Pb_option.t -> Pt.message_body_content
+val message : content:Pt.message_body_content list -> string -> Pt.message
 
-val message_body_enum:
-  Pt.enum ->
-  Pt.message_body_content
-
-val message_body_extension:
-  Pt.extension_range list  ->
-  Pt.message_body_content
-
-val message_body_reserved:
-  Pt.extension_range list  ->
-  Pt.message_body_content
-
-val message_body_option :
-  Pb_option.t ->
-  Pt.message_body_content
-
-val message :
-  content:Pt.message_body_content list ->
-  string ->
-  Pt.message
-
-val rpc:
+val rpc :
   ?options:Pb_option.set ->
   req_stream:bool ->
   req:string ->
@@ -124,38 +83,24 @@ val rpc:
   string ->
   Pt.rpc
 
-val rpc_option_map:
-  ((string * string) list) ->
-  Pb_option.constant
+val rpc_option_map : (string * string) list -> Pb_option.constant
+val service_body_option : Pb_option.t -> Pt.service_body_content
+val service_body_rpc : Pt.rpc -> Pt.service_body_content
+val service : content:Pt.service_body_content list -> string -> Pt.service
+val import : ?public:unit -> string -> Pt.import
+val extend : string -> Pt.message_field list -> Pt.extend
 
-val service_body_option :
-  Pb_option.t ->
-  Pt.service_body_content
-
-val service_body_rpc :
-  Pt.rpc ->
-  Pt.service_body_content
-
-val service :
-  content: Pt.service_body_content list ->
-  string ->
-  Pt.service
-
-val import : ?public:unit -> string -> Pt.import 
-
-val extend : string -> Pt.message_field list -> Pt.extend  
-
-val proto: 
+val proto :
   ?syntax:string ->
-  ?file_option:Pb_option.t -> 
-  ?package:string -> 
-  ?import:Pt.import -> 
+  ?file_option:Pb_option.t ->
+  ?package:string ->
+  ?import:Pt.import ->
   ?message:Pt.message ->
   ?service:Pt.service ->
   ?enum:Pt.enum ->
-  ?proto:Pt.proto -> 
-  ?extend:Pt.extend -> 
-  unit -> 
+  ?proto:Pt.proto ->
+  ?extend:Pt.extend ->
+  unit ->
   Pt.proto
 (** [proto ~message ~proto ()] will add [message] to [proto] and return a 
     the updated proto value. *)
@@ -164,4 +109,4 @@ val finalize_proto_value : Pt.proto -> Pt.proto
 
 (** {2 Miscellaneous functionality } *)
 
-val message_printer :?level:int -> Pt.message -> unit 
+val message_printer : ?level:int -> Pt.message -> unit

@@ -28,18 +28,17 @@ type payload_kind =
   | Bytes
 
 module Decoder : sig
-
   (** {2 Types} *)
 
   type t
 
   (** {2 Creator} *)
 
-  (** [of_bytes b] creates a decoder positioned at start of bytes [b]. *)
   val of_bytes : bytes -> t
+  (** [of_bytes b] creates a decoder positioned at start of bytes [b]. *)
 
-  (** [of_string s] creates a decoder positioned at start of string [s]. *)
   val of_string : string -> t
+  (** [of_string s] creates a decoder positioned at start of string [s]. *)
 
   (** {2 Errors} *)
 
@@ -47,13 +46,13 @@ module Decoder : sig
     | Incomplete
     | Overlong_varint
     | Malformed_field
-    | Overflow            of string
-    | Unexpected_payload  of string * payload_kind
-    | Missing_field       of string
-    | Malformed_variant   of string
+    | Overflow of string
+    | Unexpected_payload of string * payload_kind
+    | Missing_field of string
+    | Malformed_variant of string
 
-  (** [error_to_string e] converts error [e] to its string representation. *)
   val error_to_string : error -> string
+  (** [error_to_string e] converts error [e] to its string representation. *)
 
   exception Failure of error
 
@@ -88,7 +87,7 @@ module Decoder : sig
       If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
-  val map_entry : t -> decode_key:(t -> 'a) -> decode_value:(t -> 'b) -> ('a * 'b)
+  val map_entry : t -> decode_key:(t -> 'a) -> decode_value:(t -> 'b) -> 'a * 'b
 
   val empty_nested : t -> unit
   (** [empty_nested d] skips an empty message of 0 length.
@@ -151,13 +150,12 @@ module Decoder : sig
 
   (* These uint functions are like their int counterparts above, except they
      wrap their values in an [`unsigned of d] tag. *)
-  val uint32_as_varint : t -> [`unsigned of int32]
-  val uint32_as_zigzag : t -> [`unsigned of int32]
-  val uint64_as_varint : t -> [`unsigned of int64]
-  val uint64_as_zigzag : t -> [`unsigned of int64]
-  val uint32_as_bits32 : t -> [`unsigned of int32]
-  val uint64_as_bits64 : t -> [`unsigned of int64]
-
+  val uint32_as_varint : t -> [ `unsigned of int32 ]
+  val uint32_as_zigzag : t -> [ `unsigned of int32 ]
+  val uint64_as_varint : t -> [ `unsigned of int64 ]
+  val uint64_as_zigzag : t -> [ `unsigned of int64 ]
+  val uint32_as_bits32 : t -> [ `unsigned of int32 ]
+  val uint64_as_bits64 : t -> [ `unsigned of int64 ]
 
   val bool : t -> bool
   (** [bool d] reads a [bool] value from [d] with varing encoding.
@@ -201,33 +199,25 @@ module Decoder : sig
       [Failure Incomplete]. *)
 
   val wrapper_double_value : t -> float option
-
   val wrapper_float_value : t -> float option
-
   val wrapper_int64_value : t -> int64 option
-
   val wrapper_int32_value : t -> int32 option
-
   val wrapper_bool_value : t -> bool option
-
   val wrapper_string_value : t -> string option
-
   val wrapper_bytes_value : t -> bytes option
-
-end (* Decoder *)
+end
+(* Decoder *)
 
 module Encoder : sig
-
   (** {2 Types} *)
 
   type t
 
   (** {2 Error} *)
 
-  type error =
-    | Overflow of string
+  type error = Overflow of string
 
-  val error_to_string: error -> string
+  val error_to_string : error -> string
 
   exception Failure of error
 
@@ -248,7 +238,6 @@ module Encoder : sig
   (** {2 Convertion} *)
 
   val to_bytes : t -> bytes
-
   val to_string : t -> string
 
   val write_chunks : (bytes -> int -> int -> unit) -> t -> unit
@@ -259,16 +248,16 @@ module Encoder : sig
 
   (** {2 Encoding Functions} *)
 
-  val key : (int * payload_kind) -> t -> unit
+  val key : int * payload_kind -> t -> unit
   (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
 
-  val nested    : (t -> unit) -> t -> unit
+  val nested : (t -> unit) -> t -> unit
   (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
 
   val map_entry :
     encode_key:('a -> t -> unit) ->
-    encode_value:('b -> t-> unit ) ->
-    (('a * payload_kind) * ('b * payload_kind)) ->
+    encode_value:('b -> t -> unit) ->
+    ('a * payload_kind) * ('b * payload_kind) ->
     t ->
     unit
 
@@ -306,7 +295,7 @@ module Encoder : sig
   val uint32_as_bits32 : [ `unsigned of int32 ] -> t -> unit
   val uint64_as_bits64 : [ `unsigned of int64 ] -> t -> unit
 
-  val bool :  bool -> t -> unit
+  val bool : bool -> t -> unit
   (** [encode b e] encodes [b] in [e] with [Varint] encoding *)
 
   val float_as_bits32 : float -> t -> unit
@@ -331,23 +320,15 @@ module Encoder : sig
   (** [string s e] encodes [s] in [e] *)
 
   val wrapper_double_value : float option -> t -> unit
-
   val wrapper_float_value : float option -> t -> unit
-
   val wrapper_int64_value : int64 option -> t -> unit
-
   val wrapper_int32_value : int32 option -> t -> unit
-
   val wrapper_bool_value : bool option -> t -> unit
-
   val wrapper_string_value : string option -> t -> unit
-
   val wrapper_bytes_value : bytes option -> t -> unit
-
 end
 
 module Repeated_field : sig
-
   type 'a t
   (** optimized data structure for fast inserts so that decoding
       can be efficient
@@ -378,7 +359,7 @@ module Repeated_field : sig
   (** [length c] returns the number of insterted element in [c].
     *)
 
-  val add  : 'a -> 'a t -> unit
+  val add : 'a -> 'a t -> unit
   (** [add x c] appends [a] to container [c]
 
       This operation is not constant time since it might trigger
@@ -402,7 +383,7 @@ module Repeated_field : sig
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
   (** [iteri f c] applies [f] to all element in [c] *)
 
-  val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t-> 'b
+  val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** [fold_left f e0 c] accumulates [e0] through each elements *)
 
   val map_to_array : ('a -> 'b) -> 'a t -> 'b array
@@ -419,7 +400,6 @@ end
 (** Runtime functions for Pretty Printing functionality
  *)
 module Pp : sig
-
   type formatter = Format.formatter
 
   val pp_unit : formatter -> unit -> unit
@@ -428,28 +408,28 @@ module Pp : sig
   val pp_int : formatter -> int -> unit
   (** [pp_unit fmt i] formats [i] value *)
 
-  val pp_float : formatter -> float  -> unit
+  val pp_float : formatter -> float -> unit
   (** [pp_unit fmt f] formats [f] value *)
 
-  val pp_bool : formatter -> bool  -> unit
+  val pp_bool : formatter -> bool -> unit
   (** [pp_unit fmt b] formats [b] value *)
 
-  val pp_int32 : formatter -> int32  -> unit
+  val pp_int32 : formatter -> int32 -> unit
   (** [pp_unit fmt i] formats [i] value *)
 
-  val pp_unsigned_of_int32 : formatter -> [`unsigned of int32]  -> unit
+  val pp_unsigned_of_int32 : formatter -> [ `unsigned of int32 ] -> unit
   (* @since 2.4 *)
 
-  val pp_int64 : formatter -> int64  -> unit
+  val pp_int64 : formatter -> int64 -> unit
   (** [pp_unit fmt i] formats [i] value *)
 
-  val pp_unsigned_of_int64 : formatter -> [`unsigned of int64] -> unit
+  val pp_unsigned_of_int64 : formatter -> [ `unsigned of int64 ] -> unit
   (* @since 2.4 *)
 
-  val pp_string : formatter -> string  -> unit
+  val pp_string : formatter -> string -> unit
   (** [pp_unit fmt s] formats [s] value *)
 
-  val pp_bytes : formatter -> bytes  -> unit
+  val pp_bytes : formatter -> bytes -> unit
   (** [pp_unit fmt b] formats [b] value *)
 
   val pp_option : (formatter -> 'a -> unit) -> formatter -> 'a option -> unit
@@ -472,13 +452,15 @@ module Pp : sig
   val pp_associative_list :
     (formatter -> 'a -> unit) ->
     (formatter -> 'b -> unit) ->
-    formatter -> ('a * 'b) list ->
+    formatter ->
+    ('a * 'b) list ->
     unit
 
   val pp_hastable :
     (formatter -> 'a -> unit) ->
     (formatter -> 'b -> unit) ->
-    formatter -> ('a, 'b) Hashtbl.t ->
+    formatter ->
+    ('a, 'b) Hashtbl.t ->
     unit
 
   val pp_record_field :
@@ -493,5 +475,5 @@ module Pp : sig
 
   val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit
   (** [pp_brk fmt r] formats record value [r] with curly brakets.  *)
-
-end (* Pp *)
+end
+(* Pp *)

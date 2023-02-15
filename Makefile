@@ -22,7 +22,7 @@ BUCKLESCRIPT_TEST_DIR = src/tests/bs
 
 default:
 	$(info use `make [clean|build|test]`)
-	
+
 clean.gen:
 	rm -rf lib
 	rm -f $(INTEGRATION_TESTS_DIR)/*.pb.*
@@ -45,7 +45,7 @@ clean.gen:
 clean: clean.gen
 	$(DUNE) clean
 	rm -f *.data
-	rm -f $(INTEGRATION_TESTS_DIR)/*.tsk  
+	rm -f $(INTEGRATION_TESTS_DIR)/*.tsk
 
 build:
 	$(DUNE) build $(DUNE_OPTS)
@@ -53,10 +53,13 @@ build:
 test:
 	$(DUNE) runtest $(DUNE_OPTS)
 
-.PHONY: tag distrib publish
+.PHONY: tag distrib publish format
 
 tag:
 	dune-release tag
+
+format:
+	dune build @fmt --auto-promote
 
 distrib:
 	dune-release distrib

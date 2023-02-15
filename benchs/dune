@@ -1,10 +1,10 @@
-
 (executable
-  (name benchs)
-  (ocamlopt_flags :standard -inline 100)
-  (libraries ocaml-protoc benchmark))
+ (name benchs)
+ (ocamlopt_flags :standard -inline 100)
+ (libraries ocaml-protoc benchmark))
 
 (rule
-  (targets foo_types.ml foo_types.mli foo_pb.ml foo_pb.mli foo_pp.ml)
-  (deps foo.proto)
-  (action (run ocaml-protoc %{deps} -binary -pp -ml_out .)))
+ (targets foo_types.ml foo_types.mli foo_pb.ml foo_pb.mli foo_pp.ml)
+ (deps foo.proto)
+ (action
+  (run ocaml-protoc %{deps} -binary -pp -ml_out .)))

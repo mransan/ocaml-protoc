@@ -25,6 +25,7 @@
 
 (** Protobuffer Field type *)
 
+type type_path = string list
 (** Scope path of a type used for a message field.
     
     For instance in the following field defintion:
@@ -33,8 +34,15 @@
 
     The [type_path] would be [\["foo"; "bar"\]]
   *)
-type type_path = string list 
 
+type unresolved = {
+  type_path: type_path;
+  type_name: string;
+  from_root: bool;
+      (** from_root indicates that the scope for the type is
+                         from the root of the type system. (ie starts with '.')
+                      *)
+}
 (** In the first phase of the compilation 
     the field of message type are not resolved but only 
     properly parsed. 
@@ -52,64 +60,61 @@ type type_path = string list
       from_root = false
     }]
  *)
-type unresolved = {
-  type_path : type_path; 
-  type_name : string; 
-  from_root : bool;  (** from_root indicates that the scope for the type is
-                         from the root of the type system. (ie starts with '.')
-                      *) 
-}
 
+type resolved = int
 (** After phase 2 compilation the field type is resolved to an 
     known message which can be uniquely identified by its id.
   *)
-type resolved = int 
 
+type builtin_type_floating_point =
+  [ `Double
+  | `Float
+  ]
 (** Floating point builtin types *)
-type builtin_type_floating_point = [ 
-  | `Double 
-  | `Float 
-]
 
-(** Unsigned integer builtin types *)
-type builtin_type_unsigned_int  = [
-  | `Uint32 
+type builtin_type_unsigned_int =
+  [ `Uint32
   | `Uint64
-]
+  ]
+(** Unsigned integer builtin types *)
 
-(** Signed integer builtin types *) 
-type builtin_type_signed_int = [
-  | `Int32 
-  | `Int64 
-  | `Sint32 
-  | `Sint64 
-  | `Fixed32 
-  | `Fixed64 
-  | `Sfixed32 
-  | `Sfixed64 
-]
+type builtin_type_signed_int =
+  [ `Int32
+  | `Int64
+  | `Sint32
+  | `Sint64
+  | `Fixed32
+  | `Fixed64
+  | `Sfixed32
+  | `Sfixed64
+  ]
+(** Signed integer builtin types *)
 
+type builtin_type_int =
+  [ builtin_type_unsigned_int
+  | builtin_type_signed_int
+  ]
 (** Integer builtin types *)
-type builtin_type_int= [ 
-  |  builtin_type_unsigned_int 
-  |  builtin_type_signed_int
-]
 
-type map_key_type = [
+type map_key_type =
+  [ builtin_type_int
+  | `Bool
+  | `String
+  ]
+
+type builtin_type =
+  [ builtin_type_floating_point
   | builtin_type_int
-  | `Bool 
-  | `String 
-]
-
+  | `Bool
+  | `String
+  | `Bytes
+  ]
 (** Builtin type defined in protobuf *)
-type builtin_type = [
-  | builtin_type_floating_point
-  | builtin_type_int
-  | `Bool 
-  | `String 
-  | `Bytes 
-]
 
+type 'a t =
+  [ builtin_type
+  | `User_defined of 'a (* Message or Enum type *)
+  ]
 (** field type. 
     
     The ['a] type is for re-using the same type 
@@ -118,13 +123,8 @@ type builtin_type = [
     After Phase 1 ['a] is [unresolved] while after Phase2
     ['a] is [resolved].
   *)
-type 'a t = [ 
-  | builtin_type          
-  | `User_defined of 'a   (* Message or Enum type *)
-]  
 
-type unresolved_t = unresolved t 
-
+type unresolved_t = unresolved t
 type resolved_t = resolved t
 
 val parse : string -> unresolved_t

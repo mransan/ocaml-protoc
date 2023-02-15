@@ -33,60 +33,52 @@
  * appended there.
  *)
 module File_options = struct
-
   type t = {
-    mutable int32_type : string option;
-    mutable int64_type : string option;
-    mutable ocaml_file_ppx : string option;
-    mutable ocaml_all_types_ppx : string option;
+    mutable int32_type: string option;
+    mutable int64_type: string option;
+    mutable ocaml_file_ppx: string option;
+    mutable ocaml_all_types_ppx: string option;
   }
   (* all file options supported... this needs to be kept in sync with
    * src/include/ocaml-protoc/ocamloptions.proto *)
 
-  let make () = {
-    int32_type = None;
-    int64_type = None;
-    ocaml_file_ppx = None;
-    ocaml_all_types_ppx = None;
-  }
+  let make () =
+    {
+      int32_type = None;
+      int64_type = None;
+      ocaml_file_ppx = None;
+      ocaml_all_types_ppx = None;
+    }
 
   (* Compute the command line arguments for be used with the Arg module.  *)
-  let cmd_line_args t = [
-    (
-      "-int32_type",
-      Arg.String (function
-        | "int_t" -> t.int32_type <- Some "int_t"
-        | x -> failwith @@ Printf.sprintf "Invalid int32_type value %s" x
-      ),
-      "int32_type file option"
-    );
-    (
-      "-int64_type",
-      Arg.String (function
-        | "int_t" -> t.int64_type <- Some "int_t"
-        | x -> failwith @@ Printf.sprintf "Invalid int64_type value %s" x
-      ),
-      "int64_type file option"
-    );
-    (
-      "-ocaml_file_ppx",
-      Arg.String (fun s -> t.ocaml_file_ppx <- Some s),
-      "ocaml_file_ppx file option"
-    );
-    (
-      "-ocaml_all_types_ppx",
-      Arg.String (fun s -> t.ocaml_all_types_ppx<- Some s),
-      "ocaml_all_types_ppx file option"
-    );
-  ]
+  let cmd_line_args t =
+    [
+      ( "-int32_type",
+        Arg.String
+          (function
+          | "int_t" -> t.int32_type <- Some "int_t"
+          | x -> failwith @@ Printf.sprintf "Invalid int32_type value %s" x),
+        "int32_type file option" );
+      ( "-int64_type",
+        Arg.String
+          (function
+          | "int_t" -> t.int64_type <- Some "int_t"
+          | x -> failwith @@ Printf.sprintf "Invalid int64_type value %s" x),
+        "int64_type file option" );
+      ( "-ocaml_file_ppx",
+        Arg.String (fun s -> t.ocaml_file_ppx <- Some s),
+        "ocaml_file_ppx file option" );
+      ( "-ocaml_all_types_ppx",
+        Arg.String (fun s -> t.ocaml_all_types_ppx <- Some s),
+        "ocaml_all_types_ppx file option" );
+    ]
 
   (** Converts the command line values to Parse Tree file options
     *)
   let to_file_options t : Pb_option.set =
+    let { int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx } = t in
 
-    let {int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx} = t in
-
-    let map x f options  =
+    let map x f options =
       match x with
       | None -> options
       | Some x ->
@@ -94,124 +86,78 @@ module File_options = struct
         Pb_option.add options option_name option_value
     in
     Pb_option.empty
-    |> map int32_type (fun s ->
-      ("int32_type", Pb_option.Constant_litteral s)
-    )
-    |> map int64_type (fun s ->
-      ("int64_type", Pb_option.Constant_litteral s)
-    )
+    |> map int32_type (fun s -> "int32_type", Pb_option.Constant_litteral s)
+    |> map int64_type (fun s -> "int64_type", Pb_option.Constant_litteral s)
     |> map ocaml_file_ppx (fun s ->
-      ("ocaml_file_ppx", Pb_option.Constant_string s)
-    )
+           "ocaml_file_ppx", Pb_option.Constant_string s)
     |> map ocaml_all_types_ppx (fun s ->
-      ("ocaml_all_types_ppx", Pb_option.Constant_string s)
-    )
-
+           "ocaml_all_types_ppx", Pb_option.Constant_string s)
 end
 
 (* Command line argument for the ocaml-protoc *)
 module Cmdline = struct
-
   type t = {
-    mutable ml_out : string;
-      (* output directory *)
-    mutable proto_file_name : string;
-      (* proto file name as given on the cmd line *)
-    mutable include_dirs : string list;
-      (* include directories given with -I argument *)
-    binary : bool ref;
-      (* whether binary encoding is enabled *)
-    yojson : bool ref;
-      (* whether yojson encoding is enabled *)
-    bs : bool ref;
-      (* whether BuckleScript encoding is enabled *)
-    pp : bool ref;
-      (* whether pretty printing is enabled *)
-    mutable cmd_line_file_options : File_options.t;
-      (* file options override from the cmd line *)
-    unsigned_tag : bool ref;
-      (* if true, unsigned int32/64s will be generated with a polymorphic
-         variant [`unsigned int32/64], otherwise will be emitted as
-         immediate [int32/int64]. *)
+    mutable ml_out: string; (* output directory *)
+    mutable proto_file_name: string;
+        (* proto file name as given on the cmd line *)
+    mutable include_dirs: string list;
+        (* include directories given with -I argument *)
+    binary: bool ref; (* whether binary encoding is enabled *)
+    yojson: bool ref; (* whether yojson encoding is enabled *)
+    bs: bool ref; (* whether BuckleScript encoding is enabled *)
+    pp: bool ref; (* whether pretty printing is enabled *)
+    mutable cmd_line_file_options: File_options.t;
+        (* file options override from the cmd line *)
+    unsigned_tag: bool ref;
+        (* if true, unsigned int32/64s will be generated with a polymorphic
+           variant [`unsigned int32/64], otherwise will be emitted as
+           immediate [int32/int64]. *)
   }
 
-  let make () = {
-    ml_out = "";
-    proto_file_name = "";
-    include_dirs = [];
-    binary = ref false;
-    yojson = ref false;
-    bs = ref false;
-    pp = ref false;
-    cmd_line_file_options = File_options.make ();
-    unsigned_tag = ref false
-  }
+  let make () =
+    {
+      ml_out = "";
+      proto_file_name = "";
+      include_dirs = [];
+      binary = ref false;
+      yojson = ref false;
+      bs = ref false;
+      pp = ref false;
+      cmd_line_file_options = File_options.make ();
+      unsigned_tag = ref false;
+    }
 
-  let cmd_line_args t = [
-    (
-      "-yojson",
-      Arg.Set t.yojson,
-      "generate yojson encoding"
-    );
-    (
-      "-bs",
-      Arg.Set t.bs,
-      "generate BuckleScript encoding"
-    );
-    (
-      "-binary",
-      Arg.Set t.binary,
-      "generate binary encoding"
-    );
-    (
-      "-pp",
-      Arg.Set t.pp,
-      "generate pretty print functions"
-    );
-    (
-      "-I",
-      Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
-      "include directories"
-    );
-    (
-      "-ml_out",
-      Arg.String (fun s-> t.ml_out <- s),
-      "output directory"
-    );
-    (
-      "-unsigned",
-      Arg.Set t.unsigned_tag,
-      "tag uint32 and uint64 types with `unsigned"
-    );
-
-
-  ] @ File_options.cmd_line_args t.cmd_line_file_options
+  let cmd_line_args t =
+    [
+      "-yojson", Arg.Set t.yojson, "generate yojson encoding";
+      "-bs", Arg.Set t.bs, "generate BuckleScript encoding";
+      "-binary", Arg.Set t.binary, "generate binary encoding";
+      "-pp", Arg.Set t.pp, "generate pretty print functions";
+      ( "-I",
+        Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
+        "include directories" );
+      "-ml_out", Arg.String (fun s -> t.ml_out <- s), "output directory";
+      ( "-unsigned",
+        Arg.Set t.unsigned_tag,
+        "tag uint32 and uint64 types with `unsigned" );
+    ]
+    @ File_options.cmd_line_args t.cmd_line_file_options
 
   let usage = "ocaml-protoc -ml_out <output_directory> <file_name>.proto"
-
-  let anon_fun t = fun proto_file_name ->
-    t.proto_file_name <- proto_file_name
+  let anon_fun t proto_file_name = t.proto_file_name <- proto_file_name
 
   let validate t =
-    begin
-      if not !(t.yojson) && not !(t.binary) && not !(t.pp) && not !(t.bs)
-      then begin
-        t.binary := true;
-        t.pp := true;
-      end;
-    end;
+    if (not !(t.yojson)) && (not !(t.binary)) && (not !(t.pp)) && not !(t.bs)
+    then (
+      t.binary := true;
+      t.pp := true
+    );
 
-    begin
-      if t.proto_file_name = ""
-      then failwith
-        "Missing proto file name from command line argument"
-    end;
+    if t.proto_file_name = "" then
+      failwith "Missing proto file name from command line argument";
 
-    begin
-      if t.ml_out = ""
-      then failwith
-        "Missing -ml_out (output directory) from command line argument";
-    end
+    if t.ml_out = "" then
+      failwith "Missing -ml_out (output directory) from command line argument"
 
   let parse () =
     let args = make () in
@@ -220,5 +166,5 @@ module Cmdline = struct
     Arg.parse cmd_line_args anon_fun usage;
     validate args;
     args
-
-end (* Cmdline *)
+end
+(* Cmdline *)

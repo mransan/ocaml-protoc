@@ -32,24 +32,22 @@
     hence of type [unresolved_field_type Pb_typing_type_tree.proto_type]. 
     The type resolution is done in [Pb_typing_resolution] *)
 
-module Pt = Pb_parsing_parse_tree 
-module Tt = Pb_typing_type_tree 
+module Pt = Pb_parsing_parse_tree
+module Tt = Pb_typing_type_tree
 
-(** {2 Type tree construction} *) 
+(** {2 Type tree construction} *)
 
-val validate : 
-  Pt.proto ->
-  Pb_field_type.unresolved Tt.proto
+val validate : Pt.proto -> Pb_field_type.unresolved Tt.proto
 (** [validate file_name proto] makes a first phase compilation of the 
     parsed tree.  *)
 
-(** {2 Testing Only} *) 
+(** {2 Testing Only} *)
 
-val validate_message : 
+val validate_message :
   ?parent_options:Pb_option.set ->
-  string -> 
-  Pb_option.set -> (* file options *) 
-  Tt.type_scope -> 
+  string ->
+  Pb_option.set ->
+  (* file options *)
+  Tt.type_scope ->
   Pt.message ->
   Pb_field_type.unresolved Tt.proto
-

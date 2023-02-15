@@ -1,760 +1,352 @@
 (library
-  (name test_util)
-  (modules test_util)
-  (wrapped false)
-  (libraries pbrt unix)
-)
+ (name test_util)
+ (modules test_util)
+ (wrapped false)
+ (libraries pbrt unix))
 
 (rule
-  (targets
-    test01_types.ml
-    test01_pb.ml
-    test01_pp.ml
-    test01_types.mli
-    test01_pb.mli
-    test01_pp.mli
-  )
-  (deps test01.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ./
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ocaml_all_types_ppx "deriving show"
-    -ml_out 
-    ./
-    ./ test01.proto))
-)
+ (targets test01_types.ml test01_pb.ml test01_pp.ml test01_types.mli
+   test01_pb.mli test01_pp.mli)
+ (deps test01.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ./ -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ocaml_all_types_ppx "deriving show" -ml_out ./ ./
+    test01.proto)))
 
 (executable
-  (name test01_ml)
-  (modules 
-    test01_ml
-    test01_types
-    test01_pb
-    test01_pp
-  )
-  (preprocess
-    (pps ppx_deriving.show)
-  )
-  (libraries test_util unix))
+ (name test01_ml)
+ (modules test01_ml test01_types test01_pb test01_pp)
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test02_types.ml
-    test02_pb.ml
-    test02_pp.ml
-    test02_types.mli
-    test02_pb.mli
-    test02_pp.mli
-  )
-  (deps test02.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test02.proto))
-)
+ (targets test02_types.ml test02_pb.ml test02_pp.ml test02_types.mli
+   test02_pb.mli test02_pp.mli)
+ (deps test02.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test02.proto)))
 
 (executable
-  (name test02_ml)
-  (modules 
-    test02_ml
-    test02_types
-    test02_pb
-    test02_pp
-  )
-  (libraries test_util unix))
+ (name test02_ml)
+ (modules test02_ml test02_types test02_pb test02_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test04_types.ml
-    test04_pb.ml
-    test04_pp.ml
-    test04_types.mli
-    test04_pb.mli
-    test04_pp.mli
-  )
-  (deps test04.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test04.proto))
-)
+ (targets test04_types.ml test04_pb.ml test04_pp.ml test04_types.mli
+   test04_pb.mli test04_pp.mli)
+ (deps test04.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test04.proto)))
 
 (executable
-  (name test04_ml)
-  (modules 
-    test04_ml
-    test04_types
-    test04_pb
-    test04_pp
-  )
-  (libraries test_util unix))
+ (name test04_ml)
+ (modules test04_ml test04_types test04_pb test04_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test05_types.ml
-    test05_pb.ml
-    test05_pp.ml
-    test05_types.mli
-    test05_pb.mli
-    test05_pp.mli
-  )
-  (deps test05.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test05.proto))
-)
+ (targets test05_types.ml test05_pb.ml test05_pp.ml test05_types.mli
+   test05_pb.mli test05_pp.mli)
+ (deps test05.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test05.proto)))
 
 (executable
-  (name test05_ml)
-  (modules 
-    test05_ml
-    test05_types
-    test05_pb
-    test05_pp
-  )
-  (libraries test_util unix))
+ (name test05_ml)
+ (modules test05_ml test05_types test05_pb test05_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test06_types.ml
-    test06_pb.ml
-    test06_pp.ml
-    test06_types.mli
-    test06_pb.mli
-    test06_pp.mli
-  )
-  (deps test06.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test06.proto))
-)
+ (targets test06_types.ml test06_pb.ml test06_pp.ml test06_types.mli
+   test06_pb.mli test06_pp.mli)
+ (deps test06.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test06.proto)))
 
 (executable
-  (name test06_ml)
-  (modules 
-    test06_ml
-    test06_types
-    test06_pb
-    test06_pp
-  )
-  (libraries test_util unix))
+ (name test06_ml)
+ (modules test06_ml test06_types test06_pb test06_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test07_types.ml
-    test07_pb.ml
-    test07_pp.ml
-    test07_types.mli
-    test07_pb.mli
-    test07_pp.mli
-  )
-  (deps test07.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test07.proto))
-)
+ (targets test07_types.ml test07_pb.ml test07_pp.ml test07_types.mli
+   test07_pb.mli test07_pp.mli)
+ (deps test07.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test07.proto)))
 
 (executable
-  (name test07_ml)
-  (modules 
-    test07_ml
-    test07_types
-    test07_pb
-    test07_pp
-  )
-  (libraries test_util unix))
+ (name test07_ml)
+ (modules test07_ml test07_types test07_pb test07_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test08_types.ml
-    test08_pb.ml
-    test08_pp.ml
-    test08_types.mli
-    test08_pb.mli
-    test08_pp.mli
-  )
-  (deps test08.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test08.proto))
-)
+ (targets test08_types.ml test08_pb.ml test08_pp.ml test08_types.mli
+   test08_pb.mli test08_pp.mli)
+ (deps test08.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test08.proto)))
 
 (executable
-  (name test08_ml)
-  (modules 
-    test08_ml
-    test08_types
-    test08_pb
-    test08_pp
-  )
-  (libraries test_util unix))
+ (name test08_ml)
+ (modules test08_ml test08_types test08_pb test08_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test09_types.ml
-    test09_pb.ml
-    test09_pp.ml
-    test09_types.mli
-    test09_pb.mli
-    test09_pp.mli
-  )
-  (deps test09.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test09.proto))
-)
+ (targets test09_types.ml test09_pb.ml test09_pp.ml test09_types.mli
+   test09_pb.mli test09_pp.mli)
+ (deps test09.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test09.proto)))
 
 (library
-  (name test09_gen)
-  (modules
-    test09_types
-    test09_pb
-    test09_pp)
-  (wrapped false)
-  (libraries pbrt))
+ (name test09_gen)
+ (modules test09_types test09_pb test09_pp)
+ (wrapped false)
+ (libraries pbrt))
 
 (executable
-  (name test09_ml)
-  (modules 
-    test09_ml
-  )
-  (libraries test09_gen test_util unix))
+ (name test09_ml)
+ (modules test09_ml)
+ (libraries test09_gen test_util unix))
 
 (rule
-  (targets
-    test10_types.ml
-    test10_pb.ml
-    test10_pp.ml
-    test10_types.mli
-    test10_pb.mli
-    test10_pp.mli
-  )
-  (deps test10.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test10.proto))
-)
+ (targets test10_types.ml test10_pb.ml test10_pp.ml test10_types.mli
+   test10_pb.mli test10_pp.mli)
+ (deps test10.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test10.proto)))
 
 (executable
-  (name test10_ml)
-  (modules 
-    test10_ml
-    test10_types
-    test10_pb
-    test10_pp
-  )
-  (libraries test09_gen test_util unix))
+ (name test10_ml)
+ (modules test10_ml test10_types test10_pb test10_pp)
+ (libraries test09_gen test_util unix))
 
 (rule
-  (targets
-    test11_types.ml
-    test11_pb.ml
-    test11_pp.ml
-    test11_types.mli
-    test11_pb.mli
-    test11_pp.mli
-  )
-  (deps test11.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test11.proto))
-)
+ (targets test11_types.ml test11_pb.ml test11_pp.ml test11_types.mli
+   test11_pb.mli test11_pp.mli)
+ (deps test11.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test11.proto)))
 
 (executable
-  (name test11_ml)
-  (modules 
-    test11_ml
-    test11_types
-    test11_pb
-    test11_pp
-  )
-  (libraries test_util unix))
+ (name test11_ml)
+ (modules test11_ml test11_types test11_pb test11_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test12_types.ml
-    test12_pb.ml
-    test12_pp.ml
-    test12_types.mli
-    test12_pb.mli
-    test12_pp.mli
-  )
-  (deps test12.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test12.proto))
-)
+ (targets test12_types.ml test12_pb.ml test12_pp.ml test12_types.mli
+   test12_pb.mli test12_pp.mli)
+ (deps test12.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test12.proto)))
 
 (executable
-  (name test12_ml)
-  (modules 
-    test12_ml
-    test12_types
-    test12_pb
-    test12_pp
-  )
-  (libraries test_util unix))
+ (name test12_ml)
+ (modules test12_ml test12_types test12_pb test12_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test13_types.ml
-    test13_pb.ml
-    test13_pp.ml
-    test13_types.mli
-    test13_pb.mli
-    test13_pp.mli
-  )
-  (deps test13.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test13.proto))
-)
+ (targets test13_types.ml test13_pb.ml test13_pp.ml test13_types.mli
+   test13_pb.mli test13_pp.mli)
+ (deps test13.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test13.proto)))
 
 (executable
-  (name test13_ml)
-  (modules 
-    test13_ml
-    test13_types
-    test13_pb
-    test13_pp
-  )
-  (libraries test_util unix))
+ (name test13_ml)
+ (modules test13_ml test13_types test13_pb test13_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test14_types.ml
-    test14_pb.ml
-    test14_pp.ml
-    test14_types.mli
-    test14_pb.mli
-    test14_pp.mli
-  )
-  (deps test14.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test14.proto))
-)
+ (targets test14_types.ml test14_pb.ml test14_pp.ml test14_types.mli
+   test14_pb.mli test14_pp.mli)
+ (deps test14.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test14.proto)))
 
 (executable
-  (name test14_ml)
-  (modules 
-    test14_ml
-    test14_types
-    test14_pb
-    test14_pp
-  )
-  (libraries test_util unix))
+ (name test14_ml)
+ (modules test14_ml test14_types test14_pb test14_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test15_types.ml
-    test15_pb.ml
-    test15_pp.ml
-    test15_types.mli
-    test15_pb.mli
-    test15_pp.mli
-  )
-  (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test15.proto))
-)
+ (targets test15_types.ml test15_pb.ml test15_pp.ml test15_types.mli
+   test15_pb.mli test15_pp.mli)
+ (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test15.proto)))
 
 (executable
-  (name test15_ml)
-  (modules 
-    test15_ml
-    test15_types
-    test15_pb
-    test15_pp
-  )
-  (libraries test_util unix))
+ (name test15_ml)
+ (modules test15_ml test15_types test15_pb test15_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test16_types.ml
-    test16_pb.ml
-    test16_pp.ml
-    test16_types.mli
-    test16_pb.mli
-    test16_pp.mli
-  )
-  (deps test16.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test16.proto))
-)
+ (targets test16_types.ml test16_pb.ml test16_pp.ml test16_types.mli
+   test16_pb.mli test16_pp.mli)
+ (deps test16.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test16.proto)))
 
 (executable
-  (name test16_ml)
-  (modules 
-    test16_ml
-    test16_types
-    test16_pb
-    test16_pp
-  )
-  (libraries test_util unix))
+ (name test16_ml)
+ (modules test16_ml test16_types test16_pb test16_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test17_types.ml
-    test17_pb.ml
-    test17_pp.ml
-    test17_types.mli
-    test17_pb.mli
-    test17_pp.mli
-  )
-  (deps test17.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test17.proto))
-)
+ (targets test17_types.ml test17_pb.ml test17_pp.ml test17_types.mli
+   test17_pb.mli test17_pp.mli)
+ (deps test17.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test17.proto)))
 
 (executable
-  (name test17_ml)
-  (modules 
-    test17_ml
-    test17_types
-    test17_pb
-    test17_pp
-  )
-  (libraries test_util unix))
+ (name test17_ml)
+ (modules test17_ml test17_types test17_pb test17_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test18_types.ml
-    test18_pb.ml
-    test18_pp.ml
-    test18_types.mli
-    test18_pb.mli
-    test18_pp.mli
-  )
-  (deps test18.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test18.proto))
-)
+ (targets test18_types.ml test18_pb.ml test18_pp.ml test18_types.mli
+   test18_pb.mli test18_pp.mli)
+ (deps test18.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test18.proto)))
 
 (executable
-  (name test18_ml)
-  (modules 
-    test18_ml
-    test18_types
-    test18_pb
-    test18_pp
-  )
-  (libraries test_util unix))
+ (name test18_ml)
+ (modules test18_ml test18_types test18_pb test18_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test19_types.ml
-    test19_pb.ml
-    test19_pp.ml
-    test19_types.mli
-    test19_pb.mli
-    test19_pp.mli
-  )
-  (deps test19.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test19.proto))
-)
+ (targets test19_types.ml test19_pb.ml test19_pp.ml test19_types.mli
+   test19_pb.mli test19_pp.mli)
+ (deps test19.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test19.proto)))
 
 (executable
-  (name test19_ml)
-  (modules 
-    test19_ml
-    test19_types
-    test19_pb
-    test19_pp
-  )
-  (libraries test_util unix))
+ (name test19_ml)
+ (modules test19_ml test19_types test19_pb test19_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test20_types.ml
-    test20_pb.ml
-    test20_pp.ml
-    test20_types.mli
-    test20_pb.mli
-    test20_pp.mli
-  )
-  (deps test20.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test20.proto))
-)
+ (targets test20_types.ml test20_pb.ml test20_pp.ml test20_types.mli
+   test20_pb.mli test20_pp.mli)
+ (deps test20.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test20.proto)))
 
 (executable
-  (name test20_ml)
-  (modules 
-    test20_ml
-    test20_types
-    test20_pb
-    test20_pp
-  )
-  (preprocess
-    (pps ppx_deriving.show)
-  )
-  (libraries test_util unix))
+ (name test20_ml)
+ (modules test20_ml test20_types test20_pb test20_pp)
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test21_types.ml
-    test21_pb.ml
-    test21_pp.ml
-    test21_types.mli
-    test21_pb.mli
-    test21_pp.mli
-  )
-  (deps test21.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I ../../include/ocaml-protoc
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test21.proto))
-)
+ (targets test21_types.ml test21_pb.ml test21_pp.ml test21_types.mli
+   test21_pb.mli test21_pp.mli)
+ (deps test21.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+    -binary -pp -ml_out ./ ./ test21.proto)))
 
 (executable
-  (name test21_ml)
-  (modules 
-    test21_ml
-    test21_types
-    test21_pb
-    test21_pp
-  )
-  (preprocess
-    (pps ppx_deriving.show)
-  )
-  (libraries test_util unix))
+ (name test21_ml)
+ (modules test21_ml test21_types test21_pb test21_pp)
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test22_types.ml
-    test22_pb.ml
-    test22_pp.ml
-    test22_types.mli
-    test22_pb.mli
-    test22_pp.mli
-  )
-  (deps test22.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test22.proto))
-)
+ (targets test22_types.ml test22_pb.ml test22_pp.ml test22_types.mli
+   test22_pb.mli test22_pp.mli)
+ (deps test22.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test22.proto)))
 
 (executable
-  (name test22_ml)
-  (modules 
-    test22_ml
-    test22_types
-    test22_pb
-    test22_pp
-  )
-  (libraries test_util unix))
+ (name test22_ml)
+ (modules test22_ml test22_types test22_pb test22_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test23_types.ml
-    test23_pb.ml
-    test23_pp.ml
-    test23_types.mli
-    test23_pb.mli
-    test23_pp.mli
-  )
-  (deps test23.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test23.proto))
-)
+ (targets test23_types.ml test23_pb.ml test23_pp.ml test23_types.mli
+   test23_pb.mli test23_pp.mli)
+ (deps test23.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test23.proto)))
 
 (executable
-  (name test23_ml)
-  (modules 
-    test23_ml
-    test23_types
-    test23_pb
-    test23_pp
-  )
-  (libraries test_util unix))
+ (name test23_ml)
+ (modules test23_ml test23_types test23_pb test23_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test24_types.ml
-    test24_pb.ml
-    test24_pp.ml
-    test24_types.mli
-    test24_pb.mli
-    test24_pp.mli
-  )
-  (deps test24.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test24.proto))
-)
+ (targets test24_types.ml test24_pb.ml test24_pp.ml test24_types.mli
+   test24_pb.mli test24_pp.mli)
+ (deps test24.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test24.proto)))
 
 (executable
-  (name test24_ml)
-  (modules 
-    test24_ml
-    test24_types
-    test24_pb
-    test24_pp
-  )
-  (libraries test_util unix))
+ (name test24_ml)
+ (modules test24_ml test24_types test24_pb test24_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test25_types.ml
-    test25_pb.ml
-    test25_pp.ml
-    test25_types.mli
-    test25_pb.mli
-    test25_pp.mli
-  )
-  (deps test25.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test25.proto))
-)
+ (targets test25_types.ml test25_pb.ml test25_pp.ml test25_types.mli
+   test25_pb.mli test25_pp.mli)
+ (deps test25.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ ./ test25.proto)))
 
 (executable
-  (name test25_ml)
-  (modules 
-    test25_ml
-    test25_types
-    test25_pb
-    test25_pp
-  )
-  (libraries test_util unix))
+ (name test25_ml)
+ (modules test25_ml test25_types test25_pb test25_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test26_types.ml
-    test26_pb.ml
-    test26_pp.ml
-    test26_types.mli
-    test26_pb.mli
-    test26_pp.mli
-  )
-  (deps test26.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -I /usr/local/include
-    -binary -pp 
-    -ml_out 
-    ./
-    ./ test26.proto))
-)
+ (targets test26_types.ml test26_pb.ml test26_pp.ml test26_types.mli
+   test26_pb.mli test26_pp.mli)
+ (deps test26.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -I /usr/local/include -binary -pp -ml_out ./ ./
+    test26.proto)))
 
 (executable
-  (name test26_ml)
-  (modules 
-    test26_ml
-    test26_types
-    test26_pb
-    test26_pp
-  )
-  (libraries test_util unix))
+ (name test26_ml)
+ (modules test26_ml test26_types test26_pb test26_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test27_types.ml
-    test27_pb.ml
-    test27_pp.ml
-    test27_types.mli
-    test27_pb.mli
-    test27_pp.mli
-  )
-  (deps test27.proto ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out ./
-    test27.proto))
-)
+ (targets test27_types.ml test27_pb.ml test27_pp.ml test27_types.mli
+   test27_pb.mli test27_pp.mli)
+ (deps test27.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ test27.proto)))
 
 (executable
-  (name test27_ml)
-  (modules 
-    test27_ml
-    test27_types
-    test27_pb
-    test27_pp
-  )
-  (libraries test_util unix))
+ (name test27_ml)
+ (modules test27_ml test27_types test27_pb test27_pp)
+ (libraries test_util unix))
 
 (rule
-  (targets
-    test_proto3_optional_types.ml
-    test_proto3_optional_pb.ml
-    test_proto3_optional_pp.ml
-    test_proto3_optional_types.mli
-    test_proto3_optional_pb.mli
-    test_proto3_optional_pp.mli
-  )
-  (deps (:proto test_proto3_optional.proto) ../../include/ocaml-protoc/ocamloptions.proto)
-  (action (run ocaml-protoc 
-    -binary -pp 
-    -ml_out ./
-    %{proto}))
-)
+ (targets test_proto3_optional_types.ml test_proto3_optional_pb.ml
+   test_proto3_optional_pp.ml test_proto3_optional_types.mli
+   test_proto3_optional_pb.mli test_proto3_optional_pp.mli)
+ (deps
+  (:proto test_proto3_optional.proto)
+  ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc -binary -pp -ml_out ./ %{proto})))
 
 (executable
  (name test_proto3_optional)
