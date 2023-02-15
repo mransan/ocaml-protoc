@@ -68,9 +68,9 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 test%: $(INTEGRATION_TESTS_DIR)/test%_cpp.tsk
 	INCLUDE=$(PB_HINC)/ $(DUNE) build $(INTEGRATION_TESTS_DIR)/test$*_ml.exe
 	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk encode
-	time ./_build/default/$(INTEGRATION_TESTS_DIR)/test$*_ml.exe decode
+	./_build/default/$(INTEGRATION_TESTS_DIR)/test$*_ml.exe decode
 	./_build/default/$(INTEGRATION_TESTS_DIR)/test$*_ml.exe encode
-	time $(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk decode
+	$(INTEGRATION_TESTS_DIR)/test$*_cpp.tsk decode
 
 .PHONY: integration
 
