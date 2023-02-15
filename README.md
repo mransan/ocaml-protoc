@@ -5,6 +5,7 @@
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
 * [Install and Build](#install-and-build)
+* [Runtime library](#runtime-library)
 * [All Generated Files and Encodings](#all-generated-files-and-encodings)
 * [Protobuf <-> OCaml mapping](doc/protobuf_ocaml_mapping.md)
 * [Compiler Internals](doc/compiler_internals.md)
@@ -173,6 +174,13 @@ Using [ocamlfind](http://projects.camlcity.org/projects/findlib.html) one can bu
 ```Bash
 ❯ ./example
 ```
+
+### Runtime library
+
+The generated code depends on the opam package "pbrt", defining
+a module `Pbrt`.
+
+Online documentation [here](https://mransan.github.io/ocaml-protoc/dev/pbrt/Pbrt/index.html)
 
 ### All Generated Files and Encodings:
 
