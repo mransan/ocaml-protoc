@@ -1,3 +1,15 @@
+## 2.4
+
+- expose compiler library as `ocaml-protoc.compiler-lib`
+- option to differentiate unsigned arg from signed arguments,
+  taggings uint32/64 with `` `unsigned``
+
+internal changes:
+
+- fix(test): change integration test, protoc produces broken C++ code
+- automatic generation of gh-pages
+- add basic CI
+- use ocamlformat
 
 ## 2.3
 

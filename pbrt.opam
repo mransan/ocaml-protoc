@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "pbrt"
-version: "2.3"
+version: "2.4"
 synopsis: "Runtime library for Protobuf tooling"
 description: "Runtime library for Protobuf tooling"
 maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
