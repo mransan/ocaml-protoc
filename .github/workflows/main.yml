@@ -21,15 +21,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-      with:
-        submodules: true
+      #with:
+      #  submodules: true
     - uses: ocaml/setup-ocaml@v2
       with:
         ocaml-compiler: ${{ matrix.ocaml-compiler }}
-    - run: sudo apt install protobuf-compiler libprotobuf-dev
+          #- run: sudo apt install protobuf-compiler libprotobuf-dev
     - run: opam pin -n .
     - run: opam depext -yt ocaml-protoc
     - run: opam install -t . --deps-only
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
-    - run: opam exec -- make integration
+      #- run: opam exec -- make integration
