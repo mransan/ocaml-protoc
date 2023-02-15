@@ -9,7 +9,7 @@
    test01_pb.mli test01_pp.mli)
  (deps test01.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ./ -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ./ -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ocaml_all_types_ppx "deriving show" -ml_out ./ ./
     test01.proto)))
 
@@ -175,7 +175,7 @@
    test15_pb.mli test15_pp.mli)
  (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test15.proto)))
 
 (executable
@@ -188,7 +188,7 @@
    test16_pb.mli test16_pp.mli)
  (deps test16.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test16.proto)))
 
 (executable
@@ -201,7 +201,7 @@
    test17_pb.mli test17_pp.mli)
  (deps test17.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test17.proto)))
 
 (executable
@@ -214,7 +214,7 @@
    test18_pb.mli test18_pp.mli)
  (deps test18.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test18.proto)))
 
 (executable
@@ -227,7 +227,7 @@
    test19_pb.mli test19_pp.mli)
  (deps test19.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test19.proto)))
 
 (executable
@@ -240,7 +240,7 @@
    test20_pb.mli test20_pp.mli)
  (deps test20.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test20.proto)))
 
 (executable
@@ -255,7 +255,7 @@
    test21_pb.mli test21_pp.mli)
  (deps test21.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I ../../include/ocaml-protoc -I /usr/local/include
+  (run ocaml-protoc -I ../../include/ocaml-protoc -I %{env:INCLUDE=/usr/include/}
     -binary -pp -ml_out ./ ./ test21.proto)))
 
 (executable
@@ -318,7 +318,7 @@
    test26_pb.mli test26_pp.mli)
  (deps test26.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc -I /usr/local/include -binary -pp -ml_out ./ ./
+  (run ocaml-protoc -I %{env:INCLUDE=/usr/include/} -binary -pp -ml_out ./ ./
     test26.proto)))
 
 (executable
