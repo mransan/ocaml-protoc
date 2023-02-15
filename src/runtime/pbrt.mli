@@ -23,15 +23,15 @@
   THE SOFTWARE.
 *)
 
+(** Type of payload in a given field.
+
+    This is only the wire type, the generated code will have a more precise
+    type in general. *)
 type payload_kind =
   | Varint
   | Bits32
   | Bits64
   | Bytes
-(** Type of payload in a given field.
-
-    This is only the wire type, the generated code will have a more precise
-    type in general. *)
 
 (** Decoding protobufs. *)
 module Decoder : sig
