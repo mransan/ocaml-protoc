@@ -1,0 +1,10 @@
+
+{1 Ocaml-protoc}
+
+This library is two things in one:
+- stubs for the runtime component (now in the "pbrt" package, see {!Pbrt})
+- some internal compiler library, as {!Ocaml_protoc_compiler_lib}.
+
+For most users, the normal workflow is to use the [ocaml-protoc] compiler
+executable to generate code, and link the generated code with the [pbrt] library.
+No runtime dependency on "ocaml-protoc" should be needed.

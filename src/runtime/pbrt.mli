@@ -1,3 +1,5 @@
+(** Protobuf runtime library *)
+
 (*
   Copyright (c) 2014 Peter Zotov <whitequark@whitequark.org>
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
@@ -26,11 +28,17 @@ type payload_kind =
   | Bits32
   | Bits64
   | Bytes
+(** Type of payload in a given field.
 
+    This is only the wire type, the generated code will have a more precise
+    type in general. *)
+
+(** Decoding protobufs. *)
 module Decoder : sig
   (** {2 Types} *)
 
   type t
+  (** The decoder *)
 
   (** {2 Creator} *)
 
@@ -55,6 +63,7 @@ module Decoder : sig
   (** [error_to_string e] converts error [e] to its string representation. *)
 
   exception Failure of error
+  (** Raised in decoding combinators *)
 
   val malformed_variant : string -> 'a
   (** [malformed_variant variant_name] raises the exception
@@ -208,10 +217,14 @@ module Decoder : sig
 end
 (* Decoder *)
 
+(** Encoding protobufs. *)
 module Encoder : sig
   (** {2 Types} *)
 
   type t
+  (** A (mutable) encoder.
+
+      This encoder can be re-used, see {!clear}. *)
 
   (** {2 Error} *)
 
@@ -224,21 +237,29 @@ module Encoder : sig
   (** {2 Creator} *)
 
   val create : unit -> t
+  (** Create a new encoder. *)
 
   val clear : t -> unit
-  (** Clear the content of the internal buffer(s), but does not release memory
+  (** Clear the content of the internal buffer(s), but does not release memory.
+      This makes the encoder ready to encode another message.
       @since 2.1 *)
 
   val reset : t -> unit
   (** Clears the content and resets internal storage
-      to its initial memory consumption. This is more costly than {!clear} but
+      to its initial memory consumption.
+
+      This is more costly than {!clear} but
       can be useful after a very large message was encoded.
       @since 2.1 *)
 
   (** {2 Convertion} *)
 
   val to_bytes : t -> bytes
+  (** Extract the content of the encoder to bytes. *)
+
   val to_string : t -> string
+  (** Extract the content of the encoder to a string. Call this after
+      encoding a message into the encoder. *)
 
   val write_chunks : (bytes -> int -> int -> unit) -> t -> unit
   (** [write_chunks w e] calls the write function [w]
@@ -246,7 +267,10 @@ module Encoder : sig
       inside [e]. The number of chunks is an implementation detail.
       @since 2.1 *)
 
-  (** {2 Encoding Functions} *)
+  (** {2 Encoding Functions}
+
+      These combinators are used by generated code (or user combinators)
+      to encode a OCaml value into the wire representation of protobufs. *)
 
   val key : int * payload_kind -> t -> unit
   (** [key (k, pk) e] writes a key and a payload kind to [e]. *)

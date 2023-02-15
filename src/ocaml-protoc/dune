@@ -14,3 +14,7 @@
  (modules)
  (libraries
   (re_export pbrt)))
+
+(documentation
+  (package ocaml-protoc)
+  (mld_files index))
