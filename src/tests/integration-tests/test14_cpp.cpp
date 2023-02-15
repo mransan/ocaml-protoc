@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-void add_4(a* a) {
+void add_4(a_* a) {
     a->add_aa(1);
     a->add_aa(2);
     a->add_aa(3);
