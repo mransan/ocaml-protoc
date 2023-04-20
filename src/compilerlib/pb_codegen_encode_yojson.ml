@@ -30,7 +30,7 @@ let runtime_function_for_basic_type json_label basic_type pk =
   (* bool *)
   | Ot.Bt_bool, Ot.Pk_varint _ -> "make_bool", None
   (* bytes *)
-  | Ot.Bt_bytes, Ot.Pk_bytes -> unsupported json_label
+  | Ot.Bt_bytes, Ot.Pk_bytes -> "make_bytes", None
   | _ -> unsupported json_label
 
 (* TODO Wrapper: add a runtime_function_for_wrapper_type  which will
