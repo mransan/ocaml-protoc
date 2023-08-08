@@ -141,6 +141,9 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
 
   F.line sc "}"
 
+let gen_unit ?and_ { Ot.er_name } sc =
+  F.linep sc "%s default_%s = ()" (let_decl_of_and and_) er_name
+
 let gen_variant ?and_ module_prefix { Ot.v_name; Ot.v_constructors } sc =
   match v_constructors with
   | [] -> failwith "programmatic TODO error"
@@ -183,6 +186,9 @@ let gen_struct ?and_ t sc =
     | Ot.Const_variant v ->
       gen_const_variant v sc;
       true
+    | Ot.Unit u ->
+      gen_unit ?and_ u sc;
+      true
   in
   has_encoded
 
@@ -207,6 +213,12 @@ let gen_sig_record sc module_prefix { Ot.r_name; r_fields } =
   let rn = r_name in
   F.linep sc "(** [default_%s ()] is the default value for type [%s] *)" rn rn
 
+let gen_sig_unit sc { Ot.er_name } =
+  F.linep sc "val default_%s : unit" er_name;
+
+  let rn = er_name in
+  F.linep sc "(** [default_%s ()] is the default value for type [%s] *)" rn rn
+
 let gen_sig ?and_ t sc =
   let _ = and_ in
   let f type_name =
@@ -227,6 +239,9 @@ let gen_sig ?and_ t sc =
       true
     | Ot.Const_variant { Ot.cv_name; _ } ->
       f cv_name;
+      true
+    | Ot.Unit u ->
+      gen_sig_unit sc u;
       true
   in
 

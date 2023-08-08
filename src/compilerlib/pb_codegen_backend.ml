@@ -392,7 +392,14 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
      OCaml code much easier.
   *)
   match message_body with
-  | [] -> []
+  | [] ->
+    let empty_record = Ot.{ er_name = type_name message_names message_name } in
+
+    let type_ =
+      Ot.
+        { module_prefix; spec = Ot.Unit empty_record; type_level_ppx_extension }
+    in
+    [ type_ ]
   | Tt.Message_oneof_field f :: [] ->
     let outer_message_names = message_names @ [ message_name ] in
     let variant =

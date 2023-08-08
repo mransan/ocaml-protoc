@@ -139,10 +139,13 @@ and const_variant = {
   cv_constructors: const_variant_constructor list;
 }
 
+and empty_record = { er_name: string }
+
 and type_spec =
   | Record of record
   | Variant of variant
   | Const_variant of const_variant
+  | Unit of empty_record
 
 type type_ = {
   module_prefix: string;

@@ -162,6 +162,7 @@ let collect_modules_of_type_spec modules = function
   | Ot.Record r -> collect_modules_of_record modules r
   | Ot.Variant v -> collect_modules_of_variant modules v
   | Ot.Const_variant _ -> modules
+  | Ot.Unit _ -> modules
 
 let collect_modules_of_types ocaml_types =
   List.fold_left

@@ -212,6 +212,13 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
       F.line sc "()")
 (* encode function *)
 
+let gen_unit ?and_ module_prefix { Ot.er_name } sc =
+  let rn = er_name in
+  F.linep sc "%s encode_%s (v:%s_types.%s) encoder = "
+    (Pb_codegen_util.let_decl_of_and and_)
+    rn module_prefix rn;
+  F.line sc "()"
+
 let gen_variant ?and_ module_prefix variant sc =
   let { Ot.v_name; Ot.v_constructors } = variant in
   let vn = v_name in
@@ -276,6 +283,9 @@ let gen_struct ?and_ t sc =
     | Ot.Const_variant v ->
       gen_const_variant ?and_ module_prefix v sc;
       true
+    | Ot.Unit u ->
+      gen_unit ?and_ module_prefix u sc;
+      true
   in
   has_encoded
 
@@ -299,6 +309,9 @@ let gen_sig ?and_ t sc =
       true
     | Ot.Const_variant { Ot.cv_name; _ } ->
       f cv_name;
+      true
+    | Ot.Unit { Ot.er_name; _ } ->
+      f er_name;
       true
   in
   has_encoded

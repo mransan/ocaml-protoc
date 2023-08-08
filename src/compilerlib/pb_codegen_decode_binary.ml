@@ -268,6 +268,15 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
             r_fields);
       F.linep sc "} : %s_types.%s)" module_prefix r_name)
 
+let gen_unit ?and_ { Ot.er_name } sc =
+  F.linep sc "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
+  F.scope sc (fun sc ->
+      F.line sc "match Pbrt.Decoder.key d with";
+      F.line sc "| None -> ();";
+      F.line sc "| Some (_, pk) -> ";
+      F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
+        (sp "Unexpected fields in empty message(%s)" er_name))
+
 let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
   let process_ctor sc variant_constructor =
     let {
@@ -340,6 +349,9 @@ let gen_struct ?and_ t sc =
     | Ot.Const_variant v ->
       gen_const_variant ?and_ module_prefix v sc;
       true
+    | Ot.Unit u ->
+      gen_unit ?and_ u sc;
+      true
   in
 
   has_encoded
@@ -367,6 +379,9 @@ let gen_sig ?and_ t sc =
       true
     | Ot.Const_variant { Ot.cv_name; _ } ->
       f cv_name;
+      true
+    | Ot.Unit { Ot.er_name; _ } ->
+      f er_name;
       true
   in
 
