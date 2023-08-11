@@ -1,0 +1,16 @@
+opam-version: "2.0"
+version: "0.2.0"
+maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
+authors:[
+  "Maxime Ransan <maxime.ransan@gmail.com>"
+]
+synopsis: "Runtime library for ocaml-protoc to support JSON encoding/decoding"
+homepage: "https://github.com/mransan/ocaml-protoc-yojson"
+bug-reports:"https://github.com/mransan/ocaml-protoc-yojson/issues"
+dev-repo: "git+https://github.com/mransan/ocaml-protoc-yojson.git"
+license: "MIT"
+depends: [
+  "pbrt_yojson" { = version }
+]
+post-messages: "ocaml-protoc-yojson is deprecated. Use pbrt_yojson instead."
+
