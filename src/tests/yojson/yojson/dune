@@ -1,0 +1,4 @@
+
+(test
+  (name unit_tests)
+  (libraries yojson pbrt_yojson))

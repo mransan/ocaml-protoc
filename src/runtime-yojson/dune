@@ -1,0 +1,5 @@
+
+(library
+  (public_name pbrt_yojson)
+  (wrapped false)
+  (libraries yojson base64))

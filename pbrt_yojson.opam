@@ -1,0 +1,31 @@
+opam-version: "2.0"
+version: "0.2.0"
+maintainer: "Maxime Ransan <maxime.ransan@gmail.com>"
+authors:[
+  "Maxime Ransan <maxime.ransan@gmail.com>"
+]
+synopsis: "Runtime library for ocaml-protoc to support JSON encoding/decoding"
+homepage: "https://github.com/mransan/ocaml-protoc-yojson"
+bug-reports:"https://github.com/mransan/ocaml-protoc-yojson/issues"
+dev-repo: "git+https://github.com/mransan/ocaml-protoc-yojson.git"
+license: "MIT"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+depends: [
+  "dune" { >= "2.0" }
+  "yojson" {>= "1.6.0"}
+  "base64"
+  "ocaml" { >= "4.02.1" }
+]
