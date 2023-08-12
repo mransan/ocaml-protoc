@@ -93,6 +93,16 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
       F.line sc "in";
       F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
 
+let gen_unit ?and_ module_prefix { Ot.er_name } sc =
+  F.line sc
+  @@ sp "%s pp_%s fmt (v:%s_types.%s) = " (let_decl_of_and and_) er_name
+       module_prefix er_name;
+  F.scope sc (fun sc ->
+      F.line sc "let pp_i fmt () =";
+      F.scope sc (fun sc -> F.line sc "Pbrt.Pp.pp_unit fmt ()");
+      F.line sc "in";
+      F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
+
 let gen_variant ?and_ module_prefix { Ot.v_name; Ot.v_constructors } sc =
   F.line sc
   @@ sp "%s pp_%s fmt (v:%s_types.%s) =" (let_decl_of_and and_) v_name
@@ -133,7 +143,8 @@ let gen_struct ?and_ t sc =
   (match spec with
   | Ot.Record r -> gen_record ?and_ module_prefix r sc
   | Ot.Variant v -> gen_variant ?and_ module_prefix v sc
-  | Ot.Const_variant v -> gen_const_variant ?and_ module_prefix v sc);
+  | Ot.Const_variant v -> gen_const_variant ?and_ module_prefix v sc
+  | Ot.Unit u -> gen_unit ?and_ module_prefix u sc);
   true
 
 let gen_sig ?and_ t sc =
@@ -148,7 +159,8 @@ let gen_sig ?and_ t sc =
   (match spec with
   | Ot.Record { Ot.r_name; _ } -> f r_name
   | Ot.Variant v -> f v.Ot.v_name
-  | Ot.Const_variant { Ot.cv_name; _ } -> f cv_name);
+  | Ot.Const_variant { Ot.cv_name; _ } -> f cv_name
+  | Ot.Unit { Ot.er_name; _ } -> f er_name);
   true
 
 let ocamldoc_title = "Formatters"

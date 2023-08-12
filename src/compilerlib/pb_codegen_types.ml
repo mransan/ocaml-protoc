@@ -81,6 +81,9 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
         (fun { Ot.cvc_name; _ } -> F.linep sc "| %s " cvc_name)
         cv_constructors)
 
+let gen_unit ?and_ { Ot.er_name } sc =
+  F.linep sc "%s %s = unit" (type_decl_of_and and_) er_name
+
 let print_ppx_extension { Ot.type_level_ppx_extension; _ } sc =
   match type_level_ppx_extension with
   | None -> ()
@@ -91,7 +94,8 @@ let gen_struct ?and_ t scope =
   (match spec with
   | Ot.Record r -> gen_record ?and_ r scope
   | Ot.Variant v -> gen_variant ?and_ v scope
-  | Ot.Const_variant v -> gen_const_variant ?and_ v scope);
+  | Ot.Const_variant v -> gen_const_variant ?and_ v scope
+  | Ot.Unit v -> gen_unit ?and_ v scope);
   print_ppx_extension t scope;
   true
 
@@ -100,7 +104,8 @@ let gen_sig ?and_ t scope =
   (match spec with
   | Ot.Record r -> gen_record ?and_ r scope
   | Ot.Variant v -> gen_variant ?and_ v scope
-  | Ot.Const_variant v -> gen_const_variant ?and_ v scope);
+  | Ot.Const_variant v -> gen_const_variant ?and_ v scope
+  | Ot.Unit v -> gen_unit ?and_ v scope);
   print_ppx_extension t scope;
   true
 

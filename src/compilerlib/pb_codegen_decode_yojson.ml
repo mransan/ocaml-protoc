@@ -25,7 +25,8 @@ let field_pattern_match ~r_name ~rf_label field_type =
     in
     ( "json_value",
       sp "Pbrt_yojson.%s json_value \"%s\" \"%s\"" runtime_f r_name rf_label )
-  | Ot.Ft_unit -> assert false
+  | Ot.Ft_unit ->
+    "json_value", sp "Pbrt_yojson.unit json_value \"%s\" \"%s\"" r_name rf_label
   (* TODO Wrapper: add similar one for wrapper type (with different
      runtime functions) *)
   | Ot.Ft_user_defined_type udt ->
@@ -150,6 +151,12 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
             r_fields);
       F.linep sc "} : %s_types.%s)" module_prefix r_name)
 
+(* Generate decode function for an empty record *)
+let gen_unit ?and_ { Ot.er_name } sc =
+  F.line sc
+  @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
+  F.line sc (sp "Pbrt_yojson.unit d \"%s\" \"%s\"" er_name "empty record")
+
 (* Generate decode function for a variant type *)
 let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
   (* helper function for each constructor case *)
@@ -223,6 +230,9 @@ let gen_struct ?and_ t sc =
     | Ot.Const_variant v ->
       gen_const_variant ?and_ module_prefix v sc;
       true
+    | Ot.Unit u ->
+      gen_unit ?and_ u sc;
+      true
   in
   has_encoded
 
@@ -247,6 +257,9 @@ let gen_sig ?and_ t sc =
     true
   | Ot.Const_variant { Ot.cv_name; _ } ->
     f cv_name;
+    true
+  | Ot.Unit { Ot.er_name; _ } ->
+    f er_name;
     true
 
 let ocamldoc_title = "JSON Decoding"

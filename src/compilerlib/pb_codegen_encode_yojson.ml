@@ -177,6 +177,13 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
         r_fields (* List.iter *);
       F.line sc "`Assoc assoc")
 
+let gen_unit ?and_ module_prefix { Ot.er_name } sc =
+  let rn = er_name in
+  F.linep sc "%s encode_%s (v:%s_types.%s) = "
+    (Pb_codegen_util.let_decl_of_and and_)
+    rn module_prefix rn;
+  F.line sc (sp "Pbrt_yojson.%s %s" "make_unit" "v")
+
 let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
   let process_v_constructor sc v_constructor =
     let { Ot.vc_constructor; Ot.vc_field_type; Ot.vc_payload_kind; _ } =
@@ -233,6 +240,9 @@ let gen_struct ?and_ t sc =
     | Ot.Const_variant v ->
       gen_const_variant ?and_ module_prefix v sc;
       true
+    | Ot.Unit u ->
+      gen_unit ?and_ module_prefix u sc;
+      true
   in
 
   has_encoded
@@ -256,6 +266,9 @@ let gen_sig ?and_ t sc =
     true
   | { Ot.spec = Ot.Const_variant { Ot.cv_name; _ }; _ } ->
     f cv_name;
+    true
+  | { Ot.spec = Ot.Unit { Ot.er_name; _ }; _ } ->
+    f er_name;
     true
 
 let ocamldoc_title = "Protobuf YoJson Encoding"

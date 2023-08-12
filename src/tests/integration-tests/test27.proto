@@ -26,3 +26,5 @@ message Test {
   OneOfIsKeyword one_of_is_keyword = 3;
 }
 
+message Empty {  
+}
