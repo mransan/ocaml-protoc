@@ -29,9 +29,11 @@ val int64 : Yojson.Basic.t -> string -> string -> int64
 val int : Yojson.Basic.t -> string -> string -> int
 val bool : Yojson.Basic.t -> string -> string -> bool
 val bytes : Yojson.Basic.t -> string -> string -> bytes
+val unit : Yojson.Basic.t -> string -> string -> unit
 val make_bool : bool -> Yojson.Basic.t
 val make_int : int -> Yojson.Basic.t
 val make_float : float -> Yojson.Basic.t
 val make_string : string -> Yojson.Basic.t
 val make_bytes : bytes -> Yojson.Basic.t
+val make_unit : unit -> Yojson.Basic.t
 val make_list : Yojson.Basic.t list -> Yojson.Basic.t
