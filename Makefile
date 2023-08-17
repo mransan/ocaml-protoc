@@ -67,4 +67,8 @@ distrib:
 publish:
 	dune-release publish
 
+WATCH?= @install
+watch:
+	$(DUNE) build $(DUNE_OPTS) -w $(WATCH)
+
 include Makefile.test
