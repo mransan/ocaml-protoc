@@ -219,6 +219,12 @@ let gen_const_variant ?and_ module_prefix { Ot.cv_name; cv_constructors } sc =
 
       F.linep sc "| _ -> Pbrt_bs.E.malformed_variant \"%s\"" cv_name)
 
+(* Generate decode function for an empty record *)
+let gen_unit ?and_ { Ot.er_name } sc =
+  F.line sc
+  @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
+  F.line sc (sp "failwith \"support for empty messages not implemented\"")
+
 let gen_struct ?and_ t sc =
   let { Ot.module_prefix; spec; _ } = t in
 
@@ -232,6 +238,9 @@ let gen_struct ?and_ t sc =
       true
     | Ot.Const_variant v ->
       gen_const_variant ?and_ module_prefix v sc;
+      true
+    | Ot.Unit u ->
+      gen_unit ?and_ u sc;
       true
   in
   has_encoded
@@ -261,6 +270,9 @@ let gen_sig ?and_ t sc =
       cv_name;
     F.linep sc "(** [decode_%s value] decodes a [%s] from a Json value*)"
       cv_name cv_name;
+    true
+  | Ot.Unit { Ot.er_name; _ } ->
+    f er_name;
     true
 
 let ocamldoc_title = "BS Decoding"
