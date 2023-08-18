@@ -1,14 +1,14 @@
 (** Protobuf File/Message/Field options *)
 
-(** Protobuf constance
-    
+(** Protobuf constant
+
     As defined in: {{:https://goo.gl/FzpQY2} Protobuf Language Spec}. *)
 type constant =
   | Constant_string of string
   | Constant_bool of bool
   | Constant_int of int
   | Constant_float of float
-  | Constant_litteral of string
+  | Constant_literal of string
 
 type option_name = string
 (** Option identifier *)

@@ -58,19 +58,19 @@ module File_options = struct
           (function
           | "int_t" -> t.int32_type <- Some "int_t"
           | x -> failwith @@ Printf.sprintf "Invalid int32_type value %s" x),
-        "int32_type file option" );
+        " int32_type file option" );
       ( "-int64_type",
         Arg.String
           (function
           | "int_t" -> t.int64_type <- Some "int_t"
           | x -> failwith @@ Printf.sprintf "Invalid int64_type value %s" x),
-        "int64_type file option" );
+        " int64_type file option" );
       ( "-ocaml_file_ppx",
         Arg.String (fun s -> t.ocaml_file_ppx <- Some s),
-        "ocaml_file_ppx file option" );
+        " ocaml_file_ppx file option" );
       ( "-ocaml_all_types_ppx",
         Arg.String (fun s -> t.ocaml_all_types_ppx <- Some s),
-        "ocaml_all_types_ppx file option" );
+        " ocaml_all_types_ppx file option" );
     ]
 
   (** Converts the command line values to Parse Tree file options
@@ -86,8 +86,8 @@ module File_options = struct
         Pb_option.add options option_name option_value
     in
     Pb_option.empty
-    |> map int32_type (fun s -> "int32_type", Pb_option.Constant_litteral s)
-    |> map int64_type (fun s -> "int64_type", Pb_option.Constant_litteral s)
+    |> map int32_type (fun s -> "int32_type", Pb_option.Constant_literal s)
+    |> map int64_type (fun s -> "int64_type", Pb_option.Constant_literal s)
     |> map ocaml_file_ppx (fun s ->
            "ocaml_file_ppx", Pb_option.Constant_string s)
     |> map ocaml_all_types_ppx (fun s ->
@@ -129,17 +129,17 @@ module Cmdline = struct
 
   let cmd_line_args t =
     [
-      "-yojson", Arg.Set t.yojson, "generate yojson encoding";
-      "-bs", Arg.Set t.bs, "generate BuckleScript encoding";
-      "-binary", Arg.Set t.binary, "generate binary encoding";
-      "-pp", Arg.Set t.pp, "generate pretty print functions";
+      "-yojson", Arg.Set t.yojson, " generate yojson encoding";
+      "-bs", Arg.Set t.bs, " generate BuckleScript encoding";
+      "-binary", Arg.Set t.binary, " generate binary encoding";
+      "-pp", Arg.Set t.pp, " generate pretty print functions";
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
-        "include directories" );
-      "-ml_out", Arg.String (fun s -> t.ml_out <- s), "output directory";
+        " include directories" );
+      "-ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
       ( "-unsigned",
         Arg.Set t.unsigned_tag,
-        "tag uint32 and uint64 types with `unsigned" );
+        " tag uint32 and uint64 types with `unsigned" );
     ]
     @ File_options.cmd_line_args t.cmd_line_file_options
 
@@ -162,7 +162,7 @@ module Cmdline = struct
   let parse () =
     let args = make () in
     let anon_fun = anon_fun args in
-    let cmd_line_args = cmd_line_args args in
+    let cmd_line_args = cmd_line_args args |> Arg.align in
     Arg.parse cmd_line_args anon_fun usage;
     validate args;
     args

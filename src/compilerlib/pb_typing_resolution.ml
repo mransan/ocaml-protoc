@@ -197,7 +197,7 @@ let resolve_builtin_type_field_default field_name builtin_type field_default =
 let resolve_enum_field_default field_name type_ field_default =
   match field_default with
   | None -> None
-  | Some (Pb_option.Constant_litteral default_enum_value as constant) ->
+  | Some (Pb_option.Constant_literal default_enum_value as constant) ->
     let { Tt.spec; _ } = type_ in
     (match spec with
     | Tt.Message _ ->
