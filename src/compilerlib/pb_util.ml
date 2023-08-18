@@ -100,6 +100,15 @@ let read_file file_name =
   close_in ic;
   Bytes.sub_string b 0 !offset
 
+let protect ~finally f =
+  try
+    let x = f () in
+    finally ();
+    x
+  with e ->
+    finally ();
+    raise e
+
 module List = struct
   let rec pop_last = function
     | [] -> failwith "Invalid argument [] for pop_last"
