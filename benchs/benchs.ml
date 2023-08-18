@@ -554,7 +554,7 @@ module Nested = struct
     *)
 
     let int64_as_varint = varint
-    let int_as_varint i e = (varint [@inlined]) (Int64.of_int i) e
+    let int_as_varint i e = varint (Int64.of_int i) e
 
     let[@inline] key k pk f e =
       let pk' =
