@@ -106,6 +106,7 @@ module Cmdline = struct
         (** proto file name as given on the cmd line *)
     mutable include_dirs: string list;
         (** include directories given with -I argument *)
+    unified: bool ref;  (** whether we emit all code into a single module *)
     binary: bool ref;  (** whether binary encoding is enabled *)
     yojson: bool ref;  (** whether yojson encoding is enabled *)
     bs: bool ref;  (** whether BuckleScript encoding is enabled *)
@@ -125,6 +126,7 @@ module Cmdline = struct
       include_dirs = [];
       binary = ref false;
       yojson = ref false;
+      unified = ref false;
       bs = ref false;
       pp = ref false;
       cmd_line_file_options = File_options.make ();
@@ -140,6 +142,7 @@ module Cmdline = struct
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
         " include directories" );
+      "-unified", Arg.Set t.unified, " emit all code in a single unified module";
       "-ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
       ( "-unsigned",
         Arg.Set t.unsigned_tag,
