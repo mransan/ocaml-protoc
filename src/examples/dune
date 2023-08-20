@@ -11,6 +11,17 @@
  (libraries pbrt))
 
 (rule
+ (targets example01_unified.ml example01_unified.mli)
+ (deps example01_unified.proto)
+ (action
+  (run ocaml-protoc -binary -pp -unified -ml_out ./ %{deps})))
+
+(test
+ (name example01_unified_t)
+ (modules example01_unified_t example01_unified )
+ (libraries pbrt))
+
+(rule
  (targets example03_types.ml example03_pp.ml example03_types.mli
    example03_pp.mli)
  (deps example03.proto)
