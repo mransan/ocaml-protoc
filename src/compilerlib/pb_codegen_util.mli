@@ -39,6 +39,12 @@ val caml_file_name_of_proto_file_name :
     the protobuf file name
  *)
 
+val module_name_of_proto_file_name :
+  proto_file_name:string -> file_suffix:string -> string
+(** [module_name_of_proto_file_name filename] returns the OCaml module name
+    the protobuf file name
+ *)
+
 val mutable_record_name : string -> string
 (** [mutable_record_name record_name] returns the type name of the `mutable`
     type name. We use mutable types when decoding for better performance,
