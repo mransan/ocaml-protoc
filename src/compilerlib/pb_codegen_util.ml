@@ -88,8 +88,29 @@ let caml_file_name_of_proto_file_name ~proto_file_name ~file_suffix =
   let splitted = Pb_util.rev_split_by_char '.' proto_file_name in
   if List.length splitted < 2 || List.hd splitted <> "proto" then
     failwith "Proto file has no valid extension"
-  else
-    String.concat "_" @@ List.rev @@ (file_suffix :: List.tl splitted)
+  else (
+    let components =
+      if file_suffix = "" then
+        List.tl splitted
+      else
+        file_suffix :: List.tl splitted
+    in
+    String.concat "_" @@ List.rev @@ components
+  )
+
+let module_name_of_proto_file_name ~proto_file_name ~file_suffix =
+  let splitted = Pb_util.rev_split_by_char '.' proto_file_name in
+  if List.length splitted < 2 || List.hd splitted <> "proto" then
+    failwith "Proto file has no valid extension"
+  else (
+    let components =
+      if file_suffix = "" then
+        List.tl splitted
+      else
+        file_suffix :: List.tl splitted
+    in
+    String.capitalize_ascii @@ String.concat "_" @@ List.rev @@ components
+  )
 
 let mutable_record_name s = s ^ "_mutable"
 
