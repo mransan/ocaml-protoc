@@ -1,0 +1,501 @@
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+
+      message SimpleMessage {
+        int32 id = 1;
+        string name = 2;
+        bool active = 3;
+      }
+
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 1;
+                  message_name = "SimpleMessage";
+                  message_body = [{
+                                     field_name = "id";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Int32;
+                                     field_options = [];
+                                     };
+                                  {
+                                     field_name = "name";
+                                     field_number = 2;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     };
+                                  {
+                                     field_name = "active";
+                                     field_number = 3;
+                                     field_label = `Nolabel;
+                                     field_type = Bool;
+                                     field_options = [];
+                                     }];
+                  }];
+   services = [];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+
+      message NestedMessage {
+        int32 id = 1;
+        string description = 2;
+      }
+
+      message ComplexMessage {
+        string title = 1;
+        repeated NestedMessage items = 2;
+      }
+
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 2;
+                  message_name = "NestedMessage";
+                  message_body = [{
+                                     field_name = "id";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Int32;
+                                     field_options = [];
+                                     };
+                                  {
+                                     field_name = "description";
+                                     field_number = 2;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 3;
+                  message_name = "ComplexMessage";
+                  message_body = [{
+                                     field_name = "title";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     };
+                                  {
+                                     field_name = "items";
+                                     field_number = 2;
+                                     field_label = `Repeated;
+                                     field_type = {
+                                                     type_path: (empty);
+                                                     type_name: "NestedMessage";
+                                                     from_root: false
+                                                     };
+                                     field_options = [];
+                                     }];
+                  }];
+   services = [];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+
+      enum Status {
+        UNKNOWN = 0;
+        ACTIVE = 1;
+        INACTIVE = 2;
+      }
+
+      message SubMessage {
+        string content = 1;
+      }
+
+      message DataMessage {
+        oneof data {
+          string text = 1;
+          int32 number = 2;
+          SubMessage sub = 3;
+        }
+        Status status = 4;
+      }
+
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 5;
+                  message_name = "SubMessage";
+                  message_body = [{
+                                     field_name = "content";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 6;
+                  message_name = "DataMessage";
+                  message_body = [{oneof_name = "data";
+                                     oneof_fields = [{
+                                                        field_name = "text";
+                                                        field_number = 1;
+                                                        field_label = ;
+                                                        field_type = String;
+                                                        field_options = [
+                                                        ];
+                                                        };
+                                                     {
+                                                        field_name = "number";
+                                                        field_number = 2;
+                                                        field_label = ;
+                                                        field_type = Int32;
+                                                        field_options = [
+                                                        ];
+                                                        };
+                                                     {
+                                                        field_name = "sub";
+                                                        field_number = 3;
+                                                        field_label = ;
+                                                        field_type = {
+                                                        
+                                                          type_path: (empty);
+                                                          type_name: "SubMessage";
+                                                          from_root: false
+                                                          };
+                                                        field_options = [
+                                                        ];
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "status";
+                                     field_number = 4;
+                                     field_label = `Nolabel;
+                                     field_type = {
+                                                     type_path: (empty);
+                                                     type_name: "Status";
+                                                     from_root: false
+                                                     };
+                                     field_options = [];
+                                     }];
+                  }];
+   services = [];
+   enums = [{
+               enum_id = 4;
+               enum_name = "Status";
+               enum_body = [{
+                               enum_value_name = "UNKNOWN";
+                               enum_value_int = 0;
+                               };
+                            {
+                               enum_value_name = "ACTIVE";
+                               enum_value_int = 1;
+                               };
+                            {
+                               enum_value_name = "INACTIVE";
+                               enum_value_int = 2;
+                               }];
+               }];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+  
+      message OptionMessage {
+        option (my_option) = true;
+  
+        int32 id = 1 [(my_field_option) = "value"];
+        string name = 2;
+  
+        map<string, int32> scores = 3;
+      }
+
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 7;
+                  message_name = "OptionMessage";
+                  message_body = [{
+                                    "my_option": true
+                                    };
+                                  {
+                                     field_name = "id";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Int32;
+                                     field_options = [{
+                                                        "my_field_option": "value"
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "name";
+                                     field_number = 2;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     };
+                                  {
+                                     map_name = "scores";
+                                     map_number = 3;
+                                     map_key_type = String;
+                                     map_value_type = Int32;
+                                     map_options = [];
+                                     }];
+                  }];
+   services = [];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+      
+      service MyService {
+        rpc UnaryRPC (UnaryRequest) returns (UnaryResponse);
+        rpc ServerStreamingRPC (ServerStreamingRequest) returns (stream ServerStreamingResponse);
+        rpc ClientStreamingRPC (stream ClientStreamingRequest) returns (ClientStreamingResponse);
+        rpc BidirectionalStreamingRPC (stream BidirectionalRequest) returns (stream BidirectionalResponse);
+      }
+      
+      message UnaryRequest {
+        string input = 1;
+      }
+      
+      message UnaryResponse {
+        string output = 1;
+      }
+      
+      message ServerStreamingRequest {
+        string query = 1;
+      }
+      
+      message ServerStreamingResponse {
+        repeated string results = 1;
+      }
+      
+      message ClientStreamingRequest {
+        repeated int32 values = 1;
+      }
+      
+      message ClientStreamingResponse {
+        int32 sum = 1;
+      }
+      
+      message BidirectionalRequest {
+        string message = 1;
+      }
+      
+      message BidirectionalResponse {
+        string reply = 1;
+      }
+      
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 8;
+                  message_name = "UnaryRequest";
+                  message_body = [{
+                                     field_name = "input";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 9;
+                  message_name = "UnaryResponse";
+                  message_body = [{
+                                     field_name = "output";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 10;
+                  message_name = "ServerStreamingRequest";
+                  message_body = [{
+                                     field_name = "query";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 11;
+                  message_name = "ServerStreamingResponse";
+                  message_body = [{
+                                     field_name = "results";
+                                     field_number = 1;
+                                     field_label = `Repeated;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 12;
+                  message_name = "ClientStreamingRequest";
+                  message_body = [{
+                                     field_name = "values";
+                                     field_number = 1;
+                                     field_label = `Repeated;
+                                     field_type = Int32;
+                                     field_options = [{
+                                                        "packed": true
+                                                        }];
+                                     }];
+                  };
+               {
+                  id = 13;
+                  message_name = "ClientStreamingResponse";
+                  message_body = [{
+                                     field_name = "sum";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Int32;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 14;
+                  message_name = "BidirectionalRequest";
+                  message_body = [{
+                                     field_name = "message";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  };
+               {
+                  id = 15;
+                  message_name = "BidirectionalResponse";
+                  message_body = [{
+                                     field_name = "reply";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [];
+                                     }];
+                  }];
+   services = [{
+                  service_name = "MyService";
+                  service_body = [{
+                                     rpc_name = "UnaryRPC";
+                                     rpc_options = [];
+                                     rpc_req_stream = false;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "UnaryRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = false;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "UnaryResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "ServerStreamingRPC";
+                                     rpc_options = [];
+                                     rpc_req_stream = false;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "ServerStreamingRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = true;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "ServerStreamingResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "ClientStreamingRPC";
+                                     rpc_options = [];
+                                     rpc_req_stream = true;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "ClientStreamingRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = false;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "ClientStreamingResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "BidirectionalStreamingRPC";
+                                     rpc_options = [];
+                                     rpc_req_stream = true;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "BidirectionalRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = true;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "BidirectionalResponse";
+                                                  from_root: false
+                                                  };
+                                     }];
+                  }];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
