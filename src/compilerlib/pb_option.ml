@@ -17,3 +17,18 @@ let get t option_name =
   match List.assoc option_name t with
   | c -> Some c
   | exception Not_found -> None
+
+let pp_constant ppf = function
+  | Constant_string s -> Format.fprintf ppf "%S" s
+  | Constant_bool b -> Format.fprintf ppf "%B" b
+  | Constant_int i -> Format.fprintf ppf "%d" i
+  | Constant_float f -> Format.fprintf ppf "%f" f
+  | Constant_litteral l -> Format.fprintf ppf "`%s`" l
+
+let pp_t ppf (name, const) =
+  Format.fprintf ppf "{@;<1 2>%S: %a@;<1 2>}" name pp_constant const
+
+let pp_set ppf set =
+  Format.fprintf ppf "[@[<v>%a@]]"
+    (Format.pp_print_list ~pp_sep:(fun ppf () -> Format.fprintf ppf ",@,") pp_t)
+    set

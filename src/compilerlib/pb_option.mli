@@ -28,3 +28,6 @@ val merge : set -> set -> set
     than in case of duplicates [s2] options will override [s1] options. *)
 
 val get : set -> string -> constant option
+val pp_constant : Format.formatter -> constant -> unit
+val pp_t : Format.formatter -> t -> unit
+val pp_set : Format.formatter -> set -> unit

@@ -128,3 +128,31 @@ type unresolved_t = unresolved t
 type resolved_t = resolved t
 
 val parse : string -> unresolved_t
+val pp_type_path : Format.formatter -> type_path -> unit
+
+val pp_builtin_type_floating_point :
+  Format.formatter -> builtin_type_floating_point -> unit
+
+val pp_builtin_type_unsigned_int :
+  Format.formatter -> builtin_type_unsigned_int -> unit
+
+val pp_builtin_type_signed_int :
+  Format.formatter -> builtin_type_signed_int -> unit
+
+val pp_builtin_type_int : Format.formatter -> builtin_type_int -> unit
+val pp_map_key_type : Format.formatter -> map_key_type -> unit
+val pp_builtin_type : Format.formatter -> builtin_type -> unit
+val pp_unresolved : Format.formatter -> unresolved -> unit
+val pp_resolved : Format.formatter -> resolved -> unit
+
+val pp_type :
+  (Format.formatter -> 'a -> unit) ->
+  Format.formatter ->
+  [ builtin_type | `User_defined of 'a ] ->
+  unit
+
+val pp_unresolved_t :
+  Format.formatter -> [ builtin_type | `User_defined of unresolved ] -> unit
+
+val pp_resolved_t :
+  Format.formatter -> [ builtin_type | `User_defined of resolved ] -> unit
