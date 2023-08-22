@@ -53,9 +53,10 @@ val oneof_field :
   number:int ->
   type_:string ->
   string ->
-  Pt.oneof_field
+  Pt.oneof_body_content
 
-val oneof : fields:Pt.oneof_field list -> string -> Pt.oneof
+val oneof_option : Pb_option.t -> Pt.oneof_body_content
+val oneof : ?oneof_body:Pt.oneof_body_content list -> string -> Pt.oneof
 val message_body_field : Pt.message_field -> Pt.message_body_content
 val message_body_map_field : Pt.map_field -> Pt.message_body_content
 val message_body_oneof_field : Pt.oneof -> Pt.message_body_content

@@ -293,9 +293,10 @@ let resolve_type t type_ =
         (function
           | Tt.Message_field field -> Tt.Message_field (resolve_field field)
           | Tt.Message_oneof_field oneof ->
-            let { Tt.oneof_name; oneof_fields } = oneof in
+            let { Tt.oneof_name; oneof_fields; oneof_options } = oneof in
             let oneof_fields = List.map resolve_field oneof_fields in
-            Tt.Message_oneof_field { Tt.oneof_name; oneof_fields }
+            Tt.Message_oneof_field
+              { Tt.oneof_name; oneof_fields; oneof_options }
           | Tt.Message_map_field map ->
             let {
               Tt.map_name;

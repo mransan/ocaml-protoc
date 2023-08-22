@@ -267,7 +267,7 @@ extension_range :
 
 oneof :
   | T_one_of field_name T_lbrace oneof_field_list rbrace {
-    Pb_parsing_util.oneof ~fields:$4 $2
+    Pb_parsing_util.oneof ~oneof_body:$4 $2
   }
   | T_one_of T_lbrace oneof_field_list rbrace {
     Pb_exception.missing_one_of_name $1
@@ -284,6 +284,7 @@ oneof_field :
   | T_ident field_name T_equal T_int semicolon {
     Pb_parsing_util.oneof_field ~type_:(snd $1) ~number:$4 $2
   }
+  | option     { Pb_parsing_util.oneof_option $1 }
 
 map :
   | T_map T_less T_ident T_comma T_ident T_greater field_name T_equal T_int semicolon {

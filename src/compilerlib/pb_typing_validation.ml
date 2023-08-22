@@ -58,9 +58,23 @@ let compile_map_p1 map_parsed =
   Tt.{ map_name; map_number; map_key_type; map_value_type; map_options }
 
 let compile_oneof_p1 oneof_parsed =
-  let { Pt.oneof_name; Pt.oneof_fields } = oneof_parsed in
-
-  { Tt.oneof_name; Tt.oneof_fields = List.map compile_field_p1 oneof_fields }
+  let init =
+    {
+      Tt.oneof_name = oneof_parsed.Pt.oneof_name;
+      Tt.oneof_fields = [];
+      Tt.oneof_options = Pb_option.empty;
+    }
+  in
+  List.fold_left
+    (fun acc -> function
+      | Pt.Oneof_field f ->
+        { acc with Tt.oneof_fields = compile_field_p1 f :: acc.Tt.oneof_fields }
+      | Pt.Oneof_option (name, value) ->
+        {
+          acc with
+          Tt.oneof_options = Pb_option.add acc.Tt.oneof_options name value;
+        })
+    init oneof_parsed.Pt.oneof_body
 
 let not_found f : bool =
   try

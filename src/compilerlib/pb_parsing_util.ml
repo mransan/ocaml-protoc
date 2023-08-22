@@ -55,15 +55,17 @@ let map_field ?options:(map_options = Pb_option.empty) ~number ~key_type
   }
 
 let oneof_field ?(options = Pb_option.empty) ~number ~type_ name =
-  {
-    Pt.field_name = name;
-    Pt.field_number = number;
-    Pt.field_type = Pb_field_type.parse type_;
-    Pt.field_options = options;
-    Pt.field_label = ();
-  }
+  Pt.Oneof_field
+    {
+      Pt.field_name = name;
+      Pt.field_number = number;
+      Pt.field_type = Pb_field_type.parse type_;
+      Pt.field_options = options;
+      Pt.field_label = ();
+    }
 
-let oneof ~fields name = { Pt.oneof_name = name; Pt.oneof_fields = fields }
+let oneof_option option_ = Pt.Oneof_option option_
+let oneof ?(oneof_body = []) name = { Pt.oneof_name = name; Pt.oneof_body }
 let message_counter = ref 0
 
 let enum_value ~int_value name =
