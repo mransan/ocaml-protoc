@@ -354,6 +354,7 @@ field_option_list :
 field_option :
   | T_ident T_equal constant               { (snd $1, $3) }
   | T_lparen T_ident T_rparen T_equal constant { (snd $2, $5)}
+  | T_lparen T_ident T_rparen T_ident T_equal constant { ((snd $2) ^ (snd $4), $6)}
 
 option_identifier_item :
   | T_ident                   {snd $1}
