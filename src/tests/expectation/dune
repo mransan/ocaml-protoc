@@ -1,14 +1,4 @@
-(executable
+(test
  (name tests)
  (libraries pbrt ocaml-protoc.compiler-lib)
  (flags :standard -open Ocaml_protoc_compiler_lib))
-
-(rule
- (with-stdout-to
-  tests.output
-  (run ./tests.exe)))
-
-(rule
- (alias runtest)
- (action
-  (diff tests.expected tests.output)))
