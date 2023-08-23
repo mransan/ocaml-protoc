@@ -2,7 +2,14 @@ module E = Pb_exception
 module Pt = Pb_parsing_parse_tree
 
 let run proto =
-  let protos = Pb_parsing.parse_file (fun _ -> "test.proto", proto) "" in
+  let protos =
+    Pb_parsing.parse_file
+      (fun f ->
+        match f with
+        | "test.proto" -> f, proto
+        | _ -> f, "")
+      "test.proto"
+  in
   let ppf = Format.std_formatter in
   Format.set_margin 150;
   Format.fprintf ppf
@@ -27,7 +34,7 @@ let test_cases =
         string name = 2;
         bool active = 3;
       }
-|};
+    |};
     {|
       syntax = "proto3";
 
@@ -40,7 +47,7 @@ let test_cases =
         string title = 1;
         repeated NestedMessage items = 2;
       }
-|};
+    |};
     {|
       syntax = "proto3";
 
@@ -62,7 +69,7 @@ let test_cases =
         }
         Status status = 4;
       }
-|};
+    |};
     {|
       syntax = "proto3";
   
@@ -74,7 +81,7 @@ let test_cases =
   
         map<string, int32> scores = 3;
       }
-|};
+    |};
     {|
       syntax = "proto3";
       
@@ -116,7 +123,50 @@ let test_cases =
       message BidirectionalResponse {
         string reply = 1;
       }
-      |};
+    |};
+    {|
+      syntax = "proto2";
+      message Foo {
+        optional int32 x = 1 [default=1];
+        optional int32 y = 1 [default=1] ; ; ;; 
+        optional .M1 z = 1;
+      }
+    |};
+    {|
+      syntax = "proto3";
+      message Bar {
+        oneof foo {string name = 4;SubMessage sub_message = 9 [a=1];}
+        /* below test is to check resilience with respect to semi colon */
+        oneof foo {string name = 4; ; SubMessage sub_message = 9 [a=1]; ; ;;}; ;;
+      }
+    |};
+    {|
+      syntax = "proto3";
+      
+      package examplepb;
+      
+      import "validate/validate.proto";
+      
+      message Person {
+        uint64 id = 1 [(validate.rules).uint64.gt = 999];
+      
+        string email = 2 [(validate.rules).string.email = true];
+      
+        Location home = 4 [(validate.rules).message.required = true];
+      
+      }
+
+      message Other {
+        oneof id {
+          // either x, y, or z must be set.
+          option (validate.required) = true;
+
+          string x = 1 [(validate.rules).string.len = 5];
+          int32  y = 2;
+          Person z = 3;
+        }
+      }
+    |};
   ]
 
 let () = List.iter run test_cases
