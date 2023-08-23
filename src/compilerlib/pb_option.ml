@@ -23,7 +23,7 @@ let pp_constant ppf = function
   | Constant_bool b -> Format.fprintf ppf "%B" b
   | Constant_int i -> Format.fprintf ppf "%d" i
   | Constant_float f -> Format.fprintf ppf "%f" f
-  | Constant_litteral l -> Format.fprintf ppf "`%s`" l
+  | Constant_literal l -> Format.fprintf ppf "`%s`" l
 
 let pp_t ppf (name, const) =
   Format.fprintf ppf "{@;<1 2>%S: %a@;<1 2>}" name pp_constant const
