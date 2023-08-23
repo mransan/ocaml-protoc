@@ -247,6 +247,13 @@ let gen_const_variant ?and_ module_prefix { Ot.cv_name; Ot.cv_constructors } sc
             cvc_string_value)
         cv_constructors)
 
+let gen_unit ?and_ module_prefix { Ot.er_name } sc =
+  let rn = er_name in
+  F.linep sc "%s encode_%s (_v:%s_types.%s) = "
+    (Pb_codegen_util.let_decl_of_and and_)
+    rn module_prefix rn;
+  F.line sc "Js.Json.null"
+
 let gen_struct ?and_ t sc =
   let { Ot.module_prefix; spec; _ } = t in
 
@@ -260,6 +267,9 @@ let gen_struct ?and_ t sc =
       true
     | Ot.Const_variant v ->
       gen_const_variant ?and_ module_prefix v sc;
+      true
+    | Ot.Unit v ->
+      gen_unit ?and_ module_prefix v sc;
       true
   in
   has_encoded
@@ -284,7 +294,12 @@ let gen_sig ?and_ t sc =
   | Ot.Const_variant { Ot.cv_name; _ } ->
     F.linep sc "val encode_%s : %s_types.%s -> string" cv_name module_prefix
       cv_name;
-    F.linep sc "(** [encode_%s v] returns JSON string*)" cv_name;
+    F.linep sc "(** [encode_%s v] returns JSON string *)" cv_name;
+    true
+  | Ot.Unit { Ot.er_name } ->
+    F.linep sc "val encode_%s : %s_types.%s -> Js.Json.t" er_name module_prefix
+      er_name;
+    F.linep sc "(** [encode_%s v] returns JSON null *)" er_name;
     true
 
 let ocamldoc_title = "Protobuf JSON Encoding"
