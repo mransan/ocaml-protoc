@@ -7,7 +7,7 @@
         string name = 2;
         bool active = 3;
       }
-
+    
 ===================== </PROTO> ======================
 ======================= <AST> =======================
 {
@@ -61,7 +61,7 @@
         string title = 1;
         repeated NestedMessage items = 2;
       }
-
+    
 ===================== </PROTO> ======================
 ======================= <AST> =======================
 {
@@ -139,7 +139,7 @@
         }
         Status status = 4;
       }
-
+    
 ===================== </PROTO> ======================
 ======================= <AST> =======================
 {
@@ -163,35 +163,34 @@
                   id = 6;
                   message_name = "DataMessage";
                   message_body = [{oneof_name = "data";
-                                     oneof_fields = [{
-                                                        field_name = "text";
-                                                        field_number = 1;
-                                                        field_label = ;
-                                                        field_type = String;
-                                                        field_options = [
-                                                        ];
-                                                        };
-                                                     {
-                                                        field_name = "number";
-                                                        field_number = 2;
-                                                        field_label = ;
-                                                        field_type = Int32;
-                                                        field_options = [
-                                                        ];
-                                                        };
-                                                     {
-                                                        field_name = "sub";
-                                                        field_number = 3;
-                                                        field_label = ;
-                                                        field_type = {
-                                                        
-                                                          type_path: (empty);
-                                                          type_name: "SubMessage";
-                                                          from_root: false
-                                                          };
-                                                        field_options = [
-                                                        ];
-                                                        }];
+                                     oneof_body = [{
+                                                      field_name = "text";
+                                                      field_number = 1;
+                                                      field_label = ;
+                                                      field_type = String;
+                                                      field_options = [
+                                                      ];
+                                                      };
+                                                   {
+                                                      field_name = "number";
+                                                      field_number = 2;
+                                                      field_label = ;
+                                                      field_type = Int32;
+                                                      field_options = [
+                                                      ];
+                                                      };
+                                                   {
+                                                      field_name = "sub";
+                                                      field_number = 3;
+                                                      field_label = ;
+                                                      field_type = {
+                                                                    type_path: (empty);
+                                                                    type_name: "SubMessage";
+                                                                    from_root: false
+                                                                    };
+                                                      field_options = [
+                                                      ];
+                                                      }];
                                      };
                                   {
                                      field_name = "status";
@@ -239,7 +238,7 @@
   
         map<string, int32> scores = 3;
       }
-
+    
 ===================== </PROTO> ======================
 ======================= <AST> =======================
 {
@@ -327,7 +326,7 @@
       message BidirectionalResponse {
         string reply = 1;
       }
-      
+    
 ===================== </PROTO> ======================
 ======================= <AST> =======================
 {
@@ -493,6 +492,267 @@
                                                   };
                                      }];
                   }];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto2";
+      message Foo {
+        optional int32 x = 1 [default=1];
+        optional int32 y = 1 [default=1] ; ; ;; 
+        optional .M1 z = 1;
+      }
+    
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto2;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 16;
+                  message_name = "Foo";
+                  message_body = [{
+                                     field_name = "x";
+                                     field_number = 1;
+                                     field_label = `Optional;
+                                     field_type = Int32;
+                                     field_options = [{
+                                                        "default": 1
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "y";
+                                     field_number = 1;
+                                     field_label = `Optional;
+                                     field_type = Int32;
+                                     field_options = [{
+                                                        "default": 1
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "z";
+                                     field_number = 1;
+                                     field_label = `Optional;
+                                     field_type = {
+                                                     type_path: (empty);
+                                                     type_name: "M1";
+                                                     from_root: true
+                                                     };
+                                     field_options = [];
+                                     }];
+                  }];
+   services = [];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+      message Bar {
+        oneof foo {string name = 4;SubMessage sub_message = 9 [a=1];}
+        /* below test is to check resilience with respect to semi colon */
+        oneof foo {string name = 4; ; SubMessage sub_message = 9 [a=1]; ; ;;}; ;;
+      }
+    
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 17;
+                  message_name = "Bar";
+                  message_body = [{oneof_name = "foo";
+                                     oneof_body = [{
+                                                      field_name = "name";
+                                                      field_number = 4;
+                                                      field_label = ;
+                                                      field_type = String;
+                                                      field_options = [
+                                                      ];
+                                                      };
+                                                   {
+                                                      field_name = "sub_message";
+                                                      field_number = 9;
+                                                      field_label = ;
+                                                      field_type = {
+                                                                    type_path: (empty);
+                                                                    type_name: "SubMessage";
+                                                                    from_root: false
+                                                                    };
+                                                      field_options = [
+                                                      {
+                                                        "a": 1
+                                                        }];
+                                                      }];
+                                     };
+                                  {oneof_name = "foo";
+                                     oneof_body = [{
+                                                      field_name = "name";
+                                                      field_number = 4;
+                                                      field_label = ;
+                                                      field_type = String;
+                                                      field_options = [
+                                                      ];
+                                                      };
+                                                   {
+                                                      field_name = "sub_message";
+                                                      field_number = 9;
+                                                      field_label = ;
+                                                      field_type = {
+                                                                    type_path: (empty);
+                                                                    type_name: "SubMessage";
+                                                                    from_root: false
+                                                                    };
+                                                      field_options = [
+                                                      {
+                                                        "a": 1
+                                                        }];
+                                                      }];
+                                     }];
+                  }];
+   services = [];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+      
+      package examplepb;
+      
+      import "validate/validate.proto";
+      
+      message Person {
+        uint64 id = 1 [(validate.rules).uint64.gt = 999];
+      
+        string email = 2 [(validate.rules).string.email = true];
+      
+        Location home = 4 [(validate.rules).message.required = true];
+      
+      }
+
+      message Other {
+        oneof id {
+          // either x, y, or z must be set.
+          option (validate.required) = true;
+
+          string x = 1 [(validate.rules).string.len = 5];
+          int32  y = 2;
+          Person z = 3;
+        }
+      }
+    
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = proto3;
+   imports = [{file_name = "validate/validate.proto";public = false;}];
+   file_options = [];
+   package = examplepb;
+   messages = [{
+                  id = 18;
+                  message_name = "Person";
+                  message_body = [{
+                                     field_name = "id";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Uint64;
+                                     field_options = [{
+                                                        "validate.rules.uint64.gt": 999
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "email";
+                                     field_number = 2;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [{
+                                                        "validate.rules.string.email": true
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "home";
+                                     field_number = 4;
+                                     field_label = `Nolabel;
+                                     field_type = {
+                                                     type_path: (empty);
+                                                     type_name: "Location";
+                                                     from_root: false
+                                                     };
+                                     field_options = [{
+                                                        "validate.rules.message.required": true
+                                                        }];
+                                     }];
+                  };
+               {
+                  id = 19;
+                  message_name = "Other";
+                  message_body = [{oneof_name = "id";
+                                     oneof_body = [{
+                                                     "validate.required": true
+                                                     };
+                                                   {
+                                                      field_name = "x";
+                                                      field_number = 1;
+                                                      field_label = ;
+                                                      field_type = String;
+                                                      field_options = [
+                                                      {
+                                                        "validate.rules.string.len": 5
+                                                        }];
+                                                      };
+                                                   {
+                                                      field_name = "y";
+                                                      field_number = 2;
+                                                      field_label = ;
+                                                      field_type = Int32;
+                                                      field_options = [
+                                                      ];
+                                                      };
+                                                   {
+                                                      field_name = "z";
+                                                      field_number = 3;
+                                                      field_label = ;
+                                                      field_type = {
+                                                                    type_path: (empty);
+                                                                    type_name: "Person";
+                                                                    from_root: false
+                                                                    };
+                                                      field_options = [
+                                                      ];
+                                                      }];
+                                     }];
+                  }];
+   services = [];
+   enums = [];
+   extends = [];
+   }
+{
+   proto_file_name = validate/validate.proto;
+   syntax = (None);
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [];
+   services = [];
    enums = [];
    extends = [];
    }

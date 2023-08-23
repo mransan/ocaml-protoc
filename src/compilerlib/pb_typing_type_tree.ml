@@ -58,6 +58,7 @@ type 'a map_field = {
 type 'a oneof = {
   oneof_name: string;
   oneof_fields: 'a oneof_field list;
+  oneof_options: Pb_option.set;
 }
 (** Oneof definition *)
 

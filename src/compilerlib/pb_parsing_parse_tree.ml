@@ -66,9 +66,13 @@ type map_field = {
   map_options: Pb_option.set;
 }
 
+type oneof_body_content =
+  | Oneof_field of oneof_field
+  | Oneof_option of Pb_option.t
+
 type oneof = {
   oneof_name: string;
-  oneof_fields: oneof_field list;
+  oneof_body: oneof_body_content list;
 }
 (** oneof entity *)
 
@@ -211,11 +215,17 @@ let pp_map_field ppf map_field =
     map_field.map_key_type Pb_field_type.pp_unresolved_t
     map_field.map_value_type Pb_option.pp_set map_field.map_options
 
+let pp_oneof_body_content ppf = function
+  | Oneof_field field -> pp_oneof_field ppf field
+  | Oneof_option option -> Pb_option.pp_t ppf option
+
 let pp_oneof ppf oneof =
-  fprintf ppf "{@[<2>@,oneof_name = %S;@,oneof_fields = [@[<v>%a@]];@,}@]"
-    oneof.oneof_name
-    (pp_print_list ~pp_sep:(fun ppf () -> fprintf ppf ";@,") pp_oneof_field)
-    oneof.oneof_fields
+  fprintf ppf "{@[<v 2>%s = %S;@,%s = [@[<v>%a@]];@,@]}" "oneof_name"
+    oneof.oneof_name "oneof_body"
+    (pp_print_list
+       ~pp_sep:(fun ppf () -> fprintf ppf ";@,")
+       pp_oneof_body_content)
+    oneof.oneof_body
 
 let pp_enum_value ppf enum_value =
   fprintf ppf "{@[<v 2>@,enum_value_name = %S;@,enum_value_int = %d;@,}@]"
