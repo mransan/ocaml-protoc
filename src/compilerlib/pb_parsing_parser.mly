@@ -116,7 +116,9 @@ reserved_        : reserved      T_eof {$1}
 
 /* (* Main protobuf symbol *) */
 
-proto_           : proto         T_eof {$1}
+proto_ :
+  | proto T_eof {$1}
+  | T_eof {Pb_parsing_util.proto ()}
 
 proto:
   | syntax proto_content {Pb_parsing_util.proto ~syntax:$1 ~proto:$2 ()}
