@@ -209,31 +209,31 @@ let compile_field_type ~unsigned_tag all_types file_options field_options
     file_name field_type =
   let ocaml_type =
     match Pb_option.get field_options "ocaml_type" with
-    | Some (Pb_option.Constant_litteral "int_t") -> `Int_t
+    | Some (Pb_option.Constant_literal "int_t") -> `Int_t
     | _ -> `None
   in
 
   let int32_type =
     match Pb_option.get file_options "int32_type" with
-    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int32)
   in
 
   let uint32_type =
     match Pb_option.get file_options "int32_type" with
-    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint32)
   in
 
   let int64_type =
     match Pb_option.get file_options "int64_type" with
-    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in
 
   let uint64_type =
     match Pb_option.get file_options "int64_type" with
-    | Some (Pb_option.Constant_litteral "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint64)
   in
 
@@ -292,7 +292,7 @@ let is_mutable ?field_name field_options =
 let ocaml_container field_options =
   match Pb_option.get field_options "ocaml_container" with
   | None -> None
-  | Some (Pb_option.Constant_litteral container_name) -> Some container_name
+  | Some (Pb_option.Constant_literal container_name) -> Some container_name
   | Some _ -> None
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag

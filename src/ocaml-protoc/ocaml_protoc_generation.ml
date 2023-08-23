@@ -31,7 +31,8 @@ module Cmdline = Ocaml_protoc_cmdline.Cmdline
 
 type codegen_f = ?and_:unit -> Ot.type_ -> F.scope -> bool
 
-let generate_for_all_types ocaml_types sc (f : codegen_f) ocamldoc_title =
+let generate_for_all_types ocaml_types sc (f : codegen_f) ocamldoc_title : unit
+    =
   (match ocamldoc_title with
   | None -> ()
   | Some ocamldoc_title ->
@@ -57,7 +58,7 @@ let generate_for_all_types ocaml_types sc (f : codegen_f) ocamldoc_title =
       ())
     ocaml_types
 
-let open_files cmdline file_suffix =
+let open_files cmdline file_suffix f =
   let { Cmdline.ml_out; Cmdline.proto_file_name; _ } = cmdline in
 
   let out_file_name =
@@ -72,9 +73,16 @@ let open_files cmdline file_suffix =
   Printf.printf "Generating %s.mli\n%!" out_file_name;
   Printf.printf "Generating %s.ml\n%!" out_file_name;
 
-  open_out @@ out_file_name ^ ".mli", open_out @@ out_file_name ^ ".ml"
+  let oc_mli = open_out @@ out_file_name ^ ".mli" in
+  let oc_ml = open_out @@ out_file_name ^ ".ml" in
 
-let generate_type_and_default ocaml_types proto_file_options cmdline =
+  Pb_util.protect
+    ~finally:(fun () ->
+      close_out oc_mli;
+      close_out oc_ml)
+    (fun () -> f (oc_mli, oc_ml))
+
+let generate_type_and_default ocaml_types proto_file_options cmdline : unit =
   let file_suffix = "types" in
 
   let print_ppx sc =
@@ -105,11 +113,11 @@ let generate_type_and_default ocaml_types proto_file_options cmdline =
   generate_for_all_types ocaml_types mli_sc Pb_codegen_default.gen_sig
     (Some Pb_codegen_default.ocamldoc_title);
 
-  let sig_oc, struct_oc = open_files cmdline file_suffix in
+  open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
   output_string struct_oc (F.print ml_sc);
   output_string sig_oc (F.print mli_sc)
 
-let generate_mutable_records gen_file_suffix ocaml_types sc =
+let generate_mutable_records gen_file_suffix ocaml_types (sc : F.scope) : unit =
   let ocaml_types = List.flatten ocaml_types in
   List.iter
     (fun { Ot.spec; module_prefix; _ } ->
@@ -148,11 +156,11 @@ let generate_yojson ocaml_types cmdline =
   generate_for_all_types ocaml_types mli_sc Pb_codegen_decode_yojson.gen_sig
     (Some Pb_codegen_decode_yojson.ocamldoc_title);
 
-  let sig_oc, struct_oc = open_files cmdline file_suffix in
+  open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
   output_string struct_oc (F.print ml_sc);
   output_string sig_oc (F.print mli_sc)
 
-let generate_bs ocaml_types cmdline =
+let generate_bs ocaml_types cmdline : unit =
   let file_suffix = "bs" in
 
   (* .ml file *)
@@ -175,7 +183,7 @@ let generate_bs ocaml_types cmdline =
   generate_for_all_types ocaml_types mli_sc Pb_codegen_decode_bs.gen_sig
     (Some Pb_codegen_decode_bs.ocamldoc_title);
 
-  let sig_oc, struct_oc = open_files cmdline file_suffix in
+  open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
   output_string struct_oc (F.print ml_sc);
   output_string sig_oc (F.print mli_sc)
 
@@ -204,7 +212,7 @@ let generate_binary ocaml_types cmdline =
   generate_for_all_types ocaml_types mli_sc Pb_codegen_decode_binary.gen_sig
     (Some Pb_codegen_decode_binary.ocamldoc_title);
 
-  let sig_oc, struct_oc = open_files cmdline file_suffix in
+  open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
   output_string struct_oc (F.print ml_sc);
   output_string sig_oc (F.print mli_sc)
 
@@ -226,18 +234,14 @@ let generate_pp ocaml_types cmdline =
   generate_for_all_types ocaml_types mli_sc Pb_codegen_pp.gen_sig
     (Some Pb_codegen_pp.ocamldoc_title);
 
-  let sig_oc, struct_oc = open_files cmdline file_suffix in
+  open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
   output_string struct_oc (F.print ml_sc);
   output_string sig_oc (F.print mli_sc)
 
-let generate_code ocaml_types proto_file_options cmdline =
+let generate_code ocaml_types proto_file_options cmdline : unit =
   generate_type_and_default ocaml_types proto_file_options cmdline;
-
   if !(cmdline.Cmdline.yojson) then generate_yojson ocaml_types cmdline;
-
   if !(cmdline.Cmdline.binary) then generate_binary ocaml_types cmdline;
-
   if !(cmdline.Cmdline.pp) then generate_pp ocaml_types cmdline;
-
   if !(cmdline.Cmdline.bs) then generate_bs ocaml_types cmdline;
   ()

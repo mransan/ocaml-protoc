@@ -377,7 +377,7 @@ constant :
     match (snd $1) with
     | "true"   -> Pb_option.Constant_bool true
     | "false"  -> Pb_option.Constant_bool false
-    | litteral -> Pb_option.Constant_litteral litteral
+    | str -> Pb_option.Constant_literal str
   }
   | T_string     { Pb_option.Constant_string $1 };
 

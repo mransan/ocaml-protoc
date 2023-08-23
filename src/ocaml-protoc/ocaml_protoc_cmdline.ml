@@ -23,14 +23,14 @@
 
 *)
 
-(* [ocaml-protoc] provides the ability to override all the custom
- *
- * protobuf file options defined in
- * src/include/ocaml-protoc/ocamloptions.proto as command line arguments.
- *
- * This module implements the bridge functionality between the 2
- * mechanism; command line options are converted to file options and
- * appended there.
+(** [ocaml-protoc] provides the ability to override all the custom
+  
+   protobuf file options defined in
+   [src/include/ocaml-protoc/ocamloptions.proto] as command line arguments.
+  
+   This module implements the bridge functionality between the 2
+   mechanism; command line options are converted to file options and
+   appended there.
  *)
 module File_options = struct
   type t = {
@@ -39,8 +39,10 @@ module File_options = struct
     mutable ocaml_file_ppx: string option;
     mutable ocaml_all_types_ppx: string option;
   }
-  (* all file options supported... this needs to be kept in sync with
-   * src/include/ocaml-protoc/ocamloptions.proto *)
+  (** all file options supported. *)
+
+  (* NOTE: this needs to be kept in sync with
+     src/include/ocaml-protoc/ocamloptions.proto *)
 
   let make () =
     {
@@ -50,7 +52,7 @@ module File_options = struct
       ocaml_all_types_ppx = None;
     }
 
-  (* Compute the command line arguments for be used with the Arg module.  *)
+  (** Compute the command line arguments for be used with the Arg module.  *)
   let cmd_line_args t =
     [
       ( "-int32_type",
@@ -58,19 +60,19 @@ module File_options = struct
           (function
           | "int_t" -> t.int32_type <- Some "int_t"
           | x -> failwith @@ Printf.sprintf "Invalid int32_type value %s" x),
-        "int32_type file option" );
+        " int32_type file option" );
       ( "-int64_type",
         Arg.String
           (function
           | "int_t" -> t.int64_type <- Some "int_t"
           | x -> failwith @@ Printf.sprintf "Invalid int64_type value %s" x),
-        "int64_type file option" );
+        " int64_type file option" );
       ( "-ocaml_file_ppx",
         Arg.String (fun s -> t.ocaml_file_ppx <- Some s),
-        "ocaml_file_ppx file option" );
+        " ocaml_file_ppx file option" );
       ( "-ocaml_all_types_ppx",
         Arg.String (fun s -> t.ocaml_all_types_ppx <- Some s),
-        "ocaml_all_types_ppx file option" );
+        " ocaml_all_types_ppx file option" );
     ]
 
   (** Converts the command line values to Parse Tree file options
@@ -86,30 +88,30 @@ module File_options = struct
         Pb_option.add options option_name option_value
     in
     Pb_option.empty
-    |> map int32_type (fun s -> "int32_type", Pb_option.Constant_litteral s)
-    |> map int64_type (fun s -> "int64_type", Pb_option.Constant_litteral s)
+    |> map int32_type (fun s -> "int32_type", Pb_option.Constant_literal s)
+    |> map int64_type (fun s -> "int64_type", Pb_option.Constant_literal s)
     |> map ocaml_file_ppx (fun s ->
            "ocaml_file_ppx", Pb_option.Constant_string s)
     |> map ocaml_all_types_ppx (fun s ->
            "ocaml_all_types_ppx", Pb_option.Constant_string s)
 end
 
-(* Command line argument for the ocaml-protoc *)
+(** Command line argument for the ocaml-protoc *)
 module Cmdline = struct
   type t = {
-    mutable ml_out: string; (* output directory *)
+    mutable ml_out: string;  (** output directory *)
     mutable proto_file_name: string;
-        (* proto file name as given on the cmd line *)
+        (** proto file name as given on the cmd line *)
     mutable include_dirs: string list;
-        (* include directories given with -I argument *)
-    binary: bool ref; (* whether binary encoding is enabled *)
-    yojson: bool ref; (* whether yojson encoding is enabled *)
-    bs: bool ref; (* whether BuckleScript encoding is enabled *)
-    pp: bool ref; (* whether pretty printing is enabled *)
+        (** include directories given with -I argument *)
+    binary: bool ref;  (** whether binary encoding is enabled *)
+    yojson: bool ref;  (** whether yojson encoding is enabled *)
+    bs: bool ref;  (** whether BuckleScript encoding is enabled *)
+    pp: bool ref;  (** whether pretty printing is enabled *)
     mutable cmd_line_file_options: File_options.t;
-        (* file options override from the cmd line *)
+        (** file options override from the cmd line *)
     unsigned_tag: bool ref;
-        (* if true, unsigned int32/64s will be generated with a polymorphic
+        (** if true, unsigned int32/64s will be generated with a polymorphic
            variant [`unsigned int32/64], otherwise will be emitted as
            immediate [int32/int64]. *)
   }
@@ -129,17 +131,17 @@ module Cmdline = struct
 
   let cmd_line_args t =
     [
-      "-yojson", Arg.Set t.yojson, "generate yojson encoding";
-      "-bs", Arg.Set t.bs, "generate BuckleScript encoding";
-      "-binary", Arg.Set t.binary, "generate binary encoding";
-      "-pp", Arg.Set t.pp, "generate pretty print functions";
+      "-yojson", Arg.Set t.yojson, " generate yojson encoding";
+      "-bs", Arg.Set t.bs, " generate BuckleScript encoding";
+      "-binary", Arg.Set t.binary, " generate binary encoding";
+      "-pp", Arg.Set t.pp, " generate pretty print functions";
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
-        "include directories" );
-      "-ml_out", Arg.String (fun s -> t.ml_out <- s), "output directory";
+        " include directories" );
+      "-ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
       ( "-unsigned",
         Arg.Set t.unsigned_tag,
-        "tag uint32 and uint64 types with `unsigned" );
+        " tag uint32 and uint64 types with `unsigned" );
     ]
     @ File_options.cmd_line_args t.cmd_line_file_options
 
@@ -162,7 +164,7 @@ module Cmdline = struct
   let parse () =
     let args = make () in
     let anon_fun = anon_fun args in
-    let cmd_line_args = cmd_line_args args in
+    let cmd_line_args = cmd_line_args args |> Arg.align in
     Arg.parse cmd_line_args anon_fun usage;
     validate args;
     args

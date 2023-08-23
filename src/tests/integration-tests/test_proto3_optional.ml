@@ -1,5 +1,4 @@
 open Test_proto3_optional_types
-open Test_proto3_optional_pp
 module Pb = Test_proto3_optional_pb
 
 let foo1 : foo = { x = 1l; y = None; name = Some "hello" }

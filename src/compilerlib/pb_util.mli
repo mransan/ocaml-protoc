@@ -65,6 +65,7 @@ end
 (* Option *)
 
 val read_file : string -> string
+val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
 
 module List : sig
   val pop_last : 'a list -> 'a list

@@ -5,6 +5,7 @@
 (library
  (name ocaml_protoc_compiler_lib)
  (public_name ocaml-protoc.compiler-lib)
+ (synopsis "Compiler library for ocaml-protoc, to turn .proto files into OCaml code")
  (wrapped true)
  (modules pb_codegen_backend pb_codegen_decode_binary pb_codegen_decode_bs
    pb_codegen_decode_yojson pb_codegen_default pb_codegen_encode_binary

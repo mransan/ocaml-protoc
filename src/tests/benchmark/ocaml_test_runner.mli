@@ -39,4 +39,4 @@ end
 
 (** [Make(T)] returns a module which can execute a test request for type [T.t] 
  *)
-module Make (T : T_sig) : Runner_sig
+module Make (_ : T_sig) : Runner_sig

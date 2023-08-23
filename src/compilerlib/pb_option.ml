@@ -3,7 +3,7 @@ type constant =
   | Constant_bool of bool
   | Constant_int of int
   | Constant_float of float
-  | Constant_litteral of string
+  | Constant_literal of string
 
 type option_name = string
 type t = option_name * constant

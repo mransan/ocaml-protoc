@@ -6,7 +6,6 @@
 *.sw*
 _build
 
-ocaml-protoc
 ocaml_protoc.byte
 ocaml_protoc.native
 

@@ -45,7 +45,7 @@ let () =
     parse Pb_parsing_parser.field_options_ "[(ocaml_type) = int]"
   in
   assert (
-    Some (Pb_option.Constant_litteral "int")
+    Some (Pb_option.Constant_literal "int")
     = Pb_option.get field_options "ocaml_type")
 
 let () = print_endline "Parse Field Options ... Ok"

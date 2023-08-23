@@ -1,6 +1,5 @@
 module Ot = Pb_codegen_ocaml_type
 
-(** [sp x] same as sprintf but prefixed with new line *)
 let sp x = Printf.sprintf x
 
 let let_decl_of_and = function
