@@ -120,10 +120,8 @@ let rpc ?(options = Pb_option.empty) ~req_stream ~req ~res_stream ~res rpc_name
       rpc_res = Pb_field_type.parse res;
     }
 
-let rpc_option_map items =
-  let s = items |> List.map (fun (k, v) -> k ^ ":" ^ v) |> String.concat "\n" in
-  Pb_option.Constant_string s
-
+let option_map items = Pb_option.Message_literal items
+let option_list items = Pb_option.List_literal items
 let service ~content service_name = Pt.{ service_name; service_body = content }
 
 let import ?public file_name =
@@ -311,7 +309,9 @@ let finalize_syntax3 proto =
                 | #Pb_field_type.builtin_type_floating_point
                 | `Bool ->
                   let field_options =
-                    Pb_option.(add field_options "packed" (Constant_bool true))
+                    Pb_option.(
+                      add field_options "packed"
+                        (Scalar_value (Constant_bool true)))
                   in
                   { field with Pt.field_options }
                 | _ -> field)

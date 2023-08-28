@@ -666,8 +666,17 @@
       
         string email = 2 [(validate.rules).string.email = true];
       
+        string name = 3 [(validate.rules).string = {
+          pattern:   "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+          max_bytes: 256,
+        }];
+      
         Location home = 4 [(validate.rules).message.required = true];
       
+        message Location {
+          double lat = 1 [(validate.rules).double = {gte: -90,  lte: 90}];
+          double lng = 2 [(validate.rules).double = {gte: -180, lte: 180}];
+        }
       }
 
       message Other {
@@ -679,6 +688,12 @@
           int32  y = 2;
           Person z = 3;
         }
+
+        // x1 must be either 1, 2, or 3
+        uint32 x1 = 1 [(validate.rules).uint32 = {in: [1,2,3]}];
+
+        // x2 cannot be 0 nor 0.99
+        float x2 = 1 [(validate.rules).float = {not_in: [0, 0.99]}];
       }
     
 ===================== </PROTO> ======================
@@ -690,7 +705,7 @@
    file_options = [];
    package = examplepb;
    messages = [{
-                  id = 18;
+                  id = 19;
                   message_name = "Person";
                   message_body = [{
                                      field_name = "id";
@@ -711,6 +726,17 @@
                                                         }];
                                      };
                                   {
+                                     field_name = "name";
+                                     field_number = 3;
+                                     field_label = `Nolabel;
+                                     field_type = String;
+                                     field_options = [{
+                                                        "validate.rules.string": {
+                                                      "pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+                                                      "max_bytes": 256}
+                                                        }];
+                                     };
+                                  {
                                      field_name = "home";
                                      field_number = 4;
                                      field_label = `Nolabel;
@@ -722,10 +748,38 @@
                                      field_options = [{
                                                         "validate.rules.message.required": true
                                                         }];
+                                     };
+                                  {
+                                     id = 18;
+                                     message_name = "Location";
+                                     message_body = [{
+                                                        field_name = "lat";
+                                                        field_number = 1;
+                                                        field_label = `Nolabel;
+                                                        field_type = Double;
+                                                        field_options = [
+                                                        {
+                                                          "validate.rules.double": {
+                                                        "gte": -90,
+                                                        "lte": 90}
+                                                          }];
+                                                        };
+                                                     {
+                                                        field_name = "lng";
+                                                        field_number = 2;
+                                                        field_label = `Nolabel;
+                                                        field_type = Double;
+                                                        field_options = [
+                                                        {
+                                                          "validate.rules.double": {
+                                                        "gte": -180,
+                                                        "lte": 180}
+                                                          }];
+                                                        }];
                                      }];
                   };
                {
-                  id = 19;
+                  id = 20;
                   message_name = "Other";
                   message_body = [{oneof_name = "id";
                                      oneof_body = [{
@@ -761,6 +815,29 @@
                                                       field_options = [
                                                       ];
                                                       }];
+                                     };
+                                  {
+                                     field_name = "x1";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Uint32;
+                                     field_options = [{
+                                                        "validate.rules.uint32": {
+                                                      "in": [1,
+                                                             2,
+                                                             3]}
+                                                        }];
+                                     };
+                                  {
+                                     field_name = "x2";
+                                     field_number = 1;
+                                     field_label = `Nolabel;
+                                     field_type = Float;
+                                     field_options = [{
+                                                        "validate.rules.float": {
+                                                      "not_in": [0,
+                                                                 0.990000]}
+                                                        }];
                                      }];
                   }];
    services = [];
@@ -775,6 +852,187 @@
    package = (None);
    messages = [];
    services = [];
+   enums = [];
+   extends = [];
+   }
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      message Shelf {}
+      message GetShelfRequest {}
+      message GetShelfResponse {}
+      message ListShelvesRequest {}
+      message ListShelvesResponse {}
+
+      service ShelfService {}
+      service ShelfServiceV2 {
+        option (some.config) = "service_shelf";
+
+        rpc ListShelves (ListShelvesRequest) returns (ListShelvesResponse);
+
+        rpc ListShelvesStreamerClient (stream ListShelvesRequest) returns (ListShelvesResponse);
+        rpc ListShelvesStreamerServer (ListShelvesRequest) returns (stream ListShelvesResponse);
+        rpc ListShelvesStreamerBidi (stream ListShelvesRequest) returns (stream ListShelvesResponse);
+
+        rpc GetShelf (GetShelfRequest) returns (GetShelfResponse) {
+          option (const.config) = "rpc_shelf";
+          option (google.api.http) = {
+            post: "/v1/shelves/{shelf}",
+            body: "body"
+          };
+        }
+
+        rpc GetShelfWithSemicolon (GetShelfRequest) returns (GetShelfResponse) {};
+      }
+    
+===================== </PROTO> ======================
+======================= <AST> =======================
+{
+   proto_file_name = test.proto;
+   syntax = (None);
+   imports = [];
+   file_options = [];
+   package = (None);
+   messages = [{
+                  id = 21;
+                  message_name = "Shelf";
+                  message_body = [];
+                  };
+               {
+                  id = 22;
+                  message_name = "GetShelfRequest";
+                  message_body = [];
+                  };
+               {
+                  id = 23;
+                  message_name = "GetShelfResponse";
+                  message_body = [];
+                  };
+               {
+                  id = 24;
+                  message_name = "ListShelvesRequest";
+                  message_body = [];
+                  };
+               {
+                  id = 25;
+                  message_name = "ListShelvesResponse";
+                  message_body = [];
+                  }];
+   services = [{
+                  service_name = "ShelfService";
+                  service_body = [];
+                  };
+               {
+                  service_name = "ShelfServiceV2";
+                  service_body = [{
+                                    "some.config": "service_shelf"
+                                    };
+                                  {
+                                     rpc_name = "ListShelves";
+                                     rpc_options = [];
+                                     rpc_req_stream = false;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = false;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "ListShelvesStreamerClient";
+                                     rpc_options = [];
+                                     rpc_req_stream = true;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = false;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "ListShelvesStreamerServer";
+                                     rpc_options = [];
+                                     rpc_req_stream = false;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = true;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "ListShelvesStreamerBidi";
+                                     rpc_options = [];
+                                     rpc_req_stream = true;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = true;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "ListShelvesResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "GetShelf";
+                                     rpc_options = [{
+                                                      "const.config": "rpc_shelf"
+                                                      },
+                                                    {
+                                                      "google.api.http": {
+                                                    "post": "/v1/shelves/{shelf}",
+                                                    "body": "body"}
+                                                      }];
+                                     rpc_req_stream = false;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "GetShelfRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = false;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "GetShelfResponse";
+                                                  from_root: false
+                                                  };
+                                     };
+                                  {
+                                     rpc_name = "GetShelfWithSemicolon";
+                                     rpc_options = [];
+                                     rpc_req_stream = false;
+                                     rpc_req = {
+                                                  type_path: (empty);
+                                                  type_name: "GetShelfRequest";
+                                                  from_root: false
+                                                  };
+                                     rpc_res_stream = false;
+                                     rpc_res = {
+                                                  type_path: (empty);
+                                                  type_name: "GetShelfResponse";
+                                                  from_root: false
+                                                  };
+                                     }];
+                  }];
    enums = [];
    extends = [];
    }

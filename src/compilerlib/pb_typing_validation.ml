@@ -36,12 +36,18 @@ let scope_of_package = function
     }
   | None -> Typing_util.empty_scope
 
-let get_default field_options = Pb_option.get field_options "default"
+let get_default field_name field_options =
+  match Pb_option.get field_options "default" with
+  | Some (Pb_option.Scalar_value constant) -> Some constant
+  | Some (Pb_option.Message_literal _) ->
+    E.invalid_default_value ~field_name
+      ~info:"message literals are unsupported for default values" ()
+  | None -> None
 
 let compile_field_p1 field_parsed =
-  let { Pt.field_type; Pt.field_options; _ } = field_parsed in
+  let { Pt.field_type; Pt.field_options; Pt.field_name; _ } = field_parsed in
 
-  let field_default = get_default field_options in
+  let field_default = get_default field_name field_options in
   { Tt.field_parsed; Tt.field_type; Tt.field_default; Tt.field_options }
 
 let compile_map_p1 map_parsed =

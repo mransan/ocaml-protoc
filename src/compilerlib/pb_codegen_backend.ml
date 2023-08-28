@@ -195,7 +195,7 @@ let encoding_of_field all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
     =
   let packed =
     match Typing_util.field_option field "packed" with
-    | Some (Pb_option.Constant_bool x) -> x
+    | Some Pb_option.(Scalar_value (Constant_bool x)) -> x
     | Some _ -> E.invalid_packed_option (Typing_util.field_name field)
     | None -> false
   in
@@ -209,31 +209,35 @@ let compile_field_type ~unsigned_tag all_types file_options field_options
     file_name field_type =
   let ocaml_type =
     match Pb_option.get field_options "ocaml_type" with
-    | Some (Pb_option.Constant_literal "int_t") -> `Int_t
+    | Some Pb_option.(Scalar_value (Constant_literal "int_t")) -> `Int_t
     | _ -> `None
   in
 
   let int32_type =
     match Pb_option.get file_options "int32_type" with
-    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some Pb_option.(Scalar_value (Pb_option.Constant_literal "int_t")) ->
+      Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int32)
   in
 
   let uint32_type =
     match Pb_option.get file_options "int32_type" with
-    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
+      Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint32)
   in
 
   let int64_type =
     match Pb_option.get file_options "int64_type" with
-    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
+      Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in
 
   let uint64_type =
     match Pb_option.get file_options "int64_type" with
-    | Some (Pb_option.Constant_literal "int_t") -> Ot.(Ft_basic_type Bt_int)
+    | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
+      Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint64)
   in
 
@@ -285,14 +289,15 @@ let compile_field_type ~unsigned_tag all_types file_options field_options
 
 let is_mutable ?field_name field_options =
   match Pb_option.get field_options "ocaml_mutable" with
-  | Some (Pb_option.Constant_bool v) -> v
+  | Some Pb_option.(Scalar_value (Constant_bool v)) -> v
   | Some _ -> Pb_exception.invalid_mutable_option ?field_name ()
   | None -> false
 
 let ocaml_container field_options =
   match Pb_option.get field_options "ocaml_container" with
   | None -> None
-  | Some (Pb_option.Constant_literal container_name) -> Some container_name
+  | Some Pb_option.(Scalar_value (Constant_literal container_name)) ->
+    Some container_name
   | Some _ -> None
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
@@ -354,7 +359,7 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
  *)
 let string_of_string_option message_name = function
   | None -> None
-  | Some (Pb_option.Constant_string s) -> Some s
+  | Some Pb_option.(Scalar_value (Constant_string s)) -> Some s
   | _ -> E.invalid_ppx_extension_option message_name
 
 (* utility function to implement the priority logic defined in the notes above.

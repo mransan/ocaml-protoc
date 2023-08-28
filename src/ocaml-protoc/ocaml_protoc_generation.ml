@@ -88,7 +88,8 @@ let generate_type_and_default ocaml_types proto_file_options cmdline : unit =
   let print_ppx sc =
     match Pb_option.get proto_file_options "ocaml_file_ppx" with
     | None -> ()
-    | Some (Pb_option.Constant_string s) -> F.linep sc "[@@@%s]" s
+    | Some Pb_option.(Scalar_value (Constant_string s)) ->
+      F.linep sc "[@@@%s]" s
     | _ -> E.invalid_ppx_extension_option cmdline.Cmdline.proto_file_name
   in
 

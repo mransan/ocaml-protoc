@@ -50,7 +50,7 @@ val field_default : ('a, 'b) Tt.field -> Pb_option.constant option
 
 val field_options : ('a, 'b) Tt.field -> Pb_option.set
 
-val field_option : ('a, 'b) Tt.field -> string -> Pb_option.constant option
+val field_option : ('a, 'b) Tt.field -> string -> Pb_option.value option
 (** [field_option field option_name] returns the constant associated with 
     [option_name]. If the fields options does not contain [option_name] [None]
     is returned.
@@ -62,8 +62,8 @@ val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type
   *)
 
 val string_of_message : int -> Tt.type_scope -> 'a Tt.message -> string
-val message_option : 'a Tt.message -> string -> Pb_option.constant option
-val enum_option : Tt.enum -> string -> Pb_option.constant option
+val message_option : 'a Tt.message -> string -> Pb_option.value option
+val enum_option : Tt.enum -> string -> Pb_option.value option
 
 (** {2 Accessor for Tt.type} *)
 
