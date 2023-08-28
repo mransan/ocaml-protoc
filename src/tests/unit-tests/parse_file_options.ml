@@ -8,16 +8,19 @@ module Pt = Pb_parsing_parse_tree
 
 let () =
   let s = "option blah = 1;" in
-  let fo = "blah", Pb_option.Constant_int 1 in
+  let fo = "blah", Pb_option.(Scalar_value (Constant_int 1)) in
   assert (fo = parse s)
 
 let () =
   let s = "option blah = 1; ;  option foo = \"blah\"; " in
   let proto = parse_proto s in
   let fo_parsed = proto.Pt.file_options in
-  assert (Some (Pb_option.Constant_int 1) = Pb_option.get fo_parsed "blah");
   assert (
-    Some (Pb_option.Constant_string "blah") = Pb_option.get fo_parsed "foo");
+    Some Pb_option.(Scalar_value (Constant_int 1))
+    = Pb_option.get fo_parsed "blah");
+  assert (
+    Some Pb_option.(Scalar_value (Constant_string "blah"))
+    = Pb_option.get fo_parsed "foo");
   ()
 
 let () = print_endline "Parse File Options ... Ok"

@@ -11,8 +11,8 @@ let () =
   let test_default s =
     Pb_option.get (parse Pb_parsing_parser.field_options_ s) "default"
     |> function
-    | None -> assert false
-    | Some x -> x
+    | Some (Pb_option.Scalar_value x) -> x
+    | _ -> assert false
   in
 
   assert (Pb_option.Constant_int 1 = test_default "[default = 1 ]");
@@ -45,7 +45,7 @@ let () =
     parse Pb_parsing_parser.field_options_ "[(ocaml_type) = int]"
   in
   assert (
-    Some (Pb_option.Constant_literal "int")
+    Some Pb_option.(Scalar_value (Constant_literal "int"))
     = Pb_option.get field_options "ocaml_type")
 
 let () = print_endline "Parse Field Options ... Ok"

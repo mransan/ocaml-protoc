@@ -168,8 +168,17 @@ let test_cases =
       
         string email = 2 [(validate.rules).string.email = true];
       
+        string name = 3 [(validate.rules).string = {
+          pattern:   "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+          max_bytes: 256,
+        }];
+      
         Location home = 4 [(validate.rules).message.required = true];
       
+        message Location {
+          double lat = 1 [(validate.rules).double = {gte: -90,  lte: 90}];
+          double lng = 2 [(validate.rules).double = {gte: -180, lte: 180}];
+        }
       }
 
       message Other {
@@ -181,8 +190,42 @@ let test_cases =
           int32  y = 2;
           Person z = 3;
         }
+
+        // x1 must be either 1, 2, or 3
+        uint32 x1 = 1 [(validate.rules).uint32 = {in: [1,2,3]}];
+
+        // x2 cannot be 0 nor 0.99
+        float x2 = 1 [(validate.rules).float = {not_in: [0, 0.99]}];
       }
     |};
+    {|
+      message Shelf {}
+      message GetShelfRequest {}
+      message GetShelfResponse {}
+      message ListShelvesRequest {}
+      message ListShelvesResponse {}
+
+      service ShelfService {}
+      service ShelfServiceV2 {
+        option (some.config) = "service_shelf";
+
+        rpc ListShelves (ListShelvesRequest) returns (ListShelvesResponse);
+
+        rpc ListShelvesStreamerClient (stream ListShelvesRequest) returns (ListShelvesResponse);
+        rpc ListShelvesStreamerServer (ListShelvesRequest) returns (stream ListShelvesResponse);
+        rpc ListShelvesStreamerBidi (stream ListShelvesRequest) returns (stream ListShelvesResponse);
+
+        rpc GetShelf (GetShelfRequest) returns (GetShelfResponse) {
+          option (const.config) = "rpc_shelf";
+          option (google.api.http) = {
+            post: "/v1/shelves/{shelf}",
+            body: "body"
+          };
+        }
+
+        rpc GetShelfWithSemicolon (GetShelfRequest) returns (GetShelfResponse) {};
+      }
+    |}
   ]
 
 let () = List.iter run test_cases

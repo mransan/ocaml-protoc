@@ -88,12 +88,14 @@ module File_options = struct
         Pb_option.add options option_name option_value
     in
     Pb_option.empty
-    |> map int32_type (fun s -> "int32_type", Pb_option.Constant_literal s)
-    |> map int64_type (fun s -> "int64_type", Pb_option.Constant_literal s)
+    |> map int32_type (fun s ->
+           "int32_type", Pb_option.(Scalar_value (Constant_literal s)))
+    |> map int64_type (fun s ->
+           "int64_type", Pb_option.(Scalar_value (Constant_literal s)))
     |> map ocaml_file_ppx (fun s ->
-           "ocaml_file_ppx", Pb_option.Constant_string s)
+           "ocaml_file_ppx", Pb_option.(Scalar_value (Constant_string s)))
     |> map ocaml_all_types_ppx (fun s ->
-           "ocaml_all_types_ppx", Pb_option.Constant_string s)
+           "ocaml_all_types_ppx", Pb_option.(Scalar_value (Constant_string s)))
 end
 
 (** Command line argument for the ocaml-protoc *)

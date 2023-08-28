@@ -222,9 +222,9 @@ rpc :
   }
 
 rpc_options :
-  | T_lbrace rpc_options_list T_rbrace           { $2 };
-  | T_lbrace rpc_options_list T_rbrace semicolon { $2 };
-  | T_lbrace T_rbrace                            { Pb_option.empty };
+  | T_lbrace rpc_options_list T_rbrace           { $2 }
+  | T_lbrace rpc_options_list T_rbrace semicolon { $2 }
+  | T_lbrace T_rbrace                            { Pb_option.empty }
   | T_lbrace T_rbrace semicolon                  { Pb_option.empty };
 
 rpc_options_list :
@@ -237,26 +237,27 @@ rpc_options_list :
   }
 
 rpc_option :
-  | T_option option_identifier T_equal constant semicolon { ($2, $4) }
-  | T_option option_identifier T_equal rpc_option_content semicolon { ($2, $4) }
+  | T_option option_identifier T_equal option_value semicolon { ($2, $4) }
 
-rpc_option_content :
-    /*
-     * covers [option (google.api.http) = { get: "/v1/shelves/{shelf}" };]
-     * https://cloud.google.com/endpoints/docs/grpc/transcoding 
-     * the content is parsed as string since it is not used currently
-     * and options do not support (string, string) list
-     * if client and server generation is needed - support for proper maps should be added
-     */
-  | T_lbrace T_rbrace { Pb_option.Constant_string "" }
-  | T_lbrace rpc_option_content_map T_rbrace { Pb_parsing_util.rpc_option_map $2 }
+option_value :
+  | constant { Pb_option.Scalar_value $1 }
+  | T_lbrace T_rbrace { Pb_parsing_util.option_map [] }
+  | T_lbrace option_content_map T_rbrace { Pb_parsing_util.option_map $2 }
+  | T_lbracket T_rbracket { Pb_parsing_util.option_list [] }
+  | T_lbracket option_content_list T_rbracket { Pb_parsing_util.option_list $2 }
 
-rpc_option_content_map :
-  | rpc_option_content_map_item  { [$1] }
-  | rpc_option_content_map_item rpc_option_content_map { $1::$2 }
+option_content_map :
+  | option_content_map_item  { [$1] }
+  | option_content_map_item T_comma  { [$1] }
+  | option_content_map_item T_comma option_content_map { $1::$3 }
 
-rpc_option_content_map_item :
-  | T_ident T_colon T_string  { snd $1, $3 }
+option_content_map_item :
+  | T_ident T_colon option_value { snd $1, $3 }
+
+option_content_list :
+  | option_value  { [$1] }
+  | option_value T_comma  { [$1] }
+  | option_value T_comma option_content_list { $1::$3 }
 
 extension_range_list :
   | extension_range                            {$1 :: []}
@@ -342,7 +343,7 @@ label :
   | T_optional { `Optional }
 
 field_options :
-  | T_lbracket field_option_list T_rbracket { $2 };
+  | T_lbracket field_option_list T_rbracket { $2 }
   | T_lbracket T_rbracket                   { Pb_option.empty };
 
 field_option_list :
@@ -355,9 +356,9 @@ field_option_list :
   }
 
 field_option :
-  | T_ident T_equal constant               { (snd $1, $3) }
-  | T_lparen T_ident T_rparen T_equal constant { (snd $2, $5)}
-  | T_lparen T_ident T_rparen T_ident T_equal constant { ((snd $2) ^ (snd $4), $6)}
+  | T_ident T_equal option_value               { (snd $1, $3) }
+  | T_lparen T_ident T_rparen T_equal option_value { (snd $2, $5)}
+  | T_lparen T_ident T_rparen T_ident T_equal option_value { ((snd $2) ^ (snd $4), $6)}
 
 option_identifier_item :
   | T_ident                   {snd $1}
@@ -368,7 +369,7 @@ option_identifier :
   | option_identifier T_ident   {$1 ^ (snd $2)}
 
 option :
-  | T_option option_identifier T_equal constant semicolon { ($2, $4) }
+  | T_option option_identifier T_equal option_value semicolon { ($2, $4) }
 
 constant :
   | T_int        { Pb_option.Constant_int $1 }
