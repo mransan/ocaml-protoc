@@ -80,7 +80,11 @@ type error =
   | Invalid_mutable_option of string option
   | Missing_one_of_name of Loc.t
   | Missing_field_label of string * string
-  | Parsing_error of string * Loc.t
+  | Parsing_error of {
+      msg: string;
+      context: string;
+      loc: Loc.t;
+    }
   | Invalid_ppx_extension_option of string
   | Invalid_protobuf_syntax of string
   | Invalid_proto3_field_label of string * string
@@ -133,8 +137,8 @@ let string_of_error = function
       ("Missing field label for field: %s in message: %s. "
      ^^ "[required|repeated|optional] expected")
       field_name message_name
-  | Parsing_error (detail, loc) ->
-    Printf.sprintf "%s%s." (Loc.to_string loc) detail
+  | Parsing_error { msg; context; loc } ->
+    Printf.sprintf "%s%s at `%s'." (Loc.to_string loc) msg context
   | Invalid_enum_specification (enum_name, loc) ->
     P.sprintf
       "%sMissing enum specification (<identifier> = <id>;) for enum value: %s"
@@ -230,14 +234,16 @@ let missing_field_label ~field_name ~message_name =
 let invalid_ppx_extension_option message_name =
   raise (Compilation_error (Invalid_ppx_extension_option message_name))
 
-let ocamlyacc_parsing_error loc =
-  raise (Compilation_error (Parsing_error ("Parsing error", loc)))
+let ocamlyacc_parsing_error loc context =
+  raise
+    (Compilation_error (Parsing_error { msg = "Parsing error"; context; loc }))
 
-let protoc_parsing_error e loc =
-  raise (Compilation_error (Parsing_error (string_of_error e, loc)))
+let protoc_parsing_error e loc context =
+  raise
+    (Compilation_error (Parsing_error { msg = string_of_error e; context; loc }))
 
-let unknown_parsing_error detail loc =
-  raise (Compilation_error (Parsing_error (detail, loc)))
+let unknown_parsing_error ~msg ~context loc =
+  raise (Compilation_error (Parsing_error { msg; context; loc }))
 
 let invalid_protobuf_syntax syntax =
   raise (Compilation_error (Invalid_protobuf_syntax syntax))

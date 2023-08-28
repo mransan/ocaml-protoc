@@ -2,13 +2,25 @@ module E = Pb_exception
 module Pt = Pb_parsing_parse_tree
 
 let run proto =
-  let protos =
-    Pb_parsing.parse_file
-      (fun f ->
-        match f with
-        | "test.proto" -> f, proto
-        | _ -> f, "")
-      "test.proto"
+  let maybe_protos =
+    try
+      Pb_parsing.parse_file
+        (fun f ->
+          match f with
+          | "test.proto" -> f, proto
+          | _ -> f, "")
+        "test.proto"
+      |> Result.ok
+    with e -> Error e
+  in
+  let pp_maybe_protos ppf = function
+    | Ok protos ->
+      Format.fprintf ppf "%a"
+        (Format.pp_print_list
+           ~pp_sep:(fun ppf () -> Format.fprintf ppf "@.")
+           Pt.pp_proto)
+        protos
+    | Error exn -> Format.fprintf ppf "[!] EXN: %s" (Printexc.to_string exn)
   in
   let ppf = Format.std_formatter in
   Format.set_margin 150;
@@ -18,14 +30,18 @@ let run proto =
      ======================@.======================= <AST> \
      =======================@.%a@.====================== </AST> \
      =======================@.@.@."
-    Format.pp_print_string proto
-    (Format.pp_print_list
-       ~pp_sep:(fun ppf () -> Format.fprintf ppf "@.")
-       Pt.pp_proto)
-    protos
+    Format.pp_print_string proto pp_maybe_protos maybe_protos
 
 let test_cases =
   [
+    {|
+      // Syntax error reporting check #1
+      syntax = "proto3"!#$%
+    |};
+    {|
+      // Syntax error reporting check #2
+      syntax = "proto3" , message int32 { }
+    |};
     {|
       syntax = "proto3";
 

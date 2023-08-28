@@ -64,9 +64,9 @@ val invalid_mutable_option : ?field_name:string -> unit -> 'a
 val missing_one_of_name : Pb_location.t -> 'a
 val missing_field_label : field_name:string -> message_name:string -> 'a
 val invalid_ppx_extension_option : string -> 'a
-val ocamlyacc_parsing_error : Pb_location.t -> 'a
-val protoc_parsing_error : error -> Pb_location.t -> 'a
-val unknown_parsing_error : string -> Pb_location.t -> 'a
+val ocamlyacc_parsing_error : Pb_location.t -> string -> 'a
+val protoc_parsing_error : error -> Pb_location.t -> string -> 'a
+val unknown_parsing_error : msg:string -> context:string -> Pb_location.t -> 'a
 val invalid_protobuf_syntax : string -> 'a
 val invalid_proto3_field_label : field_name:string -> message_name:string -> 'a
 

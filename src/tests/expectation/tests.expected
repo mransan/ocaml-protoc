@@ -1,5 +1,27 @@
 ====================== <PROTO> ======================
 
+      // Syntax error reporting check #1
+      syntax = "proto3"!#$%
+    
+===================== </PROTO> ======================
+======================= <AST> =======================
+[!] EXN: test.proto:3:24: Failure("Unknown character found !") at `syntax = "proto3" <<< HERE'.
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
+      // Syntax error reporting check #2
+      syntax = "proto3" , message int32 { }
+    
+===================== </PROTO> ======================
+======================= <AST> =======================
+[!] EXN: test.proto:3:25: Parsing error at `syntax = "proto3" , <<< HERE'.
+====================== </AST> =======================
+
+
+====================== <PROTO> ======================
+
       syntax = "proto3";
 
       message SimpleMessage {
