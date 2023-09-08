@@ -263,7 +263,8 @@ let () =
        ]
 
 module Dec_bits64 = struct
-  open Dec
+  open Pbrt.Decoder
+  open! Dec
 
   (* put the int64 integers from 0 to n in a dec *)
   let mk_buf_n n : string =
@@ -273,16 +274,14 @@ module Dec_bits64 = struct
     done;
     Pbrt.Encoder.to_string enc
 
-  let test_imp n (s : string) =
-    mk_t "dec-varint-imp" @@ fun () ->
-    Sys.opaque_identity
-      (let dec = of_string s in
-       for _i = 0 to n do
-         let _n = varint_imp dec in
-         Sys.opaque_identity (ignore _n)
-       done)
+  (** Read 8 bytes at once, return offset of the first one. *)
+  let get8 (self : t) : int =
+    if self.offset + 8 > self.limit then raise (Failure Incomplete);
+    let n = self.offset in
+    self.offset <- self.offset + 8;
+    n
 
-  let bits64_basic (d : t) =
+  let bits64_unrolled (d : t) =
     let b1 = byte d in
     let b2 = byte d in
     let b3 = byte d in
@@ -306,6 +305,31 @@ module Dec_bits64 = struct
                        (shift_left (of_int b3) 16)
                        (add (shift_left (of_int b2) 8) (of_int b1))))))))
 
+  let bits64_unrolled_single_read (d : t) =
+    let off = get8 d in
+    let b1 = int_of_char @@ Bytes.unsafe_get d.source off in
+    let b2 = int_of_char @@ Bytes.unsafe_get d.source (off + 1) in
+    let b3 = int_of_char @@ Bytes.unsafe_get d.source (off + 2) in
+    let b4 = int_of_char @@ Bytes.unsafe_get d.source (off + 3) in
+    let b5 = int_of_char @@ Bytes.unsafe_get d.source (off + 4) in
+    let b6 = int_of_char @@ Bytes.unsafe_get d.source (off + 5) in
+    let b7 = int_of_char @@ Bytes.unsafe_get d.source (off + 6) in
+    let b8 = int_of_char @@ Bytes.unsafe_get d.source (off + 7) in
+    Int64.(
+      add
+        (shift_left (of_int b8) 56)
+        (add
+           (shift_left (of_int b7) 48)
+           (add
+              (shift_left (of_int b6) 40)
+              (add
+                 (shift_left (of_int b5) 32)
+                 (add
+                    (shift_left (of_int b4) 24)
+                    (add
+                       (shift_left (of_int b3) 16)
+                       (add (shift_left (of_int b2) 8) (of_int b1))))))))
+
   let bits64_loop (d : t) =
     let res = ref 0L in
     for i = 0 to 7 do
@@ -314,12 +338,25 @@ module Dec_bits64 = struct
     done;
     !res
 
-  let test_basic s n =
-    mk_t "dec-bits64-basic" @@ fun () ->
+  let bits64_from_stdlib (d : t) : int64 =
+    let off = get8 d in
+    Bytes.get_int64_le d.source off
+
+  let test_unrolled s n =
+    mk_t "dec-bits64-unrolled" @@ fun () ->
     Sys.opaque_identity
       (let dec = of_string s in
        for _i = 0 to n do
-         let _n = bits64_basic dec in
+         let _n = bits64_unrolled dec in
+         Sys.opaque_identity (ignore _n)
+       done)
+
+  let test_unrolled_single_read s n =
+    mk_t "dec-bits64-unrolled-single-read" @@ fun () ->
+    Sys.opaque_identity
+      (let dec = of_string s in
+       for _i = 0 to n do
+         let _n = bits64_unrolled_single_read dec in
          Sys.opaque_identity (ignore _n)
        done)
 
@@ -329,6 +366,15 @@ module Dec_bits64 = struct
       (let dec = of_string s in
        for _i = 0 to n do
          let _n = bits64_loop dec in
+         Sys.opaque_identity (ignore _n)
+       done)
+
+  let test_stdlib s n =
+    mk_t "dec-bits64-stdlib" @@ fun () ->
+    Sys.opaque_identity
+      (let dec = of_string s in
+       for _i = 0 to n do
+         let _n = bits64_from_stdlib dec in
          Sys.opaque_identity (ignore _n)
        done)
 
@@ -346,8 +392,10 @@ module Dec_bits64 = struct
       done;
       List.rev !l
     in
-    assert (dec_to_l bits64_basic = [ 0; 1; 2; 3; 4; 5 ]);
+    assert (dec_to_l bits64_unrolled = [ 0; 1; 2; 3; 4; 5 ]);
+    assert (dec_to_l bits64_unrolled_single_read = [ 0; 1; 2; 3; 4; 5 ]);
     assert (dec_to_l bits64_loop = [ 0; 1; 2; 3; 4; 5 ]);
+    assert (dec_to_l bits64_from_stdlib = [ 0; 1; 2; 3; 4; 5 ]);
     ()
 end
 
@@ -357,7 +405,12 @@ let test_dec_bits64 n =
   Printf.sprintf "%d" n
   @> lazy
        (B.throughputN ~repeat:3 4
-          [ Dec_bits64.test_basic s n; Dec_bits64.test_loop s n ])
+          [
+            Dec_bits64.test_unrolled s n;
+            Dec_bits64.test_unrolled_single_read s n;
+            Dec_bits64.test_loop s n;
+            Dec_bits64.test_stdlib s n;
+          ])
 
 let () =
   let open B.Tree in
@@ -618,25 +671,26 @@ module Nested = struct
       let n = cap self in
       n + (n lsr 1) + 3
 
+    let[@inline never] grow_reserve_n (self : t) n : unit =
+      let newcap = max (cap self + n) (next_cap_ self) in
+      grow_to_ self newcap;
+      assert (self.start >= n)
+
     (** Reserve [n] bytes, return the offset at which we can write them. *)
-    let reserve_n (self : t) (n : int) : int =
-      if self.start < n then (
-        let newcap = max (cap self + n) (next_cap_ self) in
-        grow_to_ self newcap;
-        assert (self.start >= n)
-      );
+    let[@inline] reserve_n (self : t) (n : int) : int =
+      if self.start < n then grow_reserve_n self n;
       self.start <- self.start - n;
       self.start
 
     let add_bytes (self : t) (b : bytes) =
       let n = Bytes.length b in
-      if self.start - n <= 0 then grow_to_ self (cap self + n + (n lsr 1) + 1);
+      if self.start <= n then grow_to_ self (cap self + n + (n lsr 1) + 1);
       Bytes.blit b 0 self.b (self.start - n) n;
       self.start <- self.start - n;
       ()
 
     (** Number of bytes to encode [i] *)
-    let varint_size (i : int64) : int =
+    let[@inline] varint_size (i : int64) : int =
       let i = ref i in
       let n = ref 0 in
       let continue = ref true in
@@ -707,15 +761,127 @@ module Nested = struct
       int_as_varint size e
   end)
 
+  module From_back2 = Make_bench (struct
+    let name_of_enc = "write-backward2"
+
+    type t = from_back_end
+
+    let create () : t = { b = Bytes.create 16; start = 16 }
+    let[@inline] clear self = self.start <- Bytes.length self.b
+    let[@inline] cap self = Bytes.length self.b
+    let[@inline] length self = cap self - self.start
+
+    let to_string self : string =
+      Bytes.sub_string self.b self.start (length self)
+
+    let grow_to_ self newcap =
+      let n = length self in
+      let b' = Bytes.create newcap in
+      Bytes.blit self.b self.start b' (newcap - n) n;
+      self.b <- b';
+      self.start <- newcap - n
+
+    let next_cap_ (self : t) : int =
+      let n = cap self in
+      n + (n lsr 1) + 3
+
+    let[@inline never] grow_reserve_n (self : t) n : unit =
+      let newcap = max (cap self + n) (next_cap_ self) in
+      grow_to_ self newcap;
+      assert (self.start >= n)
+
+    (** Reserve [n] bytes, return the offset at which we can write them. *)
+    let[@inline] reserve_n (self : t) (n : int) : int =
+      if self.start < n then grow_reserve_n self n;
+      self.start <- self.start - n;
+      self.start
+
+    let add_bytes (self : t) (b : bytes) =
+      let n = Bytes.length b in
+      if self.start <= n then grow_to_ self (cap self + n + (n lsr 1) + 1);
+      Bytes.blit b 0 self.b (self.start - n) n;
+      self.start <- self.start - n;
+      ()
+
+    let[@inline] varint (i : int64) (e : t) : unit =
+      let n_bytes = ref 0 in
+      (let i = ref i in
+       let continue = ref true in
+       while !continue do
+         incr n_bytes;
+         let cur = Int64.(logand !i 0x7fL) in
+         if cur = !i then
+           continue := false
+         else
+           i := Int64.shift_right_logical !i 7
+       done);
+
+      let start = reserve_n e !n_bytes in
+
+      let i = ref i in
+      for j = 0 to !n_bytes - 1 do
+        let cur = Int64.(logand !i 0x7fL) in
+        if j = !n_bytes - 1 then
+          Bytes.set e.b (start + j) (Char.unsafe_chr Int64.(to_int cur))
+        else (
+          Bytes.set e.b (start + j)
+            (Char.unsafe_chr Int64.(to_int (logor 0x80L cur)));
+          i := Int64.shift_right_logical !i 7
+        )
+      done
+
+    let int64_as_varint = varint
+    let int_as_varint i e = varint (Int64.of_int i) e
+
+    let[@inline] key k pk f e =
+      let pk' =
+        match pk with
+        | Varint -> 0
+        | Bits64 -> 1
+        | Bytes -> 2
+        | Bits32 -> 5
+      in
+      f e;
+      int_as_varint (pk' lor (k lsl 3)) e;
+      (* write this after the data *)
+      ()
+
+    let bytes b (e : t) =
+      add_bytes e b;
+      int_as_varint (Bytes.length b) e;
+      ()
+
+    let string s e = bytes (Bytes.unsafe_of_string s) e
+
+    (* encode lists in reverse order *)
+    let list f l e =
+      let rec loop = function
+        | [] -> ()
+        | [ x ] -> f x e
+        | x :: tl ->
+          loop tl;
+          f x e
+      in
+      loop l
+
+    let nested f (e : t) =
+      let s0 = length e in
+      f e;
+      let size = length e - s0 in
+      int_as_varint size e
+  end)
+
   let bench_basic = Basic.bench
   let bench_buffers_nested = Buffers_nested.bench
   let bench_from_back = From_back.bench
+  let bench_from_back2 = From_back2.bench
 
   (* sanity check *)
   let () =
     let s_basic = Basic.string_of_company (mk_company 1) in
     let s_buffers_nested = Buffers_nested.string_of_company (mk_company 1) in
     let s_from_back = From_back.string_of_company (mk_company 1) in
+    let s_from_back2 = From_back2.string_of_company (mk_company 1) in
     (*
     Printf.printf "basic: (len=%d) %S\n" (String.length s_basic) s_basic;
     Printf.printf "from_back: (len=%d) %S\n" (String.length s_from_back) s_from_back;
@@ -728,12 +894,14 @@ module Nested = struct
     let c_basic = dec_s s_basic in
     let c_buffers_nested = dec_s s_buffers_nested in
     let c_from_back = dec_s s_from_back in
+    let c_from_back2 = dec_s s_from_back2 in
     (*
     Format.printf "c_basic=%a@." Foo_pp.pp_company c_basic;
     Format.printf "c_from_back=%a@." Foo_pp.pp_company c_from_back;
        *)
     assert (c_basic = c_buffers_nested);
     assert (c_basic = c_from_back);
+    assert (c_basic = c_from_back2);
     ()
 end
 
@@ -747,6 +915,7 @@ let test_nested_enc n =
             Nested.bench_basic company;
             Nested.bench_buffers_nested company;
             Nested.bench_from_back company;
+            Nested.bench_from_back2 company;
           ])
 
 let () =
