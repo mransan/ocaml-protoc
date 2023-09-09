@@ -20,5 +20,5 @@ module type S = sig
 
   val file_suffix : string
   (** The suffix part of the generated file which will contain the
-      struct and sig *)
+      struct and sig, if any (e.g. "pp" for the printer code) *)
 end

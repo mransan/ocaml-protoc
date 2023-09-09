@@ -115,8 +115,8 @@ let generate_type_and_default ocaml_types proto_file_options cmdline : unit =
     (Some Pb_codegen_default.ocamldoc_title);
 
   open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
-  output_string struct_oc (F.print ml_sc);
-  output_string sig_oc (F.print mli_sc)
+  F.output struct_oc ml_sc;
+  F.output sig_oc mli_sc
 
 let generate_mutable_records gen_file_suffix ocaml_types (sc : F.scope) : unit =
   let ocaml_types = List.flatten ocaml_types in
@@ -158,8 +158,8 @@ let generate_yojson ocaml_types cmdline =
     (Some Pb_codegen_decode_yojson.ocamldoc_title);
 
   open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
-  output_string struct_oc (F.print ml_sc);
-  output_string sig_oc (F.print mli_sc)
+  F.output struct_oc ml_sc;
+  F.output sig_oc mli_sc
 
 let generate_bs ocaml_types cmdline : unit =
   let file_suffix = "bs" in
@@ -185,8 +185,8 @@ let generate_bs ocaml_types cmdline : unit =
     (Some Pb_codegen_decode_bs.ocamldoc_title);
 
   open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
-  output_string struct_oc (F.print ml_sc);
-  output_string sig_oc (F.print mli_sc)
+  F.output struct_oc ml_sc;
+  F.output sig_oc mli_sc
 
 let generate_binary ocaml_types cmdline =
   let file_suffix = "pb" in
@@ -214,8 +214,8 @@ let generate_binary ocaml_types cmdline =
     (Some Pb_codegen_decode_binary.ocamldoc_title);
 
   open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
-  output_string struct_oc (F.print ml_sc);
-  output_string sig_oc (F.print mli_sc)
+  F.output struct_oc ml_sc;
+  F.output sig_oc mli_sc
 
 let generate_pp ocaml_types cmdline =
   let file_suffix = "pp" in
@@ -236,8 +236,8 @@ let generate_pp ocaml_types cmdline =
     (Some Pb_codegen_pp.ocamldoc_title);
 
   open_files cmdline file_suffix @@ fun (sig_oc, struct_oc) ->
-  output_string struct_oc (F.print ml_sc);
-  output_string sig_oc (F.print mli_sc)
+  F.output struct_oc ml_sc;
+  F.output sig_oc mli_sc
 
 let generate_code ocaml_types proto_file_options cmdline : unit =
   generate_type_and_default ocaml_types proto_file_options cmdline;

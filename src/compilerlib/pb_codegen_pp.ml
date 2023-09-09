@@ -22,9 +22,9 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
   F.line sc
   @@ sp "%s pp_%s fmt (v:%s_types.%s) = " (let_decl_of_and and_) r_name
        module_prefix r_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "let pp_i fmt () =";
-      F.scope sc (fun sc ->
+      F.sub_scope sc (fun sc ->
           List.iteri
             (fun i record_field ->
               let first = i = 0 in
@@ -97,9 +97,9 @@ let gen_unit ?and_ module_prefix { Ot.er_name } sc =
   F.line sc
   @@ sp "%s pp_%s fmt (v:%s_types.%s) = " (let_decl_of_and and_) er_name
        module_prefix er_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "let pp_i fmt () =";
-      F.scope sc (fun sc -> F.line sc "Pbrt.Pp.pp_unit fmt ()");
+      F.sub_scope sc (fun sc -> F.line sc "Pbrt.Pp.pp_unit fmt ()");
       F.line sc "in";
       F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
 
@@ -107,7 +107,7 @@ let gen_variant ?and_ module_prefix { Ot.v_name; Ot.v_constructors } sc =
   F.line sc
   @@ sp "%s pp_%s fmt (v:%s_types.%s) =" (let_decl_of_and and_) v_name
        module_prefix v_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "match v with";
       List.iter
         (fun { Ot.vc_constructor; vc_field_type; _ } ->
@@ -129,7 +129,7 @@ let gen_const_variant ?and_ module_prefix { Ot.cv_name; cv_constructors } sc =
   F.line sc
   @@ sp "%s pp_%s fmt (v:%s_types.%s) =" (let_decl_of_and and_) cv_name
        module_prefix cv_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "match v with";
       List.iter
         (fun { Ot.cvc_name; _ } ->

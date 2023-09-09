@@ -73,7 +73,7 @@ let gen_field sc var_name json_label field_type pk =
     (match udt_type with
     | `Message ->
       F.linep sc "begin (* %s field *)" json_label;
-      F.scope sc (fun sc ->
+      F.sub_scope sc (fun sc ->
           F.linep sc "let json' = %s %s in" f_name var_name;
           F.linep sc "Js.Dict.set json \"%s\" (Js.Json.object_ json');"
             json_label);
@@ -84,7 +84,7 @@ let gen_field sc var_name json_label field_type pk =
   | Ot.Ft_wrapper_type wrapper_type, _ ->
     let { Ot.wt_type; Ot.wt_pk } = wrapper_type in
     F.line sc "begin";
-    F.scope sc (fun sc ->
+    F.sub_scope sc (fun sc ->
         F.linep sc "match %s with" var_name;
         F.linep sc "| None -> Js.Dict.set json \"%s\" Js.Json.null" json_label;
         let statement = basic_type_statement wt_type "__x__" wt_pk in
@@ -99,7 +99,7 @@ let gen_rft_optional sc var_name rf_label (field_type, _, pk, _) =
   F.linep sc "begin match %s with" var_name;
   F.line sc "| None -> ()";
   F.line sc "| Some v ->";
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       let json_label = Pb_codegen_util.camel_case_of_label rf_label in
       gen_field sc "v" json_label field_type pk);
   F.line sc "end;"
@@ -117,7 +117,7 @@ let gen_rft_repeated sc var_name rf_label repeated_field =
   F.linep sc "begin match %s with" var_name;
   F.line sc "| [] -> ()";
   F.linep sc "| __x__ -> (* %s *)" json_label;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       match field_type, pk with
       | Ot.Ft_unit, _ -> unsupported json_label
       | Ot.Ft_basic_type basic_type, _ ->
@@ -144,11 +144,11 @@ let gen_rft_repeated sc var_name rf_label repeated_field =
             ~module_suffix udt
         in
         F.linep sc "let (%s':Js.Json.t) =" rf_label;
-        F.scope sc (fun sc ->
+        F.sub_scope sc (fun sc ->
             F.line sc "__x__";
             F.line sc "|> Array.of_list";
             F.linep sc "|> Array.map (fun v ->";
-            F.scope sc (fun sc ->
+            F.sub_scope sc (fun sc ->
                 F.linep sc "v |> %s |> Js.Json.object_" f_name);
             F.line sc ")";
             F.line sc "|> Js.Json.array");
@@ -159,7 +159,7 @@ let gen_rft_repeated sc var_name rf_label repeated_field =
 
 let gen_rft_variant sc var_name rf_label { Ot.v_constructors; _ } =
   F.linep sc "begin match %s with" var_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.vc_constructor; vc_field_type; vc_payload_kind; _ } ->
           let var_name = "v" in
@@ -167,7 +167,7 @@ let gen_rft_variant sc var_name rf_label { Ot.v_constructors; _ } =
             Pb_codegen_util.camel_case_of_constructor vc_constructor
           in
           F.linep sc "| %s v ->" vc_constructor;
-          F.scope sc (fun sc ->
+          F.sub_scope sc (fun sc ->
               match vc_field_type with
               | Ot.Vct_nullary ->
                 F.linep sc "Js.Dict.set json \"%s\" Js.Json.null" json_label
@@ -181,7 +181,7 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
   F.linep sc "%s encode_%s (v:%s_types.%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
     rn module_prefix rn;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "let json = Js.Dict.empty () in";
       List.iter
         (fun record_field ->
@@ -220,14 +220,14 @@ let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
       F.linep sc "  Js.Dict.set json \"%s\" Js.Json.null" json_label
     | Ot.Vct_non_nullary_constructor field_type ->
       F.linep sc "| %s_types.%s v ->" module_prefix vc_constructor;
-      F.scope sc (fun sc ->
+      F.sub_scope sc (fun sc ->
           gen_field sc "v" json_label field_type vc_payload_kind)
   in
 
   F.linep sc "%s encode_%s (v:%s_types.%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
     v_name module_prefix v_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "let json = Js.Dict.empty () in";
       F.line sc "begin match v with";
       List.iter (process_v_constructor sc) v_constructors;
@@ -239,7 +239,7 @@ let gen_const_variant ?and_ module_prefix { Ot.cv_name; Ot.cv_constructors } sc
   F.linep sc "%s encode_%s (v:%s_types.%s) : string = "
     (Pb_codegen_util.let_decl_of_and and_)
     cv_name module_prefix cv_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "match v with";
       List.iter
         (fun { Ot.cvc_name; cvc_string_value; _ } ->

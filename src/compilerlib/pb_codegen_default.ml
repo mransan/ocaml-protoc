@@ -110,7 +110,7 @@ let gen_record_mutable ~gen_file_suffix ~module_prefix { Ot.r_name; r_fields }
   let rn = Pb_codegen_util.mutable_record_name r_name in
   F.linep sc "let default_%s () : %s = {" rn rn;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun (fname, fvalue, _) -> F.linep sc "%s = %s;" fname fvalue)
         fields_default_info);
@@ -127,14 +127,14 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
 
   F.linep sc "%s default_%s " (let_decl_of_and and_) r_name;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun (fname, fvalue, ftype) ->
           F.linep sc "?%s:((%s:%s) = %s)" fname fname ftype fvalue)
         fields_default_info;
       F.linep sc "() : %s  = {" r_name);
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun (fname, _, _) -> F.linep sc "%s;" fname)
         fields_default_info);
@@ -203,7 +203,7 @@ let gen_sig_record sc module_prefix { Ot.r_name; r_fields } =
       r_fields
   in
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun (field_name, _, field_type) ->
           F.linep sc "?%s:%s ->" field_name field_type)

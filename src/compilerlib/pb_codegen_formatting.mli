@@ -25,9 +25,6 @@
 
 (** Formatting utilities for code generation *)
 
-(* TODO: add a little example of how to use this module as well
- * as a unit test for it *)
-
 (** {2 types} *)
 
 type scope
@@ -50,12 +47,15 @@ val linep : scope -> ('a, unit, string, unit) format4 -> 'a
 val empty_line : scope -> unit
 (** [empty_line scope] adds an empty line to [scope] *)
 
-val scope : scope -> (scope -> unit) -> unit
-(** [scope scope f] adds a sub scope and apply [f] to it. *)
+val sub_scope : scope -> (scope -> unit) -> unit
+(** [sub_scope scope f] adds a sub scope and apply [f] to it. *)
 
 (** {2 Printing} *)
 
-val print : scope -> string
+val to_string : scope -> string
 (** [print scope] returns the formatted scops with a 2 character
     indentation for each scope.
  *)
+
+val output : out_channel -> scope -> unit
+(** Write to output *)

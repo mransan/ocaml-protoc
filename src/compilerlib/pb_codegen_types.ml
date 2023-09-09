@@ -27,7 +27,7 @@ let gen_record_mutable module_prefix { Ot.r_name; r_fields } sc =
   let r_name = Pb_codegen_util.mutable_record_name r_name in
 
   F.linep sc "type %s = {" r_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.rf_label; rf_field_type; _ } ->
           let prefix = field_prefix rf_field_type in
@@ -48,7 +48,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   in
 
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.rf_label; rf_field_type; rf_mutable } ->
           let prefix = field_prefix rf_mutable in
@@ -64,7 +64,7 @@ let gen_variant ?and_ variant sc =
 
   F.linep sc "%s %s =" (type_decl_of_and and_) v_name;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.vc_constructor; vc_field_type; _ } ->
           match vc_field_type with
@@ -76,7 +76,7 @@ let gen_variant ?and_ variant sc =
 
 let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
   F.linep sc "%s %s =" (type_decl_of_and and_) cv_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.cvc_name; _ } -> F.linep sc "| %s " cvc_name)
         cv_constructors)

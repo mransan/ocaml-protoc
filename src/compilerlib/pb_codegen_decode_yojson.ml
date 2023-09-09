@@ -58,7 +58,7 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   F.linep sc "| (\"%s\", `List l) -> begin" json_label;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.linep sc "v.%s <- List.map (function" rf_label;
       let match_variable_name, exp =
         field_pattern_match ~r_name ~rf_label field_type
@@ -107,7 +107,7 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
   F.line sc
   @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.linep sc "let v = default_%s () in" mutable_record_name;
       F.line sc @@ "let assoc = match d with";
       F.line sc @@ "  | `Assoc assoc -> assoc";
@@ -116,7 +116,7 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
       F.line sc @@ "in";
 
       F.line sc "List.iter (function ";
-      F.scope sc (fun sc ->
+      F.sub_scope sc (fun sc ->
           (* Generate pattern match for all the possible message field *)
           List.iter
             (fun { Ot.rf_label; rf_field_type; _ } ->
@@ -144,7 +144,7 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
 
       (* Transform the mutable record in an immutable one *)
       F.line sc "({";
-      F.scope sc (fun sc ->
+      F.sub_scope sc (fun sc ->
           List.iter
             (fun { Ot.rf_label; _ } ->
               F.linep sc "%s_types.%s = v.%s;" module_prefix rf_label rf_label)
@@ -180,7 +180,7 @@ let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
 
   F.linep sc "%s decode_%s json =" (Pb_codegen_util.let_decl_of_and and_) v_name;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       (* even though a variant should be an object with a single field,
        * it is possible other fields are present in the JSON object. Therefore
        * we still need a loop to iterate over the key/value, even if in 99.99%
@@ -192,7 +192,7 @@ let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
       F.line sc "in";
 
       F.line sc "let rec loop = function";
-      F.scope sc (fun sc ->
+      F.sub_scope sc (fun sc ->
           (* termination condition *)
           F.linep sc "| [] -> Pbrt_yojson.E.malformed_variant \"%s\"" v_name;
 
@@ -208,7 +208,7 @@ let gen_const_variant ?and_ module_prefix { Ot.cv_name; cv_constructors } sc =
     (Pb_codegen_util.let_decl_of_and and_)
     cv_name;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       F.line sc "match json with";
       List.iter
         (fun { Ot.cvc_name; cvc_string_value; _ } ->
