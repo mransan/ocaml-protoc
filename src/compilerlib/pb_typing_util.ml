@@ -42,8 +42,14 @@ let field_option { Tt.field_options; _ } option_name =
 let empty_scope = { Tt.packages = []; message_names = [] }
 let type_id_of_type { Tt.id; _ } = id
 
-let type_of_id all_types id =
-  List.find (fun t -> type_id_of_type t = id) all_types
+let type_of_id (p : _ Tt.proto) id =
+  match
+    Pb_util.List.find_map
+      (fun tys -> Pb_util.List.find_opt (fun t -> type_id_of_type t = id) tys)
+      p.proto_types
+  with
+  | Some ty -> ty
+  | None -> raise Not_found
 
 let string_of_type_scope { Tt.packages; message_names } =
   Printf.sprintf "scope:{packages:%s, message_names:%s}"

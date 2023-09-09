@@ -127,6 +127,15 @@ module List = struct
       (match f hd with
       | None -> filter_map f tl
       | Some x -> x :: filter_map f tl)
+
+  let find_opt f l = try Some (List.find f l) with Not_found -> None
+
+  let rec find_map f = function
+    | [] -> None
+    | x :: tl ->
+      (match f x with
+      | Some _ as r -> r
+      | None -> find_map f tl)
 end
 
 module Int_map = Map.Make (struct

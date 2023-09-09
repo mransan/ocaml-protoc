@@ -81,6 +81,9 @@ module List : sig
   (** [filter_map f l] returns the list of element [x] for which [f] returned
       [Some x]. The length of the returned list will be less or equal than
       the length of the input list [l]. *)
+
+  val find_opt : ('a -> bool) -> 'a list -> 'a option
+  val find_map : ('a -> 'b option) -> 'a list -> 'b option
 end
 
 module Str_map : Map.S with type key = string
