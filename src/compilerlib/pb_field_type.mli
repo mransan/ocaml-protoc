@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -27,12 +27,11 @@
 
 type type_path = string list
 (** Scope path of a type used for a message field.
-    
-    For instance in the following field defintion:
 
+    For instance in the following field definition:
     [required foo.bar.Msg1 f = 1]
 
-    The [type_path] would be [\["foo"; "bar"\]]
+    The [type_path] would be [["foo"; "bar"]]
   *)
 
 type unresolved = {
@@ -40,29 +39,27 @@ type unresolved = {
   type_name: string;
   from_root: bool;
       (** from_root indicates that the scope for the type is
-                         from the root of the type system. (ie starts with '.')
-                      *)
+          from the root of the type system. (ie starts with '.') *)
 }
-(** In the first phase of the compilation 
-    the field of message type are not resolved but only 
-    properly parsed. 
-    
+(** In the first phase of the compilation
+    the field of message type are not resolved but only
+    properly parsed.
+
     The following type summarizes the information of a field
-    type. 
+    type.
 
     In the following field definition:
-    
-    [required foo.bar.Msg1 f = 1] 
+    [required foo.bar.Msg1 f = 1]
 
     The unresolved type would be: [{
-      scope=\["foo";"bar"\]; 
-      type_name="Msg1"; 
+      scope=["foo";"bar"];
+      type_name="Msg1";
       from_root = false
     }]
  *)
 
 type resolved = int
-(** After phase 2 compilation the field type is resolved to an 
+(** After phase 2 compilation the field type is resolved to a
     known message which can be uniquely identified by its id.
   *)
 
@@ -115,11 +112,11 @@ type 'a t =
   [ builtin_type
   | `User_defined of 'a (* Message or Enum type *)
   ]
-(** field type. 
-    
-    The ['a] type is for re-using the same type 
-    definition for the 2 compilation phases. 
-    
+(** field type.
+
+    The ['a] type is for re-using the same type
+    definition for the 2 compilation phases.
+
     After Phase 1 ['a] is [unresolved] while after Phase2
     ['a] is [resolved].
   *)

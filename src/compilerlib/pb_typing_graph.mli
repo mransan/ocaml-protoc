@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -36,27 +36,27 @@ type graph
 (** {2 Creators } *)
 
 val create_node : int -> int list -> node
-(** [create_node id sub] create a node uniquely identified with [id] 
-    and connections to other nodes in [sub]. 
+(** [create_node id sub] create a node uniquely identified with [id]
+    and connections to other nodes in [sub].
 
     The client application is responsible to ensure that the graph is
-    consistent, by adding all nodes identified in [sub] to the same 
-    graph later. 
+    consistent, by adding all nodes identified in [sub] to the same
+    graph later.
   *)
 
 val empty_graph : graph
 (** [empty_graph ()] create a new empty graph.*)
 
 val add_node : node -> graph -> graph
-(** [add_node node graph] add [node] to [graph] 
+(** [add_node node graph] add [node] to [graph]
  *)
 
 (** {2 Algorithms} *)
 
 val tarjan : graph -> int list list
 (** [tarjan graph] compute the ordered list of strongly connected components of
-    a graph. 
+    a graph.
 
     The returned list is order in decreasing order of dependencies. This means
-    the last component of the list does not link to any other components. 
+    the last component of the list does not link to any other components.
  *)
