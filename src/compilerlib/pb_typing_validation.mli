@@ -50,4 +50,4 @@ val validate_message :
   (* file options *)
   Tt.type_scope ->
   Pt.message ->
-  Pb_field_type.unresolved Tt.proto
+  Pb_field_type.unresolved Tt.proto_type list

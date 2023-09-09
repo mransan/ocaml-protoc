@@ -87,17 +87,20 @@ let compile cmdline cmd_line_files_options =
   in
 
   (* typing *)
-  let grouped_protos = Pb_typing.perform_typing protos in
-  let all_typed_protos = List.flatten grouped_protos in
+  let typed_proto = Pb_typing.perform_typing protos in
 
-  (* Only get the types which are part of the given proto file 
-   * (compilation unit) *)
-  let grouped_proto =
-    List.filter
-      (function
-        | { Tt.file_name; _ } :: _ when file_name = proto_file_name -> true
-        | _ -> false)
-      grouped_protos
+  (* Only get the types which are part of the given proto file
+     (compilation unit) *)
+  let typed_proto =
+    {
+      typed_proto with
+      Tt.proto_types =
+        List.filter
+          (function
+            | { Tt.file_name; _ } :: _ when file_name = proto_file_name -> true
+            | _ -> false)
+          typed_proto.proto_types;
+    }
   in
 
   (* -- OCaml Backend -- *)
@@ -110,11 +113,11 @@ let compile cmdline cmd_line_files_options =
              List.flatten
              @@ List.map
                   (fun t ->
-                    BO.compile ~unsigned_tag:!unsigned_tag all_typed_protos t)
+                    BO.compile ~unsigned_tag:!unsigned_tag typed_proto t)
                   types
            in
            l :: ocaml_types)
-         [] grouped_proto
+         [] typed_proto.proto_types
   in
 
   ocaml_types, proto_file_options

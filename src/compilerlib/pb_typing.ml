@@ -23,16 +23,23 @@
 
 *)
 
+module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree
 
-let perform_typing protos =
-  let typed_protos =
+let perform_typing (protos : Pt.proto list) : Pb_field_type.resolved Tt.proto =
+  let validated_types, validated_services =
     List.fold_left
-      (fun typed_protos proto ->
-        typed_protos @ Pb_typing_validation.validate proto)
-      [] protos
+      (fun (typed_protos, services) proto ->
+        let val_proto = Pb_typing_validation.validate proto in
+        ( typed_protos @ List.flatten val_proto.proto_types,
+          services @ val_proto.proto_services ))
+      ([], []) protos
   in
 
-  let typed_protos = Pb_typing_resolution.resolve_types typed_protos in
+  let t, types = Pb_typing_resolution.resolve_types validated_types in
+  let services = Pb_typing_resolution.resolve_services t validated_services in
 
-  List.rev @@ Pb_typing_recursion.group typed_protos
+  {
+    Tt.proto_types = List.rev @@ Pb_typing_recursion.group types;
+    proto_services = services;
+  }
