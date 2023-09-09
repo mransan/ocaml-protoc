@@ -124,7 +124,7 @@ let generate_mutable_records gen_file_suffix ocaml_types (sc : F.scope) : unit =
     (fun { Ot.spec; module_prefix; _ } ->
       match spec with
       | Ot.Record r ->
-        Pb_codegen_types.gen_record_mutable module_prefix r sc;
+        Pb_codegen_types.gen_record_mutable ~module_prefix r sc;
         F.empty_line sc;
         Pb_codegen_default.gen_record_mutable ~gen_file_suffix ~module_prefix r
           sc;

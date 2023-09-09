@@ -1,10 +1,11 @@
 (** Code generator for the OCaml type *)
 
-include Pb_codegen_sig.S
+include Pb_codegen_plugin.S
 
 val gen_record_mutable :
-  string ->
-  (* module_prefix *)
+  module_prefix:string ->
   Pb_codegen_ocaml_type.record ->
   Pb_codegen_formatting.scope ->
   unit
+
+val plugin : with_mutable_records:bool -> unit -> Pb_codegen_plugin.t

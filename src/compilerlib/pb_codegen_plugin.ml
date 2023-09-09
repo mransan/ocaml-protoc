@@ -1,4 +1,8 @@
-(** Common module signature for all codegen modules *)
+(** Plugin architecture.
+
+    OCaml-protoc generates code based on a number of plugins,
+    each of which can contribute code to the output files (.ml and .mli).
+*)
 
 module type S = sig
   val gen_sig :
@@ -22,3 +26,6 @@ module type S = sig
   (** The suffix part of the generated file which will contain the
       struct and sig, if any (e.g. "pp" for the printer code) *)
 end
+
+type t = (module S)
+(** A plugin is a code-generator respecting the signature {!S}. *)

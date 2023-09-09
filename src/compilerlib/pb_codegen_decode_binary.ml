@@ -149,7 +149,8 @@ let gen_rft_associative sc r_name rf_label associative_field =
       match at with
       | Ot.At_list ->
         F.linep sc "v.%s <- (" rf_label;
-        F.sub_scope sc (fun sc -> F.linep sc "%s::v.%s;" decode_expression rf_label);
+        F.sub_scope sc (fun sc ->
+            F.linep sc "%s::v.%s;" decode_expression rf_label);
         F.line sc ");"
       | Ot.At_hashtable ->
         F.linep sc "let a, b = %s in" decode_expression;
@@ -388,3 +389,12 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Protobuf Decoding"
+
+let plugin : Pb_codegen_plugin.t =
+  let module P = struct
+    let gen_sig = gen_sig
+    let gen_struct = gen_struct
+    let file_suffix = file_suffix
+    let ocamldoc_title = ocamldoc_title
+  end in
+  (module P)

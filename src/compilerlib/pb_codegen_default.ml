@@ -99,7 +99,7 @@ let record_field_default_info ~gen_file_suffix ~module_prefix record_field =
   field_name, default_value, type_string
 
 let gen_record_mutable ~gen_file_suffix ~module_prefix { Ot.r_name; r_fields }
-    sc =
+    sc : unit =
   let fields_default_info =
     List.map
       (fun r_field ->
@@ -116,7 +116,7 @@ let gen_record_mutable ~gen_file_suffix ~module_prefix { Ot.r_name; r_fields }
         fields_default_info);
   F.line sc "}"
 
-let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
+let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
     List.map
       (fun r_field ->
@@ -172,13 +172,15 @@ let gen_const_variant ?and_ { Ot.cv_name; Ot.cv_constructors } sc =
   F.linep sc "%s default_%s () = (%s:%s)" (let_decl_of_and and_) cv_name
     first_constructor_name cv_name
 
-let gen_struct ?and_ t sc =
+let gen_struct_full ~with_mutable_records ?and_ t sc =
   let { Ot.module_prefix; spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
       gen_record ?and_ module_prefix r sc;
+      if with_mutable_records then
+        gen_record_mutable ~gen_file_suffix:file_suffix ~module_prefix r sc;
       true
     | Ot.Variant v ->
       gen_variant ?and_ module_prefix v sc;
@@ -192,7 +194,10 @@ let gen_struct ?and_ t sc =
   in
   has_encoded
 
-let gen_sig_record sc module_prefix { Ot.r_name; r_fields } =
+let gen_struct ?and_ t sc =
+  gen_struct_full ?and_ ~with_mutable_records:false t sc
+
+let gen_sig_record sc ~module_prefix { Ot.r_name; r_fields } =
   F.linep sc "val default_%s : " r_name;
 
   let fields_default_info =
@@ -219,8 +224,7 @@ let gen_sig_unit sc { Ot.er_name } =
   let rn = er_name in
   F.linep sc "(** [default_%s ()] is the default value for type [%s] *)" rn rn
 
-let gen_sig ?and_ t sc =
-  let _ = and_ in
+let gen_sig ?and_:_ t sc =
   let f type_name =
     F.linep sc "val default_%s : unit -> %s" type_name type_name;
     F.linep sc "(** [default_%s ()] is the default value for type [%s] *)"
@@ -232,7 +236,7 @@ let gen_sig ?and_ t sc =
   let has_encoded =
     match spec with
     | Ot.Record r ->
-      gen_sig_record sc module_prefix r;
+      gen_sig_record sc ~module_prefix r;
       true
     | Ot.Variant v ->
       f v.Ot.v_name;
@@ -247,4 +251,13 @@ let gen_sig ?and_ t sc =
 
   has_encoded
 
-let ocamldoc_title = "Default values"
+let ocamldoc_title = "Basic values"
+
+let plugin ~with_mutable_records () : Pb_codegen_plugin.t =
+  let module P = struct
+    let gen_sig = gen_sig
+    let gen_struct ?and_ t sc = gen_struct_full ~with_mutable_records ?and_ t sc
+    let file_suffix = file_suffix
+    let ocamldoc_title = ocamldoc_title
+  end in
+  (module P)

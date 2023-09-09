@@ -16,7 +16,7 @@ let is_imperative_type = function
   | Ot.Rft_associative (Ot.At_hashtable, _, _, _) ->
     true
 
-let gen_record_mutable module_prefix { Ot.r_name; r_fields } sc =
+let gen_record_mutable ~module_prefix { Ot.r_name; r_fields } sc : unit =
   let field_prefix field_type =
     if is_imperative_type field_type then
       ""
@@ -89,15 +89,24 @@ let print_ppx_extension { Ot.type_level_ppx_extension; _ } sc =
   | None -> ()
   | Some ppx_content -> F.linep sc "[@@%s]" ppx_content
 
-let gen_struct ?and_ t scope =
-  let { Ot.spec; _ } = t in
+let gen_struct_full ~with_mutable_records ?and_ t scope =
+  let { Ot.spec; module_prefix; _ } = t in
   (match spec with
   | Ot.Record r -> gen_record ?and_ r scope
   | Ot.Variant v -> gen_variant ?and_ v scope
   | Ot.Const_variant v -> gen_const_variant ?and_ v scope
   | Ot.Unit v -> gen_unit ?and_ v scope);
   print_ppx_extension t scope;
+
+  (match spec with
+  | Ot.Record r when with_mutable_records ->
+    gen_record_mutable ~module_prefix r scope
+  | _ -> ());
+
   true
+
+let gen_struct ?and_ t sc =
+  gen_struct_full ?and_ ~with_mutable_records:false t sc
 
 let gen_sig ?and_ t scope =
   let { Ot.spec; _ } = t in
@@ -111,3 +120,12 @@ let gen_sig ?and_ t scope =
 
 let ocamldoc_title = "Types"
 let file_suffix = "types"
+
+let plugin ~with_mutable_records () : Pb_codegen_plugin.t =
+  let module P = struct
+    let gen_sig = gen_sig
+    let gen_struct ?and_ t sc = gen_struct_full ~with_mutable_records ?and_ t sc
+    let file_suffix = file_suffix
+    let ocamldoc_title = ocamldoc_title
+  end in
+  (module P)

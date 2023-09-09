@@ -317,3 +317,12 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Protobuf Encoding"
+
+let plugin : Pb_codegen_plugin.t =
+  let module P = struct
+    let gen_sig = gen_sig
+    let gen_struct = gen_struct
+    let file_suffix = file_suffix
+    let ocamldoc_title = ocamldoc_title
+  end in
+  (module P)
