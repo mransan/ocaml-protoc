@@ -26,6 +26,7 @@
 module E = Pb_exception
 module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree
+module String_map = Pb_util.Str_map
 
 module Types_by_scope = struct
   type type_ = Pb_field_type.unresolved Tt.proto_type
@@ -34,12 +35,6 @@ module Types_by_scope = struct
     match spec with
     | Tt.Enum { Tt.enum_name; _ } -> enum_name
     | Tt.Message { Tt.message_name; _ } -> message_name
-
-  module String_map = Map.Make (struct
-    type t = string
-
-    let compare (x : string) (y : string) = Stdlib.compare x y
-  end)
 
   type t = {
     name: string;
@@ -78,16 +73,17 @@ module Types_by_scope = struct
     in
     aux t path
 
-  let rec print ?(level = 0) { types; subs; name } =
-    let pr = Printf.printf in
-    pr "%s %s\n" (Pb_util.indentation_prefix level) name;
+  let fpf = Printf.fprintf
+
+  let rec print ?(level = 0) oc { types; subs; name } : unit =
+    fpf oc "%s %s\n" (Pb_util.indentation_prefix level) name;
     String_map.iter
       (fun _ t ->
-        pr "%s +-%s \n" (Pb_util.indentation_prefix level) (name_of_type t))
+        fpf oc "%s +-%s \n" (Pb_util.indentation_prefix level) (name_of_type t))
       types;
-    String_map.iter (fun _ sub -> print ~level:(level + 1) sub) subs
+    String_map.iter (fun _ sub -> print oc ~level:(level + 1) sub) subs
 
-  let print t = print t
+  let print oc t = print oc t
   let empty = empty ()
 end
 (* Types_by_scope *)
@@ -257,8 +253,8 @@ let resolve_field_type_and_default t field_name field_type field_default
     in
     aux (compute_search_type_paths unresolved_field_type message_type_path)
 
-(* this function resolves all the field type of the given type *)
-let resolve_type t type_ =
+(** this function resolves all the field type of the given type *)
+let resolve_type t type_ : int Tt.proto_type =
   let { Tt.scope; id; file_name; file_options; spec } = type_ in
 
   match spec with

@@ -23,9 +23,9 @@
 
 *)
 
-(** Type resolution *)
+(** Type resolution.
 
-(** This module resolves all the user defined for the protobuf message
+    This module resolves all the user defined for the protobuf message
     fields; while built-in types were previously valided in
     [Pb_typing_validation] module.
 
@@ -62,7 +62,7 @@ module Types_by_scope : sig
     Pb_field_type.unresolved Tt.proto_type
   (** find a protobuf type given its type path *)
 
-  val print : t -> unit
+  val print : out_channel -> t -> unit
   (** pretty print of the container *)
 end
 (* Types_by_scope *)

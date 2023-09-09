@@ -70,7 +70,6 @@ module Option = struct
     | None -> "None"
     | Some x -> Printf.sprintf "Some(%s)" (f x)
 end
-(* Option *)
 
 let indentation_prefix =
   let h = Hashtbl.create 16 in
@@ -129,4 +128,11 @@ module List = struct
       | None -> filter_map f tl
       | Some x -> x :: filter_map f tl)
 end
-(* List *)
+
+module Int_map = Map.Make (struct
+  type t = int
+
+  let compare (x : int) (y : int) = Stdlib.compare x y
+end)
+
+module Str_map = Map.Make (String)

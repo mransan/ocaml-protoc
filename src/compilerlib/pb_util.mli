@@ -62,7 +62,6 @@ module Option : sig
   (** [string_of_option f x] returns string representation of [x] using
       [f] when [x] is of the form [Some _]. *)
 end
-(* Option *)
 
 val read_file : string -> string
 val protect : finally:(unit -> unit) -> (unit -> 'a) -> 'a
@@ -83,4 +82,6 @@ module List : sig
       [Some x]. The length of the returned list will be less or equal than
       the length of the input list [l]. *)
 end
-(* List *)
+
+module Str_map : Map.S with type key = string
+module Int_map : Map.S with type key = int

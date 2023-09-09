@@ -23,13 +23,9 @@
 
 *)
 
+module Int_map = Pb_util.Int_map
+
 type id = int
-
-module Int_map = Map.Make (struct
-  type t = int
-
-  let compare (x : int) (y : int) = Stdlib.compare x y
-end)
 
 type node = {
   id: id;
