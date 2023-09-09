@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -25,7 +25,7 @@
 
 (** Typed tree utilities *)
 
-(** This module provides accessor/creator function to facilitate 
+(** This module provides accessor/creator function to facilitate
     the manipulation of the type tree. *)
 
 module Pt = Pb_parsing_parse_tree
@@ -51,14 +51,14 @@ val field_default : ('a, 'b) Tt.field -> Pb_option.constant option
 val field_options : ('a, 'b) Tt.field -> Pb_option.set
 
 val field_option : ('a, 'b) Tt.field -> string -> Pb_option.value option
-(** [field_option field option_name] returns the constant associated with 
+(** [field_option field option_name] returns the constant associated with
     [option_name]. If the fields options does not contain [option_name] [None]
     is returned.
   *)
 
 val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type
-(** [type_of_id all_types id] returns the type associated with the given id, 
-    raise [Not_found] if the type is not in the all_types. 
+(** [type_of_id all_types id] returns the type associated with the given id,
+    raise [Not_found] if the type is not in the all_types.
   *)
 
 val string_of_message : int -> Tt.type_scope -> 'a Tt.message -> string
@@ -68,7 +68,7 @@ val enum_option : Tt.enum -> string -> Pb_option.value option
 (** {2 Accessor for Tt.type} *)
 
 val type_name_of_type : 'a Tt.proto_type -> string
-(** [type_name_of_type t] returns the type name (as defined in the 
+(** [type_name_of_type t] returns the type name (as defined in the
     message file) of [t].
  *)
 
@@ -76,8 +76,8 @@ val type_scope_of_type : 'a Tt.proto_type -> Tt.type_scope
 (** [type_scope_of_type t] returns the scope of type [t]. *)
 
 val is_empty_message : 'a Tt.proto_type -> bool
-(** [is_empty_message t] returns true if [t] is a message type and 
-    has no fields defined. 
+(** [is_empty_message t] returns true if [t] is a message type and
+    has no fields defined.
  *)
 
 (** {2 Creator} *)

@@ -21,7 +21,7 @@ module type S = sig
   (** OCamldoc title *)
 
   val file_suffix : string
-  (** The suffix part of the generated file which will contain the 
+  (** The suffix part of the generated file which will contain the
       struct and sig *)
 end
 (* S *)

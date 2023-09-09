@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -92,11 +92,11 @@ module Types_by_scope = struct
 end
 (* Types_by_scope *)
 
-(* this function returns the type path of a message which is the 
- * packages followed by the enclosing message names and eventually 
- * the message name of the given type. 
+(* this function returns the type path of a message which is the
+ * packages followed by the enclosing message names and eventually
+ * the message name of the given type.
  *
- * If the type is an enum then [Failure] is raised. 
+ * If the type is an enum then [Failure] is raised.
  * TODO: change [Failure] to a [Pb_exception.Compilation_error] *)
 let type_path_of_type { Tt.scope; spec; _ } =
   match spec with
@@ -105,10 +105,10 @@ let type_path_of_type { Tt.scope; spec; _ } =
     let { Tt.packages; message_names } = scope in
     packages @ message_names @ [ message_name ]
 
-(* this function returns all the scope to search for a type starting 
- * by the most innner one first. 
+(* this function returns all the scope to search for a type starting
+ * by the most innner one first.
  *
- * If [message_scope] = ['Msg1'; 'Msg2'] and [field_scope] = ['Msg3'] then 
+ * If [message_scope] = ['Msg1'; 'Msg2'] and [field_scope] = ['Msg3'] then
  * the following scopes will be returned:
  * [
  *   ['Msg1'; 'Msg2'; 'Msg3'];  // This would be the scope of the current msg
@@ -130,13 +130,13 @@ let compute_search_type_paths unresolved_field_type message_type_path =
     List.rev @@ loop [] message_type_path
   )
 
-(* this function ensure that the default value of the field is correct 
- * with respect to its type when this latter is a builtin one. 
+(* this function ensure that the default value of the field is correct
+ * with respect to its type when this latter is a builtin one.
  *
- * in case the default value is invalid then an 
- * [Pb_exception.Compilation_error] is raised. 
+ * in case the default value is invalid then an
+ * [Pb_exception.Compilation_error] is raised.
  *
- * Note that this function also does type coersion when the default value 
+ * Note that this function also does type coersion when the default value
  * is an int and the builtin type is a float or double. *)
 let resolve_builtin_type_field_default field_name builtin_type field_default =
   match field_default with
@@ -184,14 +184,14 @@ let resolve_builtin_type_field_default field_name builtin_type field_default =
       E.invalid_default_value ~field_name
         ~info:"default value not supported for bytes" ())
 
-(* This function verifies that the default value for a used defined 
- * field is correct. 
+(* This function verifies that the default value for a used defined
+ * field is correct.
  *
- * In protobuf, only field which type is [enum] can have a default 
- * value. Field of type [message] can't. 
+ * In protobuf, only field which type is [enum] can have a default
+ * value. Field of type [message] can't.
  *
  * In the case the field is an enum then the default value must be
- * a litteral value which is one of the enum value. 
+ * a litteral value which is one of the enum value.
  *
  * If the validation fails then [Pb_exception.Compilation_error] is raised *)
 let resolve_enum_field_default field_name type_ field_default =
@@ -225,13 +225,13 @@ let resolve_enum_field_default field_name type_ field_default =
     E.invalid_default_value ~field_name
       ~info:"default value not supported for message" ()
 
-(* this function resolves both the type and the defaut value of a field 
+(* this function resolves both the type and the defaut value of a field
  * type. Note that it is necessary to verify both at the same time since
  * the default value must be of the same type as the field type in order
- * to be valid. 
+ * to be valid.
  *
- * For builtin the type the validation is trivial while for user defined 
- * type a search must be done for all the possible scopes the type 
+ * For builtin the type the validation is trivial while for user defined
+ * type a search must be done for all the possible scopes the type
  * might be in. *)
 let resolve_field_type_and_default t field_name field_type field_default
     message_type_path =

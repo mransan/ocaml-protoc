@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -31,7 +31,7 @@
 (** {2 types} *)
 
 type scope
-(** A scope is a formatting container which can contains line of text as well 
+(** A scope is a formatting container which can contains line of text as well
     as other nested scopes
 
     In other word a scope define an indentation section.
@@ -56,6 +56,6 @@ val scope : scope -> (scope -> unit) -> unit
 (** {2 Printing} *)
 
 val print : scope -> string
-(** [print scope] returns the formatted scops with a 2 character 
-    indentation for each scope. 
+(** [print scope] returns the formatted scops with a 2 character
+    indentation for each scope.
  *)

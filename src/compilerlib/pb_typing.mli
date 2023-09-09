@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -25,7 +25,7 @@
 
 (** Typing compilation step *)
 
-(** This module performs the typing step in the compilation process by 
+(** This module performs the typing step in the compilation process by
     doing the following:
     {ul
     {- Type tree construction and validation}
@@ -39,6 +39,6 @@ module Tt = Pb_typing_type_tree
 val perform_typing :
   Pb_parsing_parse_tree.proto list ->
   Pb_field_type.resolved Tt.proto_type list list
-(** [perform_typing parsed_tree] returned the type tree organized in groups 
-    of fully resolved types. Each group contains all the mutually recursive 
+(** [perform_typing parsed_tree] returned the type tree organized in groups
+    of fully resolved types. Each group contains all the mutually recursive
     types and the type group by reverse dependency order. *)

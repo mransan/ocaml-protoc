@@ -79,7 +79,7 @@ let record_field_default_info ~gen_file_suffix ~module_prefix record_field =
       (match at with
       | Ot.At_list -> "[]"
       | Ot.At_hashtable -> "Hashtbl.create 128")
-      (* TODO This initial value could be configurable either via 
+      (* TODO This initial value could be configurable either via
        * the default function or via a protobuf option. *)
     | Ot.Rft_variant { Ot.v_constructors; _ } ->
       (match v_constructors with

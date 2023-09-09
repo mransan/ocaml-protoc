@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -135,7 +135,7 @@ let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
 
   make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec
 
-(* compile a [Pbpt] message a list of [Pbtt] types (ie messages can 
+(* compile a [Pbpt] message a list of [Pbtt] types (ie messages can
  * defined more than one type). *)
 let rec validate_message ?(parent_options = Pb_option.empty) file_name
     file_options message_scope parsed_message =
@@ -212,12 +212,12 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
      [Pb_parsing_util.verify_message] along with
      the proto3 invariant. *)
 
-  (* Both field name and field number must be unique 
-   * within a message scope. This includes the field in a 
-   * oneof field inside the message. 
+  (* Both field name and field number must be unique
+   * within a message scope. This includes the field in a
+   * oneof field inside the message.
    *
    * This function verifies this constrain and raises
-   * the corresponding Duplicated_field_number exception in 
+   * the corresponding Duplicated_field_number exception in
    * case it is violated. *)
   let validate_duplicate (number_index : (int * string) list) name number =
     if

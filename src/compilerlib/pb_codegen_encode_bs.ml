@@ -42,7 +42,7 @@ let setter_of_basic_type json_label basic_type pk =
   | x, y -> unsupported2 json_label x y
 
 let gen_field sc var_name json_label field_type pk =
-  (* reusable function for both basic type and wrapped type which 
+  (* reusable function for both basic type and wrapped type which
    * are both based upon basic type *)
   let basic_type_statement basic_type var_name pk =
     let setter, map_function = setter_of_basic_type json_label basic_type pk in
