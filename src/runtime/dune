@@ -1,6 +1,7 @@
 (library
  (name pbrt)
  (public_name pbrt)
+ (synopsis "Runtime library for ocaml-protoc")
  ; we need to increase -inline, so that the varint encoder/decoder can
  ; be remembered by the inliner.
  (ocamlopt_flags :standard -inline 100))
