@@ -3,9 +3,4 @@
 include Pb_codegen_plugin.S
 
 val gen_record_mutable :
-  module_prefix:string ->
-  Pb_codegen_ocaml_type.record ->
-  Pb_codegen_formatting.scope ->
-  unit
-
-val plugin : with_mutable_records:bool -> unit -> Pb_codegen_plugin.t
+  Pb_codegen_ocaml_type.record -> Pb_codegen_formatting.scope -> unit

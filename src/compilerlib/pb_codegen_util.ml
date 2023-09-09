@@ -78,18 +78,18 @@ let string_of_record_field_type ?module_prefix = function
     (encode/decode/to_string) will call the same generated function for each
     user defined field type.
  *)
-let function_name_of_user_defined ~function_prefix ~module_suffix = function
+let function_name_of_user_defined ~function_prefix = function
   | { Ot.udt_module_prefix = Some module_prefix; Ot.udt_type_name; _ } ->
-    sp "%s_%s.%s_%s" module_prefix module_suffix function_prefix udt_type_name
+    sp "%s.%s_%s" module_prefix function_prefix udt_type_name
   | { Ot.udt_module_prefix = None; Ot.udt_type_name; _ } ->
     sp "%s_%s" function_prefix udt_type_name
 
-let caml_file_name_of_proto_file_name ~proto_file_name ~file_suffix =
+let caml_file_name_of_proto_file_name ~proto_file_name =
   let splitted = Pb_util.rev_split_by_char '.' proto_file_name in
   if List.length splitted < 2 || List.hd splitted <> "proto" then
     failwith "Proto file has no valid extension"
   else
-    String.concat "_" @@ List.rev @@ (file_suffix :: List.tl splitted)
+    String.concat "_" @@ List.rev @@ List.tl splitted
 
 let mutable_record_name s = s ^ "_mutable"
 

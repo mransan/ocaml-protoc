@@ -52,25 +52,25 @@ module File_options = struct
       ocaml_all_types_ppx = None;
     }
 
-  (** Compute the command line arguments for be used with the Arg module.  *)
+  (** Compute the command line arguments be used with the {!Arg} module.  *)
   let cmd_line_args t =
     [
-      ( "-int32_type",
+      ( "--int32_type",
         Arg.String
           (function
           | "int_t" -> t.int32_type <- Some "int_t"
           | x -> failwith @@ Printf.sprintf "Invalid int32_type value %s" x),
         " int32_type file option" );
-      ( "-int64_type",
+      ( "--int64_type",
         Arg.String
           (function
           | "int_t" -> t.int64_type <- Some "int_t"
           | x -> failwith @@ Printf.sprintf "Invalid int64_type value %s" x),
         " int64_type file option" );
-      ( "-ocaml_file_ppx",
+      ( "--ocaml_file_ppx",
         Arg.String (fun s -> t.ocaml_file_ppx <- Some s),
         " ocaml_file_ppx file option" );
-      ( "-ocaml_all_types_ppx",
+      ( "--ocaml_all_types_ppx",
         Arg.String (fun s -> t.ocaml_all_types_ppx <- Some s),
         " ocaml_all_types_ppx file option" );
     ]
@@ -133,15 +133,18 @@ module Cmdline = struct
 
   let cmd_line_args t =
     [
-      "-yojson", Arg.Set t.yojson, " generate yojson encoding";
-      "-bs", Arg.Set t.bs, " generate BuckleScript encoding";
-      "-binary", Arg.Set t.binary, " generate binary encoding";
-      "-pp", Arg.Set t.pp, " generate pretty print functions";
+      "--yojson", Arg.Set t.yojson, " generate yojson encoding";
+      "--bs", Arg.Set t.bs, " generate BuckleScript encoding";
+      "--binary", Arg.Set t.binary, " generate binary encoding";
+      "--pp", Arg.Set t.pp, " generate pretty print functions";
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
         " include directories" );
-      "-ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
-      ( "-unsigned",
+      "--ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
+      ( "--debug",
+        Arg.Unit (fun () -> Pb_logger.setup_from_out_channel stderr),
+        " print logs on stderr" );
+      ( "--unsigned",
         Arg.Set t.unsigned_tag,
         " tag uint32 and uint64 types with `unsigned" );
     ]

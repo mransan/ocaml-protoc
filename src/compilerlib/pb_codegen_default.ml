@@ -3,8 +3,6 @@ module F = Pb_codegen_formatting
 module E = Pb_exception
 open Pb_codegen_util
 
-let file_suffix = Pb_codegen_types.file_suffix
-
 let default_value_of_basic_type ?field_name basic_type field_default =
   match basic_type, field_default with
   | Ot.Bt_string, None -> "\"\""
@@ -30,35 +28,25 @@ let default_value_of_basic_type ?field_name basic_type field_default =
 
 (* Generate the string which is the default value for a given field
    type and default information. *)
-let default_value_of_field_type ~gen_file_suffix ~module_prefix ?field_name
-    field_type field_default =
+let default_value_of_field_type ?field_name field_type field_default =
   match field_type with
   | Ot.Ft_user_defined_type udt ->
-    let f_name =
-      let function_prefix = "default" in
-      let module_suffix = file_suffix in
-      function_name_of_user_defined ~function_prefix ~module_suffix udt ^ " ()"
-    in
-
-    let same_file = gen_file_suffix = file_suffix in
-    (match same_file, udt.Ot.udt_module_prefix with
-    | false, None -> module_prefix ^ "_" ^ file_suffix ^ "." ^ f_name
-    | _ -> f_name)
+    let function_prefix = "default" in
+    function_name_of_user_defined ~function_prefix udt ^ " ()"
   | Ot.Ft_unit -> "()"
   | Ot.Ft_basic_type bt ->
     default_value_of_basic_type ?field_name bt field_default
   | Ot.Ft_wrapper_type _ -> "None"
 
-(* This function returns [(field_name, field_default_value, field_type)] for
+(** This function returns [(field_name, field_default_value, field_type)] for
    a record field. *)
-let record_field_default_info ~gen_file_suffix ~module_prefix record_field =
+let record_field_default_info record_field =
   let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in
   let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in
   let field_name = rf_label in
 
   let dfvft field_type field_default =
-    default_value_of_field_type ~gen_file_suffix ~module_prefix ~field_name
-      field_type field_default
+    default_value_of_field_type ~field_name field_type field_default
   in
 
   let default_value =
@@ -85,26 +73,16 @@ let record_field_default_info ~gen_file_suffix ~module_prefix record_field =
       (match v_constructors with
       | [] -> assert false
       | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
-        let default_value =
-          match vc_field_type with
-          | Ot.Vct_nullary -> vc_constructor
-          | Ot.Vct_non_nullary_constructor field_type ->
-            sp "%s (%s)" vc_constructor (dfvft field_type None)
-        in
-        if gen_file_suffix = Pb_codegen_types.file_suffix then
-          default_value
-        else
-          module_prefix ^ "_types." ^ default_value)
+        (match vc_field_type with
+        | Ot.Vct_nullary -> vc_constructor
+        | Ot.Vct_non_nullary_constructor field_type ->
+          sp "%s (%s)" vc_constructor (dfvft field_type None)))
   in
   field_name, default_value, type_string
 
-let gen_record_mutable ~gen_file_suffix ~module_prefix { Ot.r_name; r_fields }
-    sc : unit =
+let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
-    List.map
-      (fun r_field ->
-        record_field_default_info ~gen_file_suffix ~module_prefix r_field)
-      r_fields
+    List.map (fun r_field -> record_field_default_info r_field) r_fields
   in
 
   let rn = Pb_codegen_util.mutable_record_name r_name in
@@ -116,13 +94,9 @@ let gen_record_mutable ~gen_file_suffix ~module_prefix { Ot.r_name; r_fields }
         fields_default_info);
   F.line sc "}"
 
-let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc : unit =
+let gen_record ?and_ { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
-    List.map
-      (fun r_field ->
-        record_field_default_info ~gen_file_suffix:file_suffix ~module_prefix
-          r_field)
-      r_fields
+    List.map (fun r_field -> record_field_default_info r_field) r_fields
   in
 
   F.linep sc "%s default_%s " (let_decl_of_and and_) r_name;
@@ -144,7 +118,7 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc : unit =
 let gen_unit ?and_ { Ot.er_name } sc =
   F.linep sc "%s default_%s = ()" (let_decl_of_and and_) er_name
 
-let gen_variant ?and_ module_prefix { Ot.v_name; Ot.v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; Ot.v_constructors } sc =
   match v_constructors with
   | [] -> failwith "programmatic TODO error"
   | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
@@ -155,9 +129,7 @@ let gen_variant ?and_ module_prefix { Ot.v_name; Ot.v_constructors } sc =
     | Ot.Vct_non_nullary_constructor field_type ->
       let default_value =
         let field_name = v_name in
-        let gen_file_suffix = file_suffix in
-        default_value_of_field_type ~gen_file_suffix ~module_prefix ~field_name
-          field_type None
+        default_value_of_field_type ~field_name field_type None
       in
       (* TODO need to fix the deault value *)
       F.linep sc "%s default_%s () : %s = %s (%s)" decl v_name v_name
@@ -173,17 +145,16 @@ let gen_const_variant ?and_ { Ot.cv_name; Ot.cv_constructors } sc =
     first_constructor_name cv_name
 
 let gen_struct_full ~with_mutable_records ?and_ t sc =
-  let { Ot.module_prefix; spec; _ } = t in
+  let { Ot.spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
-      gen_record ?and_ module_prefix r sc;
-      if with_mutable_records then
-        gen_record_mutable ~gen_file_suffix:file_suffix ~module_prefix r sc;
+      gen_record ?and_ r sc;
+      if with_mutable_records then gen_record_mutable r sc;
       true
     | Ot.Variant v ->
-      gen_variant ?and_ module_prefix v sc;
+      gen_variant ?and_ v sc;
       true
     | Ot.Const_variant v ->
       gen_const_variant v sc;
@@ -197,15 +168,11 @@ let gen_struct_full ~with_mutable_records ?and_ t sc =
 let gen_struct ?and_ t sc =
   gen_struct_full ?and_ ~with_mutable_records:false t sc
 
-let gen_sig_record sc ~module_prefix { Ot.r_name; r_fields } =
+let gen_sig_record sc { Ot.r_name; r_fields } =
   F.linep sc "val default_%s : " r_name;
 
-  let fields_default_info =
-    List.map
-      (fun r_field ->
-        record_field_default_info ~gen_file_suffix:file_suffix ~module_prefix
-          r_field)
-      r_fields
+  let fields_default_info : _ list =
+    List.map (fun r_field -> record_field_default_info r_field) r_fields
   in
 
   F.sub_scope sc (fun sc ->
@@ -231,12 +198,12 @@ let gen_sig ?and_:_ t sc =
       type_name type_name
   in
 
-  let { Ot.spec; module_prefix; _ } = t in
+  let { Ot.spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
-      gen_sig_record sc ~module_prefix r;
+      gen_sig_record sc r;
       true
     | Ot.Variant v ->
       f v.Ot.v_name;
@@ -252,12 +219,3 @@ let gen_sig ?and_:_ t sc =
   has_encoded
 
 let ocamldoc_title = "Basic values"
-
-let plugin ~with_mutable_records () : Pb_codegen_plugin.t =
-  let module P = struct
-    let gen_sig = gen_sig
-    let gen_struct ?and_ t sc = gen_struct_full ~with_mutable_records ?and_ t sc
-    let file_suffix = file_suffix
-    let ocamldoc_title = ocamldoc_title
-  end in
-  (module P)

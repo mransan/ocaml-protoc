@@ -21,10 +21,7 @@ val string_of_field_type :
   string
 
 val function_name_of_user_defined :
-  function_prefix:string ->
-  module_suffix:string ->
-  Pb_codegen_ocaml_type.user_defined_type ->
-  string
+  function_prefix:string -> Pb_codegen_ocaml_type.user_defined_type -> string
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)<prefix>_(type_name)`.
 
@@ -33,8 +30,7 @@ val function_name_of_user_defined :
     user defined field type.
  *)
 
-val caml_file_name_of_proto_file_name :
-  proto_file_name:string -> file_suffix:string -> string
+val caml_file_name_of_proto_file_name : proto_file_name:string -> string
 (** [caml_file_name_of_proto_file_name filename] returns the OCaml file name from
     the protobuf file name
  *)

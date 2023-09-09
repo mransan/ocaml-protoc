@@ -2,7 +2,6 @@ module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
-let file_suffix = Pb_codegen_decode_yojson.file_suffix
 
 let unsupported json_label =
   failwith (sp "Unsupported field type for field: %s" json_label)
@@ -58,9 +57,7 @@ let gen_field var_name json_label field_type pk =
   | Ot.Ft_user_defined_type udt, _ ->
     let f_name =
       let function_prefix = "encode" in
-      let module_suffix = file_suffix in
-      Pb_codegen_util.function_name_of_user_defined ~function_prefix
-        ~module_suffix udt
+      Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
     in
     Some (sp "(\"%s\", %s %s)" json_label f_name var_name)
   | _ -> assert false
@@ -113,9 +110,7 @@ let gen_rft_repeated sc rf_label repeated_field =
       | Ot.Ft_user_defined_type udt, _ ->
         let f_name =
           let function_prefix = "encode" in
-          let module_suffix = file_suffix in
-          Pb_codegen_util.function_name_of_user_defined ~function_prefix
-            ~module_suffix udt
+          Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
         in
         F.linep sc "let l = %s |> List.map %s in" var_name f_name
       | _ -> unsupported json_label);
@@ -147,13 +142,12 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
 
   F.linep sc "in (* match v.%s *)" rf_label
 
-let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
+let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in
-  F.linep sc "%s encode_%s (v:%s_types.%s) = "
+  F.linep sc "%s encode_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
-    rn module_prefix rn;
+    rn rn;
   F.sub_scope sc (fun sc ->
-      F.linep sc "let open !%s_types in" module_prefix;
       F.line sc "let assoc = [] in ";
       List.iter
         (fun record_field ->
@@ -177,14 +171,14 @@ let gen_record ?and_ module_prefix { Ot.r_name; r_fields } sc =
         r_fields (* List.iter *);
       F.line sc "`Assoc assoc")
 
-let gen_unit ?and_ module_prefix { Ot.er_name } sc =
+let gen_unit ?and_ { Ot.er_name } sc =
   let rn = er_name in
-  F.linep sc "%s encode_%s (v:%s_types.%s) = "
+  F.linep sc "%s encode_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
-    rn module_prefix rn;
+    rn rn;
   F.line sc (sp "Pbrt_yojson.%s %s" "make_unit" "v")
 
-let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
   let process_v_constructor sc v_constructor =
     let { Ot.vc_constructor; Ot.vc_field_type; Ot.vc_payload_kind; _ } =
       v_constructor
@@ -198,50 +192,45 @@ let gen_variant ?and_ module_prefix { Ot.v_name; v_constructors } sc =
     | Ot.Vct_non_nullary_constructor field_type ->
       (match gen_field "v" json_label field_type vc_payload_kind with
       | None ->
-        F.linep sc "| %s_types.%s -> `Assoc [(\"%s\", `Null)]" module_prefix
-          vc_constructor json_label
-      | Some exp ->
-        F.linep sc "| %s_types.%s v -> `Assoc [%s]" module_prefix vc_constructor
-          exp)
+        F.linep sc "| %s -> `Assoc [(\"%s\", `Null)]" vc_constructor json_label
+      | Some exp -> F.linep sc "| %s v -> `Assoc [%s]" vc_constructor exp)
   in
 
-  F.linep sc "%s encode_%s (v:%s_types.%s) = "
+  F.linep sc "%s encode_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
-    v_name module_prefix v_name;
+    v_name v_name;
   F.sub_scope sc (fun sc ->
       F.line sc "begin match v with";
       List.iter (process_v_constructor sc) v_constructors;
       F.line sc "end")
 
-let gen_const_variant ?and_ module_prefix { Ot.cv_name; Ot.cv_constructors } sc
-    =
-  F.linep sc "%s encode_%s (v:%s_types.%s) = "
+let gen_const_variant ?and_ { Ot.cv_name; Ot.cv_constructors } sc =
+  F.linep sc "%s encode_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
-    cv_name module_prefix cv_name;
+    cv_name cv_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match v with";
       List.iter
         (fun { Ot.cvc_name; cvc_string_value; _ } ->
-          F.linep sc "| %s_types.%s -> `String \"%s\"" module_prefix cvc_name
-            cvc_string_value)
+          F.linep sc "| %s -> `String \"%s\"" cvc_name cvc_string_value)
         cv_constructors)
 
 let gen_struct ?and_ t sc =
-  let { Ot.spec; module_prefix; _ } = t in
+  let { Ot.spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
-      gen_record ?and_ module_prefix r sc;
+      gen_record ?and_ r sc;
       true
     | Ot.Variant v ->
-      gen_variant ?and_ module_prefix v sc;
+      gen_variant ?and_ v sc;
       true
     | Ot.Const_variant v ->
-      gen_const_variant ?and_ module_prefix v sc;
+      gen_const_variant ?and_ v sc;
       true
     | Ot.Unit u ->
-      gen_unit ?and_ module_prefix u sc;
+      gen_unit ?and_ u sc;
       true
   in
 
@@ -249,10 +238,8 @@ let gen_struct ?and_ t sc =
 
 let gen_sig ?and_ t sc =
   let _ = and_ in
-  let { Ot.module_prefix; _ } = t in
   let f type_name =
-    F.linep sc "val encode_%s : %s_types.%s -> Yojson.Basic.json" type_name
-      module_prefix type_name;
+    F.linep sc "val encode_%s : %s -> Yojson.Basic.t" type_name type_name;
     F.linep sc
       ("(** [encode_%s v encoder] encodes [v] to " ^^ "to json*)")
       type_name
@@ -277,7 +264,6 @@ let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
-    let file_suffix = file_suffix
     let ocamldoc_title = ocamldoc_title
   end in
   (module P)
