@@ -27,6 +27,9 @@
 
 (** {2 Types} *)
 
+type id = int
+(** Identifier of a node in the graph *)
+
 type node
 (** Node in a graph, each node is identified using a unique [int] id *)
 
@@ -35,7 +38,7 @@ type graph
 
 (** {2 Creators } *)
 
-val create_node : int -> int list -> node
+val create_node : id -> id list -> node
 (** [create_node id sub] create a node uniquely identified with [id]
     and connections to other nodes in [sub].
 
@@ -53,7 +56,7 @@ val add_node : node -> graph -> graph
 
 (** {2 Algorithms} *)
 
-val tarjan : graph -> int list list
+val tarjan : graph -> id list list
 (** [tarjan graph] compute the ordered list of strongly connected components of
     a graph.
 
