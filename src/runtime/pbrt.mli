@@ -362,10 +362,11 @@ module Encoder : sig
   val wrapper_bytes_value : bytes option -> t -> unit
 end
 
+(** Optimized representation for repeated fields *)
 module Repeated_field : sig
   type 'a t
   (** optimized data structure for fast inserts so that decoding
-      can be efficient
+      of repeated fields can be efficient.
 
       Type can be constructed at no cost from an existing array.
     *)
@@ -510,4 +511,3 @@ module Pp : sig
   val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit
   (** [pp_brk fmt r] formats record value [r] with curly brakets.  *)
 end
-(* Pp *)
