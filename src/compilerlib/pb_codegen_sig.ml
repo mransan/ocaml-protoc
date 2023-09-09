@@ -1,3 +1,5 @@
+(** Common module signature for all codegen modules *)
+
 module type S = sig
   val gen_sig :
     ?and_:unit ->
@@ -14,6 +16,9 @@ module type S = sig
   (** Generate the implementation (.ml) *)
 
   val ocamldoc_title : string
+  (** OCamldoc title *)
+
   val file_suffix : string
+  (** The suffix part of the generated file which will contain the
+      struct and sig *)
 end
-(* S *)
