@@ -756,7 +756,6 @@ module Repeated_field = struct
 
   let to_list t = map_to_list identity t
 end
-(* Repeated_field*)
 
 module Pp = struct
   module F = Format
@@ -816,4 +815,3 @@ module Pp = struct
   let pp_brk pp_record (fmt : F.formatter) r : unit =
     F.fprintf fmt "@[<hv2>{ %a@;<1 -2>@]}" pp_record r
 end
-(* Pp *)
