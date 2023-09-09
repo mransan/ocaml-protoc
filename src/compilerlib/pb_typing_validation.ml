@@ -28,7 +28,7 @@ module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree
 module Typing_util = Pb_typing_util
 
-let scope_of_package = function
+let scope_of_package : string option -> Tt.type_scope = function
   | Some s ->
     {
       Typing_util.empty_scope with
@@ -36,21 +36,24 @@ let scope_of_package = function
     }
   | None -> Typing_util.empty_scope
 
-let get_default field_name field_options =
+let get_default field_name field_options : Pb_option.constant option =
   match Pb_option.get field_options "default" with
   | Some (Pb_option.Scalar_value constant) -> Some constant
   | Some (Pb_option.Message_literal _) ->
     E.invalid_default_value ~field_name
       ~info:"message literals are unsupported for default values" ()
+  | Some (Pb_option.List_literal _) ->
+    E.invalid_default_value ~field_name
+      ~info:"list literals are unsupported for default values" ()
   | None -> None
 
-let compile_field_p1 field_parsed =
+let compile_field_p1 field_parsed : _ Tt.field =
   let { Pt.field_type; Pt.field_options; Pt.field_name; _ } = field_parsed in
 
   let field_default = get_default field_name field_options in
   { Tt.field_parsed; Tt.field_type; Tt.field_default; Tt.field_options }
 
-let compile_map_p1 map_parsed =
+let compile_map_p1 map_parsed : _ Tt.map_field =
   let {
     Pt.map_name;
     Pt.map_number;
@@ -63,7 +66,7 @@ let compile_map_p1 map_parsed =
 
   Tt.{ map_name; map_number; map_key_type; map_value_type; map_options }
 
-let compile_oneof_p1 oneof_parsed =
+let compile_oneof_p1 oneof_parsed : _ Tt.oneof =
   let init =
     {
       Tt.oneof_name = oneof_parsed.Pt.oneof_name;
@@ -96,10 +99,11 @@ let rec list_assoc2 x = function
     else
       list_assoc2 x l
 
-let make_proto_type ~file_name ~file_options ~id ~scope ~spec =
+let make_proto_type ~file_name ~file_options ~id ~scope ~spec : _ Tt.proto_type
+    =
   { Tt.id; Tt.scope; Tt.file_name; Tt.file_options; Tt.spec }
 
-(* compile a [Pbpt] enum to a [Pbtt] type *)
+(** compile a [Pbpt] enum to a [Pbtt] type *)
 let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
     scope parsed_enum =
   let { Pt.enum_id; enum_name; enum_body } = parsed_enum in
@@ -135,10 +139,10 @@ let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
 
   make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec
 
-(* compile a [Pbpt] message a list of [Pbtt] types (ie messages can
- * defined more than one type). *)
+(** compile a [Pbpt] message a list of [Pbtt] types (ie messages can
+    defined more than one type). *)
 let rec validate_message ?(parent_options = Pb_option.empty) file_name
-    file_options message_scope parsed_message =
+    file_options message_scope parsed_message : _ Tt.proto_type list =
   let { Pt.id; Pt.message_name; Pt.message_body } = parsed_message in
 
   let { Tt.message_names; _ } = message_scope in
@@ -213,12 +217,12 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
      the proto3 invariant. *)
 
   (* Both field name and field number must be unique
-   * within a message scope. This includes the field in a
-   * oneof field inside the message.
-   *
-   * This function verifies this constrain and raises
-   * the corresponding Duplicated_field_number exception in
-   * case it is violated. *)
+     within a message scope. This includes the field in a
+     oneof field inside the message.
+
+     This function verifies this constrain and raises
+     the corresponding Duplicated_field_number exception in
+     case it is violated. *)
   let validate_duplicate (number_index : (int * string) list) name number =
     if
       not_found (fun () -> ignore @@ List.assoc number number_index)
@@ -237,7 +241,7 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
   in
 
   ignore
-  @@ List.fold_left
+    (List.fold_left
        (fun number_index -> function
          | Tt.Message_field field -> validate_duplicate_field number_index field
          | Tt.Message_oneof_field { Tt.oneof_fields; _ } ->
@@ -245,23 +249,23 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
          | Tt.Message_map_field m ->
            let { Tt.map_name; map_number; _ } = m in
            validate_duplicate number_index map_name map_number)
-       [] message_body;
+       [] message_body
+      : _ list);
 
   let spec =
-    Tt.(
-      Message
-        {
-          extensions = acc.Acc.extensions;
-          message_options = acc.Acc.options;
-          message_name;
-          message_body;
-        })
+    Tt.Message
+      {
+        Tt.extensions = acc.Acc.extensions;
+        message_options = acc.Acc.options;
+        message_name;
+        message_body;
+      }
   in
 
   acc.Acc.all_types
   @ [ make_proto_type ~file_name ~file_options ~id ~scope:message_scope ~spec ]
 
-let validate proto =
+let validate (proto : Pt.proto) : _ Tt.proto_type list =
   let { Pt.package; Pt.proto_file_name; messages; enums; file_options; _ } =
     proto
   in
