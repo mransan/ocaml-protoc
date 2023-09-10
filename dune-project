@@ -36,4 +36,12 @@
     base64)
   (tags (protobuf encode decode)))
 
+(package
+  (name pbrt_services)
+  (synopsis "Runtime library for ocaml-protoc to support RPC services")
+  (depends 
+    (ocaml (>= 4.03))
+    (pbrt (= :version))
+    (pbrt_yojson (= :version)))
+  (tags (protobuf encode decode services rpc)))
 
