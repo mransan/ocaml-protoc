@@ -156,7 +156,7 @@ type type_ = {
   type_level_ppx_extension: string option;
 }
 
-(** RPC argument or return type *)
+(** RPC argument or return type. We require message types in RPC. *)
 type rpc_type =
   | Rpc_scalar of field_type
   | Rpc_stream of field_type

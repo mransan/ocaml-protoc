@@ -1,11 +1,24 @@
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
 
+let spf = Printf.sprintf
+
 let string_of_rpc_type (ty : Ot.rpc_type) : string =
   let f = Pb_codegen_util.string_of_field_type in
   match ty with
   | Ot.Rpc_scalar ty -> f ty
   | Ot.Rpc_stream ty -> Printf.sprintf "%s Seq.t" (f ty)
+
+let decode_json_ty ~r_name ~rf_label (ty : Ot.rpc_type) : string =
+  let f ty =
+    let x, body =
+      Pb_codegen_decode_yojson.field_pattern_match ~r_name ~rf_label ty
+    in
+    spf "(fun %s -> %s)" x body
+  in
+  match ty with
+  | Ot.Rpc_scalar ty -> f ty
+  | Ot.Rpc_stream ty -> Printf.sprintf "Seq.map %s" (f ty)
 
 let mod_name_for_client (service : Ot.service) : string =
   String.capitalize_ascii service.service_name
@@ -27,10 +40,11 @@ let gen_service_client_struct (service : Ot.service) sc : unit =
             (string_of_rpc_type rpc.rpc_req);
           F.linep sc "    ~encode_pb_req:encode_pb_%s"
             (string_of_rpc_type rpc.rpc_req);
-          F.linep sc "    ~decode_json_res:decode_json_%s"
-            (string_of_rpc_type rpc.rpc_req);
+          F.linep sc "    ~decode_json_res:%s"
+            (decode_json_ty ~r_name:service.service_name ~rf_label:rpc.rpc_name
+               rpc.rpc_res);
           F.linep sc "    ~decode_pb_res:decode_pb_%s"
-            (string_of_rpc_type rpc.rpc_req);
+            (string_of_rpc_type rpc.rpc_res);
           F.line sc "()")
         service.service_body);
 
@@ -94,8 +108,9 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
             (string_of_rpc_type rpc.rpc_res);
           F.linep sc "      ~encode_pb_res:encode_pb_%s"
             (string_of_rpc_type rpc.rpc_res);
-          F.linep sc "      ~decode_json_req:decode_json_%s"
-            (string_of_rpc_type rpc.rpc_req);
+          F.linep sc "      ~decode_json_req:(%s)"
+            (decode_json_ty ~r_name:service.service_name ~rf_label:rpc.rpc_name
+               rpc.rpc_req);
           F.linep sc "      ~decode_pb_req:decode_pb_%s"
             (string_of_rpc_type rpc.rpc_req);
           F.linep sc "      ();")
@@ -113,7 +128,7 @@ let gen_service_server_sig service sc : unit =
   F.empty_line sc;
 
   F.linep sc "(** Convert {!%s} to a generic runtime service *)" mod_type_name;
-  F.linep sc "val service_impl_of_%s : (module %s) -> Pbrt.Server.t"
+  F.linep sc "val service_impl_of_%s : (module %s) -> Pbrt_services.Server.t"
     (String.lowercase_ascii service.service_name)
     mod_type_name;
   ()

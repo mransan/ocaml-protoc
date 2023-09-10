@@ -281,6 +281,16 @@ let validate_service (scope : Tt.type_scope) ~file_name (service : Pt.service) :
               rpc_res_stream;
               rpc_res;
             } ->
+          let rpc_req =
+            match rpc_req with
+            | `User_defined ty -> ty
+            | _ -> E.invalid_rpc_req_type ~service_name ~rpc_name ()
+          in
+          let rpc_res =
+            match rpc_res with
+            | `User_defined ty -> ty
+            | _ -> E.invalid_rpc_res_type ~service_name ~rpc_name ()
+          in
           let rpc =
             {
               Tt.rpc_name;

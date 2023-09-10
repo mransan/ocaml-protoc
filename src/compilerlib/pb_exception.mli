@@ -69,6 +69,8 @@ val protoc_parsing_error : error -> Pb_location.t -> string -> 'a
 val unknown_parsing_error : msg:string -> context:string -> Pb_location.t -> 'a
 val invalid_protobuf_syntax : string -> 'a
 val invalid_proto3_field_label : field_name:string -> message_name:string -> 'a
+val invalid_rpc_req_type : service_name:string -> rpc_name:string -> unit -> 'a
+val invalid_rpc_res_type : service_name:string -> rpc_name:string -> unit -> 'a
 
 val default_field_option_not_supported :
   field_name:string -> message_name:string -> 'a
