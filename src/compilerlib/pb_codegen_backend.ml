@@ -132,7 +132,7 @@ let wrapper_type_of_type_name = function
     with the module name. (This is essentially expecting (rightly) a sub module
     with the same name.
  *)
-let user_defined_type_of_id all_types file_name i : Ot.field_type =
+let user_defined_type_of_id ~(all_types : _ list) file_name i : Ot.field_type =
   let module_prefix = module_prefix_of_file_name file_name in
   match Typing_util.type_of_id all_types i with
   | exception Not_found -> E.programmatic_error E.No_type_found_for_id
@@ -169,7 +169,7 @@ let user_defined_type_of_id all_types file_name i : Ot.field_type =
       )
     )
 
-let encoding_info_of_field_type all_types field_type : Ot.payload_kind =
+let encoding_info_of_field_type ~all_types field_type : Ot.payload_kind =
   match field_type with
   | `Double -> Ot.Pk_bits64
   | `Float -> Ot.Pk_bits32
@@ -191,7 +191,7 @@ let encoding_info_of_field_type all_types field_type : Ot.payload_kind =
     | { Tt.spec = Tt.Enum _; _ } -> Ot.Pk_varint false
     | { Tt.spec = Tt.Message _; _ } -> Ot.Pk_bytes)
 
-let encoding_of_field all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
+let encoding_of_field ~all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
     =
   let packed =
     match Typing_util.field_option field "packed" with
@@ -201,12 +201,12 @@ let encoding_of_field all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
   in
 
   let pk =
-    encoding_info_of_field_type all_types (Typing_util.field_type field)
+    encoding_info_of_field_type ~all_types (Typing_util.field_type field)
   in
   pk, Typing_util.field_number field, packed, Typing_util.field_default field
 
-let compile_field_type ~unsigned_tag all_types file_options field_options
-    file_name field_type : Ot.field_type =
+let compile_field_type ~unsigned_tag ~(all_types : _ Tt.proto_type list)
+    file_options field_options file_name field_type : Ot.field_type =
   let ocaml_type =
     match Pb_option.get field_options "ocaml_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) -> `Int_t
@@ -285,7 +285,7 @@ let compile_field_type ~unsigned_tag all_types file_options field_options
   | `Bool, _ -> Ot.(Ft_basic_type Bt_bool)
   | `String, _ -> Ot.(Ft_basic_type Bt_string)
   | `Bytes, _ -> Ot.(Ft_basic_type Bt_bytes)
-  | `User_defined id, _ -> user_defined_type_of_id all_types file_name id
+  | `User_defined id, _ -> user_defined_type_of_id ~all_types file_name id
 
 let is_mutable ?field_name field_options =
   match Pb_option.get field_options "ocaml_mutable" with
@@ -301,19 +301,19 @@ let ocaml_container field_options =
   | Some _ -> None
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
-    all_types file_options file_name oneof_field : Ot.variant =
+    ~all_types file_options file_name oneof_field : Ot.variant =
   let v_constructors =
     List.map
       (fun field ->
         let pbtt_field_type = Typing_util.field_type field in
         let field_type =
-          compile_field_type ~unsigned_tag all_types file_options
+          compile_field_type ~unsigned_tag ~all_types file_options
             (Typing_util.field_options field)
             file_name pbtt_field_type
         in
 
         let vc_payload_kind, vc_encoding_number, _, _ =
-          encoding_of_field all_types field
+          encoding_of_field ~all_types field
         in
 
         let vc_constructor = constructor_name (Typing_util.field_name field) in
@@ -373,9 +373,9 @@ let process_all_types_ppx_extension file_name file_options
     |> string_of_string_option file_name
 
 let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
-    (proto : Pb_field_type.resolved Tt.proto) (file_name : string)
-    (scope : Tt.type_scope) (message : Pb_field_type.resolved Tt.message) :
-    Ot.type_ list =
+    ~(all_types : Pb_field_type.resolved Tt.proto_type list)
+    (file_name : string) (scope : Tt.type_scope)
+    (message : Pb_field_type.resolved Tt.message) : Ot.type_ list =
   let module_prefix = module_prefix_of_file_name file_name in
 
   (* TODO maybe module_ should be resolved before `compile_message` since
@@ -408,8 +408,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
   | Tt.Message_oneof_field f :: [] ->
     let outer_message_names = message_names @ [ message_name ] in
     let variant =
-      variant_of_oneof ~unsigned_tag ~outer_message_names proto file_options
-        file_name f
+      variant_of_oneof ~unsigned_tag ~outer_message_names ~all_types
+        file_options file_name f
     in
     [ Ot.{ module_prefix; spec = Variant variant; type_level_ppx_extension } ]
   | _ ->
@@ -418,7 +418,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
         (fun (variants, fields) -> function
           | Tt.Message_field field ->
             let pk, encoding_number, packed, _ =
-              encoding_of_field proto field
+              encoding_of_field ~all_types field
             in
 
             let field_name = Typing_util.field_name field in
@@ -428,8 +428,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             let field_type = Typing_util.field_type field in
 
             let ocaml_field_type =
-              compile_field_type ~unsigned_tag proto file_options field_options
-                file_name field_type
+              compile_field_type ~unsigned_tag ~all_types file_options
+                field_options file_name field_type
             in
 
             let field_default = Typing_util.field_default field in
@@ -493,7 +493,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             let outer_message_names = message_names @ [ message_name ] in
             let variant =
               variant_of_oneof ~unsigned_tag ~include_oneof_name:()
-                ~outer_message_names proto file_options file_name field
+                ~outer_message_names ~all_types file_options file_name field
             in
 
             let record_field =
@@ -538,11 +538,11 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             in
 
             let key_type =
-              compile_field_type ~unsigned_tag proto file_options map_options
-                file_name map_key_type
+              compile_field_type ~unsigned_tag ~all_types file_options
+                map_options file_name map_key_type
             in
 
-            let key_pk = encoding_info_of_field_type proto map_key_type in
+            let key_pk = encoding_info_of_field_type ~all_types map_key_type in
 
             let key_type =
               match key_type with
@@ -551,11 +551,13 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             in
 
             let value_type =
-              compile_field_type ~unsigned_tag proto file_options map_options
-                file_name map_value_type
+              compile_field_type ~unsigned_tag ~all_types file_options
+                map_options file_name map_value_type
             in
 
-            let value_pk = encoding_info_of_field_type proto map_value_type in
+            let value_pk =
+              encoding_info_of_field_type ~all_types map_value_type
+            in
 
             let associative_type =
               match ocaml_container map_options with
@@ -634,12 +636,12 @@ let compile_enum file_options file_name scope enum =
       type_level_ppx_extension;
     }
 
-let compile_rpc ~unsigned_tag ~(file_name : string) proto
+let compile_rpc ~unsigned_tag ~(file_name : string) ~all_types
     (rpc : Pb_field_type.resolved_t Tt.rpc) : Ot.rpc =
   let compile_ty ~stream ty : Ot.rpc_type =
     let ty : Ot.field_type =
-      compile_field_type ~unsigned_tag proto Pb_option.empty rpc.rpc_options
-        file_name ty
+      compile_field_type ~unsigned_tag ~all_types Pb_option.empty
+        rpc.rpc_options file_name ty
     in
     if stream then
       Ot.Rpc_stream ty
@@ -653,32 +655,34 @@ let compile_rpc ~unsigned_tag ~(file_name : string) proto
     rpc_res = compile_ty ~stream:rpc.rpc_res_stream rpc.rpc_res;
   }
 
-let compile_service ~(unsigned_tag : bool) proto
+let compile_service ~(unsigned_tag : bool) ~all_types
     (service : Pb_field_type.resolved Tt.service) : Ot.service =
   {
     Ot.service_name = service.service_name;
     service_packages = service.service_packages;
     service_body =
       List.map
-        (compile_rpc ~unsigned_tag ~file_name:service.service_file_name proto)
+        (compile_rpc ~unsigned_tag ~file_name:service.service_file_name
+           ~all_types)
         service.service_body;
   }
 
-let compile1 ~unsigned_tag proto : _ -> Ot.type_ list = function
+let compile1 ~unsigned_tag ~all_types : _ -> Ot.type_ list = function
   | { Tt.spec = Tt.Message m; file_name; file_options; scope; _ } ->
-    compile_message ~unsigned_tag file_options proto file_name scope m
+    compile_message ~unsigned_tag file_options ~all_types file_name scope m
   | { Tt.spec = Tt.Enum e; file_name; scope; file_options; _ } ->
     [ compile_enum file_options file_name scope e ]
 
-let compile ~unsigned_tag (proto : Pb_field_type.resolved Tt.proto) : Ot.proto =
+let compile ~unsigned_tag ~all_types (proto : Pb_field_type.resolved Tt.proto) :
+    Ot.proto =
   let tys =
     List.map
-      (fun t -> List.flatten @@ List.map (compile1 ~unsigned_tag proto) t)
+      (fun t -> List.flatten @@ List.map (compile1 ~unsigned_tag ~all_types) t)
       proto.proto_types
   in
 
   let services =
-    List.map (compile_service ~unsigned_tag proto) proto.proto_services
+    List.map (compile_service ~unsigned_tag ~all_types) proto.proto_services
   in
   { Ot.proto_services = services; proto_types = tys }
 
