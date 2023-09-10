@@ -1,6 +1,6 @@
 module type T_sig = Ocaml_test_runner.T_sig
 
-module Bench_t = Benchmark_types
+module Bench_t = Benchmark
 
 module Util = struct
   let shuffle_array a n =

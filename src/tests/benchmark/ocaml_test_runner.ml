@@ -19,16 +19,16 @@ end
 (* T_sig *)
 
 module type Runner_sig = sig
-  val run : Benchmark_types.test_request -> Benchmark_types.test_response
+  val run : Benchmark.test_request -> Benchmark.test_response
   (** [run request] execute the corresponding request and returns 
       the test response 
     *)
 end
 
 module Make (T : T_sig) : Runner_sig = struct
-  let run { Benchmark_types.type_; file_name; test_id } =
+  let run { Benchmark.type_; file_name; test_id } =
     match type_ with
-    | Benchmark_types.Encode difficulty ->
+    | Benchmark.Encode difficulty ->
       let t0 = Unix.gettimeofday () in
 
       let encoder = Pbrt.Encoder.create () in
@@ -45,7 +45,7 @@ module Make (T : T_sig) : Runner_sig = struct
       let t3 = Unix.gettimeofday () in
 
       let encode_data =
-        Benchmark_types.
+        Benchmark.
           {
             creation_time = t1 -. t0;
             encode_time = t2 -. t1;
@@ -53,8 +53,8 @@ module Make (T : T_sig) : Runner_sig = struct
           }
       in
 
-      Benchmark_types.{ difficulty_size; test_id; data = Encode encode_data }
-    | Benchmark_types.Decode ->
+      Benchmark.{ difficulty_size; test_id; data = Encode encode_data }
+    | Benchmark.Decode ->
       let t0 = Unix.gettimeofday () in
       let ic = open_in file_name in
       let len = in_channel_length ic in
@@ -64,15 +64,15 @@ module Make (T : T_sig) : Runner_sig = struct
       let t1 = Unix.gettimeofday () in
       let v = T.decode (Pbrt.Decoder.of_bytes payload) in
       let t2 = Unix.gettimeofday () in
-      Benchmark_types.
+      Benchmark.
         {
           difficulty_size = T.difficulty_size v;
           test_id;
           data =
             Decode
               {
-                Benchmark_types.from_file_time = t1 -. t0;
-                Benchmark_types.decode_time = t2 -. t1;
+                Benchmark.from_file_time = t1 -. t0;
+                Benchmark.decode_time = t2 -. t1;
               };
         }
 end
