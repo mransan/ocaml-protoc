@@ -88,6 +88,7 @@ let compile cmdline cmd_line_files_options : Ot.proto * _ =
 
   (* typing *)
   let typed_proto = Pb_typing.perform_typing protos in
+  let all_typed_protos = List.flatten typed_proto.proto_types in
 
   (* Only get the types which are part of the given proto file
      (compilation unit) *)
@@ -105,5 +106,8 @@ let compile cmdline cmd_line_files_options : Ot.proto * _ =
 
   (* -- OCaml Backend -- *)
   let module BO = Pb_codegen_backend in
-  let ocaml_proto = BO.compile ~unsigned_tag:!unsigned_tag typed_proto in
+  let ocaml_proto =
+    BO.compile ~unsigned_tag:!unsigned_tag ~all_types:all_typed_protos
+      typed_proto
+  in
   ocaml_proto, proto_file_options

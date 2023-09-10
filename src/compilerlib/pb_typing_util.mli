@@ -56,7 +56,7 @@ val field_option : ('a, 'b) Tt.field -> string -> Pb_option.value option
     is returned.
   *)
 
-val type_of_id : 'a Tt.proto -> int -> 'a Tt.proto_type
+val type_of_id : 'a Tt.proto_type list -> int -> 'a Tt.proto_type
 (** [type_of_id all_types id] returns the type associated with the given id,
     raise [Not_found] if the type is not in the all_types.
   *)
