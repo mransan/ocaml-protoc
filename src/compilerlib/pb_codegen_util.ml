@@ -29,9 +29,9 @@ let string_of_user_defined ?module_prefix = function
   | { Ot.udt_module_prefix = None; Ot.udt_type_name; _ } ->
     (match module_prefix with
     | None -> udt_type_name
-    | Some module_prefix -> module_prefix ^ "_types." ^ udt_type_name)
+    | Some module_prefix -> module_prefix ^ "." ^ udt_type_name)
   | { Ot.udt_module_prefix = Some module_prefix; Ot.udt_type_name; _ } ->
-    module_prefix ^ "_types." ^ udt_type_name
+    module_prefix ^ "." ^ udt_type_name
 
 let string_of_field_type ?for_pp ?module_prefix = function
   | Ot.Ft_unit -> "unit"
@@ -69,7 +69,7 @@ let string_of_record_field_type ?module_prefix = function
   | Ot.Rft_variant { Ot.v_name; _ } ->
     (match module_prefix with
     | None -> v_name
-    | Some module_prefix -> module_prefix ^ "_types." ^ v_name)
+    | Some module_prefix -> module_prefix ^ "." ^ v_name)
 
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`.
