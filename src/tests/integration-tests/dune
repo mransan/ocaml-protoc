@@ -257,8 +257,7 @@
  (libraries test_util unix))
 
 (rule
- (targets test23.ml test23_pb.ml test23_pp.ml test23.mli
-   test23_pb.mli test23_pp.mli)
+ (targets test23.ml test23.mli)
  (deps test23.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test23.proto)))
@@ -269,7 +268,7 @@
  (libraries test_util unix))
 
 (rule
- (targets test24.ml test24_pb.ml test24.mli)
+ (targets test24.ml test24.mli)
  (deps test24.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test24.proto)))

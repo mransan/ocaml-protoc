@@ -1,8 +1,6 @@
-module T = Test18_types
-module Pb = Test18_pb
-module Pp = Test18_pp
+module T = Test18
 
-let decode_ref_data () =
+let decode_pb_ref_data () =
   T.
     {
       string_to_string = [ "one", "two"; "three", "four" ];
@@ -31,8 +29,8 @@ let sort_by_int32_key l =
   let cmp (lhs, _) (rhs, _) = cmp lhs rhs in
   List.stable_sort cmp l
 
-let decode_maps decoder =
-  let maps = Pb.decode_maps decoder in
+let decode_pb_maps decoder =
+  let maps = T.decode_pb_maps decoder in
   let {
     T.string_to_string;
     T.string_to_int;
@@ -55,7 +53,7 @@ let decode_maps decoder =
 let () =
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test18.c2ml.data" decode_maps Pp.pp_maps
-      (decode_ref_data ())
+    Test_util.decode "test18.c2ml.data" decode_pb_maps T.pp_maps
+      (decode_pb_ref_data ())
   | Test_util.Encode ->
-    Test_util.encode "test18.ml2c.data" Pb.encode_maps (decode_ref_data ())
+    Test_util.encode "test18.ml2c.data" T.encode_pb_maps (decode_pb_ref_data ())

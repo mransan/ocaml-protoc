@@ -1,6 +1,4 @@
-module T = Test02_types
-module Pp = Test02_pp
-module Pb = Test02_pb
+module T = Test02
 
 let decode_ref_data () =
   {
@@ -26,8 +24,8 @@ let () =
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test02.c2ml.data" Pb.decode_all_basics_types
-      Pp.pp_all_basics_types (decode_ref_data ())
+    Test_util.decode "test02.c2ml.data" T.decode_pb_all_basics_types
+      T.pp_all_basics_types (decode_ref_data ())
   | Test_util.Encode ->
-    Test_util.encode "test02.ml2c.data" Pb.encode_all_basics_types
+    Test_util.encode "test02.ml2c.data" T.encode_pb_all_basics_types
       (decode_ref_data ())

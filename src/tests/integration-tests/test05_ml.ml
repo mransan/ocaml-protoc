@@ -1,6 +1,4 @@
-module T = Test05_types
-module Pb = Test05_pb
-module Pp = Test05_pp
+module T = Test05
 
 let max_int = 107374182l
 let min_int = -107374182l
@@ -26,7 +24,8 @@ let () =
   | Test_util.Decode ->
     let ref_data = decode_ref_data () in
     Printf.printf "List size : %i\n%!" (List.length @@ ref_data.T.l);
-    Test_util.decode ~noprint:() "test05.c2ml.data" Pb.decode_int_list
-      Pp.pp_int_list ref_data
+    Test_util.decode ~noprint:() "test05.c2ml.data" T.decode_pb_int_list
+      T.pp_int_list ref_data
   | Test_util.Encode ->
-    Test_util.encode "test05.ml2c.data" Pb.encode_int_list (decode_ref_data ())
+    Test_util.encode "test05.ml2c.data" T.encode_pb_int_list
+      (decode_ref_data ())

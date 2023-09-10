@@ -1,6 +1,4 @@
-module T = Test11_types
-module Pb = Test11_pb
-module Pp = Test11_pp
+module T = Test11
 
 let create_ref_data n =
   let rec loop l = function
@@ -43,8 +41,8 @@ let () =
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test11.c2ml.data" ~notest:() Pb.decode_couples
-      Pp.pp_couples (create_ref_data 100000)
+    Test_util.decode "test11.c2ml.data" ~notest:() T.decode_pb_couples
+      T.pp_couples (create_ref_data 100000)
   | Test_util.Encode ->
-    Test_util.encode "test11.ml2c.data" Pb.encode_couples
+    Test_util.encode "test11.ml2c.data" T.encode_pb_couples
       (create_ref_data 100000)
