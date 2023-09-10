@@ -1,17 +1,17 @@
 module Errors = Errors
 
+type rpc_error = Errors.rpc_error =
+  | Invalid_binary of string
+  | Invalid_json of string
+  | Timeout of Errors.timeout_info
+  | Server_error of string
+  | Transport_error of string
+  | Unknown_error
+
+let pp_rpc_error = Errors.pp_rpc_error
+
 (** Client end of services *)
 module Client = struct
-  type error = Errors.rpc_error =
-    | Invalid_binary of string
-    | Invalid_json of string
-    | Timeout of Errors.timeout_info
-    | Server_error of string
-    | Transport_error of string
-    | Unknown_error
-
-  let pp_error = Errors.pp_rpc_error
-
   type ('req, 'ret) rpc = {
     service_name: string;
     rpc_name: string;
@@ -35,16 +35,6 @@ end
 
 (** Server end of services *)
 module Server = struct
-  type error = Errors.rpc_error =
-    | Invalid_binary of string
-    | Invalid_json of string
-    | Timeout of Errors.timeout_info
-    | Server_error of string
-    | Transport_error of string
-    | Unknown_error
-
-  let pp_error = Errors.pp_rpc_error
-
   (** A RPC endpoint. *)
   type rpc =
     | RPC : {

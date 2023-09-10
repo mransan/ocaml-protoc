@@ -3,18 +3,18 @@
 module Errors = Errors
 (** RPC errors. These are printable and serializable. *)
 
+type rpc_error = Errors.rpc_error =
+  | Invalid_binary of string
+  | Invalid_json of string
+  | Timeout of Errors.timeout_info
+  | Server_error of string
+  | Transport_error of string
+  | Unknown_error
+
+val pp_rpc_error : Format.formatter -> rpc_error -> unit
+
 (** Service stubs, client side *)
 module Client : sig
-  type error = Errors.rpc_error =
-    | Invalid_binary of string
-    | Invalid_json of string
-    | Timeout of Errors.timeout_info
-    | Server_error of string
-    | Transport_error of string
-    | Unknown_error
-
-  val pp_error : Format.formatter -> error -> unit
-
   type ('req, 'ret) rpc = {
     service_name: string;
     rpc_name: string;
@@ -39,17 +39,6 @@ end
 
 (** Service stubs, server side *)
 module Server : sig
-  (** Errors that can arise during request processing. *)
-  type error = Errors.rpc_error =
-    | Invalid_binary of string
-    | Invalid_json of string
-    | Timeout of Errors.timeout_info
-    | Server_error of string
-    | Transport_error of string
-    | Unknown_error
-
-  val pp_error : Format.formatter -> error -> unit
-
   (** A RPC endpoint. *)
   type rpc =
     | RPC : {
