@@ -263,18 +263,18 @@ let () =
        ]
 
 module Nested = struct
-  type person = Foo_types.person = {
+  type person = Foo.person = {
     name: string;
     age: int64;
   }
 
-  type store = Foo_types.store = {
+  type store = Foo.store = {
     address: string;
     employees: person list;
     clients: person list;
   }
 
-  type company = Foo_types.company = {
+  type company = Foo.company = {
     name: string;
     stores: store list;
   }
@@ -610,7 +610,7 @@ module Nested = struct
     let dec_s s =
       Pbrt.Decoder.(
         let dec = of_string s in
-        Foo_pb.decode_company dec)
+        Foo.decode_pb_company dec)
     in
     let c_basic = dec_s s_basic in
     let c_buffers_nested = dec_s s_buffers_nested in
