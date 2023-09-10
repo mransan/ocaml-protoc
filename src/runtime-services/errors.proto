@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+message Empty {}
+
+message TimeoutInfo {
+  // Timeout, in seconds
+  float timeout_s = 1;
+}
+
+message RpcError {
+  oneof error {
+    Empty unknown_error = 0;
+    string transport_error = 1;
+    string server_error = 2;
+    TimeoutInfo timeout = 3;
+    string invalid_json = 4;
+    string invalid_binary = 5;
+  }
+}

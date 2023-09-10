@@ -163,7 +163,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
     mod_type_name;
   F.sub_scope sc (fun sc ->
       F.line sc "let open Pbrt_services.Server in";
-      F.linep sc "{ name=%S;" service_name;
+      F.linep sc "{ service_name=%S;" service_name;
       F.line sc "  handlers=[";
       List.iter
         (fun (rpc : Ot.rpc) ->

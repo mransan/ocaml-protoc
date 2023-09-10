@@ -1,42 +1,30 @@
+(** Runtime for Protobuf services. *)
+
+module Errors = Errors
+(** RPC errors. These are printable and serializable. *)
+
 (** Service stubs, client side *)
 module Client : sig
-  type error =
+  type error = Errors.rpc_error =
+    | Invalid_binary of string
+    | Invalid_json of string
+    | Timeout of Errors.timeout_info
+    | Server_error of string
     | Transport_error of string
-    | Timeout
-    | Decode_error_json of string
-    | Decode_error_binary of Pbrt.Decoder.error
+    | Unknown_error
 
-  type transport = {
-    query:
-      'ret.
-      service_name:string ->
-      rpc_name:string ->
-      [ `JSON | `BINARY ] ->
-      string ->
-      on_result:((string, error) result -> 'ret) ->
-      'ret;
-  }
-  (** A transport method, ie. a way to query a remote service
-     by sending it a query, and register a callback to be
-     called when the response is received.
-
-     The [query] function is called like so:
-     [transport.query ~service_name ~rpc_name encoding req ~on_result],
-     where [rpc_name] is the name of the method in the service [service_name],
-    [req] is the encoded query using [encoding], and [on_result] is a callback
-    that will be called after the service comes back with a response.
-  *)
+  val pp_error : Format.formatter -> error -> unit
 
   type ('req, 'ret) rpc = {
-    call:
-      'actual_ret.
-      [ `JSON | `BINARY ] ->
-      transport ->
-      'req ->
-      on_result:(('ret, error) result -> 'actual_ret) ->
-      'actual_ret;
+    service_name: string;
+    rpc_name: string;
+    encode_json_req: 'req -> Yojson.Basic.t;
+    encode_pb_req: 'req -> Pbrt.Encoder.t -> unit;
+    decode_json_res: Yojson.Basic.t -> 'ret;
+    decode_pb_res: Pbrt.Decoder.t -> 'ret;
   }
-  (** A RPC. By calling it with a concrete transport, one gets a future result. *)
+  (** A RPC description. You need a transport library
+   that knows where to send the bytes to actually use it. *)
 
   val mk_rpc :
     service_name:string ->
@@ -52,15 +40,27 @@ end
 (** Service stubs, server side *)
 module Server : sig
   (** Errors that can arise during request processing. *)
-  type error =
-    | Invalid_json
-    | Invalid_pb of Pbrt.Decoder.error
-    | Handler_failed of string
+  type error = Errors.rpc_error =
+    | Invalid_binary of string
+    | Invalid_json of string
+    | Timeout of Errors.timeout_info
+    | Server_error of string
+    | Transport_error of string
+    | Unknown_error
 
-  type rpc = {
-    rpc_name: string;
-    rpc_handler: [ `JSON | `BINARY ] -> string -> (string, error) result;
-  }
+  val pp_error : Format.formatter -> error -> unit
+
+  (** A RPC endpoint. *)
+  type rpc =
+    | RPC : {
+        name: string;
+        f: 'req -> 'res;
+        encode_json_res: 'res -> Yojson.Basic.t;
+        encode_pb_res: 'res -> Pbrt.Encoder.t -> unit;
+        decode_json_req: Yojson.Basic.t -> 'req;
+        decode_pb_req: Pbrt.Decoder.t -> 'req;
+      }
+        -> rpc
 
   val mk_rpc :
     name:string ->
@@ -73,10 +73,8 @@ module Server : sig
     rpc
   (** Helper to build a RPC *)
 
-  (** A RPC implementation. *)
-
   type t = {
-    name: string;
+    service_name: string;
     handlers: rpc list;
   }
   (** A service with fixed set of methods. *)
