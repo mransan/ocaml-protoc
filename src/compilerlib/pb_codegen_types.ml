@@ -117,3 +117,4 @@ let gen_sig ?and_ t scope =
   true
 
 let ocamldoc_title = "Types"
+let requires_mutable_records = false

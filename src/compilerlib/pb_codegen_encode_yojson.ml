@@ -259,11 +259,13 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "Protobuf YoJson Encoding"
+let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
+    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

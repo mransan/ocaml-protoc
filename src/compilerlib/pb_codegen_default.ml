@@ -219,3 +219,4 @@ let gen_sig ?and_:_ t sc =
   has_encoded
 
 let ocamldoc_title = "Basic values"
+let requires_mutable_records = false

@@ -20,7 +20,12 @@ module type S = sig
 
   val ocamldoc_title : string
   (** OCamldoc title *)
+
+  val requires_mutable_records : bool
+  (** Does this record depend on mutable records being defined? *)
 end
 
 type t = (module S)
 (** A plugin is a code-generator respecting the signature {!S}. *)
+
+let requires_mutable_records (module P : S) = P.requires_mutable_records

@@ -123,6 +123,7 @@ let codegen ocaml_types ~proto_file_options ~proto_file_name
     (plugins : Plugin.t list) : ocaml_mod =
   let self = new_ocaml_mod ~proto_file_options ~proto_file_name () in
   generate_type_and_default self ocaml_types;
-  generate_mutable_records self ocaml_types;
+  if List.exists Pb_codegen_plugin.requires_mutable_records plugins then
+    generate_mutable_records self ocaml_types;
   List.iter (generate_plugin self ocaml_types) plugins;
   self
