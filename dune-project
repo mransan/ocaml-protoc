@@ -18,7 +18,7 @@
 (package
   (name pbrt)
   (synopsis "Runtime library for Protobuf tooling")
-  (depends 
+  (depends
     stdlib-shims
     (ocaml (>= 4.03)))
   (tags (protobuf encode decode)))
@@ -26,7 +26,7 @@
 (package
   (name pbrt_yojson)
   (synopsis "Runtime library for ocaml-protoc to support JSON encoding/decoding")
-  (depends 
+  (depends
     (ocaml (>= 4.03))
     (yojson (>= 1.6))
     base64)
@@ -35,7 +35,7 @@
 (package
   (name pbrt_services)
   (synopsis "Runtime library for ocaml-protoc to support RPC services")
-  (depends 
+  (depends
     (ocaml (>= 4.03))
     (pbrt (= :version))
     (pbrt_yojson (= :version)))
