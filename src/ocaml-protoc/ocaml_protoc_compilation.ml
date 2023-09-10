@@ -57,7 +57,7 @@ let find_imported_file include_dirs file_name =
     | Some file_name -> file_name
   )
 
-let compile cmdline cmd_line_files_options =
+let compile cmdline cmd_line_files_options : Ot.proto * _ =
   let { Cmdline.include_dirs; proto_file_name; unsigned_tag; _ } = cmdline in
 
   (* parsing *)
@@ -105,19 +105,5 @@ let compile cmdline cmd_line_files_options =
 
   (* -- OCaml Backend -- *)
   let module BO = Pb_codegen_backend in
-  let ocaml_types =
-    List.rev
-    @@ List.fold_left
-         (fun ocaml_types types ->
-           let l =
-             List.flatten
-             @@ List.map
-                  (fun t ->
-                    BO.compile ~unsigned_tag:!unsigned_tag typed_proto t)
-                  types
-           in
-           l :: ocaml_types)
-         [] typed_proto.proto_types
-  in
-
-  ocaml_types, proto_file_options
+  let ocaml_proto = BO.compile ~unsigned_tag:!unsigned_tag typed_proto in
+  ocaml_proto, proto_file_options

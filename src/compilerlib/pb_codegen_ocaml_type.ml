@@ -65,10 +65,10 @@ type field_type =
   | Ft_unit
   | Ft_basic_type of basic_type
   | Ft_user_defined_type of user_defined_type
-  (* New wrapper type which indicates that the corresponding ocaml
+  | Ft_wrapper_type of wrapper_type
+      (** New wrapper type which indicates that the corresponding ocaml
      Type should be an `option` along with the fact that it is encoded with
      special rules *)
-  | Ft_wrapper_type of wrapper_type
 
 type default_value = Pb_option.constant option
 
@@ -155,3 +155,29 @@ type type_ = {
   spec: type_spec;
   type_level_ppx_extension: string option;
 }
+
+(** RPC argument or return type *)
+type rpc_type =
+  | Rpc_scalar of field_type
+  | Rpc_stream of field_type
+
+type rpc = {
+  rpc_name: string;
+  rpc_req: rpc_type;
+  rpc_res: rpc_type;
+}
+(** A RPC specification, ie the signature for one remote procedure. *)
+
+type service = {
+  service_name: string;
+  service_packages: string list;  (** Package in which this belongs *)
+  service_body: rpc list;
+}
+(** A service, composed of multiple RPCs. *)
+
+type proto = {
+  proto_types: type_ list list;
+      (** List of strongly connected type definitions *)
+  proto_services: service list;
+}
+(** A proto file is composed of a list of types and a list of services. *)

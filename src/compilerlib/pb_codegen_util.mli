@@ -30,6 +30,15 @@ val function_name_of_user_defined :
     user defined field type.
  *)
 
+val module_type_name_of_service_client : Pb_codegen_ocaml_type.service -> string
+(** Name of the module type for this service (client) *)
+
+val module_type_name_of_service_server : Pb_codegen_ocaml_type.service -> string
+(** Name of the module type for this service (server) *)
+
+val function_name_of_rpc : Pb_codegen_ocaml_type.rpc -> string
+(** Name of the function for this RPC *)
+
 val caml_file_name_of_proto_file_name : proto_file_name:string -> string
 (** [caml_file_name_of_proto_file_name filename] returns the OCaml file name from
     the protobuf file name
