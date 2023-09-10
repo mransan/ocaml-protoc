@@ -41,9 +41,9 @@ module Client : sig
   val mk_rpc :
     service_name:string ->
     rpc_name:string ->
-    encode_json_req:('req -> Yojson.Safe.t) ->
+    encode_json_req:('req -> Yojson.Basic.t) ->
     encode_pb_req:('req -> Pbrt.Encoder.t -> unit) ->
-    decode_json_res:(Yojson.Safe.t -> 'res) ->
+    decode_json_res:(Yojson.Basic.t -> 'res) ->
     decode_pb_res:(Pbrt.Decoder.t -> 'res) ->
     unit ->
     ('req, 'res) rpc
@@ -67,7 +67,7 @@ module Server : sig
     f:('req -> 'res) ->
     encode_json_res:('res -> string) ->
     encode_pb_res:('res -> Pbrt.Encoder.t -> unit) ->
-    decode_json_req:(Yojson.Safe.t -> 'req) ->
+    decode_json_req:(Yojson.Basic.t -> 'req) ->
     decode_pb_req:(Pbrt.Decoder.t -> 'req) ->
     unit ->
     rpc

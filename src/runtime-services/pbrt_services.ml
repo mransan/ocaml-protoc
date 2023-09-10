@@ -34,7 +34,7 @@ module Client = struct
         (fun encoding (transport : transport) req ~on_result ->
           let req_str =
             match encoding with
-            | `JSON -> encode_json_req req |> Yojson.Safe.to_string
+            | `JSON -> encode_json_req req |> Yojson.Basic.to_string
             | `BINARY ->
               let enc = Pbrt.Encoder.create () in
               encode_pb_req req enc;
@@ -46,7 +46,7 @@ module Client = struct
             | Ok res_str ->
               (match encoding with
               | `JSON ->
-                (match decode_json_res @@ Yojson.Safe.from_string res_str with
+                (match decode_json_res @@ Yojson.Basic.from_string res_str with
                 | res -> on_result (Ok res)
                 | exception exn ->
                   on_result (Error (Decode_error_json (Printexc.to_string exn))))
@@ -79,7 +79,7 @@ module Server = struct
     let handler fmt req : _ result =
       match fmt with
       | `JSON ->
-        (match Yojson.Safe.from_string req with
+        (match Yojson.Basic.from_string req with
         | exception _ -> Error Invalid_json
         | j ->
           let req = decode_json_req j in
