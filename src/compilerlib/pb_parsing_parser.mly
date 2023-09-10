@@ -93,6 +93,8 @@
 %type <Pb_parsing_parse_tree.extension_range list> extension_
 %start reserved_
 %type <Pb_parsing_parse_tree.extension_range list> reserved_
+%start extend_
+%type <Pb_parsing_parse_tree.extend> extend_
 
 %%
 
@@ -113,6 +115,7 @@ option_          : option        T_eof {$1}
 extension_range_list_ : extension_range_list T_eof {$1}
 extension_       : extension     T_eof {$1}
 reserved_        : reserved      T_eof {$1}
+extend_          : extend T_eof {$1}
 
 /* (* Main protobuf symbol *) */
 
