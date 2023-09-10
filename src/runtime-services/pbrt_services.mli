@@ -65,7 +65,7 @@ module Server : sig
   val mk_rpc :
     name:string ->
     f:('req -> 'res) ->
-    encode_json_res:('res -> string) ->
+    encode_json_res:('res -> Yojson.Basic.t) ->
     encode_pb_res:('res -> Pbrt.Encoder.t -> unit) ->
     decode_json_req:(Yojson.Basic.t -> 'req) ->
     decode_pb_req:(Pbrt.Decoder.t -> 'req) ->

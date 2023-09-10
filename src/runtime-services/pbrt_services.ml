@@ -84,7 +84,7 @@ module Server = struct
         | j ->
           let req = decode_json_req j in
           (match f req with
-          | res -> Ok (encode_json_res res)
+          | res -> Ok (Yojson.Basic.to_string @@ encode_json_res res)
           | exception exn -> Error (Handler_failed (Printexc.to_string exn))))
       | `BINARY ->
         let decoder = Pbrt.Decoder.of_string req in

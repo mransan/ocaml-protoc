@@ -87,7 +87,7 @@ type is_packed = bool
 
 type record_field_type =
   | Rft_nolabel of (field_type * encoding_number * payload_kind)
-    (* no default values in proto3 no label fields *)
+      (** no default values in proto3 no label fields *)
   | Rft_required of
       (field_type * encoding_number * payload_kind * default_value)
   | Rft_optional of
