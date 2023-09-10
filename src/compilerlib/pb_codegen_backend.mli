@@ -36,11 +36,7 @@ module Ot = Pb_codegen_ocaml_type
 
 (** {2 Compilation } *)
 
-val compile :
-  unsigned_tag:bool ->
-  Pb_field_type.resolved Tt.proto ->
-  Pb_field_type.resolved Tt.proto_type ->
-  Ot.type_ list
+val compile : unsigned_tag:bool -> Pb_field_type.resolved Tt.proto -> Ot.proto
 
 (** Internal helpers.
 

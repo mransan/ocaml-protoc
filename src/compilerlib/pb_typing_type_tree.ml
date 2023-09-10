@@ -120,6 +120,7 @@ type 'a rpc = {
 
 type 'a service = {
   service_name: string;
+  service_file_name: string;
   service_packages: string list;  (** Package in which this belongs *)
   service_body: 'a Pb_field_type.t rpc list;
 }

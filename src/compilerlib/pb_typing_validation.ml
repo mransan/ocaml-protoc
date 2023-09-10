@@ -265,7 +265,7 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
   acc.Acc.all_types
   @ [ make_proto_type ~file_name ~file_options ~id ~scope:message_scope ~spec ]
 
-let validate_service (scope : Tt.type_scope) (service : Pt.service) :
+let validate_service (scope : Tt.type_scope) ~file_name (service : Pt.service) :
     _ Tt.service =
   let { Pt.service_name; service_body } = service in
   let service_body =
@@ -294,7 +294,12 @@ let validate_service (scope : Tt.type_scope) (service : Pt.service) :
           Some rpc)
       service_body
   in
-  { Tt.service_packages = scope.packages; service_name; service_body }
+  {
+    Tt.service_packages = scope.packages;
+    service_file_name = file_name;
+    service_name;
+    service_body;
+  }
 
 let validate (proto : Pt.proto) : _ Tt.proto =
   let {
@@ -327,5 +332,5 @@ let validate (proto : Pt.proto) : _ Tt.proto =
       pbtt_msgs messages
   in
 
-  let proto_services = List.map (validate_service scope) services in
+  let proto_services = List.map (validate_service scope ~file_name) services in
   { Tt.proto_types; proto_services }
