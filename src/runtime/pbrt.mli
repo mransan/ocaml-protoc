@@ -511,33 +511,3 @@ module Pp : sig
   val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit
   (** [pp_brk fmt r] formats record value [r] with curly brakets.  *)
 end
-
-(** Service stubs, client side *)
-module Client : sig
-  type transport = { query: 'ret. string -> on_result:(string -> 'ret) -> 'ret }
-  (** A transport method, ie. a way to query a remote service
-     by sending it a query, and register a callback to be
-     called when the response is received. *)
-
-  type ('req, 'ret) rpc = {
-    call:
-      'actual_ret.
-      transport -> 'req -> on_result:('ret -> 'actual_ret) -> 'actual_ret;
-  }
-  (** A RPC. By calling it with a concrete transport, one gets a future result. *)
-end
-
-(** Service stubs, server side *)
-module Server : sig
-  type rpc = {
-    rpc_name: string;
-    rpc_handler: [ `JSON | `BINARY ] -> string -> string;
-  }
-  (** A RPC implementation. *)
-
-  type t = {
-    name: string;
-    handlers: rpc list;
-  }
-  (** A service with fixed set of methods. *)
-end
