@@ -45,3 +45,12 @@
     (pbrt_yojson (= :version)))
   (tags (protobuf encode decode services rpc)))
 
+
+(package
+  (name twirp_tiny_httpd)
+  (synopsis "Twirp server implementation for tiny_httpd")
+  (depends
+    (pbrt (= :version))
+    (pbrt_services (= :version))
+    yojson
+    tiny_httpd))

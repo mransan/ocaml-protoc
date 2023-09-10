@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message error {
+  // Error code
+  string code = 1;
+
+  // Human readable message
+  string msg = 2;
+}
+
+// TODO: meta?

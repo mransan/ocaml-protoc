@@ -1,0 +1,16 @@
+
+(library
+ (name twirp_tiny_httpd)
+ (public_name twirp_tiny_httpd)
+ (wrapped true)
+ (libraries pbrt pbrt_yojson yojson pbrt_services tiny_httpd))
+
+(rule
+  (targets error_codes.ml)
+  (action (with-stdout-to %{targets} (run gen/mk_codes.exe))))
+
+(rule
+  (targets twirp_error.ml twirp_error.mli)
+  (deps (:file twirp_error.proto))
+  (mode promote)
+  (action (run ../ocaml-protoc/ocaml_protoc.exe --pp --yojson --ml_out=. %{file})))
