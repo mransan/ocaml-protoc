@@ -221,6 +221,24 @@ let resolve_enum_field_default field_name type_ field_default =
     E.invalid_default_value ~field_name
       ~info:"default value not supported for message" ()
 
+let resolve_user_defined_type t field_name
+    (unresolved_field_type : Pb_field_type.unresolved) field_default
+    message_type_path : int * _ =
+  let { Pb_field_type.type_name; _ } = unresolved_field_type in
+  let rec aux = function
+    | [] -> raise Not_found
+    | type_path :: tl ->
+      (match Types_by_scope.find t type_path type_name with
+      | type_ ->
+        let id = type_.Tt.id in
+        let field_default =
+          resolve_enum_field_default field_name type_ field_default
+        in
+        id, field_default
+      | exception Not_found -> aux tl)
+  in
+  aux (compute_search_type_paths unresolved_field_type message_type_path)
+
 (** this function resolves both the type and the defaut value of a field
    type. Note that it is necessary to verify both at the same time since
    the default value must be of the same type as the field type in order
@@ -238,20 +256,11 @@ let resolve_field_type_and_default t field_name field_type field_default
     in
     builtin_type, field_default
   | `User_defined unresolved_field_type ->
-    let { Pb_field_type.type_name; _ } = unresolved_field_type in
-    let rec aux = function
-      | [] -> raise Not_found
-      | type_path :: tl ->
-        (match Types_by_scope.find t type_path type_name with
-        | type_ ->
-          let id = type_.Tt.id in
-          let field_default =
-            resolve_enum_field_default field_name type_ field_default
-          in
-          `User_defined id, field_default
-        | exception Not_found -> aux tl)
+    let id, default =
+      resolve_user_defined_type t field_name unresolved_field_type field_default
+        message_type_path
     in
-    aux (compute_search_type_paths unresolved_field_type message_type_path)
+    `User_defined id, default
 
 (** this function resolves all the field type of the given type *)
 let resolve_type t type_ : int Tt.proto_type =
@@ -331,12 +340,11 @@ let resolve_types types : Types_by_scope.t * _ list =
   let t = List.fold_left Types_by_scope.add Types_by_scope.empty types in
   t, List.map (resolve_type t) types
 
-let resolve_service t (service : _ Tt.service) :
-    Pb_field_type.resolved Tt.service =
-  let resolve_ty ~rpc_name ~name ty : Pb_field_type.resolved Pb_field_type.t =
+let resolve_service t (service : _ Tt.service) : _ Tt.service =
+  let resolve_ty ~rpc_name ~name ty : Pb_field_type.resolved =
     let rpc_type, _field_default =
       let do_resolve () =
-        resolve_field_type_and_default t name ty None service.service_packages
+        resolve_user_defined_type t name ty None service.service_packages
       in
       match do_resolve () with
       | ret -> ret

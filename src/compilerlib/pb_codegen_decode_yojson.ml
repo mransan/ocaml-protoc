@@ -3,7 +3,7 @@ module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
 
-(* Function which returns all the possible pattern match for reading a JSON
+(** Function which returns all the possible pattern match for reading a JSON
    value into an OCaml value. The protobuf JSON encoding rules
    are defined here:
    https://developers.google.com/protocol-buffers/docs/proto3#json *)

@@ -132,7 +132,7 @@ let wrapper_type_of_type_name = function
     with the module name. (This is essentially expecting (rightly) a sub module
     with the same name.
  *)
-let user_defined_type_of_id ~(all_types : _ list) file_name i : Ot.field_type =
+let user_defined_type_of_id ~(all_types : _ list) ~file_name i : Ot.field_type =
   let module_prefix = module_prefix_of_file_name file_name in
   match Typing_util.type_of_id all_types i with
   | exception Not_found -> E.programmatic_error E.No_type_found_for_id
@@ -285,7 +285,7 @@ let compile_field_type ~unsigned_tag ~(all_types : _ Tt.proto_type list)
   | `Bool, _ -> Ot.(Ft_basic_type Bt_bool)
   | `String, _ -> Ot.(Ft_basic_type Bt_string)
   | `Bytes, _ -> Ot.(Ft_basic_type Bt_bytes)
-  | `User_defined id, _ -> user_defined_type_of_id ~all_types file_name id
+  | `User_defined id, _ -> user_defined_type_of_id ~all_types ~file_name id
 
 let is_mutable ?field_name field_options =
   match Pb_option.get field_options "ocaml_mutable" with
@@ -636,13 +636,10 @@ let compile_enum file_options file_name scope enum =
       type_level_ppx_extension;
     }
 
-let compile_rpc ~unsigned_tag ~(file_name : string) ~all_types
-    (rpc : Pb_field_type.resolved_t Tt.rpc) : Ot.rpc =
-  let compile_ty ~stream ty : Ot.rpc_type =
-    let ty : Ot.field_type =
-      compile_field_type ~unsigned_tag ~all_types Pb_option.empty
-        rpc.rpc_options file_name ty
-    in
+let compile_rpc ~(file_name : string) ~all_types
+    (rpc : Pb_field_type.resolved Tt.rpc) : Ot.rpc =
+  let compile_ty ~stream (ty : int) : Ot.rpc_type =
+    let ty = user_defined_type_of_id ~all_types ~file_name ty in
     if stream then
       Ot.Rpc_stream ty
     else
@@ -655,15 +652,14 @@ let compile_rpc ~unsigned_tag ~(file_name : string) ~all_types
     rpc_res = compile_ty ~stream:rpc.rpc_res_stream rpc.rpc_res;
   }
 
-let compile_service ~(unsigned_tag : bool) ~all_types
-    (service : Pb_field_type.resolved Tt.service) : Ot.service =
+let compile_service ~all_types (service : Pb_field_type.resolved Tt.service) :
+    Ot.service =
   {
     Ot.service_name = service.service_name;
     service_packages = service.service_packages;
     service_body =
       List.map
-        (compile_rpc ~unsigned_tag ~file_name:service.service_file_name
-           ~all_types)
+        (compile_rpc ~file_name:service.service_file_name ~all_types)
         service.service_body;
   }
 
@@ -681,9 +677,7 @@ let compile ~unsigned_tag ~all_types (proto : Pb_field_type.resolved Tt.proto) :
       proto.proto_types
   in
 
-  let services =
-    List.map (compile_service ~unsigned_tag ~all_types) proto.proto_services
-  in
+  let services = List.map (compile_service ~all_types) proto.proto_services in
   { Ot.proto_services = services; proto_types = tys }
 
 module Internal = struct

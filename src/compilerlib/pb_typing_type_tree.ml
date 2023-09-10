@@ -122,7 +122,7 @@ type 'a service = {
   service_name: string;
   service_file_name: string;
   service_packages: string list;  (** Package in which this belongs *)
-  service_body: 'a Pb_field_type.t rpc list;
+  service_body: 'a rpc list;
 }
 (** A service, composed of multiple RPCs. *)
 

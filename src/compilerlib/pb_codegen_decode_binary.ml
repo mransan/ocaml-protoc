@@ -39,7 +39,7 @@ let runtime_function_for_wrapper_type { Ot.wt_type; wt_pk } =
   | Ot.Bt_bytes, Ot.Pk_bytes -> "Pbrt.Decoder.wrapper_bytes_value"
   | _ -> assert false
 
-let decode_field_expression field_type pk =
+let decode_field_expression field_type pk : string =
   match field_type with
   | Ot.Ft_user_defined_type t ->
     let f_name =

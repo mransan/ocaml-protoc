@@ -92,6 +92,8 @@ type error =
   | Invalid_first_enum_value_proto3 of string * string option
   | Invalid_key_type_for_map of string
   | Unsupported_wrapper_type of string
+  | Invalid_rpc_req_type of string * string
+  | Invalid_rpc_res_type of string * string
 
 exception Compilation_error of error
 (** Exception raised when a compilation error occurs *)
@@ -158,6 +160,16 @@ let string_of_error = function
       ("Invalid field label for field: %s in message: %s. "
      ^^ "[Required|Optional] are not supported.")
       field_name message_name
+  | Invalid_rpc_req_type (service_name, rpc_name) ->
+    P.sprintf
+      ("Invalid type for RPC request: %s in service: %s. "
+     ^^ "The type must be user-defined..")
+      service_name rpc_name
+  | Invalid_rpc_res_type (service_name, rpc_name) ->
+    P.sprintf
+      ("Invalid type for RPC response: %s in service: %s. "
+     ^^ "The type must be user-defined..")
+      service_name rpc_name
   | Default_field_option_not_supported (field_name, message_name) ->
     P.sprintf
       ("Explicit default values are not allowed in proto3. "
@@ -251,6 +263,12 @@ let invalid_protobuf_syntax syntax =
 let invalid_proto3_field_label ~field_name ~message_name =
   raise
     (Compilation_error (Invalid_proto3_field_label (field_name, message_name)))
+
+let invalid_rpc_req_type ~service_name ~rpc_name () =
+  raise (Compilation_error (Invalid_rpc_req_type (service_name, rpc_name)))
+
+let invalid_rpc_res_type ~service_name ~rpc_name () =
+  raise (Compilation_error (Invalid_rpc_res_type (service_name, rpc_name)))
 
 let default_field_option_not_supported ~field_name ~message_name =
   raise
