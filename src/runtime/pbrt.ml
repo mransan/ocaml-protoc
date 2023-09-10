@@ -815,27 +815,3 @@ module Pp = struct
   let pp_brk pp_record (fmt : F.formatter) r : unit =
     F.fprintf fmt "@[<hv2>{ %a@;<1 -2>@]}" pp_record r
 end
-
-(** Client end of services *)
-module Client = struct
-  type transport = { query: 'ret. string -> on_result:(string -> 'ret) -> 'ret }
-
-  type ('req, 'ret) rpc = {
-    call:
-      'actual_ret.
-      transport -> 'req -> on_result:('ret -> 'actual_ret) -> 'actual_ret;
-  }
-end
-
-(** Server end of services *)
-module Server = struct
-  type rpc = {
-    rpc_name: string;
-    rpc_handler: [ `JSON | `BINARY ] -> string -> string;
-  }
-
-  type t = {
-    name: string;
-    handlers: rpc list;
-  }
-end
