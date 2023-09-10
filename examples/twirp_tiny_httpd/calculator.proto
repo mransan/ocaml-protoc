@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+message DivByZero {}
+
+message I32 {
+  int32 value = 0;
+}
+
+message AddReq {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message AddAllReq {
+  repeated int32 ints = 1;
+}
+
+message Empty {}
+
+service Calculator {
+  rpc add(AddReq) returns (I32);
+
+  rpc add_all(AddAllReq) returns (I32);
+
+  rpc ping(Empty) returns (Empty);
+
+  rpc get_pings(Empty) returns (I32);
+}
+
