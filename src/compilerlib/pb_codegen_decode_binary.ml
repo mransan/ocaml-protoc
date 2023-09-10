@@ -43,7 +43,7 @@ let decode_field_expression field_type pk =
   match field_type with
   | Ot.Ft_user_defined_type t ->
     let f_name =
-      let function_prefix = "decode" in
+      let function_prefix = "decode_pb" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix t
     in
     (match t.Ot.udt_type with
@@ -201,7 +201,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
 
-  F.linep sc "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
+  F.linep sc "%s decode_pb_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
   F.sub_scope sc (fun sc ->
       F.linep sc "let v = default_%s () in" mutable_record_name;
       F.line sc "let continue__= ref true in";
@@ -264,7 +264,9 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       F.linep sc "} : %s)" r_name)
 
 let gen_unit ?and_ { Ot.er_name } sc =
-  F.linep sc "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
+  F.linep sc "%s decode_pb_%s d ="
+    (Pb_codegen_util.let_decl_of_and and_)
+    er_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match Pbrt.Decoder.key d with";
       F.line sc "| None -> ();";
@@ -297,7 +299,9 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
         v_name
   in
 
-  F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) v_name;
+  F.linep sc "%s decode_pb_%s d = "
+    (Pb_codegen_util.let_decl_of_and and_)
+    v_name;
   F.sub_scope sc (fun sc ->
       F.linep sc "let rec loop () = ";
       F.sub_scope sc (fun sc ->
@@ -318,7 +322,9 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
       F.line sc "loop ()")
 
 let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
-  F.linep sc "%s decode_%s d = " (Pb_codegen_util.let_decl_of_and and_) cv_name;
+  F.linep sc "%s decode_pb_%s d = "
+    (Pb_codegen_util.let_decl_of_and and_)
+    cv_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match Pbrt.Decoder.int_as_varint d with";
       List.iter
@@ -354,9 +360,10 @@ let gen_sig ?and_ t sc =
   let { Ot.spec; _ } = t in
 
   let f type_name =
-    F.linep sc "val decode_%s : Pbrt.Decoder.t -> %s" type_name type_name;
+    F.linep sc "val decode_pb_%s : Pbrt.Decoder.t -> %s" type_name type_name;
     F.linep sc
-      ("(** [decode_%s decoder] decodes a " ^^ "[%s] value from [decoder] *)")
+      ("(** [decode_pb_%s decoder] decodes a "
+     ^^ "[%s] binary value from [decoder] *)")
       type_name type_name
   in
 

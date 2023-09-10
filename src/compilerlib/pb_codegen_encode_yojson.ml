@@ -56,7 +56,7 @@ let gen_field var_name json_label field_type pk =
   (* User defined *)
   | Ot.Ft_user_defined_type udt, _ ->
     let f_name =
-      let function_prefix = "encode" in
+      let function_prefix = "encode_json" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
     in
     Some (sp "(\"%s\", %s %s)" json_label f_name var_name)
@@ -144,7 +144,7 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in
-  F.linep sc "%s encode_%s (v:%s) = "
+  F.linep sc "%s encode_json_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
     rn rn;
   F.sub_scope sc (fun sc ->
@@ -173,7 +173,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 
 let gen_unit ?and_ { Ot.er_name } sc =
   let rn = er_name in
-  F.linep sc "%s encode_%s (v:%s) = "
+  F.linep sc "%s encode_json_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
     rn rn;
   F.line sc (sp "Pbrt_yojson.%s %s" "make_unit" "v")
@@ -196,7 +196,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
       | Some exp -> F.linep sc "| %s v -> `Assoc [%s]" vc_constructor exp)
   in
 
-  F.linep sc "%s encode_%s (v:%s) = "
+  F.linep sc "%s encode_json_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
     v_name v_name;
   F.sub_scope sc (fun sc ->
@@ -205,7 +205,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
       F.line sc "end")
 
 let gen_const_variant ?and_ { Ot.cv_name; Ot.cv_constructors } sc =
-  F.linep sc "%s encode_%s (v:%s) = "
+  F.linep sc "%s encode_json_%s (v:%s) = "
     (Pb_codegen_util.let_decl_of_and and_)
     cv_name cv_name;
   F.sub_scope sc (fun sc ->
@@ -239,9 +239,9 @@ let gen_struct ?and_ t sc =
 let gen_sig ?and_ t sc =
   let _ = and_ in
   let f type_name =
-    F.linep sc "val encode_%s : %s -> Yojson.Basic.t" type_name type_name;
+    F.linep sc "val encode_json_%s : %s -> Yojson.Basic.t" type_name type_name;
     F.linep sc
-      ("(** [encode_%s v encoder] encodes [v] to " ^^ "to json*)")
+      ("(** [encode_json_%s v encoder] encodes [v] to " ^^ "to json *)")
       type_name
   in
   match t with

@@ -30,7 +30,7 @@ let field_pattern_match ~r_name ~rf_label field_type =
      runtime functions) *)
   | Ot.Ft_user_defined_type udt ->
     let f_name =
-      let function_prefix = "decode" in
+      let function_prefix = "decode_json" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
     in
     let value_expression = "(" ^ f_name ^ " json_value)" in
@@ -102,7 +102,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
 
   F.line sc
-  @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
+  @@ sp "%s decode_json_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
 
   F.sub_scope sc (fun sc ->
       F.linep sc "let v = default_%s () in" mutable_record_name;
@@ -151,7 +151,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 (* Generate decode function for an empty record *)
 let gen_unit ?and_ { Ot.er_name } sc =
   F.line sc
-  @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
+  @@ sp "%s decode_json_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
   F.line sc (sp "Pbrt_yojson.unit d \"%s\" \"%s\"" er_name "empty record")
 
 (* Generate decode function for a variant type *)
@@ -173,7 +173,9 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
       F.linep sc "  (%s (%s) : %s)" vc_constructor exp v_name
   in
 
-  F.linep sc "%s decode_%s json =" (Pb_codegen_util.let_decl_of_and and_) v_name;
+  F.linep sc "%s decode_json_%s json ="
+    (Pb_codegen_util.let_decl_of_and and_)
+    v_name;
 
   F.sub_scope sc (fun sc ->
       (* even though a variant should be an object with a single field,
@@ -199,7 +201,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
       F.line sc "loop assoc")
 
 let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
-  F.linep sc "%s decode_%s json ="
+  F.linep sc "%s decode_json_%s json ="
     (Pb_codegen_util.let_decl_of_and and_)
     cv_name;
 
@@ -236,9 +238,10 @@ let gen_sig ?and_ t sc =
   let { Ot.spec; _ } = t in
 
   let f type_name =
-    F.linep sc "val decode_%s : Yojson.Basic.t -> %s" type_name type_name;
+    F.linep sc "val decode_json_%s : Yojson.Basic.t -> %s" type_name type_name;
     F.linep sc
-      ("(** [decode_%s decoder] decodes a " ^^ "[%s] value from [decoder] *)")
+      ("(** [decode_json_%s decoder] decodes a "
+     ^^ "[%s] value from [decoder] *)")
       type_name type_name
   in
 

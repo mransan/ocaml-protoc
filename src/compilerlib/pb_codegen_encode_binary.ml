@@ -59,7 +59,7 @@ let gen_encode_field_type ?with_key sc var_name encoding_number pk is_packed
   | Ot.Ft_user_defined_type udt ->
     encode_key sc;
     let f_name =
-      let function_prefix = "encode" in
+      let function_prefix = "encode_pb" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
     in
     (match udt.Ot.udt_type with
@@ -188,7 +188,7 @@ let gen_rft_associative sc var_name associative_field =
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in
-  F.linep sc "%s encode_%s (v:%s) encoder = "
+  F.linep sc "%s encode_pb_%s (v:%s) encoder = "
     (Pb_codegen_util.let_decl_of_and and_)
     rn rn;
 
@@ -211,7 +211,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 
 let gen_unit ?and_ { Ot.er_name } sc =
   let rn = er_name in
-  F.linep sc "%s encode_%s (v:%s) encoder = "
+  F.linep sc "%s encode_pb_%s (v:%s) encoder = "
     (Pb_codegen_util.let_decl_of_and and_)
     rn rn;
   F.line sc "()"
@@ -219,7 +219,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
 let gen_variant ?and_ variant sc =
   let { Ot.v_name; Ot.v_constructors } = variant in
   let vn = v_name in
-  F.linep sc "%s encode_%s (v:%s) encoder = "
+  F.linep sc "%s encode_pb_%s (v:%s) encoder = "
     (Pb_codegen_util.let_decl_of_and and_)
     vn vn;
   F.sub_scope sc (fun sc ->
@@ -251,7 +251,7 @@ let gen_variant ?and_ variant sc =
 let gen_const_variant ?and_ cv sc =
   let { Ot.cv_name; cv_constructors } = cv in
 
-  F.linep sc "%s encode_%s (v:%s) encoder ="
+  F.linep sc "%s encode_pb_%s (v:%s) encoder ="
     (Pb_codegen_util.let_decl_of_and and_)
     cv_name cv_name;
   F.sub_scope sc (fun sc ->
@@ -290,10 +290,10 @@ let gen_sig ?and_ t sc =
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =
-    F.linep sc "val encode_%s : %s -> Pbrt.Encoder.t -> unit" type_name
+    F.linep sc "val encode_pb_%s : %s -> Pbrt.Encoder.t -> unit" type_name
       type_name;
     F.linep sc
-      "(** [encode_%s v encoder] encodes [v] with the given [encoder] *)"
+      "(** [encode_pb_%s v encoder] encodes [v] with the given [encoder] *)"
       type_name
   in
   let has_encoded =
