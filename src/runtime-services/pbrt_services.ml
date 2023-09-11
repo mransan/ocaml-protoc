@@ -14,6 +14,7 @@ let pp_rpc_error = Errors.pp_rpc_error
 module Client = struct
   type ('req, 'ret) rpc = {
     service_name: string;
+    package: string list;  (** Package for the service *)
     rpc_name: string;
     encode_json_req: 'req -> Yojson.Basic.t;
     encode_pb_req: 'req -> Pbrt.Encoder.t -> unit;
@@ -21,10 +22,11 @@ module Client = struct
     decode_pb_res: Pbrt.Decoder.t -> 'ret;
   }
 
-  let mk_rpc ~service_name ~rpc_name ~encode_json_req ~encode_pb_req
-      ~decode_json_res ~decode_pb_res () : _ rpc =
+  let mk_rpc ?(package = []) ~service_name ~rpc_name ~encode_json_req
+      ~encode_pb_req ~decode_json_res ~decode_pb_res () : _ rpc =
     {
       service_name;
+      package;
       rpc_name;
       encode_pb_req;
       encode_json_req;
@@ -61,6 +63,7 @@ module Server = struct
 
   type t = {
     service_name: string;
+    package: string list;
     handlers: rpc list;
   }
 end

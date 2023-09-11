@@ -17,6 +17,7 @@ val pp_rpc_error : Format.formatter -> rpc_error -> unit
 module Client : sig
   type ('req, 'ret) rpc = {
     service_name: string;
+    package: string list;  (** Package for the service *)
     rpc_name: string;
     encode_json_req: 'req -> Yojson.Basic.t;
     encode_pb_req: 'req -> Pbrt.Encoder.t -> unit;
@@ -27,6 +28,7 @@ module Client : sig
    that knows where to send the bytes to actually use it. *)
 
   val mk_rpc :
+    ?package:string list ->
     service_name:string ->
     rpc_name:string ->
     encode_json_req:('req -> Yojson.Basic.t) ->
@@ -64,6 +66,9 @@ module Server : sig
 
   type t = {
     service_name: string;
+    package: string list;
+        (** The package this belongs in (e.g. "bigco.auth.secretpasswordstash"),
+         split along "." *)
     handlers: rpc list;
   }
   (** A service with fixed set of methods. *)
