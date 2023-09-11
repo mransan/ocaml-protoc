@@ -1,6 +1,8 @@
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
 
+let spf = Printf.sprintf
+
 let string_of_rpc_type (ty : Ot.rpc_type) : string =
   let f = Pb_codegen_util.string_of_field_type in
   match ty with
@@ -84,6 +86,9 @@ let ocaml_type_of_rpc_type (rpc : Ot.rpc_type) : string =
 let mod_name_for_client (service : Ot.service) : string =
   String.capitalize_ascii service.service_name
 
+let string_list_of_package (path : string list) : string =
+  spf "[%s]" (String.concat ";" @@ List.map (fun s -> spf "%S" s) path)
+
 let gen_service_client_struct (service : Ot.service) sc : unit =
   let service_name = service.service_name in
   F.linep sc "module %s = struct" (mod_name_for_client service);
@@ -97,8 +102,11 @@ let gen_service_client_struct (service : Ot.service) sc : unit =
             (Pb_codegen_util.function_name_of_rpc rpc)
             (string_of_rpc_type rpc.rpc_req)
             (string_of_rpc_type rpc.rpc_res);
-          F.linep sc " (mk_rpc ~service_name:%S ~rpc_name:%S"
-            service.service_name rpc.rpc_name;
+          F.linep sc " (mk_rpc ";
+          F.linep sc "    ~package:%s"
+            (string_list_of_package service.service_packages);
+          F.linep sc "    ~service_name:%S ~rpc_name:%S" service.service_name
+            rpc.rpc_name;
           F.linep sc "    ~encode_json_req:%s"
             (function_name_encode_json ~service_name ~rpc_name rpc.rpc_req);
           F.linep sc "    ~encode_pb_req:%s"
@@ -164,6 +172,8 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
   F.sub_scope sc (fun sc ->
       F.line sc "let open Pbrt_services.Server in";
       F.linep sc "{ service_name=%S;" service_name;
+      F.linep sc "  package=%s;"
+        (string_list_of_package service.service_packages);
       F.line sc "  handlers=[";
       List.iter
         (fun (rpc : Ot.rpc) ->
