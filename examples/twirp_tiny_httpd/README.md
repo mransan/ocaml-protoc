@@ -8,5 +8,8 @@ listen on http://localhost:8084/
 
 $ curl -X POST http://localhost:8084/twirp/Calculator/add --json '{"a": 1, "b": 2}'
 {"value":3}⏎
+
+$ curl -X POST http://localhost:8084/twirp/Calculator/add_all --json '{"ints": [1,2,3,4]}'
+{"value":10}⏎
 ```
 
