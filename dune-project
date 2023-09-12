@@ -45,6 +45,14 @@
     (pbrt_yojson (= :version)))
   (tags (protobuf encode decode services rpc)))
 
+(package
+  (name twirp_ezcurl)
+  (synopsis "Twirp client implementation using ezcurl")
+  (depends
+    (pbrt (= :version))
+    (pbrt_services (= :version))
+    yojson
+    ezcurl))
 
 (package
   (name twirp_tiny_httpd)

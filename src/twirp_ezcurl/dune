@@ -1,0 +1,14 @@
+
+(library
+ (name twirp_ezcurl)
+ (public_name twirp_ezcurl)
+ (synopsis "Twirp client")
+ (wrapped true)
+ (libraries pbrt pbrt_yojson yojson pbrt_services ezcurl))
+
+(rule
+  (targets twirp_error.ml twirp_error.mli)
+  (deps (:file twirp_error.proto))
+  (mode promote)
+  (action (run ../ocaml-protoc/ocaml_protoc.exe --pp --yojson --ml_out=. %{file})))
+
