@@ -39,6 +39,15 @@ let handle_rpc (rpc : PB_server.rpc) (req : string H.Request.t) : H.Response.t =
       rpc
     in
 
+    (* get the raw unary wrapper *)
+    let handler : _ -> _ =
+      match handler with
+      | Unary f -> f
+      | _ ->
+        failf_ Error_codes.Unimplemented
+          "twirp over http 1.1 does not handle streaming"
+    in
+
     let content_type =
       match H.Request.get_header req "content-type" with
       | Some "application/json" -> `JSON
@@ -83,8 +92,6 @@ let handle_rpc (rpc : PB_server.rpc) (req : string H.Request.t) : H.Response.t =
     return_error Error_codes.Unknown
       (Some (spf "handler failed with %s" (Printexc.to_string exn)))
 
-(* FIXME: add package to service, for routing *)
-
 let add_service ?middlewares ?(prefix = Some "twirp") (server : H.t)
     (service : Pbrt_services.Server.t) : unit =
   let add_rpc rpc : unit =
@@ -92,13 +99,21 @@ let add_service ?middlewares ?(prefix = Some "twirp") (server : H.t)
        [POST [<prefix>]/[<package>.]<Service>/<Method>],
        see {{:https://twitchtv.github.io/twirp/docs/routing.html} the docs}.
 
-
        Errors: [https://twitchtv.github.io/twirp/docs/errors.html]
     *)
+
+    (* the [<package>.<Service>] part. *)
+    let qualified_service_path_component =
+      match service.package with
+      | [] -> service.service_name
+      | path -> spf "%s.%s" (String.concat "." path) service.service_name
+    in
+
     let route =
       let (PB_server.RPC { name; _ }) = rpc in
-      H.Route.(exact service.service_name @/ exact name @/ return)
+      H.Route.(exact qualified_service_path_component @/ exact name @/ return)
     in
+
     let route =
       match prefix with
       | Some p -> H.Route.(exact p @/ route)

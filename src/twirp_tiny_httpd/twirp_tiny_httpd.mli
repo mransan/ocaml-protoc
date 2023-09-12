@@ -11,3 +11,8 @@ val add_service :
   Tiny_httpd.t ->
   Pbrt_services.Server.t ->
   unit
+(** [add_service http_server service] adds all handlers of [service]
+    to the given httpd.
+
+    Services that use streaming will return "501 unimplemented", because
+    twirp over http 1.1 does not support streaming. *)
