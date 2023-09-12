@@ -53,3 +53,15 @@
  (modules t_calculator calculator)
  (package pbrt_services)
  (libraries pbrt pbrt_yojson pbrt_services))
+
+(rule
+ (targets file_server.ml file_server.mli)
+ (deps file_server.proto)
+ (action
+  (run ocaml-protoc --binary --pp --yojson --services --ml_out ./ %{deps})))
+
+(test
+ (name file_server)
+ (modules file_server) ; just check that it compiles
+ (package pbrt_services)
+ (libraries pbrt pbrt_yojson pbrt_services))
