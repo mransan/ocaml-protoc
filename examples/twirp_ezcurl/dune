@@ -1,0 +1,11 @@
+
+(executable
+  (name calculator_client)
+  (flags :standard -w -40)
+  (libraries ezcurl twirp_ezcurl))
+
+(rule
+ (targets calculator.ml calculator.mli)
+ (deps calculator.proto)
+ (action
+  (run ocaml-protoc --binary --pp --yojson --services --ml_out ./ %{deps})))
