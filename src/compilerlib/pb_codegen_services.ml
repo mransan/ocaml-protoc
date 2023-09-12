@@ -3,11 +3,17 @@ module F = Pb_codegen_formatting
 
 let spf = Printf.sprintf
 
-let string_of_rpc_type (ty : Ot.rpc_type) : string =
+let string_of_rpc_type_pull (ty : Ot.rpc_type) : string =
   let f = Pb_codegen_util.string_of_field_type in
   match ty with
   | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "%s Seq.t" (f ty)
+  | Ot.Rpc_stream ty -> Printf.sprintf "%s Pbrt_services.Pull_stream.t" (f ty)
+
+let string_of_rpc_type_push (ty : Ot.rpc_type) : string =
+  let f = Pb_codegen_util.string_of_field_type in
+  match ty with
+  | Ot.Rpc_scalar ty -> f ty
+  | Ot.Rpc_stream ty -> Printf.sprintf "%s Pbrt_services.Push_stream.t" (f ty)
 
 let function_name_encode_json ~service_name ~rpc_name (ty : Ot.rpc_type) :
     string =
@@ -23,8 +29,7 @@ let function_name_encode_json ~service_name ~rpc_name (ty : Ot.rpc_type) :
       exit 1
   in
   match ty with
-  | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "Seq.map %s" (f ty)
+  | Ot.Rpc_scalar ty | Ot.Rpc_stream ty -> f ty
 
 let function_name_decode_json ~service_name ~rpc_name (ty : Ot.rpc_type) :
     string =
@@ -40,8 +45,7 @@ let function_name_decode_json ~service_name ~rpc_name (ty : Ot.rpc_type) :
       exit 1
   in
   match ty with
-  | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "Seq.map %s" (f ty)
+  | Ot.Rpc_scalar ty | Ot.Rpc_stream ty -> f ty
 
 let function_name_encode_pb ~service_name ~rpc_name (ty : Ot.rpc_type) : string
     =
@@ -57,8 +61,7 @@ let function_name_encode_pb ~service_name ~rpc_name (ty : Ot.rpc_type) : string
       exit 1
   in
   match ty with
-  | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "Seq.map %s" (f ty)
+  | Ot.Rpc_scalar ty | Ot.Rpc_stream ty -> f ty
 
 let function_name_decode_pb ~service_name ~rpc_name (ty : Ot.rpc_type) : string
     =
@@ -74,14 +77,12 @@ let function_name_decode_pb ~service_name ~rpc_name (ty : Ot.rpc_type) : string
       exit 1
   in
   match ty with
-  | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "Seq.map %s" (f ty)
+  | Ot.Rpc_scalar ty | Ot.Rpc_stream ty -> f ty
 
-let ocaml_type_of_rpc_type (rpc : Ot.rpc_type) : string =
+let ocaml_type_of_rpc_type (rpc : Ot.rpc_type) : string * string =
   match rpc with
-  | Rpc_scalar ty -> Pb_codegen_util.string_of_field_type ty
-  | Rpc_stream ty ->
-    Printf.sprintf "(%s Seq.t)" (Pb_codegen_util.string_of_field_type ty)
+  | Rpc_scalar ty -> Pb_codegen_util.string_of_field_type ty, "unary"
+  | Rpc_stream ty -> Pb_codegen_util.string_of_field_type ty, "stream"
 
 let mod_name_for_client (service : Ot.service) : string =
   String.capitalize_ascii service.service_name
@@ -94,19 +95,25 @@ let gen_service_client_struct (service : Ot.service) sc : unit =
   F.linep sc "module %s = struct" (mod_name_for_client service);
   F.sub_scope sc (fun sc ->
       F.linep sc "open Pbrt_services.Client";
+      F.linep sc "open Pbrt_services.Value_mode";
       List.iter
         (fun (rpc : Ot.rpc) ->
           let rpc_name = rpc.rpc_name in
+          let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+          let req_mode_witness = String.capitalize_ascii req_mode in
+          let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+          let res_mode_witness = String.capitalize_ascii res_mode in
           F.empty_line sc;
-          F.linep sc "let %s : (%s, %s) rpc ="
+          F.linep sc "let %s : (%s, %s, %s, %s) rpc ="
             (Pb_codegen_util.function_name_of_rpc rpc)
-            (string_of_rpc_type rpc.rpc_req)
-            (string_of_rpc_type rpc.rpc_res);
+            req req_mode res res_mode;
           F.linep sc " (mk_rpc ";
           F.linep sc "    ~package:%s"
             (string_list_of_package service.service_packages);
           F.linep sc "    ~service_name:%S ~rpc_name:%S" service.service_name
             rpc.rpc_name;
+          F.linep sc "    ~req_mode:%s" req_mode_witness;
+          F.linep sc "    ~res_mode:%s" res_mode_witness;
           F.linep sc "    ~encode_json_req:%s"
             (function_name_encode_json ~service_name ~rpc_name rpc.rpc_req);
           F.linep sc "    ~encode_pb_req:%s"
@@ -115,9 +122,9 @@ let gen_service_client_struct (service : Ot.service) sc : unit =
             (function_name_decode_json ~service_name ~rpc_name rpc.rpc_res);
           F.linep sc "    ~decode_pb_res:%s"
             (function_name_decode_pb ~service_name ~rpc_name rpc.rpc_res);
-          F.linep sc "() : (%s, %s) rpc)"
-            (ocaml_type_of_rpc_type rpc.rpc_req)
-            (ocaml_type_of_rpc_type rpc.rpc_res))
+          let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+          let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+          F.linep sc "  () : (%s, %s, %s, %s) rpc)" req req_mode res res_mode)
         service.service_body);
 
   F.line sc "end";
@@ -128,13 +135,15 @@ let gen_service_client_sig (service : Ot.service) sc : unit =
   F.linep sc "module %s : sig" (mod_name_for_client service);
   F.sub_scope sc (fun sc ->
       F.linep sc "open Pbrt_services.Client";
+      F.linep sc "open Pbrt_services.Value_mode";
       List.iter
         (fun (rpc : Ot.rpc) ->
           F.empty_line sc;
-          F.linep sc "val %s : (%s, %s) rpc"
+          let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+          let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+          F.linep sc "val %s : (%s, %s, %s, %s) rpc"
             (Pb_codegen_util.function_name_of_rpc rpc)
-            (string_of_rpc_type rpc.rpc_req)
-            (string_of_rpc_type rpc.rpc_res))
+            req req_mode res res_mode)
         service.service_body);
   F.line sc "end";
   F.empty_line sc
@@ -151,8 +160,8 @@ let gen_mod_type_of_service (service : Ot.service) sc : unit =
         (fun (rpc : Ot.rpc) ->
           F.linep sc "val %s : %s -> %s"
             (Pb_codegen_util.function_name_of_rpc rpc)
-            (string_of_rpc_type rpc.rpc_req)
-            (string_of_rpc_type rpc.rpc_res))
+            (string_of_rpc_type_pull rpc.rpc_req)
+            (string_of_rpc_type_push rpc.rpc_res))
         service.service_body);
   F.line sc "end"
 
@@ -178,8 +187,18 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
       List.iter
         (fun (rpc : Ot.rpc) ->
           let rpc_name = rpc.rpc_name in
-          F.linep sc "   (mk_rpc ~name:%S ~f:M.%s" rpc.rpc_name
-            (Pb_codegen_util.function_name_of_rpc rpc);
+
+          let handler =
+            let f = Pb_codegen_util.function_name_of_rpc rpc in
+            match rpc.rpc_req, rpc.rpc_res with
+            | Rpc_scalar _, Rpc_scalar _ -> spf "(Unary %s)" f
+            | Rpc_scalar _, Rpc_stream _ -> spf "(Server_stream %s)" f
+            | Rpc_stream _, Rpc_scalar _ -> spf "(Client_stream %s)" f
+            | Rpc_stream _, Rpc_stream _ -> spf "(Both_stream %s)" f
+          in
+
+          F.linep sc "   (mk_rpc ~name:%S" rpc.rpc_name;
+          F.linep sc "      ~f:M.%s" handler;
           F.linep sc "      ~encode_json_res:%s"
             (function_name_encode_json ~service_name ~rpc_name rpc.rpc_res);
           F.linep sc "      ~encode_pb_res:%s"
