@@ -41,3 +41,13 @@
     (pbrt_yojson (= :version)))
   (tags (protobuf encode decode services rpc)))
 
+(package
+  (name pbrt_zmq_rpc)
+  (synopsis "RPC based on ZMQ for ocaml-protoc")
+  (depends
+    (ocaml (>= 4.03))
+    (pbrt (= :version))
+    (pbrt_services (= :version))
+    zmq)
+  (tags (protobuf zmq rpc)))
+
