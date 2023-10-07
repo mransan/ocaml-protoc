@@ -514,7 +514,7 @@ module Nested = struct
 
     let bench company =
       let enc = E.create () in
-      mk_t (spf "nested-enc-%s" E.name_of_enc) @@ fun () ->
+      mk_t (spf "nenc-%s" E.name_of_enc) @@ fun () ->
       Sys.opaque_identity
         (E.clear enc;
          enc_company company enc)
@@ -721,7 +721,7 @@ module Nested = struct
       done
 
     let int64_as_varint = varint
-    let int_as_varint i e = varint (Int64.of_int i) e
+    let[@inline] int_as_varint i e = varint (Int64.of_int i) e
 
     let[@inline] key k pk f e =
       let pk' =
@@ -762,7 +762,7 @@ module Nested = struct
   end)
 
   module From_back_noinline = Make_bench (struct
-    let name_of_enc = "write-backward_noinline"
+    let name_of_enc = "write-backward-noinline"
 
     type t = from_back_end
 
@@ -834,7 +834,121 @@ module Nested = struct
       done
 
     let int64_as_varint = varint
-    let int_as_varint i e = varint (Int64.of_int i) e
+    let[@inline] int_as_varint i e = varint (Int64.of_int i) e
+
+    let[@inline] key k pk f e =
+      let pk' =
+        match pk with
+        | Varint -> 0
+        | Bits64 -> 1
+        | Bytes -> 2
+        | Bits32 -> 5
+      in
+      f e;
+      int_as_varint (pk' lor (k lsl 3)) e;
+      (* write this after the data *)
+      ()
+
+    let bytes b (e : t) =
+      add_bytes e b;
+      int_as_varint (Bytes.length b) e;
+      ()
+
+    let string s e = bytes (Bytes.unsafe_of_string s) e
+
+    (* encode lists in reverse order *)
+    let list f l e =
+      let rec loop = function
+        | [] -> ()
+        | [ x ] -> f x e
+        | x :: tl ->
+          loop tl;
+          f x e
+      in
+      loop l
+
+    let nested f (e : t) =
+      let s0 = length e in
+      f e;
+      let size = length e - s0 in
+      int_as_varint size e
+  end)
+
+  module From_back_c = Make_bench (struct
+    let name_of_enc = "write-backward-c"
+
+    type t = from_back_end
+
+    let create () : t = { b = Bytes.create 16; start = 16 }
+    let[@inline] clear self = self.start <- Bytes.length self.b
+    let[@inline] cap self = Bytes.length self.b
+    let[@inline] length self = cap self - self.start
+
+    let to_string self : string =
+      Bytes.sub_string self.b self.start (length self)
+
+    let grow_to_ self newcap =
+      let n = length self in
+      let b' = Bytes.create newcap in
+      Bytes.blit self.b self.start b' (newcap - n) n;
+      self.b <- b';
+      self.start <- newcap - n
+
+    let next_cap_ (self : t) : int =
+      let n = cap self in
+      n + (n lsr 1) + 3
+
+    let[@inline never] grow_reserve_n (self : t) n : unit =
+      let newcap = max (cap self + n) (next_cap_ self) in
+      grow_to_ self newcap;
+      assert (self.start >= n)
+
+    (** Reserve [n] bytes, return the offset at which we can write them. *)
+    let[@inline] reserve_n (self : t) (n : int) : int =
+      if self.start < n then grow_reserve_n self n;
+      self.start <- self.start - n;
+      self.start
+
+    let add_bytes (self : t) (b : bytes) =
+      let n = Bytes.length b in
+      if self.start <= n then grow_to_ self (cap self + n + (n lsr 1) + 1);
+      Bytes.blit b 0 self.b (self.start - n) n;
+      self.start <- self.start - n;
+      ()
+
+    (*
+    external varint_size : (int64[@unboxed]) -> int
+      = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
+      [@@noalloc]
+      *)
+
+    (* keep this in OCaml because the C overhead is non trivial *)
+    let[@inline] varint_size (i : int64) : int =
+      let i = ref i in
+      let n = ref 0 in
+      let continue = ref true in
+      while !continue do
+        incr n;
+        let cur = Int64.(logand !i 0x7fL) in
+        if cur = !i then
+          continue := false
+        else
+          i := Int64.shift_right_logical !i 7
+      done;
+      !n
+
+    external varint_slice :
+      bytes -> (int[@untagged]) -> (int64[@unboxed]) -> unit
+      = "caml_pbrt_varint_byte" "caml_pbrt_varint"
+      [@@noalloc]
+
+    let[@inline] varint (i : int64) (e : t) : unit =
+      let n_bytes = varint_size i in
+      let start = reserve_n e n_bytes in
+      varint_slice e.b start i
+
+    let int64_as_varint = varint
+    let[@inline] int_as_varint i e = varint (Int64.of_int i) e
 
     let[@inline] key k pk f e =
       let pk' =
@@ -878,6 +992,7 @@ module Nested = struct
   let bench_buffers_nested = Buffers_nested.bench
   let bench_from_back = From_back.bench
   let bench_from_back_noinline = From_back_noinline.bench
+  let bench_from_back_c = From_back_c.bench
 
   (* sanity check *)
   let () =
@@ -885,10 +1000,16 @@ module Nested = struct
     let s_buffers_nested = Buffers_nested.string_of_company (mk_company 1) in
     let s_from_back = From_back.string_of_company (mk_company 1) in
     let s_from_back2 = From_back_noinline.string_of_company (mk_company 1) in
+    let s_from_backc = From_back_c.string_of_company (mk_company 1) in
     (*
-    Printf.printf "basic: (len=%d) %S\n" (String.length s_basic) s_basic;
-    Printf.printf "from_back: (len=%d) %S\n" (String.length s_from_back) s_from_back;
-       *)
+       Printf.printf "basic:\n(len=%d) %S\n" (String.length s_basic) s_basic;
+       Printf.printf "from_back:\n(len=%d) %S\n"
+         (String.length s_from_back)
+         s_from_back;
+       Printf.printf "from_back_c:\n(len=%d) %S\n"
+         (String.length s_from_backc)
+         s_from_backc;
+    *)
     let dec_s s =
       Pbrt.Decoder.(
         let dec = of_string s in
@@ -898,6 +1019,7 @@ module Nested = struct
     let c_buffers_nested = dec_s s_buffers_nested in
     let c_from_back = dec_s s_from_back in
     let c_from_back2 = dec_s s_from_back2 in
+    let c_from_backc = dec_s s_from_backc in
     (*
     Format.printf "c_basic=%a@." Foo_pp.pp_company c_basic;
     Format.printf "c_from_back=%a@." Foo_pp.pp_company c_from_back;
@@ -905,6 +1027,7 @@ module Nested = struct
     assert (c_basic = c_buffers_nested);
     assert (c_basic = c_from_back);
     assert (c_basic = c_from_back2);
+    assert (c_basic = c_from_backc);
     ()
 end
 
@@ -919,6 +1042,7 @@ let test_nested_enc n =
             Nested.bench_buffers_nested company;
             Nested.bench_from_back company;
             Nested.bench_from_back_noinline company;
+            Nested.bench_from_back_c company;
           ])
 
 let () =

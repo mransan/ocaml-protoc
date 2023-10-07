@@ -1,6 +1,7 @@
 (executable
  (name benchs)
  (ocamlopt_flags :standard -inline 100)
+ (foreign_stubs (language c) (flags :standard -std=c99 -O2) (names stubs))
  (libraries ocaml-protoc benchmark))
 
 (rule
