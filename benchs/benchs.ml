@@ -761,8 +761,8 @@ module Nested = struct
       int_as_varint size e
   end)
 
-  module From_back2 = Make_bench (struct
-    let name_of_enc = "write-backward2"
+  module From_back_noinline = Make_bench (struct
+    let name_of_enc = "write-backward_noinline"
 
     type t = from_back_end
 
@@ -803,25 +803,28 @@ module Nested = struct
       self.start <- self.start - n;
       ()
 
-    let[@inline] varint (i : int64) (e : t) : unit =
-      let n_bytes = ref 0 in
-      (let i = ref i in
-       let continue = ref true in
-       while !continue do
-         incr n_bytes;
-         let cur = Int64.(logand !i 0x7fL) in
-         if cur = !i then
-           continue := false
-         else
-           i := Int64.shift_right_logical !i 7
-       done);
+    let[@inline never] varint_size (i : int64) : int =
+      let i = ref i in
+      let n = ref 0 in
+      let continue = ref true in
+      while !continue do
+        incr n;
+        let cur = Int64.(logand !i 0x7fL) in
+        if cur = !i then
+          continue := false
+        else
+          i := Int64.shift_right_logical !i 7
+      done;
+      !n
 
-      let start = reserve_n e !n_bytes in
+    let[@inline never] varint (i : int64) (e : t) : unit =
+      let n_bytes = varint_size i in
+      let start = reserve_n e n_bytes in
 
       let i = ref i in
-      for j = 0 to !n_bytes - 1 do
+      for j = 0 to n_bytes - 1 do
         let cur = Int64.(logand !i 0x7fL) in
-        if j = !n_bytes - 1 then
+        if j = n_bytes - 1 then
           Bytes.set e.b (start + j) (Char.unsafe_chr Int64.(to_int cur))
         else (
           Bytes.set e.b (start + j)
@@ -874,14 +877,14 @@ module Nested = struct
   let bench_basic = Basic.bench
   let bench_buffers_nested = Buffers_nested.bench
   let bench_from_back = From_back.bench
-  let bench_from_back2 = From_back2.bench
+  let bench_from_back_noinline = From_back_noinline.bench
 
   (* sanity check *)
   let () =
     let s_basic = Basic.string_of_company (mk_company 1) in
     let s_buffers_nested = Buffers_nested.string_of_company (mk_company 1) in
     let s_from_back = From_back.string_of_company (mk_company 1) in
-    let s_from_back2 = From_back2.string_of_company (mk_company 1) in
+    let s_from_back2 = From_back_noinline.string_of_company (mk_company 1) in
     (*
     Printf.printf "basic: (len=%d) %S\n" (String.length s_basic) s_basic;
     Printf.printf "from_back: (len=%d) %S\n" (String.length s_from_back) s_from_back;
@@ -915,7 +918,7 @@ let test_nested_enc n =
             Nested.bench_basic company;
             Nested.bench_buffers_nested company;
             Nested.bench_from_back company;
-            Nested.bench_from_back2 company;
+            Nested.bench_from_back_noinline company;
           ])
 
 let () =
