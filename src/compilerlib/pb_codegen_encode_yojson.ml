@@ -109,7 +109,7 @@ let gen_rft_repeated sc rf_label repeated_field =
       (* User defined *)
       | Ot.Ft_user_defined_type udt, _ ->
         let f_name =
-          let function_prefix = "encode" in
+          let function_prefix = "encode_json" in
           Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
         in
         F.linep sc "let l = %s |> List.map %s in" var_name f_name
