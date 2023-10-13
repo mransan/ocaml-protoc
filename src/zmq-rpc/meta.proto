@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+// RPC metadata for ZMQ messages.
+//
+// This defines the first frame in a RPC multi-frame message,
+// carrying the message type, method name, RPC unique ID,
+// and optional headers.
+
+// The toplevel message, sent in a ZMQ frame.
+message Meta {
+  // unique ID of a request/reply pattern
+  int32 id = 1;
+
+  // kind of message
+  Kind kind = 2;
+
+  // Method to call, for notify/request
+  optional string meth = 3;
+
+  // Headers
+  repeated Header headers = 4;
+}
+
+enum Kind {
+  // Invalid kind! Should not be used.
+  Invalid = 0;
+
+  // Request
+  Request = 1;
+
+  // Successful reply to a request. Body will be the encoded reply,
+  // in binary format.
+  Reply = 2;
+
+  // Error for a request. Body will be an encoded "Error" message,
+  // in binary format.
+  Error = 3;
+}
+
+// Body of a message returned in case of error.
+message Error {
+  // error message.
+  string msg = 1;
+}
+
+// A header, like a HTTP header.
+message Header {
+  string key = 1;
+  string value = 2;
+}

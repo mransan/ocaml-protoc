@@ -42,8 +42,8 @@
   (tags (protobuf encode decode services rpc)))
 
 (package
-  (name pbrt_zmq_rpc)
-  (synopsis "RPC based on ZMQ for ocaml-protoc")
+  (name pbrt_zmq)
+  (synopsis "RPC library based on ZMQ for ocaml-protoc")
   (depends
     (ocaml (>= 4.03))
     (pbrt (= :version))

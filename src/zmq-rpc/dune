@@ -1,0 +1,11 @@
+
+(library
+  (name pbrt_zmq)
+  (public_name pbrt_zmq)
+  (libraries pbrt pbrt_services zmq threads))
+
+(rule
+  (targets meta.ml meta.mli)
+  (deps (:file meta.proto))
+  (action (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe
+               %{file} --ml_out . --binary --pp)))
