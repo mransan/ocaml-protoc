@@ -7,6 +7,8 @@ module Meta = Meta
 
 type 'a or_error = ('a, Meta.error) result
 
+val pp_error : Format.formatter -> Meta.error -> unit
+
 module Server : sig
   type t
 
@@ -35,4 +37,11 @@ module Client : sig
     'req ->
     on_result:('res or_error -> unit) ->
     unit
+
+  val call_block :
+    t ->
+    ?timeout:float ->
+    ('req, Value_mode.unary, 'res, Value_mode.unary) Client.rpc ->
+    'req ->
+    'res or_error
 end

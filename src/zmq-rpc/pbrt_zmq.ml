@@ -1,6 +1,8 @@
 open Pbrt_services
 module Meta = Meta
 
+let pp_error = Meta.pp_error
+
 module Str_tbl = Hashtbl.Make (struct
   include String
 
@@ -143,6 +145,39 @@ module Server = struct
     Zmq.Socket.close self.sock
 end
 
+module Ivar_ = struct
+  type 'a t = {
+    mutable v: 'a option;
+    mutex: Mutex.t;
+    cond: Condition.t;
+  }
+
+  let create () : _ t =
+    { v = None; mutex = Mutex.create (); cond = Condition.create () }
+
+  let set (self : 'a t) (v : 'a) : unit =
+    Mutex.lock self.mutex;
+    match self.v with
+    | None ->
+      self.v <- Some v;
+      Condition.broadcast self.cond;
+      Mutex.unlock self.mutex
+    | Some _ -> Mutex.unlock self.mutex
+
+  let wait (self : 'a t) : 'a =
+    Mutex.lock self.mutex;
+    let rec loop () =
+      match self.v with
+      | Some x ->
+        Mutex.unlock self.mutex;
+        x
+      | None ->
+        Condition.wait self.cond self.mutex;
+        loop ()
+    in
+    loop ()
+end
+
 module Client = struct
   (** A in-flight query *)
   type in_flight =
@@ -241,4 +276,9 @@ module Client = struct
 
     Zmq.Socket.send_all ~block:true self.sock [ header; body ];
     ()
+
+  let call_block self ?timeout rpc req : _ or_error =
+    let res = Ivar_.create () in
+    call self ?timeout rpc req ~on_result:(fun r -> Ivar_.set res r);
+    Ivar_.wait res
 end
