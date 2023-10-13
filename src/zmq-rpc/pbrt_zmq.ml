@@ -195,9 +195,16 @@ module Client = struct
 
   let background_worker (self : t) : unit =
     while Atomic.get self.active do
-      (* TODO: poll, to get a timeout so we don't block forever *)
-      let msg = Zmq.Socket.recv_all ~block:true self.sock in
-      match msg with
+      (* use a poll to not block *)
+      let poll = Zmq.Poll.of_masks [| Zmq.Poll.mask_in self.sock |] in
+
+      match
+        ignore (Zmq.Poll.poll ~timeout:100 poll : _ array);
+        Zmq.Socket.recv_all ~block:false self.sock
+      with
+      | exception Unix.Unix_error ((Unix.EAGAIN | Unix.EINTR), _, _) -> ()
+      | exception Unix.Unix_error (err, _, _) ->
+        Printf.eprintf "poll failed with error %s\n%!" (Unix.error_message err)
       | [ header; body ] ->
         let header_dec = Pbrt.Decoder.of_string header in
         let header = Meta.decode_pb_meta header_dec in
@@ -220,9 +227,9 @@ module Client = struct
         | Invalid | Request ->
           Format.eprintf "client: invalid message of kind=%a@." Meta.pp_kind
             header.kind)
-      | _ ->
-        Printf.eprintf "server: invalid message with %d frames\n%!"
-          (List.length msg)
+      | _msg ->
+        Printf.eprintf "client : invalid message with %d frames\n%!"
+          (List.length _msg)
     done
 
   let create ctx ~addr : t =
@@ -244,8 +251,9 @@ module Client = struct
     client
 
   let dispose self =
-    if not (Atomic.exchange self.active false) then (
+    if Atomic.exchange self.active false then (
       Zmq.Socket.close self.sock;
+      Printf.eprintf "joining now\n%!";
       Option.iter Thread.join self.background_worker
     )
 

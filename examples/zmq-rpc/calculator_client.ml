@@ -24,4 +24,5 @@ let () =
   in
 
   Printf.printf "add call: returned %d\n%!" r;
+  Pbrt_zmq.Client.dispose client;
   ()
