@@ -252,9 +252,8 @@ module Client = struct
 
   let dispose self =
     if Atomic.exchange self.active false then (
-      Zmq.Socket.close self.sock;
-      Printf.eprintf "joining now\n%!";
-      Option.iter Thread.join self.background_worker
+      Option.iter Thread.join self.background_worker;
+      Zmq.Socket.close self.sock
     )
 
   let call (self : t) ?timeout:(_ = 30.) (rpc : _ Pbrt_services.Client.rpc) req
