@@ -65,28 +65,44 @@ end
 
 (** Server end of services *)
 module Server = struct
-  type ('req, 'res) handler =
-    | Unary : ('req -> 'res) -> ('req, 'res) handler
-    | Client_stream : ('req Pull_stream.t -> 'res) -> ('req, 'res) handler
-    | Server_stream : ('req -> 'res Push_stream.t) -> ('req, 'res) handler
-    | Both_stream :
-        ('req Pull_stream.t -> 'res Push_stream.t)
-        -> ('req, 'res) handler
-
-  (** A RPC endpoint. *)
-  type rpc =
-    | RPC : {
-        name: string;
-        f: ('req, 'res) handler;
-        encode_json_res: 'res -> Yojson.Basic.t;
-        encode_pb_res: 'res -> Pbrt.Encoder.t -> unit;
-        decode_json_req: Yojson.Basic.t -> 'req;
-        decode_pb_req: Pbrt.Decoder.t -> 'req;
+  type ('req, 'res) client_stream_handler =
+    | Client_stream_handler : {
+        init: unit -> 'state;
+        on_input:
+          'state -> 'req -> [ `Update of 'state | `Return_early of 'res ];
+        on_close: 'state -> 'res;
       }
-        -> rpc
+        -> ('req, 'res) client_stream_handler
+
+  type ('req, 'res) server_stream_handler = 'req -> 'res Push_stream.t -> unit
+
+  type ('req, 'res) both_stream_handler =
+    | Both_stream_handler : {
+        init: unit -> 'res Push_stream.t -> 'state;
+        on_input: 'state -> 'res Push_stream.t -> 'req -> 'state;
+        n_close: 'state -> 'res Push_stream.t -> unit;
+      }
+        -> ('req, 'res) both_stream_handler
+
+  type ('req, 'res) handler =
+    | Unary of ('req -> 'res)
+    | Client_stream of ('req, 'res) client_stream_handler
+    | Server_stream of ('req, 'res) server_stream_handler
+    | Both_stream of ('req, 'res) both_stream_handler
+
+  type ('req, 'res) rpc = {
+    name: string;
+    f: ('req, 'res) handler;
+    encode_json_res: 'res -> Yojson.Basic.t;
+    encode_pb_res: 'res -> Pbrt.Encoder.t -> unit;
+    decode_json_req: Yojson.Basic.t -> 'req;
+    decode_pb_req: Pbrt.Decoder.t -> 'req;
+  }
+
+  type any_rpc = RPC : ('req, 'res) rpc -> any_rpc [@@unboxed]
 
   let mk_rpc ~name ~(f : _ handler) ~encode_json_res ~encode_pb_res
-      ~decode_json_req ~decode_pb_req () : rpc =
+      ~decode_json_req ~decode_pb_req () : any_rpc =
     RPC
       {
         name;
@@ -100,6 +116,6 @@ module Server = struct
   type t = {
     service_name: string;
     package: string list;
-    handlers: rpc list;
+    handlers: any_rpc list;
   }
 end

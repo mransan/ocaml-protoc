@@ -72,25 +72,51 @@ end
 
 (** Service stubs, server side *)
 module Server : sig
+  (** Handler that receives a client stream *)
+  type ('req, 'res) client_stream_handler =
+    | Client_stream_handler : {
+        init: unit -> 'state;  (** When a stream starts *)
+        on_input:
+          'state -> 'req -> [ `Update of 'state | `Return_early of 'res ];
+            (** When an element of the stream is received. This can either
+         update the internal state, or return a value early and
+         stop reading from the input stream. *)
+        on_close: 'state -> 'res;  (** When the stream is over *)
+      }
+        -> ('req, 'res) client_stream_handler
+
+  type ('req, 'res) server_stream_handler = 'req -> 'res Push_stream.t -> unit
+  (** Takes the input value and a push stream (to send items to
+      the caller, and then close the stream at the end).
+      The stream's [close] function must be called exactly once. *)
+
+  type ('req, 'res) both_stream_handler =
+    | Both_stream_handler : {
+        init: unit -> 'res Push_stream.t -> 'state;
+        on_input: 'state -> 'res Push_stream.t -> 'req -> 'state;
+        n_close: 'state -> 'res Push_stream.t -> unit;
+      }
+        -> ('req, 'res) both_stream_handler
+        (** Handler taking a stream of values and returning a stream as well. *)
+
   type ('req, 'res) handler =
-    | Unary : ('req -> 'res) -> ('req, 'res) handler
-    | Client_stream : ('req Pull_stream.t -> 'res) -> ('req, 'res) handler
-    | Server_stream : ('req -> 'res Push_stream.t) -> ('req, 'res) handler
-    | Both_stream :
-        ('req Pull_stream.t -> 'res Push_stream.t)
-        -> ('req, 'res) handler
+    | Unary of ('req -> 'res)
+        (** Simple unary handler, gets a value, returns a value. *)
+    | Client_stream of ('req, 'res) client_stream_handler
+    | Server_stream of ('req, 'res) server_stream_handler
+    | Both_stream of ('req, 'res) both_stream_handler
+
+  type ('req, 'res) rpc = {
+    name: string;
+    f: ('req, 'res) handler;
+    encode_json_res: 'res -> Yojson.Basic.t;
+    encode_pb_res: 'res -> Pbrt.Encoder.t -> unit;
+    decode_json_req: Yojson.Basic.t -> 'req;
+    decode_pb_req: Pbrt.Decoder.t -> 'req;
+  }
 
   (** A RPC endpoint. *)
-  type rpc =
-    | RPC : {
-        name: string;
-        f: ('req, 'res) handler;
-        encode_json_res: 'res -> Yojson.Basic.t;
-        encode_pb_res: 'res -> Pbrt.Encoder.t -> unit;
-        decode_json_req: Yojson.Basic.t -> 'req;
-        decode_pb_req: Pbrt.Decoder.t -> 'req;
-      }
-        -> rpc
+  type any_rpc = RPC : ('req, 'res) rpc -> any_rpc [@@unboxed]
 
   val mk_rpc :
     name:string ->
@@ -100,7 +126,7 @@ module Server : sig
     decode_json_req:(Yojson.Basic.t -> 'req) ->
     decode_pb_req:(Pbrt.Decoder.t -> 'req) ->
     unit ->
-    rpc
+    any_rpc
   (** Helper to build a RPC *)
 
   type t = {
@@ -108,7 +134,7 @@ module Server : sig
     package: string list;
         (** The package this belongs in (e.g. "bigco.auth.secretpasswordstash"),
          split along "." *)
-    handlers: rpc list;
+    handlers: any_rpc list;
   }
   (** A service with fixed set of methods. *)
 end

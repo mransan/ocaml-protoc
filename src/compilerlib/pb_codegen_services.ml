@@ -3,17 +3,17 @@ module F = Pb_codegen_formatting
 
 let spf = Printf.sprintf
 
-let string_of_rpc_type_pull (ty : Ot.rpc_type) : string =
+let string_of_rpc_handler_type (req : Ot.rpc_type) (res : Ot.rpc_type) : string
+    =
   let f = Pb_codegen_util.string_of_field_type in
-  match ty with
-  | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "%s Pbrt_services.Pull_stream.t" (f ty)
-
-let string_of_rpc_type_push (ty : Ot.rpc_type) : string =
-  let f = Pb_codegen_util.string_of_field_type in
-  match ty with
-  | Ot.Rpc_scalar ty -> f ty
-  | Ot.Rpc_stream ty -> Printf.sprintf "%s Pbrt_services.Push_stream.t" (f ty)
+  match req, res with
+  | Ot.Rpc_scalar req, Ot.Rpc_scalar res -> spf "%s -> %s" (f req) (f res)
+  | Ot.Rpc_stream req, Ot.Rpc_scalar res ->
+    spf "(%s, %s) Pbrt_services.Server.client_stream_handler" (f req) (f res)
+  | Ot.Rpc_scalar req, Ot.Rpc_stream res ->
+    spf "(%s, %s) Pbrt_services.Server.server_stream_handler" (f req) (f res)
+  | Ot.Rpc_stream req, Ot.Rpc_stream res ->
+    spf "(%s, %s) Pbrt_services.Server.both_stream_handler" (f req) (f res)
 
 let function_name_encode_json ~service_name ~rpc_name (ty : Ot.rpc_type) :
     string =
@@ -158,10 +158,9 @@ let gen_mod_type_of_service (service : Ot.service) sc : unit =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun (rpc : Ot.rpc) ->
-          F.linep sc "val %s : %s -> %s"
+          F.linep sc "val %s : %s"
             (Pb_codegen_util.function_name_of_rpc rpc)
-            (string_of_rpc_type_pull rpc.rpc_req)
-            (string_of_rpc_type_push rpc.rpc_res))
+            (string_of_rpc_handler_type rpc.rpc_req rpc.rpc_res))
         service.service_body);
   F.line sc "end"
 
@@ -207,7 +206,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
             (function_name_decode_json ~service_name ~rpc_name rpc.rpc_req);
           F.linep sc "      ~decode_pb_req:%s"
             (function_name_decode_pb ~service_name ~rpc_name rpc.rpc_req);
-          F.linep sc "      () : rpc);")
+          F.linep sc "      () : any_rpc);")
         service.service_body;
       F.line sc "]; }");
   F.empty_line sc
