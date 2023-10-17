@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+enum FooEnum {
+  A = 0;
+  B = 1;
+}
+
+message FooOuter {
+  string x = 1;
+  optional int32 y = 2;
+  repeated FooEnum enums = 3;
+
+  message FooInner {
+    string inner_x = 1;
+    optional int64 inner_y = 2;
+    repeated float inner_z = 3;
+    repeated float inner_z2 = 4 [packed=true];
+  }
+
+  repeated FooInner foos = 10;
+}
