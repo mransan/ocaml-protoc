@@ -25,7 +25,8 @@ let return_error (err : Error_codes.t) (msg : string option) : H.Response.t =
     ~headers:[ "content-type", "application/json" ]
     ~code:http_code json_body
 
-let handle_rpc (rpc : PB_server.rpc) (req : string H.Request.t) : H.Response.t =
+let handle_rpc (rpc : PB_server.any_rpc) (req : string H.Request.t) :
+    H.Response.t =
   try
     let (PB_server.RPC
           {
