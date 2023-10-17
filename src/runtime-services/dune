@@ -9,4 +9,5 @@
 (rule
   (targets errors.ml errors.mli)
   (deps (:file errors.proto))
-  (action (run ../ocaml-protoc/ocaml_protoc.exe --pp --binary --yojson --ml_out . %{file})))
+  (mode promote)
+  (action (run %{bin:ocaml-protoc} --pp --binary --yojson --ml_out . %{file})))
