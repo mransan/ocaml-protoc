@@ -1,15 +1,3 @@
-module Errors = Errors
-
-type rpc_error = Errors.rpc_error =
-  | Invalid_binary of string
-  | Invalid_json of string
-  | Timeout of Errors.timeout_info
-  | Server_error of string
-  | Transport_error of string
-  | Unknown_error
-
-let pp_rpc_error = Errors.pp_rpc_error
-
 module Value_mode = struct
   type unary
   type stream
