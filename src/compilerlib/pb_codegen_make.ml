@@ -6,7 +6,7 @@ open Pb_codegen_util
 let field_is_optional (r_field : Ot.record_field) : bool =
   match r_field.rf_field_type with
   | Rft_optional _ -> true
-  | _ -> true
+  | _ -> false
 
 (** Obtain information about the fields *)
 let fields_of_record { Ot.r_fields; _ } :
