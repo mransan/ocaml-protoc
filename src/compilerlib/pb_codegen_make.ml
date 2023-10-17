@@ -42,9 +42,6 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
 
   F.line sc "}"
 
-let gen_unit ?and_ { Ot.er_name } sc =
-  F.linep sc "%s make_%s = ()" (let_decl_of_and and_) er_name
-
 let gen_struct ?and_ t sc =
   let { Ot.spec; _ } = t in
 
@@ -53,12 +50,9 @@ let gen_struct ?and_ t sc =
     | Ot.Record r ->
       gen_record ?and_ r sc;
       true
-    | Ot.Const_variant _ | Ot.Variant _ ->
+    | Ot.Const_variant _ | Ot.Variant _ | Ot.Unit _ ->
       (* nothing for variants *)
       false
-    | Ot.Unit u ->
-      gen_unit ?and_ u sc;
-      true
   in
   has_encoded
 
@@ -79,19 +73,7 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
   let rn = r_name in
   F.linep sc "(** [make_%s … ()] is a builder for type [%s] *)" rn rn
 
-let gen_sig_unit sc { Ot.er_name } =
-  F.linep sc "val make_%s : unit" er_name;
-
-  let rn = er_name in
-  F.linep sc "(** [make_%s ()] is a builder for type [%s] *)" rn rn
-
 let gen_sig ?and_:_ t sc =
-  let f type_name =
-    F.linep sc "val make_%s : unit -> %s" type_name type_name;
-    F.linep sc "(** [make_%s … ()] is a builder for type [%s] *)" type_name
-      type_name
-  in
-
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -99,15 +81,7 @@ let gen_sig ?and_:_ t sc =
     | Ot.Record r ->
       gen_sig_record sc r;
       true
-    | Ot.Variant v ->
-      f v.Ot.v_name;
-      true
-    | Ot.Const_variant { Ot.cv_name; _ } ->
-      f cv_name;
-      true
-    | Ot.Unit u ->
-      gen_sig_unit sc u;
-      true
+    | Ot.Variant _ | Ot.Const_variant _ | Ot.Unit _ -> false
   in
 
   has_encoded
