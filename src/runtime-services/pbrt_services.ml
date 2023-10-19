@@ -1,7 +1,7 @@
 (** Runtime for Protobuf services. *)
 
 (** Whether there's a single value or a stream of them *)
-module Value_mode : sig
+module Value_mode = struct
   type unary
   type stream
 end
@@ -9,7 +9,7 @@ end
 module Push_stream = Push_stream
 
 (** Service stubs, client side *)
-module Client : sig
+module Client = struct
   type _ mode =
     | Unary : Value_mode.unary mode
     | Stream : Value_mode.stream mode
@@ -28,22 +28,36 @@ module Client : sig
   (** A RPC description. You need a transport library
       that knows where to send the bytes to actually use it. *)
 
-  val mk_rpc :
-    ?package:string list ->
-    service_name:string ->
-    rpc_name:string ->
-    req_mode:'req_mode mode ->
-    res_mode:'res_mode mode ->
-    encode_json_req:('req -> Yojson.Basic.t) ->
-    encode_pb_req:('req -> Pbrt.Encoder.t -> unit) ->
-    decode_json_res:(Yojson.Basic.t -> 'res) ->
-    decode_pb_res:(Pbrt.Decoder.t -> 'res) ->
-    unit ->
-    ('req, 'req_mode, 'res, 'res_mode) rpc
+  let mk_rpc :
+      ?package:string list ->
+      service_name:string ->
+      rpc_name:string ->
+      req_mode:'req_mode mode ->
+      res_mode:'res_mode mode ->
+      encode_json_req:('req -> Yojson.Basic.t) ->
+      encode_pb_req:('req -> Pbrt.Encoder.t -> unit) ->
+      decode_json_res:(Yojson.Basic.t -> 'res) ->
+      decode_pb_res:(Pbrt.Decoder.t -> 'res) ->
+      unit ->
+      ('req, 'req_mode, 'res, 'res_mode) rpc =
+   fun ?(package = []) ~service_name ~rpc_name ~req_mode ~res_mode
+       ~encode_json_req ~encode_pb_req ~decode_json_res ~decode_pb_res () :
+       _ rpc ->
+    {
+      service_name;
+      package;
+      rpc_name;
+      req_mode;
+      res_mode;
+      encode_pb_req;
+      encode_json_req;
+      decode_pb_res;
+      decode_json_res;
+    }
 end
 
 (** Service stubs, server side *)
-module Server : sig
+module Server = struct
   type ('req, 'res, 'state) client_stream_handler_with_state = {
     init: unit -> 'state;  (** When a stream starts *)
     on_item: 'state -> 'req -> unit;
@@ -111,16 +125,27 @@ module Server : sig
   (** A RPC endpoint. *)
   type any_rpc = RPC : ('req, 'res) rpc -> any_rpc [@@unboxed]
 
-  val mk_rpc :
-    name:string ->
-    f:('req, 'res) handler ->
-    encode_json_res:('res -> Yojson.Basic.t) ->
-    encode_pb_res:('res -> Pbrt.Encoder.t -> unit) ->
-    decode_json_req:(Yojson.Basic.t -> 'req) ->
-    decode_pb_req:(Pbrt.Decoder.t -> 'req) ->
-    unit ->
-    any_rpc
   (** Helper to build a RPC *)
+  let mk_rpc :
+      name:string ->
+      f:('req, 'res) handler ->
+      encode_json_res:('res -> Yojson.Basic.t) ->
+      encode_pb_res:('res -> Pbrt.Encoder.t -> unit) ->
+      decode_json_req:(Yojson.Basic.t -> 'req) ->
+      decode_pb_req:(Pbrt.Decoder.t -> 'req) ->
+      unit ->
+      any_rpc =
+   fun ~name ~(f : _ handler) ~encode_json_res ~encode_pb_res ~decode_json_req
+       ~decode_pb_req () : any_rpc ->
+    RPC
+      {
+        name;
+        f;
+        decode_pb_req;
+        decode_json_req;
+        encode_pb_res;
+        encode_json_res;
+      }
 
   type t = {
     service_name: string;
