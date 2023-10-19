@@ -6,12 +6,6 @@ module Value_mode : sig
   type stream
 end
 
-module Pull_stream : sig
-  type 'a t = { pull: 'ret. unit -> on_result:('a option -> 'ret) -> unit }
-  (** Stream of incoming values, we can pull them out
-      one by one until [None] is returned. *)
-end
-
 module Push_stream = Push_stream
 
 (** Service stubs, client side *)
