@@ -13,7 +13,8 @@ let string_of_rpc_handler_type (req : Ot.rpc_type) (res : Ot.rpc_type) : string
   | Ot.Rpc_scalar req, Ot.Rpc_stream res ->
     spf "(%s, %s) Pbrt_services.Server.server_stream_handler" (f req) (f res)
   | Ot.Rpc_stream req, Ot.Rpc_stream res ->
-    spf "(%s, %s) Pbrt_services.Server.both_stream_handler" (f req) (f res)
+    spf "(%s, %s) Pbrt_services.Server.bidirectional_stream_handler" (f req)
+      (f res)
 
 let function_name_encode_json ~service_name ~rpc_name (ty : Ot.rpc_type) :
     string =
@@ -193,7 +194,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
             | Rpc_scalar _, Rpc_scalar _ -> spf "(Unary %s)" f
             | Rpc_scalar _, Rpc_stream _ -> spf "(Server_stream %s)" f
             | Rpc_stream _, Rpc_scalar _ -> spf "(Client_stream %s)" f
-            | Rpc_stream _, Rpc_stream _ -> spf "(Both_stream %s)" f
+            | Rpc_stream _, Rpc_stream _ -> spf "(Bidirectional_stream %s)" f
           in
 
           F.linep sc "   (mk_rpc ~name:%S" rpc.rpc_name;
