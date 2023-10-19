@@ -12,16 +12,7 @@ module Pull_stream : sig
       one by one until [None] is returned. *)
 end
 
-module Push_stream : sig
-  type 'a t = {
-    push: 'a -> unit;
-    close: unit -> unit;
-  }
-  (** Stream of outgoing values, we can push new ones until we close it *)
-
-  val push : 'a t -> 'a -> unit
-  val close : _ t -> unit
-end
+module Push_stream = Push_stream
 
 (** Service stubs, client side *)
 module Client : sig
