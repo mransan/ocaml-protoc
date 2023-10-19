@@ -67,8 +67,11 @@ module Server : sig
          or choose to return a value early and stop reading from the input stream. *)
     on_close: 'state -> 'res;  (** When the stream is over *)
   }
-  (** Handler that receives a client stream *)
+  (** Handler that receives a client stream and produces a value at the end.
+      It has an internal (mutable) state that is updated
+      every time an item is received from the client. *)
 
+  (** A client stream handler with hidden internal state. *)
   type ('req, 'res) client_stream_handler =
     | Client_stream_handler :
         ('req, 'res, 'state) client_stream_handler_with_state
@@ -85,8 +88,11 @@ module Server : sig
     on_item: 'state -> 'req -> unit;
     on_close: 'state -> unit;
   }
-  (** Handler taking a stream of values and returning a stream as well. *)
+  (** Handler taking a stream of values and returning a stream as well.
+      It has an internal (mutable) state that can be updated everytime
+      an item is received from the client. *)
 
+  (** A bidirectional handler with the internal state hidden *)
   type ('req, 'res) bidirectional_stream_handler =
     | Bidirectional_stream_handler :
         ('req, 'res, 'state) bidirectional_stream_handler_with_state
@@ -100,8 +106,11 @@ module Server : sig
     | Unary of ('req -> 'res)
         (** Simple unary handler, gets a value, returns a value. *)
     | Client_stream of ('req, 'res) client_stream_handler
+        (** Handler that takes a client stream *)
     | Server_stream of ('req, 'res) server_stream_handler
+        (** Handler that returns a stream to the client *)
     | Bidirectional_stream of ('req, 'res) bidirectional_stream_handler
+        (** Handler that takes and returns a stream *)
 
   type ('req, 'res) rpc = {
     name: string;
@@ -111,6 +120,8 @@ module Server : sig
     decode_json_req: Yojson.Basic.t -> 'req;
     decode_pb_req: Pbrt.Decoder.t -> 'req;
   }
+  (** A single RPC method, alongside encoders and decoders for
+        input and output types. . *)
 
   (** A RPC endpoint. *)
   type any_rpc = RPC : ('req, 'res) rpc -> any_rpc [@@unboxed]
