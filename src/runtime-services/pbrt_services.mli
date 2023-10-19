@@ -59,39 +59,49 @@ end
 
 (** Service stubs, server side *)
 module Server : sig
+  type ('req, 'res, 'state) client_stream_handler_with_state = {
+    init: unit -> 'state;  (** When a stream starts *)
+    on_item: 'state -> 'req -> unit;
+        (** When an element of the stream is received. This can either
+         update the internal state by mutation, performing side effects,
+         or choose to return a value early and stop reading from the input stream. *)
+    on_close: 'state -> 'res;  (** When the stream is over *)
+  }
   (** Handler that receives a client stream *)
+
   type ('req, 'res) client_stream_handler =
-    | Client_stream_handler : {
-        init: unit -> 'state;  (** When a stream starts *)
-        on_input:
-          'state -> 'req -> [ `Update of 'state | `Return_early of 'res ];
-            (** When an element of the stream is received. This can either
-         update the internal state, or return a value early and
-         stop reading from the input stream. *)
-        on_close: 'state -> 'res;  (** When the stream is over *)
-      }
+    | Client_stream_handler :
+        ('req, 'res, 'state) client_stream_handler_with_state
         -> ('req, 'res) client_stream_handler
+  [@@unboxed]
 
   type ('req, 'res) server_stream_handler = 'req -> 'res Push_stream.t -> unit
   (** Takes the input value and a push stream (to send items to
       the caller, and then close the stream at the end).
       The stream's [close] function must be called exactly once. *)
 
-  type ('req, 'res) both_stream_handler =
-    | Both_stream_handler : {
-        init: unit -> 'res Push_stream.t -> 'state;
-        on_input: 'state -> 'res Push_stream.t -> 'req -> 'state;
-        n_close: 'state -> 'res Push_stream.t -> unit;
-      }
-        -> ('req, 'res) both_stream_handler
-        (** Handler taking a stream of values and returning a stream as well. *)
+  type ('req, 'res, 'state) bidirectional_stream_handler_with_state = {
+    init: unit -> 'res Push_stream.t -> 'state;
+    on_item: 'state -> 'req -> unit;
+    on_close: 'state -> unit;
+  }
+  (** Handler taking a stream of values and returning a stream as well. *)
 
+  type ('req, 'res) bidirectional_stream_handler =
+    | Bidirectional_stream_handler :
+        ('req, 'res, 'state) bidirectional_stream_handler_with_state
+        -> ('req, 'res) bidirectional_stream_handler
+  [@@unboxed]
+
+  (** A handler, i.e the server side implementation of a single RPC method.
+      Handlers come in various flavors because they make take, or return,
+      streams of values. *)
   type ('req, 'res) handler =
     | Unary of ('req -> 'res)
         (** Simple unary handler, gets a value, returns a value. *)
     | Client_stream of ('req, 'res) client_stream_handler
     | Server_stream of ('req, 'res) server_stream_handler
-    | Both_stream of ('req, 'res) both_stream_handler
+    | Bidirectional_stream of ('req, 'res) bidirectional_stream_handler
 
   type ('req, 'res) rpc = {
     name: string;

@@ -53,30 +53,37 @@ end
 
 (** Server end of services *)
 module Server = struct
+  type ('req, 'res, 'state) client_stream_handler_with_state = {
+    init: unit -> 'state;
+    on_item: 'state -> 'req -> unit;
+    on_close: 'state -> 'res;
+  }
+
   type ('req, 'res) client_stream_handler =
-    | Client_stream_handler : {
-        init: unit -> 'state;
-        on_input:
-          'state -> 'req -> [ `Update of 'state | `Return_early of 'res ];
-        on_close: 'state -> 'res;
-      }
+    | Client_stream_handler :
+        ('req, 'res, 'state) client_stream_handler_with_state
         -> ('req, 'res) client_stream_handler
+  [@@unboxed]
 
   type ('req, 'res) server_stream_handler = 'req -> 'res Push_stream.t -> unit
 
-  type ('req, 'res) both_stream_handler =
-    | Both_stream_handler : {
-        init: unit -> 'res Push_stream.t -> 'state;
-        on_input: 'state -> 'res Push_stream.t -> 'req -> 'state;
-        n_close: 'state -> 'res Push_stream.t -> unit;
-      }
-        -> ('req, 'res) both_stream_handler
+  type ('req, 'res, 'state) bidirectional_stream_handler_with_state = {
+    init: unit -> 'res Push_stream.t -> 'state;
+    on_item: 'state -> 'req -> unit;
+    on_close: 'state -> unit;
+  }
+
+  type ('req, 'res) bidirectional_stream_handler =
+    | Bidirectional_stream_handler :
+        ('req, 'res, 'state) bidirectional_stream_handler_with_state
+        -> ('req, 'res) bidirectional_stream_handler
+  [@@unboxed]
 
   type ('req, 'res) handler =
     | Unary of ('req -> 'res)
     | Client_stream of ('req, 'res) client_stream_handler
     | Server_stream of ('req, 'res) server_stream_handler
-    | Both_stream of ('req, 'res) both_stream_handler
+    | Bidirectional_stream of ('req, 'res) bidirectional_stream_handler
 
   type ('req, 'res) rpc = {
     name: string;
