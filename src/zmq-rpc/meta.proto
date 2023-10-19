@@ -35,6 +35,9 @@ enum Kind {
   // Error for a request. Body will be an encoded "Error" message,
   // in binary format.
   Error = 3;
+
+  // Close a stream. Body is empty.
+  CloseStream = 4;
 }
 
 // Body of a message returned in case of error.

@@ -32,15 +32,62 @@ let assemble_meth_name prefix name : string = spf "%s.%s" prefix name
 module Server = struct
   let default_spawn f = ignore (Thread.create f () : Thread.t)
 
+  type stream_rpc_handler =
+    | Client_stream_rpc :
+        ('req, 'res) Server.rpc * ('req, 'res) Server.client_stream_handler
+        -> stream_rpc_handler
+    | Both_stream_rpc :
+        ('req, 'res) Server.rpc * ('req, _) Server.client_stream_handler
+        -> stream_rpc_handler
+
   type t = {
     active: bool Atomic.t;
     spawn: (unit -> unit) -> unit;
-    handlers: Server.rpc Str_tbl.t;
+    handlers: Server.any_rpc Str_tbl.t;
+    incoming_streams: stream_rpc_handler Int32_tbl.t;
+        (** Maps a request ID to a server handler that takes client streams *)
     sock: [ `Router ] Zmq.Socket.t;
   }
 
   let stop self =
     if not (Atomic.exchange self.active false) then Zmq.Socket.close self.sock
+
+  (* how to reply *)
+  let send_back (self : t) ~encoder ~sender ~header msg : unit =
+    Pbrt.Encoder.clear encoder;
+    Meta.encode_pb_meta header encoder;
+    let header = Pbrt.Encoder.to_string encoder in
+    Zmq.Socket.send_all ~block:true self.sock [ sender; header; msg ]
+
+  let send_back_err (self : t) ~encoder ~sender ~(header : Meta.meta) msg =
+    Pbrt.Encoder.clear encoder;
+    Meta.encode_pb_error { Meta.msg } encoder;
+    let body = Pbrt.Encoder.to_string encoder in
+    send_back self ~encoder ~sender
+      ~header:(Meta.default_meta ~id:header.id ~kind:Error ())
+      body
+
+  let run_handler_ (self : t) ~sender ~(header : Meta.meta) (rpc : _ Server.rpc)
+      ~body : unit =
+    let encoder = Pbrt.Encoder.create () in
+    match rpc.f with
+    | Unary f ->
+      (match f body with
+      | res ->
+        (* we got the result *)
+        rpc.encode_pb_res res encoder;
+        let res_str = Pbrt.Encoder.to_string encoder in
+
+        send_back self ~encoder ~sender
+          ~header:(Meta.default_meta ~id:header.id ~kind:Reply ())
+          res_str
+      | exception e ->
+        send_back_err self ~encoder ~sender ~header
+          (spf "handler failed with exception %s" (Printexc.to_string e)))
+    | _ ->
+      (* TODO: handle these other cases *)
+      send_back_err self ~encoder ~sender ~header
+        "cannot handle this kind of handler"
 
   let handle_ (self : t) (msg : string list) : unit =
     let encoder = Pbrt.Encoder.create () in
@@ -49,65 +96,31 @@ module Server = struct
     | [ sender; header; body ] ->
       let header_dec = Pbrt.Decoder.of_string header in
       let header = Meta.decode_pb_meta header_dec in
-
-      (* how to reply *)
-      let send_back header msg : unit =
-        Pbrt.Encoder.clear encoder;
-        Meta.encode_pb_meta header encoder;
-        let header = Pbrt.Encoder.to_string encoder in
-        Zmq.Socket.send_all ~block:true self.sock [ sender; header; msg ]
-      in
-
-      let send_back_err msg =
-        Pbrt.Encoder.clear encoder;
-        Meta.encode_pb_error { Meta.msg } encoder;
-        let body = Pbrt.Encoder.to_string encoder in
-        send_back (Meta.default_meta ~id:header.id ~kind:Error ()) body
-      in
-
       (match header.kind, header.meth with
       | Request, Some m ->
         (match Str_tbl.find_opt self.handlers m with
         | None ->
           (* reply with error *)
           Format.eprintf "server: no handler for %S@." m;
-          send_back
-            (Meta.default_meta ~id:header.id ~kind:Error ())
+          send_back self ~encoder ~sender
+            ~header:(Meta.default_meta ~id:header.id ~kind:Error ())
             "no handler"
         | Some (Server.RPC rpc) ->
           let body_dec = Pbrt.Decoder.of_string body in
           let body = rpc.decode_pb_req body_dec in
 
           (* how to run the handler *)
-          let run_handler () =
-            match rpc.f with
-            | Unary f ->
-              (match f body with
-              | res ->
-                (* we got the result *)
-                let encoder = Pbrt.Encoder.create () in
-                rpc.encode_pb_res res encoder;
-                let res_str = Pbrt.Encoder.to_string encoder in
-
-                send_back
-                  (Meta.default_meta ~id:header.id ~kind:Reply ())
-                  res_str
-              | exception e ->
-                send_back_err
-                  (spf "handler failed with exception %s" (Printexc.to_string e)))
-            | _ ->
-              (* TODO: handle these other cases *)
-              send_back_err "cannot handle this kind of handler"
-          in
+          let run_handler () = run_handler_ self ~sender ~header rpc ~body in
 
           (* run handler in a background thread/task *)
           self.spawn run_handler)
       | Request, None ->
-        send_back_err "missing method name";
+        send_back_err self ~encoder ~sender ~header "missing method name";
         Format.eprintf "server: request: missing method name for %a@."
           Meta.pp_meta header
-      | Invalid, _ | Error, _ | Reply, _ ->
-        send_back_err "invalid message from client";
+      | Invalid, _ | Error, _ | Reply, _ | Close_stream, _ ->
+        send_back_err self ~encoder ~sender ~header
+          "invalid message from client";
         Format.eprintf "server: invalid message of kind=%a@." Meta.pp_kind
           header.kind)
     | _ ->
@@ -131,7 +144,9 @@ module Server = struct
           s.handlers)
       services;
 
-    let server = { active; spawn; handlers; sock } in
+    let server =
+      { active; spawn; handlers; sock; incoming_streams = Int32_tbl.create 16 }
+    in
     server
 
   let run (self : t) : unit =
@@ -224,7 +239,7 @@ module Client = struct
             let body_dec = Pbrt.Decoder.of_string body in
             let err = Meta.decode_pb_error body_dec in
             cb (Error err))
-        | Invalid | Request ->
+        | Invalid | Request | Close_stream ->
           Format.eprintf "client: invalid message of kind=%a@." Meta.pp_kind
             header.kind)
       | _msg ->
@@ -288,4 +303,6 @@ module Client = struct
     let res = Ivar_.create () in
     call self ?timeout rpc req ~on_result:(fun r -> Ivar_.set res r);
     Ivar_.wait res
+
+  let call_ret_stream (_self : t) _rpc _re ~on_event:_ : unit = ()
 end

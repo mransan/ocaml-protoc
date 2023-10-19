@@ -44,4 +44,11 @@ module Client : sig
     ('req, Value_mode.unary, 'res, Value_mode.unary) Client.rpc ->
     'req ->
     'res or_error
+
+  val call_ret_stream :
+    t ->
+    ('req, Value_mode.unary, 'res, Value_mode.stream) Client.rpc ->
+    'req ->
+    on_event:([ `Done | `Error of Meta.error | `Yield of 'res ] -> unit) ->
+    unit
 end
