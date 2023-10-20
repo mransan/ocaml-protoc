@@ -13,6 +13,7 @@
   (synopsis "Pure OCaml compiler for .proto files")
   (depends
     (odoc :with-doc)
+    (pbrt (= :version))
     (ocaml (>= 4.03)))
   (tags (protoc protobuf codegen)))
 
