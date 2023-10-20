@@ -50,7 +50,7 @@ let () =
       Compilation.compile cmdline cmd_line_file_options
     in
 
-    Generation.generate_code ocaml_types proto_file_options cmdline
+    Generation.generate_code ocaml_types ~proto_file_options cmdline
   with exn ->
     Printf.eprintf "%s\n" (Printexc.to_string exn);
     exit 1

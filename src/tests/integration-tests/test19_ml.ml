@@ -1,8 +1,6 @@
-module T = Test19_types
-module Pb = Test19_pb
-module Pp = Test19_pp
+module T = Test19
 
-let decode_ref_data () =
+let decode_pb_ref_data () =
   let hash = Hashtbl.create 3 in
   Hashtbl.add hash "one" "1";
   Hashtbl.add hash "two" "2";
@@ -25,8 +23,8 @@ let () =
   | Test_util.Decode ->
     let buffer, _ = Test_util.get_binary_file_content "test19.c2ml.data" in
     let decoder = Pbrt.Decoder.of_bytes buffer in
-    let hash = Pb.decode_hash decoder in
+    let hash = T.decode_pb_hash decoder in
     let () = test_contain_data hash in
     print_endline "ML: -- Good --"
   | Test_util.Encode ->
-    Test_util.encode "test19.ml2c.data" Pb.encode_hash (decode_ref_data ())
+    Test_util.encode "test19.ml2c.data" T.encode_pb_hash (decode_pb_ref_data ())

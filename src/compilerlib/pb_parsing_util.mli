@@ -104,7 +104,7 @@ val proto :
   ?extend:Pt.extend ->
   unit ->
   Pt.proto
-(** [proto ~message ~proto ()] will add [message] to [proto] and return a 
+(** [proto ~message ~proto ()] will add [message] to [proto] and return a
     the updated proto value. *)
 
 val finalize_proto_value : Pt.proto -> Pt.proto

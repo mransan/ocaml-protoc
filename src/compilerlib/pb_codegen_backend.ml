@@ -28,14 +28,14 @@ module Ot = Pb_codegen_ocaml_type
 module Tt = Pb_typing_type_tree
 module Typing_util = Pb_typing_util
 
-(* [rev_split_by_naming_convention s] will split [s] according to the protobuf
- *  coding style convention. The rule split are
- *  {ul
- *  {- character ['_'] is a separator}
- *  {- the first uppercase letter after a lower case is a separator
- *     (ie FooBar will be split into [ ["Bar";"Foo"] ]}
- *  }
- *)
+(** [rev_split_by_naming_convention s] will split [s] according to the protobuf
+    coding style convention. The rule split are
+    {ul
+    {- character ['_'] is a separator}
+    {- the first uppercase letter after a lower case is a separator
+       (ie FooBar will be split into [ ["Bar";"Foo"] ]}
+    }
+*)
 let rev_split_by_naming_convention s =
   let is_uppercase c = 64 < Char.code c && Char.code c < 91 in
 

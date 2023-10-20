@@ -34,15 +34,15 @@ type payload_kind =
   | Pk_bytes
 
 type user_defined_type = {
-  (* since code generated is split in multiple file (type, binary, json, ..)
+  udt_module_prefix: string option;
+      (** since code generated is split in multiple file (type, binary, json, ..)
      this defines the prefix for the given type, the suffix will
      be defined by each generator *)
-  udt_module_prefix: string option;
-  (* OCaml type name ie not the type name in proto file *)
   udt_type_name: string;
-  (* Need to keep track of this since encoding logic in binary
-     format is quite different *)
+      (** OCaml type name ie not the type name in proto file *)
   udt_type: [ `Message | `Enum ];
+      (** Need to keep track of this since encoding logic in binary
+     format is quite different *)
 }
 
 type basic_type =

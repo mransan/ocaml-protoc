@@ -1,6 +1,4 @@
-module T = Test07_types
-module Pb = Test07_pb
-module Pp = Test07_pp
+module T = Test07
 
 let decode_ref_data () =
   {
@@ -14,7 +12,7 @@ let () =
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test07.c2ml.data" Pb.decode_node Pp.pp_node
+    Test_util.decode "test07.c2ml.data" T.decode_pb_node T.pp_node
       (decode_ref_data ())
   | Test_util.Encode ->
-    Test_util.encode "test07.ml2c.data" Pb.encode_node (decode_ref_data ())
+    Test_util.encode "test07.ml2c.data" T.encode_pb_node (decode_ref_data ())

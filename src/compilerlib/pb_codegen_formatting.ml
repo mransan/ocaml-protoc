@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -34,12 +34,12 @@ let line scope s = scope.items <- Line s :: scope.items
 let linep scope format = Printf.ksprintf (line scope) format
 let empty_line scope = line scope ""
 
-let scope scope f =
+let sub_scope scope f : unit =
   let sub_scope = empty_scope () in
   f sub_scope;
   scope.items <- Scope sub_scope :: scope.items
 
-let print scope =
+let to_string (scope : scope) : string =
   let rec loop acc i = function
     | Line s :: tl -> loop ((Pb_util.indentation_prefix i ^ s) :: acc) i tl
     | Scope { items } :: tl ->
@@ -49,3 +49,5 @@ let print scope =
   in
 
   String.concat "\n" @@ loop [] 0 scope.items
+
+let output oc (scope : scope) : unit = output_string oc @@ to_string scope

@@ -25,7 +25,7 @@ type t = option_name * value
 
 type set
 (** Collection of options
- 
+
     Can be used for field/message or file options *)
 
 val empty : set

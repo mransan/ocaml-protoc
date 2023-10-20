@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -23,15 +23,13 @@
 
 *)
 
-module Int_map = Map.Make (struct
-  type t = int
+module Int_map = Pb_util.Int_map
 
-  let compare (x : int) (y : int) = Stdlib.compare x y
-end)
+type id = int
 
 type node = {
-  id: int;
-  sub: int list;
+  id: id;
+  sub: id list;
 }
 
 let create_node id sub = { id; sub }
@@ -51,7 +49,7 @@ module Tarjan = struct
 
   type tgraph = tnode Int_map.t
 
-  let reset g =
+  let new_tgraph (g : graph) : tgraph =
     Int_map.map
       (fun core -> { core; index = None; lowlink = None; on_stack = false })
       g
@@ -115,8 +113,8 @@ module Tarjan = struct
     ) else
       sccs, stack, index
 
-  let tarjan g =
-    let g = reset g in
+  let tarjan g : id list list =
+    let g = new_tgraph g in
     let sccs, _, _ =
       Int_map.fold
         (fun _ n (sccs, stack, index) ->

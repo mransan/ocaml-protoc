@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -26,10 +26,10 @@
 (** Typed tree construction and validation *)
 
 (** This module focuses on building the Type tree from the parse tree
-    and provides a number of validation in doing so. 
+    and provides a number of validation in doing so.
 
     Not that the field types are not resolved, and the returned type tree is
-    hence of type [unresolved_field_type Pb_typing_type_tree.proto_type]. 
+    hence of type [unresolved_field_type Pb_typing_type_tree.proto_type].
     The type resolution is done in [Pb_typing_resolution] *)
 
 module Pt = Pb_parsing_parse_tree
@@ -38,7 +38,7 @@ module Tt = Pb_typing_type_tree
 (** {2 Type tree construction} *)
 
 val validate : Pt.proto -> Pb_field_type.unresolved Tt.proto
-(** [validate file_name proto] makes a first phase compilation of the 
+(** [validate file_name proto] makes a first phase compilation of the
     parsed tree.  *)
 
 (** {2 Testing Only} *)

@@ -16,7 +16,7 @@ let is_imperative_type = function
   | Ot.Rft_associative (Ot.At_hashtable, _, _, _) ->
     true
 
-let gen_record_mutable module_prefix { Ot.r_name; r_fields } sc =
+let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
   let field_prefix field_type =
     if is_imperative_type field_type then
       ""
@@ -27,13 +27,12 @@ let gen_record_mutable module_prefix { Ot.r_name; r_fields } sc =
   let r_name = Pb_codegen_util.mutable_record_name r_name in
 
   F.linep sc "type %s = {" r_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.rf_label; rf_field_type; _ } ->
           let prefix = field_prefix rf_field_type in
           let type_ =
-            Pb_codegen_util.string_of_record_field_type ~module_prefix
-              rf_field_type
+            Pb_codegen_util.string_of_record_field_type rf_field_type
           in
           F.linep sc "%s%s : %s;" prefix rf_label type_)
         r_fields);
@@ -48,7 +47,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   in
 
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.rf_label; rf_field_type; rf_mutable } ->
           let prefix = field_prefix rf_mutable in
@@ -64,7 +63,7 @@ let gen_variant ?and_ variant sc =
 
   F.linep sc "%s %s =" (type_decl_of_and and_) v_name;
 
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.vc_constructor; vc_field_type; _ } ->
           match vc_field_type with
@@ -76,7 +75,7 @@ let gen_variant ?and_ variant sc =
 
 let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
   F.linep sc "%s %s =" (type_decl_of_and and_) cv_name;
-  F.scope sc (fun sc ->
+  F.sub_scope sc (fun sc ->
       List.iter
         (fun { Ot.cvc_name; _ } -> F.linep sc "| %s " cvc_name)
         cv_constructors)
@@ -89,7 +88,7 @@ let print_ppx_extension { Ot.type_level_ppx_extension; _ } sc =
   | None -> ()
   | Some ppx_content -> F.linep sc "[@@%s]" ppx_content
 
-let gen_struct ?and_ t scope =
+let gen_struct_full ~with_mutable_records ?and_ t scope =
   let { Ot.spec; _ } = t in
   (match spec with
   | Ot.Record r -> gen_record ?and_ r scope
@@ -97,7 +96,15 @@ let gen_struct ?and_ t scope =
   | Ot.Const_variant v -> gen_const_variant ?and_ v scope
   | Ot.Unit v -> gen_unit ?and_ v scope);
   print_ppx_extension t scope;
+
+  (match spec with
+  | Ot.Record r when with_mutable_records -> gen_record_mutable r scope
+  | _ -> ());
+
   true
+
+let gen_struct ?and_ t sc =
+  gen_struct_full ?and_ ~with_mutable_records:false t sc
 
 let gen_sig ?and_ t scope =
   let { Ot.spec; _ } = t in
@@ -110,4 +117,4 @@ let gen_sig ?and_ t scope =
   true
 
 let ocamldoc_title = "Types"
-let file_suffix = "types"
+let requires_mutable_records = false

@@ -1,6 +1,4 @@
-module T = Test27_types
-module Pb = Test27_pb
-module Pp = Test27_pp
+module T = Test27
 
 let test_data () =
   T.
@@ -15,6 +13,7 @@ let () =
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test27.c2ml.data" Pb.decode_test Pp.pp_test (test_data ())
+    Test_util.decode "test27.c2ml.data" T.decode_pb_test T.pp_test
+      (test_data ())
   | Test_util.Encode ->
-    Test_util.encode "test27.ml2c.data" Pb.encode_test (test_data ())
+    Test_util.encode "test27.ml2c.data" T.encode_pb_test (test_data ())

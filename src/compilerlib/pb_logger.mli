@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -37,7 +37,7 @@ val setup_from_out_channel : out_channel -> unit
 val log : ('a, out_channel, unit) format -> 'a
 (** [log format x y ] same as [Printf.printf] except that the message will
     get printed to the previously setup [out_channel] in the
-    [setup_from_out_channel] function. 
+    [setup_from_out_channel] function.
  *)
 
 val endline : string -> unit

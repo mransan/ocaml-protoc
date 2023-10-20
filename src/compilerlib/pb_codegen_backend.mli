@@ -23,9 +23,9 @@
 
 *)
 
-(** Compile protobuf parse tree to the ocaml type *)
+(** Compile protobuf typed tree to the OCaml AST.
 
-(** This module focuses on the compilation steps which transforms a
+    This module focuses on the compilation steps which transforms a
     fully resolved Protobuf message into an OCaml representation.
 
     After compilation this module also expose code generation

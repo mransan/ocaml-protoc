@@ -1,3 +1,5 @@
+module Pbpt = Pb_parsing_parse_tree
+
 let parse s =
   Pb_parsing_parser.extend_ Pb_parsing_lexer.lexer (Lexing.from_string s)
 
@@ -17,8 +19,8 @@ let () =
     :: [] ->
     assert (field_name = "i");
     assert (field_number = 1);
-    assert (field_type = "int32");
-    assert (field_options = []);
+    assert (field_type = `Int32);
+    assert (field_options = Pb_option.empty);
     assert (`Optional = field_label);
     ()
   | _ -> (assert false : unit));
@@ -36,8 +38,8 @@ let () =
   ] ->
     assert (field_name = "i");
     assert (field_number = 1);
-    assert (field_type = "int32");
-    assert (field_options = []);
+    assert (field_type = `Int32);
+    assert (field_options = Pb_option.empty);
     assert (`Optional = field_label);
     let {
       Pbpt.field_name;
@@ -50,8 +52,8 @@ let () =
     in
     assert (field_name = "j");
     assert (field_number = 2);
-    assert (field_type = "double");
-    assert (field_options = []);
+    assert (field_type = `Double);
+    assert (field_options = Pb_option.empty);
     assert (`Required = field_label);
     ()
   | _ -> (assert false : unit));

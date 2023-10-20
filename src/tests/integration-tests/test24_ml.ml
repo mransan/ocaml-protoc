@@ -1,14 +1,13 @@
-module T = Test24_types
-module Pb = Test24_pb
-module Pp = Test24_pp
+module T = Test24
 
-let decode_ref_data () : T.a = T.Value "value"
+let decode_pb_ref_data () : T.a = T.Value "value"
 
 let () =
   let mode = Test_util.parse_args () in
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test24.c2ml.data" Pb.decode_a Pp.pp_a (decode_ref_data ())
+    Test_util.decode "test24.c2ml.data" T.decode_pb_a T.pp_a
+      (decode_pb_ref_data ())
   | Test_util.Encode ->
-    Test_util.encode "test24.ml2c.data" Pb.encode_a (decode_ref_data ())
+    Test_util.encode "test24.ml2c.data" T.encode_pb_a (decode_pb_ref_data ())

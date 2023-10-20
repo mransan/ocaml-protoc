@@ -1,12 +1,10 @@
-module T = Test26_types
-module Pb = Test26_pb
-module Pp = Test26_pp
+module T = Test26
 
 let round32 v =
   let open Int32 in
   v |> bits_of_float |> float_of_bits
 
-let decode_ref_data () =
+let decode_pb_ref_data () =
   T.
     {
       double_value = Some 1.23;
@@ -25,7 +23,7 @@ let () =
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test26.c2ml.data" Pb.decode_test Pp.pp_test
-      (decode_ref_data ())
+    Test_util.decode "test26.c2ml.data" T.decode_pb_test T.pp_test
+      (decode_pb_ref_data ())
   | Test_util.Encode ->
-    Test_util.encode "test26.ml2c.data" Pb.encode_test (decode_ref_data ())
+    Test_util.encode "test26.ml2c.data" T.encode_pb_test (decode_pb_ref_data ())

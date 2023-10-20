@@ -1,8 +1,6 @@
-module T = Test22_types
-module Pb = Test22_pb
-module Pp = Test22_pp
+module T = Test22
 
-let decode_ref_data () =
+let decode_pb_ref_data () =
   T.
     {
       p1 =
@@ -40,10 +38,11 @@ let () =
 
   match mode with
   | Test_util.Decode ->
-    Test_util.decode "test22.c2ml.data" Pb.decode_couple Pp.pp_couple
-      (decode_ref_data ())
+    Test_util.decode "test22.c2ml.data" T.decode_pb_couple T.pp_couple
+      (decode_pb_ref_data ())
   | Test_util.Encode ->
-    Test_util.encode "test22.ml2c.data" Pb.encode_couple (decode_ref_data ())
+    Test_util.encode "test22.ml2c.data" T.encode_pb_couple
+      (decode_pb_ref_data ())
 
 let () =
   let expected_default_person =

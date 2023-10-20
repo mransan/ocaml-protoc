@@ -1,7 +1,7 @@
 let () =
   (* Create OCaml value of generated type *)
   let person =
-    Example01_types.
+    Example01.
       {
         name = "John Doe";
         id = 1234l;
@@ -10,7 +10,7 @@ let () =
       }
   in
 
-  print_endline @@ Format.asprintf "person: %a" Example01_pp.pp_person person;
+  print_endline @@ Format.asprintf "person: %a" Example01.pp_person person;
 
   (*
   let json = 
@@ -30,13 +30,13 @@ let () =
   *)
   let binary =
     let encoder = Pbrt.Encoder.create () in
-    Example01_pb.encode_person person encoder;
+    Example01.encode_pb_person person encoder;
     Pbrt.Encoder.to_bytes encoder
   in
 
   let person' =
     let decoder = Pbrt.Decoder.of_bytes binary in
-    Example01_pb.decode_person decoder
+    Example01.decode_pb_person decoder
   in
 
   assert (person = person')

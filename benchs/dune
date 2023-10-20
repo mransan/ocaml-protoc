@@ -4,7 +4,7 @@
  (libraries ocaml-protoc benchmark))
 
 (rule
- (targets foo_types.ml foo_types.mli foo_pb.ml foo_pb.mli foo_pp.ml)
+ (targets foo.ml foo.mli)
  (deps foo.proto)
  (action
-  (run ocaml-protoc %{deps} -binary -pp -ml_out .)))
+  (run ocaml-protoc %{deps} --binary --pp --ml_out .)))

@@ -1,4 +1,4 @@
-module T = Unittest_types
+module T = Unittest
 
 let () =
   assert (

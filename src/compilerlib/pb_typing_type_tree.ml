@@ -1,8 +1,8 @@
 (*
   The MIT License (MIT)
-  
+
   Copyright (c) 2016 Maxime Ransan <maxime.ransan@gmail.com>
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -25,9 +25,9 @@
 
 module Pt = Pb_parsing_parse_tree
 
-(** Protobuf typed tree. 
+(** Protobuf typed tree.
 
-    The typetree type is parametrized to allow for 2 phase compilation. 
+    The typetree type is parametrized to allow for 2 phase compilation.
  *)
 
 type ('a, 'b) field = {
@@ -36,8 +36,8 @@ type ('a, 'b) field = {
   field_default: Pb_option.constant option;
   field_options: Pb_option.set;
 }
-(** Field definition. 
-    
+(** Field definition.
+
     {ul
     {- ['a] is for [unresolved] or [resolved]}
     {- ['b] is for [field_label] to account for both normal and one of fields.}
@@ -66,10 +66,10 @@ type type_scope = {
   packages: string list;
   message_names: string list;
 }
-(** Type scope 
-      
-    The scope of a type (message or enum) is defined by the package 
-    (defined in the top of the proto file as well as the messages above 
+(** Type scope
+
+    The scope of a type (message or enum) is defined by the package
+    (defined in the top of the proto file as well as the messages above
     it since a message definition can be nested *)
 
 (** item for the message body *)

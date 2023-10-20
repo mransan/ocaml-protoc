@@ -57,6 +57,10 @@ message SingleOneOfDuplicate {
   }
 }
 
+message ABasicMessage {
+  string name = 1;
+}
+
 message Test {
   AllBasicTypes all_basic_types = 1; 
   Enum test_enum0 = 2; 
@@ -68,4 +72,5 @@ message Test {
   SingleOneOf single_one_of_small_message = 8; 
   SingleOneOf single_one_of_recursive = 9; 
   repeated Enum repeated_enum = 10;
+  repeated ABasicMessage basic = 11;
 }

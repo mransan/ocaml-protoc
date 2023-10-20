@@ -3,12 +3,12 @@
   (libraries pbrt))
 
 (rule
-  (targets unittest_types.ml unittest_types.mli)
+  (targets unittest.ml unittest.mli)
   (deps (:file unittest.proto) unittest_import.proto)
-  (action (run ocaml-protoc -ml_out . -I . %{file})))
+  (action (run ocaml-protoc --ml_out . -I . %{file})))
 
 (rule
-  (targets unittest_import_types.ml unittest_import_types.mli)
+  (targets unittest_import.ml unittest_import.mli)
   (deps (:file unittest_import.proto))
-  (action (run ocaml-protoc -ml_out . -I . %{file})))
+  (action (run ocaml-protoc --ml_out . -I . %{file})))
 

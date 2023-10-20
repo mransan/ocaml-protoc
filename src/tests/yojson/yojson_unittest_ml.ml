@@ -1,5 +1,5 @@
 let test =
-  let open Yojson_unittest_types in
+  let open Yojson_unittest in
   let all_basic_types =
     {
       field01 = 1.2000001;
@@ -51,6 +51,8 @@ let test =
     Recursive_value single_one_of_small_message
   in
 
+  let basic0 : abasic_message = { name = "basic0" } in
+
   {
     all_basic_types = Some all_basic_types;
     test_enum0;
@@ -62,17 +64,18 @@ let test =
     single_one_of_small_message = Some single_one_of_small_message;
     single_one_of_recursive = Some single_one_of_recursive;
     repeated_enum = [ test_enum0; test_enum1; test_enum2 ];
+    basic = [ basic0 ];
   }
 
 let () =
   let json_str =
-    Yojson_unittest_yojson.encode_test test |> Yojson.Basic.to_string
+    Yojson_unittest.encode_json_test test |> Yojson.Basic.to_string
   in
 
   print_endline json_str;
 
   let test' =
-    json_str |> Yojson.Basic.from_string |> Yojson_unittest_yojson.decode_test
+    json_str |> Yojson.Basic.from_string |> Yojson_unittest.decode_json_test
   in
 
   assert (test = test');
@@ -96,10 +99,10 @@ let () =
 
   let test' =
     Bytes.sub_string buffer 0 buffer_len
-    |> Yojson.Basic.from_string |> Yojson_unittest_yojson.decode_test
+    |> Yojson.Basic.from_string |> Yojson_unittest.decode_json_test
   in
 
-  let open Yojson_unittest_types in
+  let open Yojson_unittest in
   assert (test'.all_basic_types = test.all_basic_types);
   assert (test'.test_enum0 = test.test_enum0);
   assert (test'.test_enum1 = test.test_enum1);

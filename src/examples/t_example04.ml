@@ -1,5 +1,4 @@
-open Example04_types
-open Example04_pp
+open Example04
 
 let ( @+ ) value next = Cons { value; next }
 
