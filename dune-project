@@ -12,6 +12,7 @@
   (name ocaml-protoc)
   (synopsis "Pure OCaml compiler for .proto files")
   (depends
+    (odoc :with-doc)
     (ocaml (>= 4.03)))
   (tags (protoc protobuf codegen)))
 
@@ -20,6 +21,7 @@
   (synopsis "Runtime library for Protobuf tooling")
   (depends 
     stdlib-shims
+    (odoc :with-doc)
     (ocaml (>= 4.03)))
   (tags (protobuf encode decode)))
 
@@ -28,6 +30,7 @@
   (synopsis "Runtime library for ocaml-protoc to support JSON encoding/decoding")
   (depends 
     (ocaml (>= 4.03))
+    (odoc :with-doc)
     (yojson (>= 1.6))
     base64)
   (tags (protobuf encode decode)))

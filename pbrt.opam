@@ -11,6 +11,7 @@ bug-reports: "https://github.com/mransan/ocaml-protoc/issues"
 depends: [
   "dune" {>= "2.0"}
   "stdlib-shims"
+  "odoc" {with-doc}
   "ocaml" {>= "4.03"}
 ]
 build: [
