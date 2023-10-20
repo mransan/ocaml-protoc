@@ -87,6 +87,9 @@ module Decoder = struct
     (* safe: we won't modify the bytes *)
     of_bytes (Bytes.unsafe_of_string source)
 
+  let of_substring source offset len =
+    of_subbytes (Bytes.unsafe_of_string source) offset len
+
   let malformed_variant variant_name =
     raise (Failure (Malformed_variant variant_name))
 

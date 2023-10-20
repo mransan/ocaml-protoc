@@ -54,6 +54,10 @@ module Decoder : sig
   val of_string : string -> t
   (** [of_string s] creates a decoder positioned at start of string [s]. *)
 
+  val of_substring : string -> int -> int -> t
+  (** See {!of_subbytes}.
+      @since 3.0 *)
+
   (** {2 Errors} *)
 
   type error =
