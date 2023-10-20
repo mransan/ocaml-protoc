@@ -78,6 +78,11 @@ module Decoder = struct
 
   let of_bytes source = { source; offset = 0; limit = Bytes.length source }
 
+  let of_subbytes source offset len =
+    if offset + len > Bytes.length source then
+      invalid_arg "Pbrt.Decoder.of_subbypes";
+    { source; offset; limit = offset + len }
+
   let of_string source =
     (* safe: we won't modify the bytes *)
     of_bytes (Bytes.unsafe_of_string source)

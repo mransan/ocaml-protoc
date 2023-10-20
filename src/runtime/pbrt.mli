@@ -45,6 +45,11 @@ module Decoder : sig
   val of_bytes : bytes -> t
   (** [of_bytes b] creates a decoder positioned at start of bytes [b]. *)
 
+  val of_subbytes : bytes -> int -> int -> t
+  (** [of_subbytes b offset len] creates a decoder positioned at [offset]
+      in bytes [b], reading at most [len] bytes. This is similar
+      to [of_bytes (Bytes.sub b offset len)] but doesn't copy. *)
+
   val of_string : string -> t
   (** [of_string s] creates a decoder positioned at start of string [s]. *)
 
