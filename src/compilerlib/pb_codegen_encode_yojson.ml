@@ -16,9 +16,15 @@ let runtime_function_for_basic_type json_label basic_type pk =
   (* Int32 *)
   | Ot.Bt_int32, Ot.Pk_varint _ | Ot.Bt_int32, Ot.Pk_bits32 ->
     "make_int", Some "Int32.to_int"
+  (* Uint32 *)
+  | Ot.Bt_uint32, Ot.Pk_varint _ | Ot.Bt_uint32, Ot.Pk_bits32 ->
+    "make_int", Some "(fun (`unsigned x) -> Int32.to_int x)"
   (* Int64 *)
   | Ot.Bt_int64, Ot.Pk_varint _ | Ot.Bt_int64, Ot.Pk_bits64 ->
     "make_string", Some "Int64.to_string"
+  (* Uint64 *)
+  | Ot.Bt_uint64, Ot.Pk_varint _ | Ot.Bt_uint64, Ot.Pk_bits64 ->
+    "make_string", Some "(fun (`unsigned x) -> Int64.to_string x)"
   (* 64 bit integer are always encoded as string since
      only support up to 51 bits integer. An improvement
      could be to check for value > 2^51 and use int *)
@@ -142,6 +148,73 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
 
   F.linep sc "in (* match v.%s *)" rf_label
 
+let gen_rft_assoc
+      sc
+      ~rf_label
+      ~assoc_type
+      ~key_type
+      ~value_field:(value_type, value_pk)
+  =
+  let var_name = sp "v.%s" rf_label in
+  let json_label = Pb_codegen_util.camel_case_of_label rf_label in
+  let key_pat, key_exp =
+    match key_type with
+    | Ot.Bt_string -> "key", "key"
+    | Ot.Bt_int -> "key", "(Int.to_string key)"
+    | Ot.Bt_int32 -> "key", "(Int32.to_string key)"
+    | Ot.Bt_int64 -> "key", "(Int64.to_string key)"
+    | Ot.Bt_uint32 -> "(`unsigned key)", "(Int32.to_string key)"
+    | Ot.Bt_uint64 -> "(`unsigned key)", "(Int64.to_string key)"
+    | Ot.Bt_bool -> "key", "(Bool.to_string key)"
+    | Ot.Bt_float ->
+      Printf.eprintf "float cannot be used as a map key type";
+      exit 1
+    | Ot.Bt_bytes ->
+      Printf.eprintf "bytes cannot be used as a map key type";
+      exit 1
+  in
+  let write_assoc_field ~fn ~var_name =
+    F.line sc "let assoc_field =";
+    F.sub_scope sc (fun sc ->
+      F.linep sc "%s" var_name;
+      (match assoc_type with
+       | Ot.At_list -> ()
+       | Ot.At_hashtable ->
+         F.line sc "|> Hashtbl.to_seq |> List.of_seq");
+      F.linep sc "|> List.map (fun (%s, value) -> %s, %s value)" key_pat key_exp fn);
+    F.line sc "in";
+  in
+  F.line sc "let assoc =";
+  F.sub_scope sc (fun sc ->
+    (match value_type with
+     | Ot.Ft_unit -> unsupported json_label
+     | Ot.Ft_basic_type basic_type ->
+       let runtime_f, map_function =
+         runtime_function_for_basic_type json_label basic_type value_pk
+       in
+       (match map_function with
+        | None -> write_assoc_field ~fn:("Pbrt_yojson." ^ runtime_f) ~var_name
+        | Some map_function ->
+          let fn =
+            Printf.sprintf
+              "(fun value -> value |> %s |> Pbrt_yojson.%s)"
+              map_function
+              runtime_f
+          in
+          write_assoc_field ~fn ~var_name)
+     (* TODO Wrapper: add similar case for Ft_wrapper_type *)
+     (* User defined *)
+     | Ot.Ft_user_defined_type udt ->
+       let fn =
+         let function_prefix = "encode_json" in
+         Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
+       in
+       write_assoc_field ~fn ~var_name;
+     | _ -> unsupported json_label);
+    F.linep sc "(\"%s\", `Assoc assoc_field) :: assoc " json_label);
+  F.line sc "in"
+;;
+
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in
   F.linep sc "%s encode_json_%s (v:%s) = "
@@ -165,9 +238,8 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           | Ot.Rft_required _ ->
             Printf.eprintf "Only proto3 syntax supported in JSON encoding";
             exit 1
-          | Ot.Rft_associative _ ->
-            Printf.eprintf "Map field are not currently supported for JSON";
-            exit 1)
+          | Ot.Rft_associative (assoc_type, _, (key_type, _), value_field) ->
+            gen_rft_assoc sc ~rf_label ~assoc_type ~key_type ~value_field)
         r_fields (* List.iter *);
       F.line sc "`Assoc assoc")
 
