@@ -74,10 +74,6 @@ module Server = struct
   (** A single RPC method, alongside encoders and decoders for
         input and output types. . *)
 
-  (** A RPC endpoint. *)
-  type any_rpc = RPC : ('req, 'req_mode, 'res, 'res_mode) rpc -> any_rpc
-  [@@unboxed]
-
   (** Helper to build a RPC *)
   let mk_rpc :
       name:string ->
