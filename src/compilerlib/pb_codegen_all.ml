@@ -123,12 +123,10 @@ let generate_mutable_records (self : ocaml_mod) ocaml_types : unit =
     ocaml_types
 
 let generate_service_struct service sc : unit =
-  Pb_codegen_services.gen_service_client_struct service sc;
-  Pb_codegen_services.gen_service_server_struct service sc
+  Pb_codegen_services.gen_service_struct service sc
 
 let generate_service_sig service sc : unit =
-  Pb_codegen_services.gen_service_client_sig service sc;
-  Pb_codegen_services.gen_service_server_sig service sc
+  Pb_codegen_services.gen_service_sig service sc
 
 let generate_services (self : ocaml_mod) services : unit =
   generate_for_all_services services self.ml generate_service_struct None;
