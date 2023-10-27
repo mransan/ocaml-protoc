@@ -101,20 +101,13 @@ module Server = struct
       encode_json_res;
     }
 
-  type 'h handler = {
-    name: string;
-    handle: 'h;
-  }
-  (** A handler of some runtime-specific type. This
-        might be synchronous, monadic, streaming, etc. *)
-
   type 'h t = {
     service_name: string;  (** Name of the service *)
     package: string list;
         (** The package this belongs in (e.g. "bigco.auth.secretpasswordstash"),
          split along "." *)
-    handlers: 'h handler list;  (** A list of handlers *)
+    handlers: 'h list;  (** A list of handlers *)
   }
   (** A service with fixed set of methods, which depends on the concrete RPC
-      implementation. *)
+      implementation. Each method is a handler of some type ['h]. *)
 end

@@ -101,8 +101,8 @@ let gen_service_client_struct (service : Ot.service) sc : unit =
         (string_list_of_package service.service_packages);
       F.linep sc "    ~service_name:%S ~rpc_name:%S" service.service_name
         rpc.rpc_name;
-      F.linep sc "    ~req_mode:%s" req_mode_witness;
-      F.linep sc "    ~res_mode:%s" res_mode_witness;
+      F.linep sc "    ~req_mode:Client.%s" req_mode_witness;
+      F.linep sc "    ~res_mode:Client.%s" res_mode_witness;
       F.linep sc "    ~encode_json_req:%s"
         (function_name_encode_json ~service_name ~rpc_name rpc.rpc_req);
       F.linep sc "    ~encode_pb_req:%s"
@@ -134,8 +134,8 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
       F.linep sc "let _rpc_%s : (%s,%s,%s,%s) Server.rpc = " name req req_mode
         res res_mode;
       F.linep sc "  (Server.mk_rpc ~name:%S" rpc.rpc_name;
-      F.linep sc "    ~req_mode:%s ~res_mode:%s" req_mode_witness
-        res_mode_witness;
+      F.linep sc "    ~req_mode:Server.%s" req_mode_witness;
+      F.linep sc "    ~res_mode:Server.%s" res_mode_witness;
       F.linep sc "    ~encode_json_res:%s"
         (function_name_encode_json ~service_name ~rpc_name rpc.rpc_res);
       F.linep sc "    ~encode_pb_res:%s"
@@ -156,16 +156,14 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
       F.linep sc "  ~%s" name)
     service.service_body;
   F.line sc "  () : _ Server.t =";
-  F.linep sc "  {  Server.";
-  F.linep sc "     service_name=%S;" service_name;
-  F.linep sc "     package=%s;"
-    (string_list_of_package service.service_packages);
-  F.line sc "     handlers=[";
+  F.linep sc "  { Server.";
+  F.linep sc "    service_name=%S;" service_name;
+  F.linep sc "    package=%s;" (string_list_of_package service.service_packages);
+  F.line sc "    handlers=[";
   List.iter
     (fun (rpc : Ot.rpc) ->
       let f = Pb_codegen_util.function_name_of_rpc rpc in
-      F.linep sc "       {Server.name=%S; handle=%s %s};" rpc.rpc_name f
-        (spf "_rpc_%s" f))
+      F.linep sc "       (%s %s);" f (spf "_rpc_%s" f))
     service.service_body;
   F.line sc "    ];";
   F.line sc "  }";
