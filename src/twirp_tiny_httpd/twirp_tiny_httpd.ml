@@ -140,8 +140,8 @@ let add_service ?middlewares ?(prefix = Some "twirp") (server : H.t)
       | None -> route
     in
 
-    H.add_route_handler server ~meth:`POST ?middlewares route @@ fun req ->
-    handle_rpc handler req
+    H.add_route_handler server ~meth:`POST ?middlewares route (fun req ->
+        handle_rpc handler req)
   in
 
   List.iter add_handler service.handlers
