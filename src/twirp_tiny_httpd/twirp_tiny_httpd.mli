@@ -5,11 +5,37 @@
 module Twirp_error = Twirp_error
 module Error_codes = Error_codes
 
+val fail : ?msg:string -> Error_codes.t -> 'a
+val failf : Error_codes.t -> ('a, Format.formatter, unit, 'b) format4 -> 'a
+
+(** A request handler, specialized for Twirp. *)
+type handler =
+  | Handler : {
+      rpc:
+        ( 'req,
+          Pbrt_services.Value_mode.unary,
+          'res,
+          Pbrt_services.Value_mode.unary )
+        Pbrt_services.Server.rpc;
+      f: 'req -> 'res;
+    }
+      -> handler
+
+val mk_handler :
+  ( 'req,
+    Pbrt_services.Value_mode.unary,
+    'res,
+    Pbrt_services.Value_mode.unary )
+  Pbrt_services.Server.rpc ->
+  ('req -> 'res) ->
+  handler
+(** Create a handler. *)
+
 val add_service :
   ?middlewares:Tiny_httpd.Middleware.t list ->
   ?prefix:string option ->
   Tiny_httpd.t ->
-  Pbrt_services.Server.t ->
+  handler Pbrt_services.Server.t ->
   unit
 (** [add_service http_server service] adds all handlers of [service]
     to the given httpd.
