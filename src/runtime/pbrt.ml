@@ -358,17 +358,23 @@ end
 module Encode_visitor = struct
   type key = int * payload_kind
 
+  type value_t = {
+    char: char -> unit;
+    varint: int -> unit;
+    varint32: int32 -> unit;
+    varint64: int64 -> unit;
+    int32: int32 -> unit;
+    int64: int64 -> unit;
+    float32: float -> unit;
+    float64: float -> unit;
+    bytes: bytes -> int -> int -> unit;
+  }
+
   type t = {
-    char: key -> char -> unit;
-    varint: key -> int -> unit;
-    varint32: key -> int32 -> unit;
-    varint64: key -> int64 -> unit;
-    int32: key -> int32 -> unit;
-    int64: key -> int64 -> unit;
-    float32: key -> float -> unit;
-    float64: key -> float -> unit;
-    bytes: key -> bytes -> int -> int -> unit;
-    nested: key -> (t -> unit) -> unit;
+    value: key -> (value_t -> unit) -> unit;  (** Single value *)
+    packed: key -> (value_t -> unit) -> unit;
+        (** Packed values, in a nested context *)
+    nested: key -> (t -> unit) -> unit;  (** Nested sub-message *)
   }
 
   type error = Overflow of string
@@ -387,69 +393,73 @@ module Encode_visitor = struct
             (Printf.sprintf "Protobuf.Encoder.Failure(%s)" (error_to_string e))
         | _ -> None)
 
-  let[@inline] varint key (i : int64) (self : t) = self.varint64 key i
-  let[@inline] int_as_varint key i (self : t) = self.varint key i
-
-  let[@inline] zigzag key (i : int64) (self : t) =
-    self.varint64 key Int64.(logxor (shift_left i 1) (shift_right i 63))
-
-  let[@inline] bytes key b (self : t) : unit =
-    self.bytes key b 0 (Bytes.length b)
-
+  let[@inline] empty_nested key (self : t) : unit = self.nested key ignore
   let[@inline] nested key f (self : t) : unit = self.nested key f
+  let[@inline] value key f (self : t) : unit = self.value key f
+  let[@inline] packed key f (self : t) : unit = self.packed key f
+
+  let packed_list key f l (self : t) : unit =
+    self.packed key (fun v -> List.iter (fun x -> f x v) l)
 
   let map_entry ~encode_key ~encode_value kv map_key (self : t) : unit =
     let (key_value, key_pk), (value_value, value_pk) = kv in
     nested map_key
-      (fun t ->
-        encode_key (1, key_pk) key_value t;
-        encode_value (2, value_pk) value_value t)
+      (fun self ->
+        value (1, key_pk) (encode_key key_value) self;
+        value (2, value_pk) (encode_value value_value) self)
       self
 
-  let[@inline] empty_nested key (self : t) : unit = self.nested key ignore
-  let[@inline] int_as_zigzag key i self = zigzag key (Int64.of_int i) self
-  let[@inline] int32_as_varint key i self = self.varint32 key i
-  let[@inline] int32_as_zigzag key i self = zigzag key (Int64.of_int32 i) self
+  let[@inline] varint (i : int64) (self : value_t) = self.varint64 i
+  let[@inline] int_as_varint i (self : value_t) = self.varint i
+
+  let[@inline] zigzag (i : int64) (self : value_t) =
+    self.varint64 Int64.(logxor (shift_left i 1) (shift_right i 63))
+
+  let[@inline] sub_bytes b i len (self : value_t) : unit = self.bytes b i len
+  let[@inline] bytes b (self : value_t) : unit = self.bytes b 0 (Bytes.length b)
+  let[@inline] int_as_zigzag i self = zigzag (Int64.of_int i) self
+  let[@inline] int32_as_varint i self = self.varint32 i
+  let[@inline] int32_as_zigzag i self = zigzag (Int64.of_int32 i) self
   let int64_as_varint = varint
   let int64_as_zigzag = zigzag
-  let[@inline] int32_as_bits32 key i self = self.int32 key i
-  let[@inline] int64_as_bits64 key i self = self.int64 key i
+  let[@inline] int32_as_bits32 i self = self.int32 i
+  let[@inline] int64_as_bits64 i self = self.int64 i
 
-  let uint32_as_varint key = function
-    | `unsigned d -> int32_as_varint key d
+  let uint32_as_varint = function
+    | `unsigned d -> int32_as_varint d
 
-  let uint32_as_zigzag key = function
-    | `unsigned d -> int32_as_zigzag key d
+  let uint32_as_zigzag = function
+    | `unsigned d -> int32_as_zigzag d
 
-  let uint64_as_varint key = function
-    | `unsigned d -> varint key d
+  let uint64_as_varint = function
+    | `unsigned d -> varint d
 
-  let uint64_as_zigzag key = function
-    | `unsigned d -> zigzag key d
+  let uint64_as_zigzag = function
+    | `unsigned d -> zigzag d
 
-  let uint32_as_bits32 key = function
-    | `unsigned x -> int32_as_bits32 key x
+  let uint32_as_bits32 = function
+    | `unsigned x -> int32_as_bits32 x
 
-  let uint64_as_bits64 key = function
-    | `unsigned x -> int64_as_bits64 key x
+  let uint64_as_bits64 = function
+    | `unsigned x -> int64_as_bits64 x
 
-  let[@inline] bool key b (self : t) =
-    self.char key
+  let[@inline] bool b (self : value_t) =
+    self.char
       (Char.unsafe_chr
          (if b then
            1
          else
            0))
 
-  let float_as_bits32 key f self = self.float32 key f
-  let float_as_bits64 key f self = self.float64 key f
-  let int_as_bits32 key i self = self.int32 key (Int32.of_int i)
-  let int_as_bits64 key i self = self.int64 key (Int64.of_int i)
+  let float_as_bits32 f self = self.float32 f
+  let float_as_bits64 f self = self.float64 f
+  let int_as_bits32 i self = self.int32 (Int32.of_int i)
+  let int_as_bits64 i self = self.int64 (Int64.of_int i)
 
-  let string key s self =
+  let string s self =
     (* safe: we're not going to modify the bytes, and [s] will
        not change. *)
-    bytes key (Bytes.unsafe_of_string s) self
+    bytes (Bytes.unsafe_of_string s) self
 
   let double_value_key = 1, Bits64
 
@@ -458,7 +468,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some f -> float_as_bits64 double_value_key f self)
+        | Some f -> value double_value_key (float_as_bits64 f) self)
       self
 
   let float_value_key = 1, Bits32
@@ -468,7 +478,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some f -> float_as_bits32 float_value_key f self)
+        | Some f -> value float_value_key (float_as_bits32 f) self)
       self
 
   let int64_value_key = 1, Varint
@@ -478,7 +488,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some i -> int64_as_varint int64_value_key i self)
+        | Some i -> value int64_value_key (int64_as_varint i) self)
       self
 
   let int32_value_key = 1, Varint
@@ -488,7 +498,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some i -> int32_as_varint int32_value_key i self)
+        | Some i -> value int32_value_key (int32_as_varint i) self)
       self
 
   let bool_value_key = 1, Varint
@@ -498,7 +508,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some b -> bool bool_value_key b self)
+        | Some b -> value bool_value_key (bool b) self)
       self
 
   let string_value_key = 1, Bytes
@@ -508,7 +518,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some s -> string string_value_key s self)
+        | Some s -> value string_value_key (string s) self)
       self
 
   let bytes_value_key = 1, Bytes
@@ -518,7 +528,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some b -> bytes bytes_value_key b self)
+        | Some b -> value bytes_value_key (bytes b) self)
       self
 end
 
@@ -627,66 +637,61 @@ module Encoder = struct
     in
     int_as_varint (pk' lor (k lsl 3)) e
 
-  let rec as_visitor (self : t) : Encode_visitor.t =
+  let as_value_t (self : t) : Encode_visitor.value_t =
     {
-      Encode_visitor.char =
-        (fun k c ->
-          key k self;
-          add_char self c);
-      varint =
-        (fun k i ->
-          key k self;
-          varint (Int64.of_int i) self);
-      varint32 =
-        (fun k i ->
-          key k self;
-          varint (Int64.of_int32 i) self);
-      varint64 =
-        (fun k i ->
-          key k self;
-          varint i self);
-      int32 =
-        (fun k i ->
-          key k self;
-          bits32 i self);
-      int64 =
-        (fun k i ->
-          key k self;
-          bits64 i self);
-      float32 =
-        (fun k f ->
-          key k self;
-          bits32 (Int32.bits_of_float f) self);
-      float64 =
-        (fun k f ->
-          key k self;
-          bits64 (Int64.bits_of_float f) self);
-      bytes =
-        (fun k b i len ->
-          key k self;
-          add_bytes self b i len);
-      nested =
-        (fun k f ->
-          key k self;
-
-          let sub_enc =
-            match self.sub with
-            | Some e' -> e'
-            | None ->
-              let e' = create () in
-              self.sub <- Some e';
-              e'
-          in
-
-          let sub_v = as_visitor sub_enc in
-          f sub_v;
-
-          int_as_varint (length sub_enc) self;
-          add_buffer self sub_enc;
-          clear sub_enc);
+      Encode_visitor.char = (fun c -> add_char self c);
+      varint = (fun i -> varint (Int64.of_int i) self);
+      varint32 = (fun i -> varint (Int64.of_int32 i) self);
+      varint64 = (fun i -> varint i self);
+      int32 = (fun i -> bits32 i self);
+      int64 = (fun i -> bits64 i self);
+      float32 = (fun f -> bits32 (Int32.bits_of_float f) self);
+      float64 = (fun f -> bits64 (Int64.bits_of_float f) self);
+      bytes = (fun b i len -> add_bytes self b i len);
     }
 
-  let encode (self : t) f : unit = f (as_visitor self)
+  let rec as_visitor (self : t) : Encode_visitor.t =
+    let value_t = as_value_t self in
+
+    let with_sub_enc k f =
+      key k self;
+
+      let sub_enc : t =
+        match self.sub with
+        | Some e' ->
+          clear e';
+          e'
+        | None ->
+          let e' = create () in
+          self.sub <- Some e';
+          e'
+      in
+      f sub_enc;
+
+      int_as_varint (length sub_enc) self;
+      add_buffer self sub_enc;
+      clear sub_enc
+    in
+
+    let nested k f = with_sub_enc k (fun sub_enc -> f (as_visitor sub_enc)) in
+
+    let packed k f =
+      with_sub_enc k (fun sub_enc ->
+          let sub_v = as_value_t sub_enc in
+          f sub_v)
+    in
+
+    {
+      Encode_visitor.value =
+        (fun k f ->
+          key k self;
+          f value_t);
+      nested;
+      packed;
+    }
+
+  let encode (self : t) f x : unit = f x (as_visitor self)
+  let encode_any (self : t) f : unit = f (as_visitor self)
 end
 
 module Repeated_field = struct

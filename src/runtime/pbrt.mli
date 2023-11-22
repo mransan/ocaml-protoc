@@ -230,17 +230,23 @@ end
 module Encode_visitor : sig
   type key = int * payload_kind
 
+  type value_t = {
+    char: char -> unit;
+    varint: int -> unit;
+    varint32: int32 -> unit;
+    varint64: int64 -> unit;
+    int32: int32 -> unit;
+    int64: int64 -> unit;
+    float32: float -> unit;
+    float64: float -> unit;
+    bytes: bytes -> int -> int -> unit;
+  }
+
   type t = {
-    char: key -> char -> unit;
-    varint: key -> int -> unit;
-    varint32: key -> int32 -> unit;
-    varint64: key -> int64 -> unit;
-    int32: key -> int32 -> unit;
-    int64: key -> int64 -> unit;
-    float32: key -> float -> unit;
-    float64: key -> float -> unit;
-    bytes: key -> bytes -> int -> int -> unit;
-    nested: key -> (t -> unit) -> unit;
+    value: key -> (value_t -> unit) -> unit;  (** Single value *)
+    packed: key -> (value_t -> unit) -> unit;
+        (** Packed values, in a nested context *)
+    nested: key -> (t -> unit) -> unit;  (** Nested sub-message *)
   }
 
   (** {2 Encoding Functions}
@@ -251,9 +257,13 @@ module Encode_visitor : sig
   val nested : key -> (t -> unit) -> t -> unit
   (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
 
+  val value : key -> (value_t -> unit) -> t -> unit
+  val packed : key -> (value_t -> unit) -> t -> unit
+  val packed_list : key -> ('a -> value_t -> unit) -> 'a list -> t -> unit
+
   val map_entry :
-    encode_key:(key -> 'a -> t -> unit) ->
-    encode_value:(key -> 'b -> t -> unit) ->
+    encode_key:('a -> value_t -> unit) ->
+    encode_value:('b -> value_t -> unit) ->
     ('a * payload_kind) * ('b * payload_kind) ->
     key ->
     t ->
@@ -262,61 +272,62 @@ module Encode_visitor : sig
   val empty_nested : key -> t -> unit
   (** [nested f e] encodes a zero length empty message *)
 
-  val int_as_varint : key -> int -> t -> unit
+  val int_as_varint : int -> value_t -> unit
   (** [int_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
 
-  val int_as_zigzag : key -> int -> t -> unit
+  val int_as_zigzag : int -> value_t -> unit
   (** [int_as_zigzag i e] encodes [i] in [e] with [Varint] zigzag encoding *)
 
-  val int32_as_varint : key -> int32 -> t -> unit
+  val int32_as_varint : int32 -> value_t -> unit
   (** [int32_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
 
-  val int32_as_zigzag : key -> int32 -> t -> unit
+  val int32_as_zigzag : int32 -> value_t -> unit
   (** [int32_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
 
-  val int64_as_varint : key -> int64 -> t -> unit
+  val int64_as_varint : int64 -> value_t -> unit
   (** [int64_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
 
-  val int64_as_zigzag : key -> int64 -> t -> unit
+  val int64_as_zigzag : int64 -> value_t -> unit
   (** [int64_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
 
-  val int32_as_bits32 : key -> int32 -> t -> unit
+  val int32_as_bits32 : int32 -> value_t -> unit
   (** [int32_as_varint i e] encodes [i] in [e] with [Bits32] encoding *)
 
-  val int64_as_bits64 : key -> int64 -> t -> unit
+  val int64_as_bits64 : int64 -> value_t -> unit
   (** [int64_as_varint i e] encodes [i] in [e] with [Bits64] encoding *)
 
-  val uint32_as_varint : key -> [ `unsigned of int32 ] -> t -> unit
-  val uint32_as_zigzag : key -> [ `unsigned of int32 ] -> t -> unit
-  val uint64_as_varint : key -> [ `unsigned of int64 ] -> t -> unit
-  val uint64_as_zigzag : key -> [ `unsigned of int64 ] -> t -> unit
-  val uint32_as_bits32 : key -> [ `unsigned of int32 ] -> t -> unit
-  val uint64_as_bits64 : key -> [ `unsigned of int64 ] -> t -> unit
+  val uint32_as_varint : [ `unsigned of int32 ] -> value_t -> unit
+  val uint32_as_zigzag : [ `unsigned of int32 ] -> value_t -> unit
+  val uint64_as_varint : [ `unsigned of int64 ] -> value_t -> unit
+  val uint64_as_zigzag : [ `unsigned of int64 ] -> value_t -> unit
+  val uint32_as_bits32 : [ `unsigned of int32 ] -> value_t -> unit
+  val uint64_as_bits64 : [ `unsigned of int64 ] -> value_t -> unit
 
-  val bool : key -> bool -> t -> unit
+  val bool : bool -> value_t -> unit
   (** [encode b e] encodes [b] in [e] with [Varint] encoding *)
 
-  val float_as_bits32 : key -> float -> t -> unit
+  val float_as_bits32 : float -> value_t -> unit
   (** [float_as_bits32 f e] encodes [f] in [e] with [Bits32] encoding *)
 
-  val float_as_bits64 : key -> float -> t -> unit
+  val float_as_bits64 : float -> value_t -> unit
   (** [float_as_bits64 f e] encodes [f] in [e] with [Bits64] encoding *)
 
-  val int_as_bits32 : key -> int -> t -> unit
+  val int_as_bits32 : int -> value_t -> unit
   (** [int_as_bits32 i e] encodes [i] in [e] with [Bits32] encoding
       TODO : add error handling
    *)
 
-  val int_as_bits64 : key -> int -> t -> unit
+  val int_as_bits64 : int -> value_t -> unit
   (** [int_as_bits64 i e] encodes [i] in [e] with [Bits64] encoding
    *)
 
-  val string : key -> string -> t -> unit
+  val string : string -> value_t -> unit
   (** [string s e] encodes [s] in [e] *)
 
-  val bytes : key -> bytes -> t -> unit
+  val bytes : bytes -> value_t -> unit
   (** [string s e] encodes [s] in [e] *)
 
+  val sub_bytes : bytes -> int -> int -> value_t -> unit
   val wrapper_double_value : key -> float option -> t -> unit
   val wrapper_float_value : key -> float option -> t -> unit
   val wrapper_int64_value : key -> int64 option -> t -> unit
@@ -378,8 +389,13 @@ module Encoder : sig
 
   (** {2 Encoding} *)
 
-  val encode : t -> (Encode_visitor.t -> unit) -> unit
-  (** [encode enc f] calls [f] on a visitor that will write into [enc].
+  val encode : t -> ('a -> Encode_visitor.t -> unit) -> 'a -> unit
+  (** [encode enc f x] calls [f x] on a visitor that will write into [enc].
+      When [f] returns, [enc] contains all the written data which can then
+      be extracted via {!to_string}, {!to_bytes}, etc.. *)
+
+  val encode_any : t -> (Encode_visitor.t -> unit) -> unit
+  (** [encode_any enc f] calls [f] on a visitor that will write into [enc].
       When [f] returns, [enc] contains all the written data which can then
       be extracted via {!to_string}, {!to_bytes}, etc.. *)
 end
