@@ -33,6 +33,8 @@ type payload_kind =
   | Bits64
   | Bytes
 
+type 'a iter = ('a -> unit) -> unit
+
 (** Decoding protobufs. *)
 module Decoder : sig
   (** {2 Types} *)
@@ -243,8 +245,9 @@ module Encode_visitor : sig
   }
 
   type t = {
-    value: key -> (value_t -> unit) -> unit;  (** Single value *)
-    packed: key -> (value_t -> unit) -> unit;
+    value: 'a. key -> ('a -> value_t -> unit) -> 'a -> unit;
+        (** Single value *)
+    packed: 'a. key -> ('a -> value_t -> unit) -> 'a iter -> unit;
         (** Packed values, in a nested context *)
     nested: key -> (t -> unit) -> unit;  (** Nested sub-message *)
   }
@@ -257,8 +260,8 @@ module Encode_visitor : sig
   val nested : key -> (t -> unit) -> t -> unit
   (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
 
-  val value : key -> (value_t -> unit) -> t -> unit
-  val packed : key -> (value_t -> unit) -> t -> unit
+  val value : key -> ('a -> value_t -> unit) -> 'a -> t -> unit
+  val packed : key -> ('a -> value_t -> unit) -> 'a iter -> t -> unit
   val packed_list : key -> ('a -> value_t -> unit) -> 'a list -> t -> unit
 
   val map_entry :
@@ -452,6 +455,8 @@ module Repeated_field : sig
 
   val iter : ('a -> unit) -> 'a t -> unit
   (** [iter f c] applies [f] to all element in [c] *)
+
+  val to_iter : 'a t -> 'a iter
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
   (** [iteri f c] applies [f] to all element in [c] *)

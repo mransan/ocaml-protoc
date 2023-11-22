@@ -27,6 +27,8 @@ type payload_kind =
   | Bits64
   | Bytes
 
+type 'a iter = ('a -> unit) -> unit
+
 let min_int_as_int32, max_int_as_int32 =
   Int32.of_int min_int, Int32.of_int max_int
 
@@ -371,10 +373,9 @@ module Encode_visitor = struct
   }
 
   type t = {
-    value: key -> (value_t -> unit) -> unit;  (** Single value *)
-    packed: key -> (value_t -> unit) -> unit;
-        (** Packed values, in a nested context *)
-    nested: key -> (t -> unit) -> unit;  (** Nested sub-message *)
+    value: 'a. key -> ('a -> value_t -> unit) -> 'a -> unit;
+    packed: 'a. key -> ('a -> value_t -> unit) -> 'a iter -> unit;
+    nested: key -> (t -> unit) -> unit;
   }
 
   type error = Overflow of string
@@ -395,18 +396,19 @@ module Encode_visitor = struct
 
   let[@inline] empty_nested key (self : t) : unit = self.nested key ignore
   let[@inline] nested key f (self : t) : unit = self.nested key f
-  let[@inline] value key f (self : t) : unit = self.value key f
-  let[@inline] packed key f (self : t) : unit = self.packed key f
+  let[@inline] value key f x (self : t) : unit = self.value key f x
+  let[@inline] packed key f x (self : t) : unit = self.packed key f x
+  let[@inline] iter_of_list_ l f = List.iter f l
 
-  let packed_list key f l (self : t) : unit =
-    self.packed key (fun v -> List.iter (fun x -> f x v) l)
+  let[@inline] packed_list key f l (self : t) : unit =
+    self.packed key f (iter_of_list_ l)
 
   let map_entry ~encode_key ~encode_value kv map_key (self : t) : unit =
     let (key_value, key_pk), (value_value, value_pk) = kv in
     nested map_key
       (fun self ->
-        value (1, key_pk) (encode_key key_value) self;
-        value (2, value_pk) (encode_value value_value) self)
+        value (1, key_pk) encode_key key_value self;
+        value (2, value_pk) encode_value value_value self)
       self
 
   let[@inline] varint (i : int64) (self : value_t) = self.varint64 i
@@ -468,7 +470,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some f -> value double_value_key (float_as_bits64 f) self)
+        | Some f -> value double_value_key float_as_bits64 f self)
       self
 
   let float_value_key = 1, Bits32
@@ -478,7 +480,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some f -> value float_value_key (float_as_bits32 f) self)
+        | Some f -> value float_value_key float_as_bits32 f self)
       self
 
   let int64_value_key = 1, Varint
@@ -488,7 +490,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some i -> value int64_value_key (int64_as_varint i) self)
+        | Some i -> value int64_value_key int64_as_varint i self)
       self
 
   let int32_value_key = 1, Varint
@@ -498,7 +500,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some i -> value int32_value_key (int32_as_varint i) self)
+        | Some i -> value int32_value_key int32_as_varint i self)
       self
 
   let bool_value_key = 1, Varint
@@ -508,7 +510,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some b -> value bool_value_key (bool b) self)
+        | Some b -> value bool_value_key bool b self)
       self
 
   let string_value_key = 1, Bytes
@@ -518,7 +520,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some s -> value string_value_key (string s) self)
+        | Some s -> value string_value_key string s self)
       self
 
   let bytes_value_key = 1, Bytes
@@ -528,7 +530,7 @@ module Encode_visitor = struct
       (fun self ->
         match v with
         | None -> ()
-        | Some b -> value bytes_value_key (bytes b) self)
+        | Some b -> value bytes_value_key bytes b self)
       self
 end
 
@@ -675,17 +677,17 @@ module Encoder = struct
 
     let nested k f = with_sub_enc k (fun sub_enc -> f (as_visitor sub_enc)) in
 
-    let packed k f =
+    let packed k f iter =
       with_sub_enc k (fun sub_enc ->
           let sub_v = as_value_t sub_enc in
-          f sub_v)
+          iter (fun x -> f x sub_v))
     in
 
     {
       Encode_visitor.value =
-        (fun k f ->
+        (fun k f x ->
           key k self;
-          f value_t);
+          f x value_t);
       nested;
       packed;
     }
@@ -772,6 +774,8 @@ module Repeated_field = struct
     for j = 0 to len do
       f (Array.unsafe_get a j)
     done
+
+  let[@inline] to_iter self yield = iter yield self
 
   let iteri f { i; a; l; _ } =
     let counter = ref 0 in
