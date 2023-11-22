@@ -21,7 +21,7 @@ module Client = struct
     req_mode: 'req_mode mode;
     res_mode: 'res_mode mode;
     encode_json_req: 'req -> Yojson.Basic.t;
-    encode_pb_req: 'req -> Pbrt.Encoder.t -> unit;
+    encode_pb_req: 'req -> Pbrt.Encode_visitor.t -> unit;
     decode_json_res: Yojson.Basic.t -> 'res;
     decode_pb_res: Pbrt.Decoder.t -> 'res;
   }
@@ -35,7 +35,7 @@ module Client = struct
       req_mode:'req_mode mode ->
       res_mode:'res_mode mode ->
       encode_json_req:('req -> Yojson.Basic.t) ->
-      encode_pb_req:('req -> Pbrt.Encoder.t -> unit) ->
+      encode_pb_req:('req -> Pbrt.Encode_visitor.t -> unit) ->
       decode_json_res:(Yojson.Basic.t -> 'res) ->
       decode_pb_res:(Pbrt.Decoder.t -> 'res) ->
       unit ->
@@ -67,7 +67,7 @@ module Server = struct
     req_mode: 'req_mode mode;
     res_mode: 'res_mode mode;
     encode_json_res: 'res -> Yojson.Basic.t;
-    encode_pb_res: 'res -> Pbrt.Encoder.t -> unit;
+    encode_pb_res: 'res -> Pbrt.Encode_visitor.t -> unit;
     decode_json_req: Yojson.Basic.t -> 'req;
     decode_pb_req: Pbrt.Decoder.t -> 'req;
   }
@@ -84,7 +84,7 @@ module Server = struct
       req_mode:'req_mode mode ->
       res_mode:'res_mode mode ->
       encode_json_res:('res -> Yojson.Basic.t) ->
-      encode_pb_res:('res -> Pbrt.Encoder.t -> unit) ->
+      encode_pb_res:('res -> Pbrt.Encode_visitor.t -> unit) ->
       decode_json_req:(Yojson.Basic.t -> 'req) ->
       decode_pb_req:(Pbrt.Decoder.t -> 'req) ->
       unit ->
