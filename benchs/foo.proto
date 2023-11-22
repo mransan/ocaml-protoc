@@ -15,4 +15,5 @@ message Store {
 message Company {
   string name = 1;
   repeated Store stores = 2;
+  repeated Company subsidiaries = 3;
 }

@@ -441,6 +441,7 @@ module Nested = struct
   type company = Foo.company = {
     name: string;
     stores: store list;
+    subsidiaries: company list;
   }
 
   type payload_kind = Pbrt.payload_kind =
@@ -479,29 +480,40 @@ module Nested = struct
       E.list (fun p e -> E.key 3 Bytes (E.nested (enc_person p)) e) st.clients e;
       ()
 
-    let enc_company (c : company) (e : E.t) : unit =
+    let rec enc_company (c : company) (e : E.t) : unit =
       E.key 1 Bytes (E.string c.name) e;
       E.list (fun st e -> E.key 2 Bytes (E.nested (enc_store st)) e) c.stores e;
+      E.list
+        (fun st c -> E.key 3 Bytes (E.nested (enc_company st)) c)
+        c.subsidiaries e;
       ()
   end
 
   let spf = Printf.sprintf
 
-  let mk_company n =
+  (* company, with [n] stores and [2^depth] subsidiaries *)
+  let rec mk_company ~n ~depth : company =
     {
       name = "bigcorp";
+      subsidiaries =
+        (if depth = 0 then
+          []
+        else (
+          let c = mk_company ~n ~depth:(depth - 1) in
+          [ c; c ]
+        ));
       stores =
         List.init n (fun i ->
             {
               address = spf "%d foobar street" i;
               clients =
-                List.init 30 (fun j ->
+                List.init 2 (fun j ->
                     {
                       name = spf "client_%d_%d" i j;
                       age = Int64.of_int ((j mod 30) + 15);
                     });
               employees =
-                List.init 5 (fun j ->
+                List.init 2 (fun j ->
                     {
                       name = spf "employee_%d_%d" i j;
                       age = Int64.of_int ((j mod 30) + 18);
@@ -513,11 +525,15 @@ module Nested = struct
     include Make_enc (E)
 
     let bench company =
-      let enc = E.create () in
       mk_t (spf "nenc-%s" E.name_of_enc) @@ fun () ->
-      Sys.opaque_identity
-        (E.clear enc;
-         enc_company company enc)
+      for _i = 1 to 10 do
+        let enc = E.create () in
+        for _j = 1 to 10 do
+          Sys.opaque_identity
+            (E.clear enc;
+             enc_company company enc)
+        done
+      done
 
     let string_of_company c =
       let e = E.create () in
@@ -994,13 +1010,22 @@ module Nested = struct
   let bench_from_back_noinline = From_back_noinline.bench
   let bench_from_back_c = From_back_c.bench
 
+  let pp_size ~n ~depth =
+    Printf.printf "bench nested enc: length for n=%d, depth=%d is %d B\n" n
+      depth
+      (String.length (Basic.string_of_company @@ mk_company ~n ~depth))
+
   (* sanity check *)
-  let () =
-    let s_basic = Basic.string_of_company (mk_company 1) in
-    let s_buffers_nested = Buffers_nested.string_of_company (mk_company 1) in
-    let s_from_back = From_back.string_of_company (mk_company 1) in
-    let s_from_back2 = From_back_noinline.string_of_company (mk_company 1) in
-    let s_from_backc = From_back_c.string_of_company (mk_company 1) in
+  let check ~n ~depth () =
+    let s_basic = Basic.string_of_company (mk_company ~n ~depth) in
+    let s_buffers_nested =
+      Buffers_nested.string_of_company (mk_company ~n ~depth)
+    in
+    let s_from_back = From_back.string_of_company (mk_company ~n ~depth) in
+    let s_from_back2 =
+      From_back_noinline.string_of_company (mk_company ~n ~depth)
+    in
+    let s_from_backc = From_back_c.string_of_company (mk_company ~n ~depth) in
     (*
        Printf.printf "basic:\n(len=%d) %S\n" (String.length s_basic) s_basic;
        Printf.printf "from_back:\n(len=%d) %S\n"
@@ -1029,20 +1054,28 @@ module Nested = struct
     assert (c_basic = c_from_back2);
     assert (c_basic = c_from_backc);
     ()
+
+  let () =
+    List.iter
+      (fun (n, depth) -> check ~n ~depth ())
+      [ 1, 3; 2, 4; 10, 1; 20, 2 ]
 end
 
-let test_nested_enc n =
+let test_nested_enc ~n ~depth =
   let open B.Tree in
-  let company = Nested.mk_company n in
-  Printf.sprintf "%d" n
+  let company = Nested.mk_company ~n ~depth in
+  Printf.sprintf "n=%d,depth=%d" n depth
   @> lazy
-       (B.throughputN ~repeat:4 3
+       (Nested.pp_size ~n ~depth;
+        B.throughputN ~repeat:4 3
           [
             Nested.bench_basic company;
             Nested.bench_buffers_nested company;
             Nested.bench_from_back company;
+            (*
             Nested.bench_from_back_noinline company;
             Nested.bench_from_back_c company;
+      *)
           ])
 
 let () =
@@ -1050,14 +1083,35 @@ let () =
   register @@ "nested"
   @>>> [
          "enc"
-         @>>> [
-                test_nested_enc 2;
-                test_nested_enc 5;
-                test_nested_enc 10;
-                test_nested_enc 20;
-                test_nested_enc 50;
-                test_nested_enc 100;
-              ];
+         @>>> List.map
+                (fun (n, depth) -> test_nested_enc ~n ~depth)
+                [
+                  1, 1;
+                  1, 1;
+                  1, 4;
+                  1, 6;
+                  1, 10;
+                  2, 1;
+                  2, 4;
+                  2, 6;
+                  2, 10;
+                  5, 1;
+                  5, 4;
+                  5, 6;
+                  10, 1;
+                  10, 2;
+                  10, 3;
+                  10, 4;
+                  20, 1;
+                  50, 1;
+                  20, 3;
+                  20, 4;
+                  50, 1;
+                  50, 3;
+                  50, 4;
+                  100, 1;
+                  100, 3;
+                ];
        ]
 
 let () = B.Tree.run_global ()
