@@ -49,7 +49,8 @@ let function_name_encode_pb ~service_name ~rpc_name (ty : Ot.rpc_type) : string
     =
   let f ty =
     match ty with
-    | Ot.Ft_unit -> "(fun () enc -> Pbrt.Encoder.empty_nested enc)"
+    | Ot.Ft_unit ->
+      "(fun () enc -> Pbrt.Encode_visitor.empty_nested (0, Bytes) enc)"
     | Ot.Ft_user_defined_type udt ->
       let function_prefix = "encode_pb" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix udt

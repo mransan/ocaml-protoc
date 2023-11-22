@@ -3,136 +3,131 @@ module F = Pb_codegen_formatting
 
 let constructor_name s = String.capitalize_ascii @@ String.lowercase_ascii s
 let sp = Pb_codegen_util.sp
+let spf = Printf.sprintf
 
-let gen_encode_field_key sc number pk is_packed =
+let code_for_key number pk is_packed : string =
   let pk_runtime_constructor_name =
     Pb_codegen_util.string_of_payload_kind pk is_packed |> constructor_name
   in
-  F.linep sc "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " number
-    pk_runtime_constructor_name
+  spf "(%i, Pbrt.%s)" number pk_runtime_constructor_name
 
 let runtime_function_for_basic_type bt pk =
   match pk, bt with
-  | Ot.Pk_varint false, Ot.Bt_int -> "Pbrt.Encoder.int_as_varint"
-  | Ot.Pk_varint true, Ot.Bt_int -> "Pbrt.Encoder.int_as_zigzag"
-  | Ot.Pk_varint false, Ot.Bt_int32 -> "Pbrt.Encoder.int32_as_varint"
-  | Ot.Pk_varint true, Ot.Bt_int32 -> "Pbrt.Encoder.int32_as_zigzag"
-  | Ot.Pk_varint false, Ot.Bt_uint32 -> "Pbrt.Encoder.uint32_as_varint"
-  | Ot.Pk_varint true, Ot.Bt_uint32 -> "Pbrt.Encoder.uint32_as_zigzag"
-  | Ot.Pk_varint false, Ot.Bt_int64 -> "Pbrt.Encoder.int64_as_varint"
-  | Ot.Pk_varint true, Ot.Bt_int64 -> "Pbrt.Encoder.int64_as_zigzag"
-  | Ot.Pk_varint false, Ot.Bt_uint64 -> "Pbrt.Encoder.uint64_as_varint"
-  | Ot.Pk_varint true, Ot.Bt_uint64 -> "Pbrt.Encoder.uint64_as_zigzag"
-  | Ot.Pk_bits32, Ot.Bt_int32 -> "Pbrt.Encoder.int32_as_bits32"
-  | Ot.Pk_bits64, Ot.Bt_int64 -> "Pbrt.Encoder.int64_as_bits64"
-  | Ot.Pk_bits32, Ot.Bt_uint32 -> "Pbrt.Encoder.uint32_as_bits32"
-  | Ot.Pk_bits64, Ot.Bt_uint64 -> "Pbrt.Encoder.uint64_as_bits64"
-  | Ot.Pk_varint false, Ot.Bt_bool -> "Pbrt.Encoder.bool"
-  | Ot.Pk_bits32, Ot.Bt_float -> "Pbrt.Encoder.float_as_bits32"
-  | Ot.Pk_bits64, Ot.Bt_float -> "Pbrt.Encoder.float_as_bits64"
-  | Ot.Pk_bits32, Ot.Bt_int -> "Pbrt.Encoder.int_as_bits32"
-  | Ot.Pk_bits64, Ot.Bt_int -> "Pbrt.Encoder.int_as_bits64"
-  | Ot.Pk_bytes, Ot.Bt_string -> "Pbrt.Encoder.string"
-  | Ot.Pk_bytes, Ot.Bt_bytes -> "Pbrt.Encoder.bytes"
+  | Ot.Pk_varint false, Ot.Bt_int -> "Pbrt.Encode_visitor.int_as_varint"
+  | Ot.Pk_varint true, Ot.Bt_int -> "Pbrt.Encode_visitor.int_as_zigzag"
+  | Ot.Pk_varint false, Ot.Bt_int32 -> "Pbrt.Encode_visitor.int32_as_varint"
+  | Ot.Pk_varint true, Ot.Bt_int32 -> "Pbrt.Encode_visitor.int32_as_zigzag"
+  | Ot.Pk_varint false, Ot.Bt_uint32 -> "Pbrt.Encode_visitor.uint32_as_varint"
+  | Ot.Pk_varint true, Ot.Bt_uint32 -> "Pbrt.Encode_visitor.uint32_as_zigzag"
+  | Ot.Pk_varint false, Ot.Bt_int64 -> "Pbrt.Encode_visitor.int64_as_varint"
+  | Ot.Pk_varint true, Ot.Bt_int64 -> "Pbrt.Encode_visitor.int64_as_zigzag"
+  | Ot.Pk_varint false, Ot.Bt_uint64 -> "Pbrt.Encode_visitor.uint64_as_varint"
+  | Ot.Pk_varint true, Ot.Bt_uint64 -> "Pbrt.Encode_visitor.uint64_as_zigzag"
+  | Ot.Pk_bits32, Ot.Bt_int32 -> "Pbrt.Encode_visitor.int32_as_bits32"
+  | Ot.Pk_bits64, Ot.Bt_int64 -> "Pbrt.Encode_visitor.int64_as_bits64"
+  | Ot.Pk_bits32, Ot.Bt_uint32 -> "Pbrt.Encode_visitor.uint32_as_bits32"
+  | Ot.Pk_bits64, Ot.Bt_uint64 -> "Pbrt.Encode_visitor.uint64_as_bits64"
+  | Ot.Pk_varint false, Ot.Bt_bool -> "Pbrt.Encode_visitor.bool"
+  | Ot.Pk_bits32, Ot.Bt_float -> "Pbrt.Encode_visitor.float_as_bits32"
+  | Ot.Pk_bits64, Ot.Bt_float -> "Pbrt.Encode_visitor.float_as_bits64"
+  | Ot.Pk_bits32, Ot.Bt_int -> "Pbrt.Encode_visitor.int_as_bits32"
+  | Ot.Pk_bits64, Ot.Bt_int -> "Pbrt.Encode_visitor.int_as_bits64"
+  | Ot.Pk_bytes, Ot.Bt_string -> "Pbrt.Encode_visitor.string"
+  | Ot.Pk_bytes, Ot.Bt_bytes -> "Pbrt.Encode_visitor.bytes"
   | _ -> failwith "Invalid encoding/OCaml type combination"
 
 let runtime_function_for_wrapper_type { Ot.wt_type; wt_pk } =
   match wt_type, wt_pk with
-  | Ot.Bt_float, Ot.Pk_bits64 -> "Pbrt.Encoder.wrapper_double_value"
-  | Ot.Bt_float, Ot.Pk_bits32 -> "Pbrt.Encoder.wrapper_float_value"
-  | Ot.Bt_int64, Ot.Pk_varint _ -> "Pbrt.Encoder.wrapper_int64_value"
-  | Ot.Bt_int32, Ot.Pk_varint _ -> "Pbrt.Encoder.wrapper_int32_value"
-  | Ot.Bt_bool, Ot.Pk_varint _ -> "Pbrt.Encoder.wrapper_bool_value"
-  | Ot.Bt_string, Ot.Pk_bytes -> "Pbrt.Encoder.wrapper_string_value"
-  | Ot.Bt_bytes, Ot.Pk_bytes -> "Pbrt.Encoder.wrapper_bytes_value"
+  | Ot.Bt_float, Ot.Pk_bits64 -> "Pbrt.Encode_visitor.wrapper_double_value"
+  | Ot.Bt_float, Ot.Pk_bits32 -> "Pbrt.Encode_visitor.wrapper_float_value"
+  | Ot.Bt_int64, Ot.Pk_varint _ -> "Pbrt.Encode_visitor.wrapper_int64_value"
+  | Ot.Bt_int32, Ot.Pk_varint _ -> "Pbrt.Encode_visitor.wrapper_int32_value"
+  | Ot.Bt_bool, Ot.Pk_varint _ -> "Pbrt.Encode_visitor.wrapper_bool_value"
+  | Ot.Bt_string, Ot.Pk_bytes -> "Pbrt.Encode_visitor.wrapper_string_value"
+  | Ot.Bt_bytes, Ot.Pk_bytes -> "Pbrt.Encode_visitor.wrapper_bytes_value"
   | _ -> assert false
 
-let gen_encode_field_type ?with_key sc var_name encoding_number pk is_packed
-    field_type =
-  let encode_key sc =
-    match with_key with
-    | Some () -> gen_encode_field_key sc encoding_number pk is_packed
-    | None -> ()
+let gen_encode_field_type ?(with_key = false) sc var_name encoding_number pk
+    is_packed field_type =
+  let key = code_for_key encoding_number pk is_packed in
+
+  let value_key =
+    if with_key then
+      (* FIXME: sometimes it's nested here, or packed *)
+      spf "Pbrt.Encode_visitor.value %s " key
+    else
+      ""
   in
 
   match field_type with
   | Ot.Ft_user_defined_type udt ->
-    encode_key sc;
     let f_name =
       let function_prefix = "encode_pb" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
     in
     (match udt.Ot.udt_type with
     | `Message ->
-      F.linep sc "Pbrt.Encoder.nested (%s %s) encoder;" f_name var_name
-    | `Enum -> F.linep sc "%s %s encoder;" f_name var_name)
-  | Ot.Ft_unit ->
-    encode_key sc;
-    F.line sc "Pbrt.Encoder.empty_nested encoder;"
+      F.linep sc "Pbrt.Encode_visitor.nested %s (%s %s) encoder;" key f_name
+        var_name
+    | `Enum -> F.linep sc "%s(%s %s) encoder;" value_key f_name var_name)
+  | Ot.Ft_unit -> F.linep sc "Pbrt.Encode_visitor.empty_nested %s encoder;" key
   | Ot.Ft_basic_type bt ->
-    encode_key sc;
     let rt = runtime_function_for_basic_type bt pk in
-    F.linep sc "%s %s encoder;" rt var_name
+    F.linep sc "%s(%s %s) encoder;" value_key rt var_name
   | Ot.Ft_wrapper_type wt ->
-    encode_key sc;
     let rt = runtime_function_for_wrapper_type wt in
-    F.linep sc "%s %s encoder;" rt var_name
+    F.linep sc "%s %s %s encoder;" rt key var_name
 
 let gen_rft_nolabel sc var_name (field_type, encoding_number, pk) =
-  gen_encode_field_type ~with_key:() sc var_name encoding_number pk false
+  gen_encode_field_type ~with_key:true sc var_name encoding_number pk false
     (* packed *) field_type
 
 let gen_rft_required sc var_name (field_type, encoding_number, pk, _) =
-  gen_encode_field_type ~with_key:() sc var_name encoding_number pk false
+  gen_encode_field_type ~with_key:true sc var_name encoding_number pk false
     (* packed *) field_type
 
 let gen_rft_optional sc var_name (field_type, encoding_number, pk, _) =
   F.linep sc "begin match %s with" var_name;
   F.linep sc "| Some x -> ";
   F.sub_scope sc (fun sc ->
-      gen_encode_field_type ~with_key:() sc "x" encoding_number pk false
+      gen_encode_field_type ~with_key:true sc "x" encoding_number pk false
         field_type);
   F.line sc "| None -> ();";
   F.line sc "end;"
 
 let gen_rft_repeated sc var_name repeated_field =
   let rt, field_type, encoding_number, pk, is_packed = repeated_field in
+  let key = code_for_key encoding_number pk is_packed in
 
   match rt, is_packed with
   | Ot.Rt_list, false ->
     F.line sc "List.iter (fun x -> ";
     F.sub_scope sc (fun sc ->
-        gen_encode_field_type ~with_key:() sc "x" encoding_number pk is_packed
+        gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
     F.linep sc ") %s;" var_name
   | Ot.Rt_repeated_field, false ->
     F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
     F.sub_scope sc (fun sc ->
-        gen_encode_field_type ~with_key:() sc "x" encoding_number pk is_packed
+        gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
     F.linep sc ") %s;" var_name
   | Ot.Rt_list, true ->
-    gen_encode_field_key sc encoding_number pk is_packed;
-    (* When packed the key is encoded once.
-       *)
-    F.line sc "Pbrt.Encoder.nested (fun encoder ->";
+    F.linep sc "Pbrt.Encode_visitor.packed_list %s (fun x encoder ->" key;
     F.sub_scope sc (fun sc ->
-        F.line sc "List.iter (fun x -> ";
-        F.sub_scope sc (fun sc ->
-            gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
-        F.linep sc ") %s;" var_name);
-    F.line sc ") encoder;"
+        gen_encode_field_type ~with_key:false sc "x" encoding_number pk
+          is_packed field_type);
+    F.linep sc ") %s encoder;" var_name
   | Ot.Rt_repeated_field, true ->
-    gen_encode_field_key sc encoding_number pk is_packed;
-    (* When packed the key is encoded once.
-       *)
-    F.line sc "Pbrt.Encoder.nested (fun encoder ->";
+    (* When packed the key is encoded once. *)
+    F.linep sc "Pbrt.Encode_visitor.packed %s (fun encoder ->" key;
     F.sub_scope sc (fun sc ->
         F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
         F.sub_scope sc (fun sc ->
-            gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
-        F.linep sc ") %s;" var_name);
-    F.line sc ") encoder;"
+            gen_encode_field_type ~with_key:false sc "x" encoding_number pk
+              is_packed field_type);
+        F.linep sc ") %s);" var_name);
+    F.linep sc "encoder;"
 
 let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
   F.linep sc "begin match %s with" var_name;
@@ -151,12 +146,12 @@ let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
       | Ot.Vct_nullary ->
         F.linep sc "| %s ->" vc_constructor;
         F.sub_scope sc (fun sc ->
-            gen_encode_field_key sc vc_encoding_number vc_payload_kind false;
-            F.line sc "Pbrt.Encoder.empty_nested encoder")
+            let key = code_for_key vc_encoding_number vc_payload_kind false in
+            F.linep sc "Pbrt.Encode_visitor.empty_nested %s encoder" key)
       | Ot.Vct_non_nullary_constructor field_type ->
         F.linep sc "| %s x ->" vc_constructor;
         F.sub_scope sc (fun sc ->
-            gen_encode_field_type sc ~with_key:() "x" vc_encoding_number
+            gen_encode_field_type sc ~with_key:true "x" vc_encoding_number
               vc_payload_kind false field_type))
     v_constructors;
   F.line sc "end;"
@@ -177,13 +172,14 @@ let gen_rft_associative sc var_name associative_field =
   | Ot.At_list -> F.line sc "List.iter (fun (k, v) ->"
   | Ot.At_hashtable -> F.line sc "Hashtbl.iter (fun k v ->");
   F.sub_scope sc (fun sc ->
-      gen_encode_field_key sc encoding_number Ot.Pk_bytes false;
+      let key = code_for_key encoding_number Ot.Pk_bytes false in
       F.linep sc "let map_entry = (k, Pbrt.%s), (v, Pbrt.%s) in"
         (Pb_codegen_util.string_of_payload_kind ~capitalize:() key_pk false)
         (Pb_codegen_util.string_of_payload_kind ~capitalize:() value_pk false);
-      F.line sc
-        ("Pbrt.Encoder.map_entry ~encode_key "
-       ^ "~encode_value map_entry encoder"));
+      F.linep sc
+        "Pbrt.Encode_visitor.map_entry ~encode_key ~encode_value map_entry %s \
+         encoder"
+        key);
   F.linep sc ") %s;" var_name
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
@@ -238,12 +234,14 @@ let gen_variant ?and_ variant sc =
           | Ot.Vct_nullary ->
             F.linep sc "| %s ->" vc_constructor;
             F.sub_scope sc (fun sc ->
-                gen_encode_field_key sc vc_encoding_number vc_payload_kind false;
-                F.line sc "Pbrt.Encoder.empty_nested encoder")
+                let key =
+                  code_for_key vc_encoding_number vc_payload_kind false
+                in
+                F.linep sc "Pbrt.Encode_visitor.empty_nested %s encoder" key)
           | Ot.Vct_non_nullary_constructor field_type ->
             F.linep sc "| %s x ->" vc_constructor;
             F.sub_scope sc (fun sc ->
-                gen_encode_field_type sc ~with_key:() "x" vc_encoding_number
+                gen_encode_field_type sc ~with_key:true "x" vc_encoding_number
                   vc_payload_kind false field_type))
         v_constructors;
       F.line sc "end")
@@ -260,11 +258,11 @@ let gen_const_variant ?and_ cv sc =
         (fun { Ot.cvc_name; cvc_binary_value; _ } ->
           F.line sc
             (if cvc_binary_value > 0 then
-              sp "| %s -> Pbrt.Encoder.int_as_varint %i encoder" cvc_name
+              sp "| %s -> Pbrt.Encode_visitor.int_as_varint %i encoder" cvc_name
                 cvc_binary_value
             else
-              sp "| %s -> Pbrt.Encoder.int_as_varint (%i) encoder" cvc_name
-                cvc_binary_value))
+              sp "| %s -> Pbrt.Encode_visitor.int_as_varint (%i) encoder"
+                cvc_name cvc_binary_value))
         cv_constructors)
 
 let gen_struct ?and_ t sc =
@@ -290,8 +288,8 @@ let gen_sig ?and_ t sc =
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =
-    F.linep sc "val encode_pb_%s : %s -> Pbrt.Encoder.t -> unit" type_name
-      type_name;
+    F.linep sc "val encode_pb_%s : %s -> Pbrt.Encode_visitor.t -> unit"
+      type_name type_name;
     F.linep sc
       "(** [encode_pb_%s v encoder] encodes [v] with the given [encoder] *)"
       type_name
