@@ -227,6 +227,105 @@ module Decoder : sig
 end
 (* Decoder *)
 
+module Encode_visitor : sig
+  type key = int * payload_kind
+
+  type t = {
+    char: key -> char -> unit;
+    varint: key -> int -> unit;
+    varint32: key -> int32 -> unit;
+    varint64: key -> int64 -> unit;
+    int32: key -> int32 -> unit;
+    int64: key -> int64 -> unit;
+    float32: key -> float -> unit;
+    float64: key -> float -> unit;
+    bytes: key -> bytes -> int -> int -> unit;
+    nested: key -> (t -> unit) -> unit;
+  }
+
+  (** {2 Encoding Functions}
+
+      These combinators are used by generated code (or user combinators)
+      to encode a OCaml value into the wire representation of protobufs. *)
+
+  val nested : key -> (t -> unit) -> t -> unit
+  (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
+
+  val map_entry :
+    encode_key:(key -> 'a -> t -> unit) ->
+    encode_value:(key -> 'b -> t -> unit) ->
+    ('a * payload_kind) * ('b * payload_kind) ->
+    key ->
+    t ->
+    unit
+
+  val empty_nested : key -> t -> unit
+  (** [nested f e] encodes a zero length empty message *)
+
+  val int_as_varint : key -> int -> t -> unit
+  (** [int_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
+
+  val int_as_zigzag : key -> int -> t -> unit
+  (** [int_as_zigzag i e] encodes [i] in [e] with [Varint] zigzag encoding *)
+
+  val int32_as_varint : key -> int32 -> t -> unit
+  (** [int32_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
+
+  val int32_as_zigzag : key -> int32 -> t -> unit
+  (** [int32_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
+
+  val int64_as_varint : key -> int64 -> t -> unit
+  (** [int64_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
+
+  val int64_as_zigzag : key -> int64 -> t -> unit
+  (** [int64_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
+
+  val int32_as_bits32 : key -> int32 -> t -> unit
+  (** [int32_as_varint i e] encodes [i] in [e] with [Bits32] encoding *)
+
+  val int64_as_bits64 : key -> int64 -> t -> unit
+  (** [int64_as_varint i e] encodes [i] in [e] with [Bits64] encoding *)
+
+  val uint32_as_varint : key -> [ `unsigned of int32 ] -> t -> unit
+  val uint32_as_zigzag : key -> [ `unsigned of int32 ] -> t -> unit
+  val uint64_as_varint : key -> [ `unsigned of int64 ] -> t -> unit
+  val uint64_as_zigzag : key -> [ `unsigned of int64 ] -> t -> unit
+  val uint32_as_bits32 : key -> [ `unsigned of int32 ] -> t -> unit
+  val uint64_as_bits64 : key -> [ `unsigned of int64 ] -> t -> unit
+
+  val bool : key -> bool -> t -> unit
+  (** [encode b e] encodes [b] in [e] with [Varint] encoding *)
+
+  val float_as_bits32 : key -> float -> t -> unit
+  (** [float_as_bits32 f e] encodes [f] in [e] with [Bits32] encoding *)
+
+  val float_as_bits64 : key -> float -> t -> unit
+  (** [float_as_bits64 f e] encodes [f] in [e] with [Bits64] encoding *)
+
+  val int_as_bits32 : key -> int -> t -> unit
+  (** [int_as_bits32 i e] encodes [i] in [e] with [Bits32] encoding
+      TODO : add error handling
+   *)
+
+  val int_as_bits64 : key -> int -> t -> unit
+  (** [int_as_bits64 i e] encodes [i] in [e] with [Bits64] encoding
+   *)
+
+  val string : key -> string -> t -> unit
+  (** [string s e] encodes [s] in [e] *)
+
+  val bytes : key -> bytes -> t -> unit
+  (** [string s e] encodes [s] in [e] *)
+
+  val wrapper_double_value : key -> float option -> t -> unit
+  val wrapper_float_value : key -> float option -> t -> unit
+  val wrapper_int64_value : key -> int64 option -> t -> unit
+  val wrapper_int32_value : key -> int32 option -> t -> unit
+  val wrapper_bool_value : key -> bool option -> t -> unit
+  val wrapper_string_value : key -> string option -> t -> unit
+  val wrapper_bytes_value : key -> bytes option -> t -> unit
+end
+
 (** Encoding protobufs. *)
 module Encoder : sig
   (** {2 Types} *)
@@ -277,89 +376,12 @@ module Encoder : sig
       inside [e]. The number of chunks is an implementation detail.
       @since 2.1 *)
 
-  (** {2 Encoding Functions}
+  (** {2 Encoding} *)
 
-      These combinators are used by generated code (or user combinators)
-      to encode a OCaml value into the wire representation of protobufs. *)
-
-  val key : int * payload_kind -> t -> unit
-  (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
-
-  val nested : (t -> unit) -> t -> unit
-  (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
-
-  val map_entry :
-    encode_key:('a -> t -> unit) ->
-    encode_value:('b -> t -> unit) ->
-    ('a * payload_kind) * ('b * payload_kind) ->
-    t ->
-    unit
-
-  val empty_nested : t -> unit
-  (** [nested f e] encodes a zero length empty message *)
-
-  val int_as_varint : int -> t -> unit
-  (** [int_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
-
-  val int_as_zigzag : int -> t -> unit
-  (** [int_as_zigzag i e] encodes [i] in [e] with [Varint] zigzag encoding *)
-
-  val int32_as_varint : int32 -> t -> unit
-  (** [int32_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
-
-  val int32_as_zigzag : int32 -> t -> unit
-  (** [int32_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
-
-  val int64_as_varint : int64 -> t -> unit
-  (** [int64_as_varint i e] encodes [i] in [e] with [Varint] encoding *)
-
-  val int64_as_zigzag : int64 -> t -> unit
-  (** [int64_as_varint i e] encodes [i] in [e] with [Varint] zigzag encoding *)
-
-  val int32_as_bits32 : int32 -> t -> unit
-  (** [int32_as_varint i e] encodes [i] in [e] with [Bits32] encoding *)
-
-  val int64_as_bits64 : int64 -> t -> unit
-  (** [int64_as_varint i e] encodes [i] in [e] with [Bits64] encoding *)
-
-  val uint32_as_varint : [ `unsigned of int32 ] -> t -> unit
-  val uint32_as_zigzag : [ `unsigned of int32 ] -> t -> unit
-  val uint64_as_varint : [ `unsigned of int64 ] -> t -> unit
-  val uint64_as_zigzag : [ `unsigned of int64 ] -> t -> unit
-  val uint32_as_bits32 : [ `unsigned of int32 ] -> t -> unit
-  val uint64_as_bits64 : [ `unsigned of int64 ] -> t -> unit
-
-  val bool : bool -> t -> unit
-  (** [encode b e] encodes [b] in [e] with [Varint] encoding *)
-
-  val float_as_bits32 : float -> t -> unit
-  (** [float_as_bits32 f e] encodes [f] in [e] with [Bits32] encoding *)
-
-  val float_as_bits64 : float -> t -> unit
-  (** [float_as_bits64 f e] encodes [f] in [e] with [Bits64] encoding *)
-
-  val int_as_bits32 : int -> t -> unit
-  (** [int_as_bits32 i e] encodes [i] in [e] with [Bits32] encoding
-      TODO : add error handling
-   *)
-
-  val int_as_bits64 : int -> t -> unit
-  (** [int_as_bits64 i e] encodes [i] in [e] with [Bits64] encoding
-   *)
-
-  val string : string -> t -> unit
-  (** [string s e] encodes [s] in [e] *)
-
-  val bytes : bytes -> t -> unit
-  (** [string s e] encodes [s] in [e] *)
-
-  val wrapper_double_value : float option -> t -> unit
-  val wrapper_float_value : float option -> t -> unit
-  val wrapper_int64_value : int64 option -> t -> unit
-  val wrapper_int32_value : int32 option -> t -> unit
-  val wrapper_bool_value : bool option -> t -> unit
-  val wrapper_string_value : string option -> t -> unit
-  val wrapper_bytes_value : bytes option -> t -> unit
+  val encode : t -> (Encode_visitor.t -> unit) -> unit
+  (** [encode enc f] calls [f] on a visitor that will write into [enc].
+      When [f] returns, [enc] contains all the written data which can then
+      be extracted via {!to_string}, {!to_bytes}, etc.. *)
 end
 
 (** Optimized representation for repeated fields *)

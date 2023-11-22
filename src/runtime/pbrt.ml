@@ -355,7 +355,22 @@ module Decoder = struct
     | _ -> None
 end
 
-module Encoder = struct
+module Encode_visitor = struct
+  type key = int * payload_kind
+
+  type t = {
+    char: key -> char -> unit;
+    varint: key -> int -> unit;
+    varint32: key -> int32 -> unit;
+    varint64: key -> int64 -> unit;
+    int32: key -> int32 -> unit;
+    int64: key -> int64 -> unit;
+    float32: key -> float -> unit;
+    float64: key -> float -> unit;
+    bytes: key -> bytes -> int -> int -> unit;
+    nested: key -> (t -> unit) -> unit;
+  }
+
   type error = Overflow of string
 
   let error_to_string e =
@@ -372,11 +387,153 @@ module Encoder = struct
             (Printf.sprintf "Protobuf.Encoder.Failure(%s)" (error_to_string e))
         | _ -> None)
 
+  let[@inline] varint key (i : int64) (self : t) = self.varint64 key i
+  let[@inline] int_as_varint key i (self : t) = self.varint key i
+
+  let[@inline] zigzag key (i : int64) (self : t) =
+    self.varint64 key Int64.(logxor (shift_left i 1) (shift_right i 63))
+
+  let[@inline] bytes key b (self : t) : unit =
+    self.bytes key b 0 (Bytes.length b)
+
+  let[@inline] nested key f (self : t) : unit = self.nested key f
+
+  let map_entry ~encode_key ~encode_value kv map_key (self : t) : unit =
+    let (key_value, key_pk), (value_value, value_pk) = kv in
+    nested map_key
+      (fun t ->
+        encode_key (1, key_pk) key_value t;
+        encode_value (2, value_pk) value_value t)
+      self
+
+  let[@inline] empty_nested key (self : t) : unit = self.nested key ignore
+  let[@inline] int_as_zigzag key i self = zigzag key (Int64.of_int i) self
+  let[@inline] int32_as_varint key i self = self.varint32 key i
+  let[@inline] int32_as_zigzag key i self = zigzag key (Int64.of_int32 i) self
+  let int64_as_varint = varint
+  let int64_as_zigzag = zigzag
+  let[@inline] int32_as_bits32 key i self = self.int32 key i
+  let[@inline] int64_as_bits64 key i self = self.int64 key i
+
+  let uint32_as_varint key = function
+    | `unsigned d -> int32_as_varint key d
+
+  let uint32_as_zigzag key = function
+    | `unsigned d -> int32_as_zigzag key d
+
+  let uint64_as_varint key = function
+    | `unsigned d -> varint key d
+
+  let uint64_as_zigzag key = function
+    | `unsigned d -> zigzag key d
+
+  let uint32_as_bits32 key = function
+    | `unsigned x -> int32_as_bits32 key x
+
+  let uint64_as_bits64 key = function
+    | `unsigned x -> int64_as_bits64 key x
+
+  let[@inline] bool key b (self : t) =
+    self.char key
+      (Char.unsafe_chr
+         (if b then
+           1
+         else
+           0))
+
+  let float_as_bits32 key f self = self.float32 key f
+  let float_as_bits64 key f self = self.float64 key f
+  let int_as_bits32 key i self = self.int32 key (Int32.of_int i)
+  let int_as_bits64 key i self = self.int64 key (Int64.of_int i)
+
+  let string key s self =
+    (* safe: we're not going to modify the bytes, and [s] will
+       not change. *)
+    bytes key (Bytes.unsafe_of_string s) self
+
+  let double_value_key = 1, Bits64
+
+  let wrapper_double_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some f -> float_as_bits64 double_value_key f self)
+      self
+
+  let float_value_key = 1, Bits32
+
+  let wrapper_float_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some f -> float_as_bits32 float_value_key f self)
+      self
+
+  let int64_value_key = 1, Varint
+
+  let wrapper_int64_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some i -> int64_as_varint int64_value_key i self)
+      self
+
+  let int32_value_key = 1, Varint
+
+  let wrapper_int32_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some i -> int32_as_varint int32_value_key i self)
+      self
+
+  let bool_value_key = 1, Varint
+
+  let wrapper_bool_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some b -> bool bool_value_key b self)
+      self
+
+  let string_value_key = 1, Bytes
+
+  let wrapper_string_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some s -> string string_value_key s self)
+      self
+
+  let bytes_value_key = 1, Bytes
+
+  let wrapper_bytes_value key v self =
+    nested key
+      (fun self ->
+        match v with
+        | None -> ()
+        | Some b -> bytes bytes_value_key b self)
+      self
+end
+
+module Encoder = struct
+  type error = Encode_visitor.error = Overflow of string
+
+  let error_to_string = Encode_visitor.error_to_string
+
+  exception Failure = Encode_visitor.Failure
+
   type t = {
     mutable b: bytes;
     mutable len: int;
     initial: bytes;
-    mutable sub: t option;
+    mutable sub: t option;  (** Used to encode sub-messages efficiently. *)
   }
 
   let create () =
@@ -389,7 +546,8 @@ module Encoder = struct
 
   let reset self =
     self.len <- 0;
-    self.b <- self.initial
+    self.b <- self.initial;
+    self.sub <- None
 
   let to_string self = Bytes.sub_string self.b 0 self.len
   let to_bytes self = Bytes.sub self.b 0 self.len
@@ -414,12 +572,11 @@ module Encoder = struct
     Bytes.unsafe_set self.b self.len c;
     self.len <- 1 + self.len
 
-  let add_bytes self b =
-    let n = Bytes.length b in
-    if cap self < self.len + n then
-      grow_to_ self (max (next_cap_ self) (self.len + n));
-    Bytes.blit b 0 self.b self.len n;
-    self.len <- n + self.len
+  let add_bytes self b i len =
+    if cap self < self.len + len then
+      grow_to_ self (max (next_cap_ self) (self.len + len));
+    Bytes.blit b i self.b self.len len;
+    self.len <- len + self.len
 
   let add_buffer self sub =
     let n = sub.len in
@@ -444,9 +601,6 @@ module Encoder = struct
 
   let int_as_varint i e = (varint [@inlined]) (Int64.of_int i) e
 
-  let zigzag i e =
-    (varint [@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
-
   let bits32 i e =
     add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
     add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 8))));
@@ -463,24 +617,6 @@ module Encoder = struct
     add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 48))));
     add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 56))))
 
-  let bytes b e =
-    int_as_varint (Bytes.length b) e;
-    add_bytes e b
-
-  let nested f e =
-    let e' =
-      match e.sub with
-      | Some e' -> e'
-      | None ->
-        let e' = create () in
-        e.sub <- Some e';
-        e'
-    in
-    f e';
-    int_as_varint (length e') e;
-    add_buffer e e';
-    clear e'
-
   let[@inline] key (k, pk) e =
     let pk' =
       match pk with
@@ -491,138 +627,66 @@ module Encoder = struct
     in
     int_as_varint (pk' lor (k lsl 3)) e
 
-  let map_entry ~encode_key ~encode_value kv t =
-    let (key_value, key_pk), (value_value, value_pk) = kv in
+  let rec as_visitor (self : t) : Encode_visitor.t =
+    {
+      Encode_visitor.char =
+        (fun k c ->
+          key k self;
+          add_char self c);
+      varint =
+        (fun k i ->
+          key k self;
+          varint (Int64.of_int i) self);
+      varint32 =
+        (fun k i ->
+          key k self;
+          varint (Int64.of_int32 i) self);
+      varint64 =
+        (fun k i ->
+          key k self;
+          varint i self);
+      int32 =
+        (fun k i ->
+          key k self;
+          bits32 i self);
+      int64 =
+        (fun k i ->
+          key k self;
+          bits64 i self);
+      float32 =
+        (fun k f ->
+          key k self;
+          bits32 (Int32.bits_of_float f) self);
+      float64 =
+        (fun k f ->
+          key k self;
+          bits64 (Int64.bits_of_float f) self);
+      bytes =
+        (fun k b i len ->
+          key k self;
+          add_bytes self b i len);
+      nested =
+        (fun k f ->
+          key k self;
 
-    nested
-      (fun t ->
-        key (1, key_pk) t;
-        encode_key key_value t;
-        key (2, value_pk) t;
-        encode_value value_value t)
-      t
+          let sub_enc =
+            match self.sub with
+            | Some e' -> e'
+            | None ->
+              let e' = create () in
+              self.sub <- Some e';
+              e'
+          in
 
-  let empty_nested e = add_char e (Char.unsafe_chr 0)
-  let int_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int i) e
-  let int32_as_varint i e = (varint [@inlined]) (Int64.of_int32 i) e
-  let int32_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int32 i) e
-  let int64_as_varint = varint
-  let int64_as_zigzag = zigzag
-  let int32_as_bits32 = bits32
-  let int64_as_bits64 = bits64
+          let sub_v = as_visitor sub_enc in
+          f sub_v;
 
-  let uint32_as_varint = function
-    | `unsigned d -> int32_as_varint d
+          int_as_varint (length sub_enc) self;
+          add_buffer self sub_enc;
+          clear sub_enc);
+    }
 
-  let uint32_as_zigzag = function
-    | `unsigned d -> int32_as_zigzag d
-
-  let uint64_as_varint = function
-    | `unsigned d -> varint d
-
-  let uint64_as_zigzag = function
-    | `unsigned d -> zigzag d
-
-  let uint32_as_bits32 = function
-    | `unsigned x -> bits32 x
-
-  let uint64_as_bits64 = function
-    | `unsigned x -> bits64 x
-
-  let bool b e =
-    add_char e
-      (Char.unsafe_chr
-         (if b then
-           1
-         else
-           0))
-
-  let float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
-  let float_as_bits64 f e = bits64 (Int64.bits_of_float f) e
-  let int_as_bits32 i e = bits32 (Int32.of_int i) e
-  let int_as_bits64 i e = bits64 (Int64.of_int i) e
-
-  let string s e =
-    (* safe: we're not going to modify the bytes, and [s] will
-       not change. *)
-    bytes (Bytes.unsafe_of_string s) e
-
-  let double_value_key = 1, Bits64
-
-  let wrapper_double_value v e =
-    nested
-      (fun e ->
-        key double_value_key e;
-        match v with
-        | None -> ()
-        | Some f -> float_as_bits64 f e)
-      e
-
-  let float_value_key = 1, Bits32
-
-  let wrapper_float_value v e =
-    nested
-      (fun e ->
-        key float_value_key e;
-        match v with
-        | None -> ()
-        | Some f -> float_as_bits32 f e)
-      e
-
-  let int64_value_key = 1, Varint
-
-  let wrapper_int64_value v e =
-    nested
-      (fun e ->
-        key int64_value_key e;
-        match v with
-        | None -> ()
-        | Some i -> int64_as_varint i e)
-      e
-
-  let int32_value_key = 1, Varint
-
-  let wrapper_int32_value v e =
-    nested
-      (fun e ->
-        key int32_value_key e;
-        match v with
-        | None -> ()
-        | Some i -> int32_as_varint i e)
-      e
-
-  let bool_value_key = 1, Varint
-
-  let wrapper_bool_value v e =
-    nested
-      (fun e ->
-        key bool_value_key e;
-        match v with
-        | None -> ()
-        | Some b -> bool b e)
-      e
-
-  let string_value_key = 1, Bytes
-
-  let wrapper_string_value v e =
-    nested
-      (fun e ->
-        key string_value_key e;
-        match v with
-        | None -> ()
-        | Some s -> string s e)
-      e
-
-  let bytes_value_key = 1, Bytes
-
-  let wrapper_bytes_value v e =
-    nested
-      (fun e ->
-        key bytes_value_key e;
-        match v with
-        | None -> ()
-        | Some b -> bytes b e)
-      e
+  let encode (self : t) f : unit = f (as_visitor self)
 end
 
 module Repeated_field = struct
