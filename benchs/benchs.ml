@@ -1,5 +1,6 @@
 module B = Benchmark
 
+let spf = Printf.sprintf
 let mk_t name f = name, f, ()
 
 module Enc = struct
@@ -426,6 +427,135 @@ let () =
          (* "enc" @>>> [ test_enc 5; test_enc 10; test_enc 50; test_enc 1000 ]; *)
        ]
 
+module Varint_size = struct
+  type run_loop = n:int -> unit
+
+  module While_inline = struct
+    (** Number of bytes to encode [i] *)
+    let[@inline] varint_size (i : int64) : int =
+      let i = ref i in
+      let n = ref 0 in
+      let continue = ref true in
+      while !continue do
+        incr n;
+        let cur = Int64.(logand !i 0x7fL) in
+        if cur = !i then
+          continue := false
+        else
+          i := Int64.shift_right_logical !i 7
+      done;
+      !n
+
+    let loop ~n =
+      for i = 1 to n do
+        ignore (Sys.opaque_identity (varint_size (Int64.of_int i)) : int)
+      done
+  end
+
+  module While_noinline = struct
+    let[@inline never] varint_size (i : int64) : int =
+      let i = ref i in
+      let n = ref 0 in
+      let continue = ref true in
+      while !continue do
+        incr n;
+        let cur = Int64.(logand !i 0x7fL) in
+        if cur = !i then
+          continue := false
+        else
+          i := Int64.shift_right_logical !i 7
+      done;
+      !n
+
+    let loop ~n =
+      for i = 1 to n do
+        ignore (Sys.opaque_identity (varint_size (Int64.of_int i)) : int)
+      done
+  end
+
+  module For_loop = struct
+    external int_of_bool : bool -> int = "%identity"
+
+    let[@inline] varint_size (i : int64) : int =
+      let i = ref i in
+      let n = ref 0 in
+      for _j = 0 to 10 do
+        n := !n + int_of_bool (not (Int64.equal !i 0L));
+        i := Int64.shift_right_logical !i 7
+      done;
+      !n
+
+    let loop ~n =
+      for i = 1 to n do
+        ignore (Sys.opaque_identity (varint_size (Int64.of_int i)) : int)
+      done
+  end
+
+  module C_while = struct
+    external varint_size : (int64[@unboxed]) -> int
+      = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
+      [@@noalloc]
+
+    let loop ~n =
+      for i = 1 to n do
+        ignore (Sys.opaque_identity (varint_size (Int64.of_int i)) : int)
+      done
+  end
+
+  (* sanity checks *)
+  let () =
+    List.iter
+      (fun i ->
+        let i = Int64.of_int i in
+        let c1 = While_inline.varint_size i in
+        let c2 = While_noinline.varint_size i in
+        let c3 = For_loop.varint_size i in
+        let c4 = C_while.varint_size i in
+        assert (c1 = c2);
+        assert (c1 = c3);
+        assert (c1 = c4))
+      [
+        1;
+        2;
+        3;
+        10;
+        15;
+        20;
+        21;
+        22;
+        30;
+        50;
+        100;
+        300;
+        1000;
+        2000;
+        100_000;
+        1_000_000_000;
+        max_int - 10;
+        max_int;
+      ]
+end
+
+let test_varint_size n =
+  let open B.Tree in
+  let mkbench name (run : Varint_size.run_loop) =
+    mk_t (spf "varint-size-%s" name) @@ fun () -> Sys.opaque_identity (run ~n)
+  in
+
+  spf "%d" n
+  @> lazy
+       (B.throughputN ~repeat:4 3
+          [
+            mkbench "while-inline" Varint_size.While_inline.loop;
+            mkbench "while-noinline" Varint_size.While_noinline.loop;
+            mkbench "for-loop" Varint_size.For_loop.loop;
+            mkbench "c-while" Varint_size.C_while.loop;
+          ])
+
+let () =
+  let open B.Tree in
+  register @@ "varint-size" @>>> List.map test_varint_size [ 1000; 100_000 ]
+
 module Nested = struct
   type person = Foo.person = {
     name: string;
@@ -488,8 +618,6 @@ module Nested = struct
         c.subsidiaries e;
       ()
   end
-
-  let spf = Printf.sprintf
 
   (* company, with [n] stores and [2^depth] subsidiaries *)
   let rec mk_company ~n ~depth : company =
@@ -1072,10 +1200,8 @@ let test_nested_enc ~n ~depth =
             Nested.bench_basic company;
             Nested.bench_buffers_nested company;
             Nested.bench_from_back company;
-            (*
             Nested.bench_from_back_noinline company;
             Nested.bench_from_back_c company;
-      *)
           ])
 
 let () =
