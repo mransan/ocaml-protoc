@@ -246,12 +246,13 @@ module Encoder : sig
 
   (** {2 Creator} *)
 
-  val create : unit -> t
+  val create : ?size:int -> unit -> t
   (** Create a new encoder. *)
 
   val clear : t -> unit
   (** Clear the content of the internal buffer(s), but does not release memory.
       This makes the encoder ready to encode another message.
+      @param size initial size in bytes
       @since 2.1 *)
 
   val reset : t -> unit
