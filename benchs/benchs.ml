@@ -493,7 +493,7 @@ module Varint_size = struct
 
   module C_while = struct
     external varint_size : (int64[@unboxed]) -> int
-      = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
+      = "b_caml_pbrt_varint_size_byte" "b_caml_pbrt_varint_size"
       [@@noalloc]
 
     let loop ~n =
@@ -1062,7 +1062,7 @@ module Nested = struct
 
     (*
     external varint_size : (int64[@unboxed]) -> int
-      = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
+      = "b_caml_pbrt_varint_size_byte" "b_caml_pbrt_varint_size"
       [@@noalloc]
       *)
 
@@ -1083,7 +1083,7 @@ module Nested = struct
 
     external varint_slice :
       bytes -> (int[@untagged]) -> (int64[@unboxed]) -> unit
-      = "caml_pbrt_varint_byte" "caml_pbrt_varint"
+      = "b_caml_pbrt_varint_byte" "b_caml_pbrt_varint"
       [@@noalloc]
 
     let[@inline] varint (i : int64) (e : t) : unit =
