@@ -52,7 +52,7 @@ let () =
   Printf.printf "n=%d, depth=%d, iters=%n\n%!" !n !depth !iters;
   let comp = mk_company ~n:!n ~depth:!depth in
 
-  let enc = Pbrt.Encoder.create () in
+  let enc = Pbrt.Encoder.create ~size:(64 * 1024) () in
 
   Sys.opaque_identity (Foo.encode_pb_company comp enc);
   let size = String.length @@ Pbrt.Encoder.to_string enc in

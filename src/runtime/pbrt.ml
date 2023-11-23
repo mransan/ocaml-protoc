@@ -379,8 +379,8 @@ module Encoder = struct
     initial: bytes;  (** Initial buffer, for {!reset} *)
   }
 
-  let create () =
-    let len = 16 in
+  let create ?(size = 16) () =
+    let len = max size 16 in
     let b = Bytes.create len in
     { b; start = len; initial = b }
 
