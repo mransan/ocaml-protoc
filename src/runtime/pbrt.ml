@@ -373,9 +373,10 @@ module Encoder = struct
         | _ -> None)
 
   type t = {
-    mutable b: bytes;
+    mutable b: bytes;  (** Slice of bytes (already written: [start…]) *)
     mutable start: int;
-    initial: bytes;
+        (** Start of the slice in which data have been written *)
+    initial: bytes;  (** Initial buffer, for {!reset} *)
   }
 
   let create () =
