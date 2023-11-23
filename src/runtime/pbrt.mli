@@ -362,6 +362,11 @@ module Encoder : sig
   val wrapper_bytes_value : bytes option -> t -> unit
 end
 
+module List_util : sig
+  val rev_iter : ('a -> unit) -> 'a list -> unit
+  (** [iter_rev f l] iterate over the list in reverse order *)
+end
+
 (** Optimized representation for repeated fields *)
 module Repeated_field : sig
   type 'a t
@@ -417,6 +422,8 @@ module Repeated_field : sig
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
   (** [iteri f c] applies [f] to all element in [c] *)
+
+  val rev_iter : ('a -> unit) -> 'a t -> unit
 
   val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** [fold_left f e0 c] accumulates [e0] through each elements *)

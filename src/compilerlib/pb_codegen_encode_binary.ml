@@ -55,7 +55,6 @@ let gen_encode_field_type ?(with_key = false) sc var_name encoding_number pk
 
   match field_type with
   | Ot.Ft_user_defined_type udt ->
-    encode_key sc;
     let f_name =
       let function_prefix = "encode_pb" in
       Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
@@ -63,18 +62,19 @@ let gen_encode_field_type ?(with_key = false) sc var_name encoding_number pk
     (match udt.Ot.udt_type with
     | `Message ->
       F.linep sc "Pbrt.Encoder.nested %s %s encoder;" f_name var_name
-    | `Enum -> F.linep sc "%s %s encoder;" f_name var_name)
+    | `Enum -> F.linep sc "%s %s encoder;" f_name var_name);
+    encode_key sc
   | Ot.Ft_unit ->
-    encode_key sc;
-    F.line sc "Pbrt.Encoder.empty_nested encoder;"
+    F.line sc "Pbrt.Encoder.empty_nested encoder;";
+    encode_key sc
   | Ot.Ft_basic_type bt ->
-    encode_key sc;
     let rt = runtime_function_for_basic_type bt pk in
-    F.linep sc "%s %s encoder;" rt var_name
+    F.linep sc "%s %s encoder;" rt var_name;
+    encode_key sc
   | Ot.Ft_wrapper_type wt ->
-    encode_key sc;
     let rt = runtime_function_for_wrapper_type wt in
-    F.linep sc "%s %s encoder;" rt var_name
+    F.linep sc "%s %s encoder;" rt var_name;
+    encode_key sc
 
 let gen_rft_nolabel sc var_name (field_type, encoding_number, pk) =
   gen_encode_field_type ~with_key:true sc var_name encoding_number pk false
@@ -98,13 +98,13 @@ let gen_rft_repeated sc var_name repeated_field =
 
   match rt, is_packed with
   | Ot.Rt_list, false ->
-    F.line sc "List.iter (fun x -> ";
+    F.line sc "Pbrt.List_util.rev_iter (fun x -> ";
     F.sub_scope sc (fun sc ->
         gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
     F.linep sc ") %s;" var_name
   | Ot.Rt_repeated_field, false ->
-    F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
+    F.line sc "Pbrt.Repeated_field.rev_iter (fun x -> ";
     F.sub_scope sc (fun sc ->
         gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
@@ -115,7 +115,7 @@ let gen_rft_repeated sc var_name repeated_field =
        *)
     F.line sc "Pbrt.Encoder.nested (fun lst encoder ->";
     F.sub_scope sc (fun sc ->
-        F.line sc "List.iter (fun x -> ";
+        F.line sc "Pbrt.List_util.rev_iter (fun x -> ";
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
         F.linep sc ") lst;");
@@ -126,7 +126,7 @@ let gen_rft_repeated sc var_name repeated_field =
        *)
     F.line sc "Pbrt.Encoder.nested (fun lst encoder ->";
     F.sub_scope sc (fun sc ->
-        F.line sc "Pbrt.Repeated_field.iter (fun x -> ";
+        F.line sc "Pbrt.Repeated_field.rev_iter (fun x -> ";
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
         F.linep sc ") lst;");
@@ -149,8 +149,8 @@ let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
       | Ot.Vct_nullary ->
         F.linep sc "| %s ->" vc_constructor;
         F.sub_scope sc (fun sc ->
-            gen_encode_field_key sc vc_encoding_number vc_payload_kind false;
-            F.line sc "Pbrt.Encoder.empty_nested encoder")
+            F.line sc "Pbrt.Encoder.empty_nested encoder;";
+            gen_encode_field_key sc vc_encoding_number vc_payload_kind false)
       | Ot.Vct_non_nullary_constructor field_type ->
         F.linep sc "| %s x ->" vc_constructor;
         F.sub_scope sc (fun sc ->
