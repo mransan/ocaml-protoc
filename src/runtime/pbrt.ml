@@ -374,26 +374,25 @@ module Encoder = struct
 
   type t = {
     mutable b: bytes;
-    mutable len: int;
+    mutable start: int;
     initial: bytes;
-    mutable sub: t option;
   }
 
   let create () =
-    let b = Bytes.create 16 in
-    { b; len = 0; initial = b; sub = None }
+    let len = 16 in
+    let b = Bytes.create len in
+    { b; start = len; initial = b }
 
-  let[@inline] clear self = self.len <- 0
-  let[@inline] length self = self.len
   let[@inline] cap self = Bytes.length self.b
+  let[@inline] clear self = self.start <- cap self
 
   let reset self =
-    self.len <- 0;
-    self.b <- self.initial
+    self.b <- self.initial;
+    self.start <- cap self
 
-  let to_string self = Bytes.sub_string self.b 0 self.len
-  let to_bytes self = Bytes.sub self.b 0 self.len
-  let write_chunks w self = w self.b 0 self.len
+  let to_string self = Bytes.sub_string self.b self.start (cap self - self.start)
+  let to_bytes self = Bytes.sub self.b self.start (cap self - self.start)
+  let write_chunks w self = w self.b self.start (cap self - self.start)
 
   let next_cap_ self =
     min Sys.max_string_length
@@ -401,85 +400,76 @@ module Encoder = struct
        n + (n lsr 1))
 
   let[@inline never] grow_to_ self newcap =
-    if newcap = self.len then
+    if newcap = cap self then
       raise (Failure (Overflow "encoder size reached its max"));
     let b' = Bytes.create newcap in
-    Bytes.blit self.b 0 b' 0 self.len;
+    let len = cap self - self.start in
+    Bytes.blit self.b self.start b' (newcap - len) len;
+    self.start <- newcap - len;
     self.b <- b'
 
+  (** Grow to next size *)
   let[@inline never] grow_ self = grow_to_ self (next_cap_ self)
 
+  (** Grow to get [n] free bytes *)
+  let[@inline never] grow_reserve_n (self : t) n : unit =
+    let newcap = max (cap self + n) (next_cap_ self) in
+    grow_to_ self newcap;
+    assert (self.start >= n)
+
   let[@inline] add_char self c =
-    if self.len = cap self then grow_ self;
-    Bytes.unsafe_set self.b self.len c;
-    self.len <- 1 + self.len
+    if self.start = 0 then grow_ self;
+    self.start <- self.start - 1;
+    Bytes.unsafe_set self.b self.start c
+
+  (** Reserve [n] bytes, return the start offset of the newly allocated slice *)
+  let[@inline] reserve_n (self : t) (n : int) : int =
+    if self.start < n then grow_reserve_n self n;
+    self.start <- self.start - n;
+    self.start
 
   let add_bytes self b =
     let n = Bytes.length b in
-    if cap self < self.len + n then
-      grow_to_ self (max (next_cap_ self) (self.len + n));
-    Bytes.blit b 0 self.b self.len n;
-    self.len <- n + self.len
+    let start = reserve_n self n in
+    Bytes.blit b 0 self.b start n
 
-  let add_buffer self sub =
-    let n = sub.len in
-    if cap self < self.len + n then
-      grow_to_ self (max (next_cap_ self) (self.len + n));
-    Bytes.blit sub.b 0 self.b self.len n;
-    self.len <- n + self.len
+  external varint_size : (int64[@unboxed]) -> int
+    = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
+    [@@noalloc]
+  (** Compute how many bytes this int would occupy as varint *)
 
-  let varint (i : int64) e =
-    let i = ref i in
-    let continue = ref true in
-    while !continue do
-      let cur = Int64.(logand !i 0x7fL) in
-      if cur = !i then (
-        continue := false;
-        add_char e (Char.unsafe_chr Int64.(to_int cur))
-      ) else (
-        add_char e (Char.unsafe_chr Int64.(to_int (logor 0x80L cur)));
-        i := Int64.shift_right_logical !i 7
-      )
-    done
+  external varint_slice : bytes -> (int[@untagged]) -> (int64[@unboxed]) -> unit
+    = "caml_pbrt_varint_byte" "caml_pbrt_varint"
+    [@@noalloc]
+  (** Write this int as varint into the given slice *)
+
+  let[@inline] varint (i : int64) e =
+    let n_bytes = varint_size i in
+    let start = reserve_n e n_bytes in
+    varint_slice e.b start i
 
   let int_as_varint i e = (varint [@inlined]) (Int64.of_int i) e
 
   let zigzag i e =
     (varint [@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
 
-  let bits32 i e =
-    add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
-    add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 8))));
-    add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 16))));
-    add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 24))))
+  let[@inline] bits32 i e =
+    let start = reserve_n e 4 in
+    Bytes.set_int32_le e.b start i
 
-  let bits64 i e =
-    add_char e (char_of_int Int64.(to_int (logand 0xffL i)));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 8))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 16))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 24))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 32))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 40))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 48))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 56))))
+  let[@inline] bits64 i e =
+    let start = reserve_n e 8 in
+    Bytes.set_int64_le e.b start i
 
   let bytes b e =
-    int_as_varint (Bytes.length b) e;
-    add_bytes e b
+    add_bytes e b;
+    int_as_varint (Bytes.length b) e
 
   let nested f x e =
-    let e' =
-      match e.sub with
-      | Some e' -> e'
-      | None ->
-        let e' = create () in
-        e.sub <- Some e';
-        e'
-    in
-    f x e';
-    int_as_varint (length e') e;
-    add_buffer e e';
-    clear e'
+    let old_start = e.start in
+    f x e;
+    let size = old_start - e.start in
+    int_as_varint size e
 
   let[@inline] key (k, pk) e =
     let pk' =
@@ -495,10 +485,10 @@ module Encoder = struct
     nested
       (fun kv t ->
         let (key_value, key_pk), (value_value, value_pk) = kv in
-        key (1, key_pk) t;
-        encode_key key_value t;
+        encode_value value_value t;
         key (2, value_pk) t;
-        encode_value value_value t)
+        encode_key key_value t;
+        key (1, key_pk) t)
       kv t
 
   let empty_nested e = add_char e (Char.unsafe_chr 0)
@@ -551,10 +541,10 @@ module Encoder = struct
   let wrapper_double_value v e =
     nested
       (fun v e ->
-        key double_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some f -> float_as_bits64 f e)
+        | Some f -> float_as_bits64 f e);
+        key double_value_key e)
       v e
 
   let float_value_key = 1, Bits32
@@ -562,10 +552,10 @@ module Encoder = struct
   let wrapper_float_value v e =
     nested
       (fun v e ->
-        key float_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some f -> float_as_bits32 f e)
+        | Some f -> float_as_bits32 f e);
+        key float_value_key e)
       v e
 
   let int64_value_key = 1, Varint
@@ -573,10 +563,10 @@ module Encoder = struct
   let wrapper_int64_value v e =
     nested
       (fun v e ->
-        key int64_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some i -> int64_as_varint i e)
+        | Some i -> int64_as_varint i e);
+        key int64_value_key e)
       v e
 
   let int32_value_key = 1, Varint
@@ -584,10 +574,10 @@ module Encoder = struct
   let wrapper_int32_value v e =
     nested
       (fun v e ->
-        key int32_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some i -> int32_as_varint i e)
+        | Some i -> int32_as_varint i e);
+        key int32_value_key e)
       v e
 
   let bool_value_key = 1, Varint
@@ -595,10 +585,10 @@ module Encoder = struct
   let wrapper_bool_value v e =
     nested
       (fun v e ->
-        key bool_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some b -> bool b e)
+        | Some b -> bool b e);
+        key bool_value_key e)
       v e
 
   let string_value_key = 1, Bytes
@@ -606,10 +596,10 @@ module Encoder = struct
   let wrapper_string_value v e =
     nested
       (fun v e ->
-        key string_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some s -> string s e)
+        | Some s -> string s e);
+        key string_value_key e)
       v e
 
   let bytes_value_key = 1, Bytes
@@ -617,11 +607,25 @@ module Encoder = struct
   let wrapper_bytes_value v e =
     nested
       (fun v e ->
-        key bytes_value_key e;
-        match v with
+        (match v with
         | None -> ()
-        | Some b -> bytes b e)
+        | Some b -> bytes b e);
+        key bytes_value_key e)
       v e
+end
+
+module List_util = struct
+  let rev_iter f l =
+    let safe f l = List.iter f @@ List.rev l in
+    let rec direct i f l =
+      match l with
+      | [] -> ()
+      | _ when i = 0 -> safe f l
+      | x :: tl ->
+        direct (i - 1) f tl;
+        f x
+    in
+    direct 200 f l
 end
 
 module Repeated_field = struct
@@ -683,15 +687,8 @@ module Repeated_field = struct
     in
     Array.concat (List.rev l)
 
-  (** [list_rev_iter f l] iterate over the list in reverse order *)
-  let rec list_rev_iter f = function
-    | [] -> ()
-    | hd :: tl ->
-      list_rev_iter f tl;
-      f hd
-
   let iter f { i; a; l; _ } =
-    list_rev_iter
+    List_util.rev_iter
       (fun a ->
         let len = Array.length a - 1 in
         for j = 0 to len do
@@ -703,9 +700,22 @@ module Repeated_field = struct
       f (Array.unsafe_get a j)
     done
 
+  let rev_iter f { i; a; l; _ } =
+    let len = i - 1 in
+    for j = len downto 0 do
+      f (Array.unsafe_get a j)
+    done;
+    List.iter
+      (fun a ->
+        let len = Array.length a - 1 in
+        for j = len to 0 do
+          f (Array.unsafe_get a j)
+        done)
+      l
+
   let iteri f { i; a; l; _ } =
     let counter = ref 0 in
-    list_rev_iter
+    List_util.rev_iter
       (fun a ->
         let len = Array.length a - 1 in
         for j = 0 to len do
