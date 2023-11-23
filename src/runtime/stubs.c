@@ -22,20 +22,6 @@ for i in range(1,10):
   if (i <= 72057594037927935L) return 8;
   if (i <= 9223372036854775807L) return 9;
   return 10;
-
-  /*
-  if (i <= 127L) return 1;
-
-  int n = 0;
-  while (true) {
-    n++;
-    uint64_t cur = i & 0x7f;
-    if (cur == i)
-      break;
-    i = i >> 7;
-  }
-  return n;
-  */
 }
 
 // number of bytes for i
