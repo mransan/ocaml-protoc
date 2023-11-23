@@ -467,7 +467,7 @@ module Encoder = struct
     int_as_varint (Bytes.length b) e;
     add_bytes e b
 
-  let nested f e =
+  let nested f x e =
     let e' =
       match e.sub with
       | Some e' -> e'
@@ -476,7 +476,7 @@ module Encoder = struct
         e.sub <- Some e';
         e'
     in
-    f e';
+    f x e';
     int_as_varint (length e') e;
     add_buffer e e';
     clear e'
@@ -492,15 +492,14 @@ module Encoder = struct
     int_as_varint (pk' lor (k lsl 3)) e
 
   let map_entry ~encode_key ~encode_value kv t =
-    let (key_value, key_pk), (value_value, value_pk) = kv in
-
     nested
-      (fun t ->
+      (fun kv t ->
+        let (key_value, key_pk), (value_value, value_pk) = kv in
         key (1, key_pk) t;
         encode_key key_value t;
         key (2, value_pk) t;
         encode_value value_value t)
-      t
+      kv t
 
   let empty_nested e = add_char e (Char.unsafe_chr 0)
   let int_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int i) e
@@ -551,78 +550,78 @@ module Encoder = struct
 
   let wrapper_double_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key double_value_key e;
         match v with
         | None -> ()
         | Some f -> float_as_bits64 f e)
-      e
+      v e
 
   let float_value_key = 1, Bits32
 
   let wrapper_float_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key float_value_key e;
         match v with
         | None -> ()
         | Some f -> float_as_bits32 f e)
-      e
+      v e
 
   let int64_value_key = 1, Varint
 
   let wrapper_int64_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key int64_value_key e;
         match v with
         | None -> ()
         | Some i -> int64_as_varint i e)
-      e
+      v e
 
   let int32_value_key = 1, Varint
 
   let wrapper_int32_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key int32_value_key e;
         match v with
         | None -> ()
         | Some i -> int32_as_varint i e)
-      e
+      v e
 
   let bool_value_key = 1, Varint
 
   let wrapper_bool_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key bool_value_key e;
         match v with
         | None -> ()
         | Some b -> bool b e)
-      e
+      v e
 
   let string_value_key = 1, Bytes
 
   let wrapper_string_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key string_value_key e;
         match v with
         | None -> ()
         | Some s -> string s e)
-      e
+      v e
 
   let bytes_value_key = 1, Bytes
 
   let wrapper_bytes_value v e =
     nested
-      (fun e ->
+      (fun v e ->
         key bytes_value_key e;
         match v with
         | None -> ()
         | Some b -> bytes b e)
-      e
+      v e
 end
 
 module Repeated_field = struct

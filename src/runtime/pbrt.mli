@@ -285,8 +285,8 @@ module Encoder : sig
   val key : int * payload_kind -> t -> unit
   (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
 
-  val nested : (t -> unit) -> t -> unit
-  (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
+  val nested : ('a -> t -> unit) -> 'a -> t -> unit
+  (** [nested f x e] applies [f x] to an encoder for a message nested in [e]. *)
 
   val map_entry :
     encode_key:('a -> t -> unit) ->
