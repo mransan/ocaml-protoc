@@ -1,0 +1,11 @@
+
+(executable
+ (name run)
+ (ocamlopt_flags :standard -inline 100)
+ (libraries pbrt))
+
+(rule
+ (targets foo.ml foo.mli)
+ (deps foo.proto)
+ (action
+  (run ocaml-protoc %{deps} --binary --pp --ml_out .)))
