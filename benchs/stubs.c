@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-inline int pbrt_varint_size(int64_t i) {
+static inline int pbrt_varint_size(int64_t i) {
   int n = 0;
   while (1) {
     n++;
@@ -18,12 +18,12 @@ inline int pbrt_varint_size(int64_t i) {
 }
 
 // number of bytes for i
-CAMLprim value caml_pbrt_varint_size(int64_t i) {
+CAMLprim value b_caml_pbrt_varint_size(int64_t i) {
   int res = pbrt_varint_size(i);
   return Val_int(res);
 }
 
-CAMLprim value caml_pbrt_varint_size_byte(value v_i) {
+CAMLprim value b_caml_pbrt_varint_size_byte(value v_i) {
   CAMLparam1(v_i);
 
   int64_t i = Int64_val(v_i);
@@ -32,7 +32,7 @@ CAMLprim value caml_pbrt_varint_size_byte(value v_i) {
 }
 
 // write i at str[idx…]
-inline void pbrt_varint(unsigned char *str, int64_t i) {
+static inline void pbrt_varint(unsigned char *str, int64_t i) {
   while (true) {
     int64_t cur = i & 0x7f;
     if (cur == i) {
@@ -63,14 +63,14 @@ inline void pbrt_varint(unsigned char *str, int64_t i) {
 //      done
 
 // write `i` starting at `idx`
-CAMLprim value caml_pbrt_varint(value _str, intnat idx, int64_t i) {
+CAMLprim value b_caml_pbrt_varint(value _str, intnat idx, int64_t i) {
   CAMLparam1(_str);
   char *str = Bytes_val(_str);
   pbrt_varint(str + idx, i);
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_pbrt_varint_bytes(value _str, value _idx, value _i) {
+CAMLprim value b_caml_pbrt_varint_bytes(value _str, value _idx, value _i) {
   CAMLparam3(_str, _idx, _i);
   char *str = Bytes_val(_str);
   int idx = Int_val(_idx);
