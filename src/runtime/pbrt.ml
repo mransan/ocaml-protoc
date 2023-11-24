@@ -533,7 +533,7 @@ module Encoder = struct
   let uint64_as_bits64 = function
     | `unsigned x -> bits64 x
 
-  let bool b e =
+  let[@inline] bool b e =
     add_char e
       (Char.unsafe_chr
          (if b then
@@ -546,7 +546,7 @@ module Encoder = struct
   let[@inline] int_as_bits32 i e = bits32 (Int32.of_int i) e
   let[@inline] int_as_bits64 i e = bits64 (Int64.of_int i) e
 
-  let string s e =
+  let[@inline] string s e =
     (* safe: we're not going to modify the bytes, and [s] will
        not change. *)
     bytes (Bytes.unsafe_of_string s) e
