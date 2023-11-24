@@ -444,15 +444,26 @@ module Encoder = struct
     [@@noalloc]
   (** Write this int as varint into the given slice *)
 
-  let[@inline] varint (i : int64) e =
+  let[@inline] varint64 (i : int64) e =
     let n_bytes = varint_size i in
     let start = reserve_n e n_bytes in
     varint_slice e.b start i
 
-  let int_as_varint i e = (varint [@inlined]) (Int64.of_int i) e
+  let int_as_varint i e =
+    let i = Int64.of_int i in
+    let n_bytes = varint_size i in
+    let start = reserve_n e n_bytes in
+    varint_slice e.b start i
 
   let zigzag i e =
-    (varint [@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
+    let i = Int64.of_int i in
+    let i = Int64.(logxor (shift_left i 1) (shift_right i 63)) in
+    let n_bytes = varint_size i in
+    let start = reserve_n e n_bytes in
+    varint_slice e.b start i
+
+  let[@inline] zigzag64 i e =
+    (varint64 [@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
 
   let[@inline] bits32 i e =
     let start = reserve_n e 4 in
@@ -496,11 +507,11 @@ module Encoder = struct
       kv t
 
   let empty_nested e = add_char e (Char.unsafe_chr 0)
-  let int_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int i) e
-  let int32_as_varint i e = (varint [@inlined]) (Int64.of_int32 i) e
-  let int32_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int32 i) e
-  let int64_as_varint = varint
-  let int64_as_zigzag = zigzag
+  let int_as_zigzag = zigzag
+  let int32_as_varint i e = (varint64 [@inlined]) (Int64.of_int32 i) e
+  let int32_as_zigzag i e = (zigzag64 [@inlined]) (Int64.of_int32 i) e
+  let int64_as_varint = varint64
+  let int64_as_zigzag = zigzag64
   let int32_as_bits32 = bits32
   let int64_as_bits64 = bits64
 
@@ -511,10 +522,10 @@ module Encoder = struct
     | `unsigned d -> int32_as_zigzag d
 
   let uint64_as_varint = function
-    | `unsigned d -> varint d
+    | `unsigned d -> varint64 d
 
   let uint64_as_zigzag = function
-    | `unsigned d -> zigzag d
+    | `unsigned d -> zigzag64 d
 
   let uint32_as_bits32 = function
     | `unsigned x -> bits32 x
@@ -530,10 +541,10 @@ module Encoder = struct
          else
            0))
 
-  let float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
-  let float_as_bits64 f e = bits64 (Int64.bits_of_float f) e
-  let int_as_bits32 i e = bits32 (Int32.of_int i) e
-  let int_as_bits64 i e = bits64 (Int64.of_int i) e
+  let[@inline] float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
+  let[@inline] float_as_bits64 f e = bits64 (Int64.bits_of_float f) e
+  let[@inline] int_as_bits32 i e = bits32 (Int32.of_int i) e
+  let[@inline] int_as_bits64 i e = bits64 (Int64.of_int i) e
 
   let string s e =
     (* safe: we're not going to modify the bytes, and [s] will
