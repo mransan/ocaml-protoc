@@ -665,14 +665,8 @@ module Nested = struct
   module Make_bench_of_mk_company (E : MK_COMPANY) = struct
     let bench company =
       mk_t E.name_of_enc @@ fun () ->
-      for _i = 1 to 10 do
-        let enc = E.create () in
-        for _j = 1 to 10 do
-          Sys.opaque_identity
-            (E.clear enc;
-             E.enc_company company enc)
-        done
-      done
+      let enc = E.create () in
+      Sys.opaque_identity (E.enc_company company enc)
 
     let string_of_company c =
       let e = E.create () in
@@ -1171,7 +1165,7 @@ module Nested = struct
   let pp_size ~n ~depth =
     Printf.printf "bench nested enc: length for n=%d, depth=%d is %d B\n" n
       depth
-      (String.length (Basic.string_of_company @@ mk_company ~n ~depth))
+      (String.length (Cur.string_of_company @@ mk_company ~n ~depth))
 
   (* sanity check *)
   let check ~n ~depth () =
@@ -1224,7 +1218,7 @@ module Nested = struct
   let () =
     List.iter
       (fun (n, depth) -> check ~n ~depth ())
-      [ 1, 3; 2, 4; 10, 1; 20, 2 ]
+      [ 1, 3; 2, 4; 10, 1; 20, 2; 1, 10 ]
 end
 
 let test_nested_enc ~n ~depth =
