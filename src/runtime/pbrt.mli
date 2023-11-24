@@ -283,8 +283,8 @@ module Encoder : sig
       These combinators are used by generated code (or user combinators)
       to encode a OCaml value into the wire representation of protobufs. *)
 
-  val key : int * payload_kind -> t -> unit
-  (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
+  val key : int -> payload_kind -> t -> unit
+  (** [key k pk e] writes a key and a payload kind to [e]. *)
 
   val nested : ('a -> t -> unit) -> 'a -> t -> unit
   (** [nested f x e] applies [f x] to an encoder for a message nested in [e]. *)

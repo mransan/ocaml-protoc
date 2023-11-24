@@ -8,7 +8,7 @@ let gen_encode_field_key sc number pk is_packed =
   let pk_runtime_constructor_name =
     Pb_codegen_util.string_of_payload_kind pk is_packed |> constructor_name
   in
-  F.linep sc "Pbrt.Encoder.key (%i, Pbrt.%s) encoder; " number
+  F.linep sc "Pbrt.Encoder.key %i Pbrt.%s encoder; " number
     pk_runtime_constructor_name
 
 let runtime_function_for_basic_type bt pk =
