@@ -596,10 +596,13 @@ module Nested = struct
     val nested : (t -> unit) -> t -> unit
   end
 
+  let[@inline] zigzag i : int64 =
+    Int64.(logxor (shift_left i 1) (shift_right i 63))
+
   module Make_enc (E : ENC) = struct
     let enc_person (p : person) (e : E.t) : unit =
       E.key 1 Bytes (E.string p.name) e;
-      E.key 2 Varint (E.int64_as_varint p.age) e;
+      E.key 2 Varint (E.int64_as_varint @@ zigzag p.age) e;
       ()
 
     let enc_store (st : store) (e : E.t) : unit =
@@ -649,25 +652,51 @@ module Nested = struct
             });
     }
 
-  module Make_bench (E : ENC) = struct
-    include Make_enc (E)
+  module type MK_COMPANY = sig
+    type t
 
+    val name_of_enc : string
+    val create : unit -> t
+    val clear : t -> unit
+    val enc_company : company -> t -> unit
+    val to_string : t -> string
+  end
+
+  module Make_bench_of_mk_company (E : MK_COMPANY) = struct
     let bench company =
-      mk_t (spf "nenc-%s" E.name_of_enc) @@ fun () ->
+      mk_t E.name_of_enc @@ fun () ->
       for _i = 1 to 10 do
         let enc = E.create () in
         for _j = 1 to 10 do
           Sys.opaque_identity
             (E.clear enc;
-             enc_company company enc)
+             E.enc_company company enc)
         done
       done
 
     let string_of_company c =
       let e = E.create () in
-      enc_company c e;
+      E.enc_company c e;
       E.to_string e
   end
+
+  module Make_bench (E : ENC) = struct
+    module Arg = struct
+      include E
+      include Make_enc (E)
+    end
+
+    include Make_bench_of_mk_company (Arg)
+  end
+
+  module Cur = Make_bench_of_mk_company (struct
+    let name_of_enc = "current"
+
+    include Pbrt.Encoder
+
+    let create () = create ()
+    let enc_company = Foo.encode_pb_company
+  end)
 
   module Basic = Make_bench (struct
     let name_of_enc = "basic-buffer"
@@ -1132,6 +1161,7 @@ module Nested = struct
       int_as_varint size e
   end)
 
+  let bench_cur = Cur.bench
   let bench_basic = Basic.bench
   let bench_buffers_nested = Buffers_nested.bench
   let bench_from_back = From_back.bench
@@ -1145,15 +1175,19 @@ module Nested = struct
 
   (* sanity check *)
   let check ~n ~depth () =
-    let s_basic = Basic.string_of_company (mk_company ~n ~depth) in
-    let s_buffers_nested =
-      Buffers_nested.string_of_company (mk_company ~n ~depth)
-    in
-    let s_from_back = From_back.string_of_company (mk_company ~n ~depth) in
-    let s_from_back2 =
-      From_back_noinline.string_of_company (mk_company ~n ~depth)
-    in
-    let s_from_backc = From_back_c.string_of_company (mk_company ~n ~depth) in
+    let comp = mk_company ~n ~depth in
+    let s_cur = Cur.string_of_company comp in
+    let s_basic = Basic.string_of_company comp in
+
+    (*
+    Printf.printf "###### n=%d, depth=%d\n" n depth;
+    Printf.printf "s_cur[%d]=%S\n" (String.length s_cur) s_cur;
+    Printf.printf "s_basic[%d]=%S\n" (String.length s_basic) s_basic;
+    *)
+    let s_buffers_nested = Buffers_nested.string_of_company comp in
+    let s_from_back = From_back.string_of_company comp in
+    let s_from_back2 = From_back_noinline.string_of_company comp in
+    let s_from_backc = From_back_c.string_of_company comp in
     (*
        Printf.printf "basic:\n(len=%d) %S\n" (String.length s_basic) s_basic;
        Printf.printf "from_back:\n(len=%d) %S\n"
@@ -1169,14 +1203,18 @@ module Nested = struct
         Foo.decode_pb_company dec)
     in
     let c_basic = dec_s s_basic in
+    let c_cur = dec_s s_cur in
     let c_buffers_nested = dec_s s_buffers_nested in
     let c_from_back = dec_s s_from_back in
     let c_from_back2 = dec_s s_from_back2 in
     let c_from_backc = dec_s s_from_backc in
     (*
-    Format.printf "c_basic=%a@." Foo_pp.pp_company c_basic;
-    Format.printf "c_from_back=%a@." Foo_pp.pp_company c_from_back;
+    Format.printf "comp=%a@." Foo.pp_company comp;
+    Format.printf "c_basic=%a@." Foo.pp_company c_basic;
+    Format.printf "c_cur=%a@." Foo.pp_company c_cur;
        *)
+    assert (c_basic = comp);
+    assert (c_basic = c_cur);
     assert (c_basic = c_buffers_nested);
     assert (c_basic = c_from_back);
     assert (c_basic = c_from_back2);
@@ -1198,6 +1236,7 @@ let test_nested_enc ~n ~depth =
         B.throughputN ~repeat:4 3
           [
             Nested.bench_basic company;
+            Nested.bench_cur company;
             Nested.bench_buffers_nested company;
             Nested.bench_from_back company;
             Nested.bench_from_back_noinline company;
