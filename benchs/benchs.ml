@@ -182,7 +182,7 @@ module Dec = struct
   (* make a buffer with the integers from [0] to [n] inside *)
   let mk_buf_n n : string =
     let enc = Pbrt.Encoder.create () in
-    for i = 0 to n do
+    for i = n downto 0 do
       Pbrt.Encoder.int_as_varint i enc
     done;
     Pbrt.Encoder.to_string enc
@@ -270,7 +270,7 @@ module Dec_bits64 = struct
   (* put the int64 integers from 0 to n in a dec *)
   let mk_buf_n n : string =
     let enc = Pbrt.Encoder.create () in
-    for i = 0 to n do
+    for i = n downto 0 do
       Pbrt.Encoder.int_as_bits64 i enc
     done;
     Pbrt.Encoder.to_string enc
