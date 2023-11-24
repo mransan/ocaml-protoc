@@ -477,7 +477,7 @@ module Encoder = struct
     add_bytes e b;
     int_as_varint (Bytes.length b) e
 
-  let nested f x e =
+  let[@inline] nested f x e =
     (* compute length because it's not affected by a resize during
        the call to [f] *)
     let old_len = cap e - e.start in
