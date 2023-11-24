@@ -475,7 +475,7 @@ module Encoder = struct
     let size = new_len - old_len in
     int_as_varint size e
 
-  let[@inline] key (k, pk) e =
+  let[@inline] key k pk e =
     let pk' =
       match pk with
       | Varint -> 0
@@ -490,9 +490,9 @@ module Encoder = struct
       (fun kv t ->
         let (key_value, key_pk), (value_value, value_pk) = kv in
         encode_value value_value t;
-        key (2, value_pk) t;
+        key 2 value_pk t;
         encode_key key_value t;
-        key (1, key_pk) t)
+        key 1 key_pk t)
       kv t
 
   let empty_nested e = add_char e (Char.unsafe_chr 0)
@@ -540,18 +540,14 @@ module Encoder = struct
        not change. *)
     bytes (Bytes.unsafe_of_string s) e
 
-  let double_value_key = 1, Bits64
-
   let wrapper_double_value v e =
     nested
       (fun v e ->
         (match v with
         | None -> ()
         | Some f -> float_as_bits64 f e);
-        key double_value_key e)
+        key 1 Bits64 e)
       v e
-
-  let float_value_key = 1, Bits32
 
   let wrapper_float_value v e =
     nested
@@ -559,10 +555,8 @@ module Encoder = struct
         (match v with
         | None -> ()
         | Some f -> float_as_bits32 f e);
-        key float_value_key e)
+        key 1 Bits32 e)
       v e
-
-  let int64_value_key = 1, Varint
 
   let wrapper_int64_value v e =
     nested
@@ -570,10 +564,8 @@ module Encoder = struct
         (match v with
         | None -> ()
         | Some i -> int64_as_varint i e);
-        key int64_value_key e)
+        key 1 Varint e)
       v e
-
-  let int32_value_key = 1, Varint
 
   let wrapper_int32_value v e =
     nested
@@ -581,10 +573,8 @@ module Encoder = struct
         (match v with
         | None -> ()
         | Some i -> int32_as_varint i e);
-        key int32_value_key e)
+        key 1 Varint e)
       v e
-
-  let bool_value_key = 1, Varint
 
   let wrapper_bool_value v e =
     nested
@@ -592,10 +582,8 @@ module Encoder = struct
         (match v with
         | None -> ()
         | Some b -> bool b e);
-        key bool_value_key e)
+        key 1 Varint e)
       v e
-
-  let string_value_key = 1, Bytes
 
   let wrapper_string_value v e =
     nested
@@ -603,10 +591,8 @@ module Encoder = struct
         (match v with
         | None -> ()
         | Some s -> string s e);
-        key string_value_key e)
+        key 1 Bytes e)
       v e
-
-  let bytes_value_key = 1, Bytes
 
   let wrapper_bytes_value v e =
     nested
@@ -614,7 +600,7 @@ module Encoder = struct
         (match v with
         | None -> ()
         | Some b -> bytes b e);
-        key bytes_value_key e)
+        key 1 Bytes e)
       v e
 end
 
