@@ -664,8 +664,11 @@ module Nested = struct
 
   module Make_bench_of_mk_company (E : MK_COMPANY) = struct
     let bench company =
-      mk_t E.name_of_enc @@ fun () ->
+      (* create an encoder that we'll reuse every time, so we can measure
+         the allocations caused purely by the encoding itself *)
       let enc = E.create () in
+      mk_t E.name_of_enc @@ fun () ->
+      E.clear enc;
       Sys.opaque_identity (E.enc_company company enc)
 
     let string_of_company c =
