@@ -616,17 +616,32 @@ module Encoder = struct
 end
 
 module List_util = struct
-  let rev_iter f l =
+  let[@inline] rev_iter f l =
     let safe f l = List.iter f @@ List.rev l in
     let rec direct i f l =
       match l with
       | [] -> ()
+      | [ x ] -> f x
+      | [ x; y ] ->
+        f y;
+        f x
       | _ when i = 0 -> safe f l
-      | x :: tl ->
+      | x :: y :: tl ->
         direct (i - 1) f tl;
+        f y;
         f x
     in
-    direct 200 f l
+
+    match l with
+    | [] -> ()
+    | [ x ] -> f x
+    | [ x; y ] ->
+      f y;
+      f x
+    | x :: y :: tl ->
+      direct 200 f tl;
+      f y;
+      f x
 end
 
 module Repeated_field = struct
