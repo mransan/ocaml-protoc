@@ -3,8 +3,8 @@
 (generate_opam_files true)
 (version 2.4)
 
-(maintainers "Maxime Ransan <maxime.ransan@gmail.com>")
-(authors "Maxime Ransan <maxime.ransan@gmail.com>")
+(maintainers "Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes")
+(authors "Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes")
 (source (github mransan/ocaml-protoc))
 (license MIT)
 
