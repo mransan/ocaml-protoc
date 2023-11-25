@@ -56,10 +56,9 @@ static inline void pbrt_varint(unsigned char *str, uint64_t i) {
 
 // write `i` starting at `idx`
 CAMLprim value caml_pbrt_varint(value _str, intnat idx, int64_t i) {
-  CAMLparam1(_str);
   char *str = Bytes_val(_str);
   pbrt_varint(str + idx, i);
-  CAMLreturn(Val_unit);
+  return Val_unit;
 }
 
 CAMLprim value caml_pbrt_varint_byte(value _str, value _idx, value _i) {
