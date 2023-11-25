@@ -87,6 +87,7 @@ let gen_service_client_struct (service : Ot.service) sc : unit =
   let service_name = service.service_name in
   F.line sc "module Client = struct";
   let gen_rpc sc (rpc : Ot.rpc) =
+    F.linep sc "open Pbrt_services";
     let rpc_name = rpc.rpc_name in
     let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
     let req_mode_witness = String.capitalize_ascii req_mode in
