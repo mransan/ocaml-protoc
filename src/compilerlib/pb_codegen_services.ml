@@ -85,88 +85,99 @@ let string_list_of_package (path : string list) : string =
 
 let gen_service_client_struct (service : Ot.service) sc : unit =
   let service_name = service.service_name in
-  List.iter
-    (fun (rpc : Ot.rpc) ->
-      let rpc_name = rpc.rpc_name in
-      let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
-      let req_mode_witness = String.capitalize_ascii req_mode in
-      let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
-      let res_mode_witness = String.capitalize_ascii res_mode in
-      F.empty_line sc;
-      F.linep sc "let %s : (%s, %s, %s, %s) Client.rpc ="
-        (Pb_codegen_util.function_name_of_rpc rpc)
-        req req_mode res res_mode;
-      F.linep sc "  (Client.mk_rpc ";
-      F.linep sc "    ~package:%s"
-        (string_list_of_package service.service_packages);
-      F.linep sc "    ~service_name:%S ~rpc_name:%S" service.service_name
-        rpc.rpc_name;
-      F.linep sc "    ~req_mode:Client.%s" req_mode_witness;
-      F.linep sc "    ~res_mode:Client.%s" res_mode_witness;
-      F.linep sc "    ~encode_json_req:%s"
-        (function_name_encode_json ~service_name ~rpc_name rpc.rpc_req);
-      F.linep sc "    ~encode_pb_req:%s"
-        (function_name_encode_pb ~service_name ~rpc_name rpc.rpc_req);
-      F.linep sc "    ~decode_json_res:%s"
-        (function_name_decode_json ~service_name ~rpc_name rpc.rpc_res);
-      F.linep sc "    ~decode_pb_res:%s"
-        (function_name_decode_pb ~service_name ~rpc_name rpc.rpc_res);
-      let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
-      let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
-      F.linep sc "    () : (%s, %s, %s, %s) Client.rpc)" req req_mode res
-        res_mode)
-    service.service_body
+  F.line sc "module Client = struct";
+  let gen_rpc sc (rpc : Ot.rpc) =
+    let rpc_name = rpc.rpc_name in
+    let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+    let req_mode_witness = String.capitalize_ascii req_mode in
+    let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+    let res_mode_witness = String.capitalize_ascii res_mode in
+    F.empty_line sc;
+    F.linep sc "let %s : (%s, %s, %s, %s) Client.rpc ="
+      (Pb_codegen_util.function_name_of_rpc rpc)
+      req req_mode res res_mode;
+    F.linep sc "  (Client.mk_rpc ";
+    F.linep sc "    ~package:%s"
+      (string_list_of_package service.service_packages);
+    F.linep sc "    ~service_name:%S ~rpc_name:%S" service.service_name
+      rpc.rpc_name;
+    F.linep sc "    ~req_mode:Client.%s" req_mode_witness;
+    F.linep sc "    ~res_mode:Client.%s" res_mode_witness;
+    F.linep sc "    ~encode_json_req:%s"
+      (function_name_encode_json ~service_name ~rpc_name rpc.rpc_req);
+    F.linep sc "    ~encode_pb_req:%s"
+      (function_name_encode_pb ~service_name ~rpc_name rpc.rpc_req);
+    F.linep sc "    ~decode_json_res:%s"
+      (function_name_decode_json ~service_name ~rpc_name rpc.rpc_res);
+    F.linep sc "    ~decode_pb_res:%s"
+      (function_name_decode_pb ~service_name ~rpc_name rpc.rpc_res);
+    let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+    let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+    F.linep sc "    () : (%s, %s, %s, %s) Client.rpc)" req req_mode res res_mode
+  in
+  F.sub_scope sc (fun sc -> List.iter (gen_rpc sc) service.service_body);
+  F.line sc "end"
 
 let gen_service_server_struct (service : Ot.service) sc : unit =
   let service_name = service.service_name in
 
   (* generate rpc descriptions for the server side *)
-  List.iter
-    (fun (rpc : Ot.rpc) ->
-      F.empty_line sc;
-      let rpc_name = rpc.rpc_name in
-      let name = Pb_codegen_util.function_name_of_rpc rpc in
-      let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
-      let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
-      let req_mode_witness = String.capitalize_ascii req_mode in
-      let res_mode_witness = String.capitalize_ascii res_mode in
+  let gen_rpc sc (rpc : Ot.rpc) =
+    F.empty_line sc;
+    let rpc_name = rpc.rpc_name in
+    let name = Pb_codegen_util.function_name_of_rpc rpc in
+    let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+    let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+    let req_mode_witness = String.capitalize_ascii req_mode in
+    let res_mode_witness = String.capitalize_ascii res_mode in
 
-      F.linep sc "let _rpc_%s : (%s,%s,%s,%s) Server.rpc = " name req req_mode
-        res res_mode;
-      F.linep sc "  (Server.mk_rpc ~name:%S" rpc.rpc_name;
-      F.linep sc "    ~req_mode:Server.%s" req_mode_witness;
-      F.linep sc "    ~res_mode:Server.%s" res_mode_witness;
-      F.linep sc "    ~encode_json_res:%s"
-        (function_name_encode_json ~service_name ~rpc_name rpc.rpc_res);
-      F.linep sc "    ~encode_pb_res:%s"
-        (function_name_encode_pb ~service_name ~rpc_name rpc.rpc_res);
-      F.linep sc "    ~decode_json_req:%s"
-        (function_name_decode_json ~service_name ~rpc_name rpc.rpc_req);
-      F.linep sc "    ~decode_pb_req:%s"
-        (function_name_decode_pb ~service_name ~rpc_name rpc.rpc_req);
-      F.linep sc "    () : _ Server.rpc)")
-    service.service_body;
+    F.linep sc "let _rpc_%s : (%s,%s,%s,%s) Server.rpc = " name req req_mode res
+      res_mode;
+    F.linep sc "  (Server.mk_rpc ~name:%S" rpc.rpc_name;
+    F.linep sc "    ~req_mode:Server.%s" req_mode_witness;
+    F.linep sc "    ~res_mode:Server.%s" res_mode_witness;
+    F.linep sc "    ~encode_json_res:%s"
+      (function_name_encode_json ~service_name ~rpc_name rpc.rpc_res);
+    F.linep sc "    ~encode_pb_res:%s"
+      (function_name_encode_pb ~service_name ~rpc_name rpc.rpc_res);
+    F.linep sc "    ~decode_json_req:%s"
+      (function_name_decode_json ~service_name ~rpc_name rpc.rpc_req);
+    F.linep sc "    ~decode_pb_req:%s"
+      (function_name_decode_pb ~service_name ~rpc_name rpc.rpc_req);
+    F.linep sc "    () : _ Server.rpc)"
+  in
 
-  (* now generate a function from the module type to a [Service_server.t] *)
+  let gen_server sc =
+    F.line sc "open Pbrt_services";
+    List.iter (gen_rpc sc) service.service_body;
+
+    (* now generate a function from the module type to a [Service_server.t] *)
+    F.empty_line sc;
+    F.linep sc "let make";
+    List.iter
+      (fun (rpc : Ot.rpc) ->
+        let name = Pb_codegen_util.function_name_of_rpc rpc in
+        F.linep sc "  ~%s" name)
+      service.service_body;
+    F.line sc "  () : _ Server.t =";
+    F.linep sc "  { Server.";
+    F.linep sc "    service_name=%S;" service_name;
+    F.linep sc "    package=%s;"
+      (string_list_of_package service.service_packages);
+    F.line sc "    handlers=[";
+    List.iter
+      (fun (rpc : Ot.rpc) ->
+        let f = Pb_codegen_util.function_name_of_rpc rpc in
+        F.linep sc "       (%s %s);" f (spf "_rpc_%s" f))
+      service.service_body;
+    F.line sc "    ];";
+    F.line sc "  }"
+  in
+
   F.empty_line sc;
-  F.linep sc "let make_server";
-  List.iter
-    (fun (rpc : Ot.rpc) ->
-      let name = Pb_codegen_util.function_name_of_rpc rpc in
-      F.linep sc "  ~%s" name)
-    service.service_body;
-  F.line sc "  () : _ Server.t =";
-  F.linep sc "  { Server.";
-  F.linep sc "    service_name=%S;" service_name;
-  F.linep sc "    package=%s;" (string_list_of_package service.service_packages);
-  F.line sc "    handlers=[";
-  List.iter
-    (fun (rpc : Ot.rpc) ->
-      let f = Pb_codegen_util.function_name_of_rpc rpc in
-      F.linep sc "       (%s %s);" f (spf "_rpc_%s" f))
-    service.service_body;
-  F.line sc "    ];";
-  F.line sc "  }";
+  F.line sc "module Server = struct";
+  F.sub_scope sc gen_server;
+  F.line sc "end";
   F.empty_line sc
 
 let gen_service_struct (service : Ot.service) sc : unit =
@@ -191,27 +202,35 @@ let gen_service_sig (service : Ot.service) sc : unit =
       F.linep sc "open Pbrt_services.Value_mode";
 
       (* client *)
-      List.iter
-        (fun (rpc : Ot.rpc) ->
-          F.empty_line sc;
-          let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
-          let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
-          F.linep sc "val %s : (%s, %s, %s, %s) Client.rpc"
-            (Pb_codegen_util.function_name_of_rpc rpc)
-            req req_mode res res_mode)
-        service.service_body;
+      let gen_client_rpc sc (rpc : Ot.rpc) =
+        F.empty_line sc;
+        let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+        let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+        F.linep sc "val %s : (%s, %s, %s, %s) Client.rpc"
+          (Pb_codegen_util.function_name_of_rpc rpc)
+          req req_mode res res_mode
+      in
+
+      F.empty_line sc;
+      F.line sc "module Client : sig";
+      F.sub_scope sc (fun sc ->
+          List.iter (gen_client_rpc sc) service.service_body);
+      F.line sc "end";
 
       (* server *)
       F.empty_line sc;
-      F.line sc "(** Produce a server implementation from handlers *)";
-      F.linep sc "val make_server : ";
-      List.iter
-        (fun (rpc : Ot.rpc) ->
-          F.linep sc "  %s:(%s -> 'handler) ->"
-            (Pb_codegen_util.function_name_of_rpc rpc)
-            (string_of_server_rpc rpc.rpc_req rpc.rpc_res))
-        service.service_body;
-      F.linep sc "  unit -> 'handler Server.t";
+      F.line sc "module Server : sig";
+      F.sub_scope sc (fun sc ->
+          F.line sc "(** Produce a server implementation from handlers *)";
+          F.linep sc "val make : ";
+          List.iter
+            (fun (rpc : Ot.rpc) ->
+              F.linep sc "  %s:(%s -> 'handler) ->"
+                (Pb_codegen_util.function_name_of_rpc rpc)
+                (string_of_server_rpc rpc.rpc_req rpc.rpc_res))
+            service.service_body;
+          F.linep sc "  unit -> 'handler Pbrt_services.Server.t");
+      F.line sc "end";
 
       ());
 
