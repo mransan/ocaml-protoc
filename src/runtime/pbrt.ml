@@ -391,9 +391,14 @@ module Encoder = struct
     self.b <- self.initial;
     self.start <- cap self
 
-  let to_string self = Bytes.sub_string self.b self.start (cap self - self.start)
-  let to_bytes self = Bytes.sub self.b self.start (cap self - self.start)
-  let write_chunks w self = w self.b self.start (cap self - self.start)
+  let[@inline] to_string self =
+    Bytes.sub_string self.b self.start (cap self - self.start)
+
+  let[@inline] to_bytes self =
+    Bytes.sub self.b self.start (cap self - self.start)
+
+  let[@inline] write_chunks w self : unit =
+    w self.b self.start (cap self - self.start)
 
   let next_cap_ self =
     min Sys.max_string_length
