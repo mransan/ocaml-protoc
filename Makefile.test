@@ -6,8 +6,11 @@ export CXX
 ifndef CPPFLAGS
     CPPFLAGS =
 endif
-CPPFLAGS+=-Wno-deprecated -std=c++11
+CPPFLAGS+=-Wno-deprecated -std=c++17
 export CPPFLAGS
+
+LDFLAGS+=-Wl,--copy-dt-needed-entries
+export LDFLAGS
 
 #
 # Unit tests
@@ -40,7 +43,7 @@ $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
 		$(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
-	$(CXX) $(CPPFLAGS) \
+	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
 		-L $(PB_LINC) -l protobuf \
 		$? \
@@ -50,7 +53,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10_cpp.cpp \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc
-	$(CXX) $(CPPFLAGS) \
+	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) \
 		-L $(PB_LINC) -l protobuf \
 		$? \
@@ -92,7 +95,7 @@ yojson:
 		$(YOJSON_DIR)/yojson_unittest.proto
 	$(OCB) $(OCB_YOJSON) -I $(YOJSON_DIR) yojson_unittest_ml.byte
 	$(CXX) \
-		$(CPPFLAGS) \
+		$(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
 		$(YOJSON_DIR)/yojson_unittest_cpp.cpp $(YOJSON_DIR)/yojson_unittest.pb.cc \
 		-L $(PB_LINC) \
