@@ -724,7 +724,7 @@ module Repeated_field = struct
     List.iter
       (fun a ->
         let len = Array.length a - 1 in
-        for j = len to 0 do
+        for j = len downto 0 do
           f (Array.unsafe_get a j)
         done)
       l
