@@ -74,16 +74,23 @@ let compile_oneof_p1 oneof_parsed : _ Tt.oneof =
       Tt.oneof_options = Pb_option.empty;
     }
   in
-  List.fold_left
-    (fun acc -> function
-      | Pt.Oneof_field f ->
-        { acc with Tt.oneof_fields = compile_field_p1 f :: acc.Tt.oneof_fields }
-      | Pt.Oneof_option (name, value) ->
-        {
-          acc with
-          Tt.oneof_options = Pb_option.add acc.Tt.oneof_options name value;
-        })
-    init oneof_parsed.Pt.oneof_body
+  let oneof =
+    List.fold_left
+      (fun acc -> function
+        | Pt.Oneof_field f ->
+          {
+            acc with
+            Tt.oneof_fields = compile_field_p1 f :: acc.Tt.oneof_fields;
+          }
+        | Pt.Oneof_option (name, value) ->
+          {
+            acc with
+            Tt.oneof_options = Pb_option.add acc.Tt.oneof_options name value;
+          })
+      init oneof_parsed.Pt.oneof_body
+  in
+  (* now reverse the fields so they're back in the original order *)
+  { oneof with Tt.oneof_fields = List.rev oneof.oneof_fields }
 
 let not_found f : bool =
   try
