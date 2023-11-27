@@ -170,16 +170,15 @@ let gen_rft_associative sc var_name associative_field =
   F.line sc ") in";
 
   (match at with
-  | Ot.At_list -> F.line sc "List.iter (fun (k, v) ->"
+  | Ot.At_list -> F.line sc "Pbrt.List_util.rev_iter (fun (k, v) ->"
   | Ot.At_hashtable -> F.line sc "Hashtbl.iter (fun k v ->");
   F.sub_scope sc (fun sc ->
-      gen_encode_field_key sc encoding_number Ot.Pk_bytes false;
       F.linep sc "let map_entry = (k, Pbrt.%s), (v, Pbrt.%s) in"
         (Pb_codegen_util.string_of_payload_kind ~capitalize:() key_pk false)
         (Pb_codegen_util.string_of_payload_kind ~capitalize:() value_pk false);
       F.line sc
-        ("Pbrt.Encoder.map_entry ~encode_key "
-       ^ "~encode_value map_entry encoder"));
+        "Pbrt.Encoder.map_entry ~encode_key ~encode_value map_entry encoder;";
+      gen_encode_field_key sc encoding_number Ot.Pk_bytes false);
   F.linep sc ") %s;" var_name
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
