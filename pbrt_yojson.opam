@@ -3,8 +3,8 @@ opam-version: "2.0"
 version: "2.4"
 synopsis:
   "Runtime library for ocaml-protoc to support JSON encoding/decoding"
-maintainer: ["Maxime Ransan <maxime.ransan@gmail.com>"]
-authors: ["Maxime Ransan <maxime.ransan@gmail.com>"]
+maintainer: ["Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes"]
+authors: ["Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes"]
 license: "MIT"
 tags: ["protobuf" "encode" "decode"]
 homepage: "https://github.com/mransan/ocaml-protoc"

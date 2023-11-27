@@ -1,0 +1,39 @@
+
+// test that streaming variants all compile
+
+syntax = "proto3";
+
+message FileChunk {
+  string path = 1;
+  bytes data = 2;
+  int32 crc = 3;
+}
+
+message FilePath {
+  string path = 1;
+} 
+
+message FileCrc {
+  /// CRC of the entire file
+  int32 crc = 1;
+}
+
+message Empty {}
+
+message Ping {}
+
+message Pong {}
+
+service FileServer {
+  rpc touch_file(FilePath) returns (Empty);
+
+  /// Upload a file
+  rpc upload_file(stream FileChunk) returns (FileCrc);
+
+  /// Download a file
+  rpc download_file(FilePath) returns (stream FileChunk);
+
+  // keepalive
+  rpc ping_pong(stream Ping) returns (stream Pong);
+}
+

@@ -1,5 +1,6 @@
 (test
   (name google_unittest)
+  (flags :standard -w -11)
   (libraries pbrt))
 
 (rule

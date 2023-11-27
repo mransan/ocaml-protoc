@@ -324,3 +324,16 @@
  (name test_proto3_optional)
  (libraries pbrt)
  (modules test_proto3_optional_ml test_proto3_optional))
+
+(rule
+ (targets test_make.ml test_make.mli)
+ (deps
+  (:proto test_make.proto)
+  ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc --binary --make --ml_out ./ %{proto})))
+
+(executable
+ (name test_make)
+ (libraries pbrt)
+ (modules test_make))

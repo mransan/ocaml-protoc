@@ -265,8 +265,62 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
   acc.Acc.all_types
   @ [ make_proto_type ~file_name ~file_options ~id ~scope:message_scope ~spec ]
 
-let validate (proto : Pt.proto) : _ Tt.proto_type list =
-  let { Pt.package; Pt.proto_file_name; messages; enums; file_options; _ } =
+let validate_service (scope : Tt.type_scope) ~file_name (service : Pt.service) :
+    _ Tt.service =
+  let { Pt.service_name; service_body } = service in
+  let service_body =
+    List.filter_map
+      (function
+        | Pt.Service_option _ -> None
+        | Pt.Service_rpc
+            {
+              rpc_name;
+              rpc_options;
+              rpc_req_stream;
+              rpc_req;
+              rpc_res_stream;
+              rpc_res;
+            } ->
+          let rpc_req =
+            match rpc_req with
+            | `User_defined ty -> ty
+            | _ -> E.invalid_rpc_req_type ~service_name ~rpc_name ()
+          in
+          let rpc_res =
+            match rpc_res with
+            | `User_defined ty -> ty
+            | _ -> E.invalid_rpc_res_type ~service_name ~rpc_name ()
+          in
+          let rpc =
+            {
+              Tt.rpc_name;
+              rpc_options;
+              rpc_req_stream;
+              rpc_req;
+              rpc_res_stream;
+              rpc_res;
+            }
+          in
+          Some rpc)
+      service_body
+  in
+  {
+    Tt.service_packages = scope.packages;
+    service_file_name = file_name;
+    service_name;
+    service_body;
+  }
+
+let validate (proto : Pt.proto) : _ Tt.proto =
+  let {
+    Pt.package;
+    Pt.proto_file_name;
+    messages;
+    enums;
+    file_options;
+    services;
+    _;
+  } =
     proto
   in
 
@@ -276,11 +330,17 @@ let validate (proto : Pt.proto) : _ Tt.proto_type list =
   let pbtt_msgs =
     List.fold_right
       (fun e pbtt_msgs ->
-        compile_enum_p1 file_name file_options scope e :: pbtt_msgs)
+        [ compile_enum_p1 file_name file_options scope e ] :: pbtt_msgs)
       enums []
   in
 
-  List.fold_left
-    (fun pbtt_msgs pbpt_msg ->
-      pbtt_msgs @ validate_message file_name file_options scope pbpt_msg)
-    pbtt_msgs messages
+  let proto_types =
+    List.fold_left
+      (fun pbtt_msgs pbpt_msg ->
+        let tys = validate_message file_name file_options scope pbpt_msg in
+        tys :: pbtt_msgs)
+      pbtt_msgs messages
+  in
+
+  let proto_services = List.map (validate_service scope ~file_name) services in
+  { Tt.proto_types; proto_services }

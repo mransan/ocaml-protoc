@@ -57,7 +57,7 @@ let find_imported_file include_dirs file_name =
     | Some file_name -> file_name
   )
 
-let compile cmdline cmd_line_files_options =
+let compile cmdline cmd_line_files_options : Ot.proto * _ =
   let { Cmdline.include_dirs; proto_file_name; unsigned_tag; _ } = cmdline in
 
   (* parsing *)
@@ -87,34 +87,27 @@ let compile cmdline cmd_line_files_options =
   in
 
   (* typing *)
-  let grouped_protos = Pb_typing.perform_typing protos in
-  let all_typed_protos = List.flatten grouped_protos in
+  let typed_proto = Pb_typing.perform_typing protos in
+  let all_typed_protos = List.flatten typed_proto.proto_types in
 
-  (* Only get the types which are part of the given proto file 
-   * (compilation unit) *)
-  let grouped_proto =
-    List.filter
-      (function
-        | { Tt.file_name; _ } :: _ when file_name = proto_file_name -> true
-        | _ -> false)
-      grouped_protos
+  (* Only get the types which are part of the given proto file
+     (compilation unit) *)
+  let typed_proto =
+    {
+      typed_proto with
+      Tt.proto_types =
+        List.filter
+          (function
+            | { Tt.file_name; _ } :: _ when file_name = proto_file_name -> true
+            | _ -> false)
+          typed_proto.proto_types;
+    }
   in
 
   (* -- OCaml Backend -- *)
   let module BO = Pb_codegen_backend in
-  let ocaml_types =
-    List.rev
-    @@ List.fold_left
-         (fun ocaml_types types ->
-           let l =
-             List.flatten
-             @@ List.map
-                  (fun t ->
-                    BO.compile ~unsigned_tag:!unsigned_tag all_typed_protos t)
-                  types
-           in
-           l :: ocaml_types)
-         [] grouped_proto
+  let ocaml_proto =
+    BO.compile ~unsigned_tag:!unsigned_tag ~all_types:all_typed_protos
+      typed_proto
   in
-
-  ocaml_types, proto_file_options
+  ocaml_proto, proto_file_options

@@ -108,4 +108,27 @@ type 'a proto_type = {
   spec: 'a proto_type_spec;
 }
 
-type 'a proto = 'a proto_type list
+type 'a rpc = {
+  rpc_name: string;
+  rpc_options: Pb_option.set;
+  rpc_req_stream: bool;
+  rpc_req: 'a;
+  rpc_res_stream: bool;
+  rpc_res: 'a;
+}
+(** A RPC specification. *)
+
+type 'a service = {
+  service_name: string;
+  service_file_name: string;
+  service_packages: string list;  (** Package in which this belongs *)
+  service_body: 'a rpc list;
+}
+(** A service, composed of multiple RPCs. *)
+
+type 'a proto = {
+  proto_types: 'a proto_type list list;
+      (** List of strongly connected type definitions *)
+  proto_services: 'a service list;
+}
+(** A proto file is composed of a list of types and a list of services. *)

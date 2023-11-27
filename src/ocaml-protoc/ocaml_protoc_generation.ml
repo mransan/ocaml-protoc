@@ -53,19 +53,19 @@ let open_files cmdline (f : ml:out_channel -> mli:out_channel -> 'a) : 'a =
     (fun () -> f ~ml:oc_ml ~mli:oc_mli)
 
 let generate_code ocaml_types ~proto_file_options cmdline : unit =
-  let plugins =
+  let plugins : Pb_codegen_plugin.t list =
     List.flatten
       [
-        (if !(cmdline.Cmdline.yojson) then
-          [ Pb_codegen_encode_yojson.plugin; Pb_codegen_decode_yojson.plugin ]
+        (if !(cmdline.Cmdline.pp) then
+          [ Pb_codegen_pp.plugin ]
         else
           []);
         (if !(cmdline.Cmdline.binary) then
           [ Pb_codegen_encode_binary.plugin; Pb_codegen_decode_binary.plugin ]
         else
           []);
-        (if !(cmdline.Cmdline.pp) then
-          [ Pb_codegen_pp.plugin ]
+        (if !(cmdline.Cmdline.yojson) then
+          [ Pb_codegen_encode_yojson.plugin; Pb_codegen_decode_yojson.plugin ]
         else
           []);
         (if !(cmdline.Cmdline.bs) then
@@ -76,8 +76,8 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
   in
 
   let ocaml_mod : CG_all.ocaml_mod =
-    CG_all.codegen ocaml_types ~proto_file_options
-      ~proto_file_name:cmdline.proto_file_name plugins
+    CG_all.codegen ocaml_types ~generate_make:!(cmdline.make)
+      ~proto_file_options ~proto_file_name:cmdline.proto_file_name plugins
   in
 
   (* now write the files *)

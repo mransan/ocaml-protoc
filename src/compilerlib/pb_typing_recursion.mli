@@ -39,7 +39,8 @@
 module Tt = Pb_typing_type_tree
 
 val group :
-  Pb_field_type.resolved Tt.proto -> Pb_field_type.resolved Tt.proto list
+  Pb_field_type.resolved Tt.proto_type list ->
+  Pb_field_type.resolved Tt.proto_type list list
 (** [group types] returns the list of all the mutually recursive group
       of types in reverse order of dependency. In other the last group of
       types of the returned list don't depend on any other types. *)

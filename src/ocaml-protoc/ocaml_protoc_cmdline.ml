@@ -110,6 +110,8 @@ module Cmdline = struct
     yojson: bool ref;  (** whether yojson encoding is enabled *)
     bs: bool ref;  (** whether BuckleScript encoding is enabled *)
     pp: bool ref;  (** whether pretty printing is enabled *)
+    services: bool ref;  (** whether services code generation is enabled *)
+    make: bool ref;  (** whether to generate "make" functions *)
     mutable cmd_line_file_options: File_options.t;
         (** file options override from the cmd line *)
     unsigned_tag: bool ref;
@@ -127,6 +129,8 @@ module Cmdline = struct
       yojson = ref false;
       bs = ref false;
       pp = ref false;
+      services = ref false;
+      make = ref false;
       cmd_line_file_options = File_options.make ();
       unsigned_tag = ref false;
     }
@@ -137,6 +141,9 @@ module Cmdline = struct
       "--bs", Arg.Set t.bs, " generate BuckleScript encoding";
       "--binary", Arg.Set t.binary, " generate binary encoding";
       "--pp", Arg.Set t.pp, " generate pretty print functions";
+      ( "--services",
+        Arg.Set t.services,
+        " generate code for services (requires json+binary)" );
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
         " include directories" );
@@ -147,6 +154,7 @@ module Cmdline = struct
       ( "--unsigned",
         Arg.Set t.unsigned_tag,
         " tag uint32 and uint64 types with `unsigned" );
+      "--make", Arg.Set t.make, " generate `make` functions";
     ]
     @ File_options.cmd_line_args t.cmd_line_file_options
 
@@ -158,6 +166,11 @@ module Cmdline = struct
     then (
       t.binary := true;
       t.pp := true
+    );
+
+    if !(t.services) then (
+      t.binary := true;
+      t.yojson := true
     );
 
     if t.proto_file_name = "" then

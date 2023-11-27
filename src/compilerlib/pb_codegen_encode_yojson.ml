@@ -42,7 +42,7 @@ let runtime_function_for_basic_type json_label basic_type pk =
    return the runtime function name which accepts an option field
    and return the YoJson value (ie Null when value is None *)
 
-let gen_field var_name json_label field_type pk =
+let gen_field var_name json_label field_type pk : string option =
   match field_type, pk with
   | Ot.Ft_unit, _ -> None
   (* Basic types *)

@@ -96,11 +96,14 @@ module Decoder = struct
   let unexpected_payload field_name pk =
     raise (Failure (Unexpected_payload (field_name, pk)))
 
-  let missing_field field_name = raise (Failure (Missing_field field_name))
+  let[@inline never] missing_field field_name =
+    raise (Failure (Missing_field field_name))
+
+  let[@inline never] incomplete () = raise (Failure Incomplete)
   let at_end d = d.limit = d.offset
 
-  let byte d =
-    if d.offset >= d.limit then raise (Failure Incomplete);
+  let[@inline] byte d =
+    if d.offset >= d.limit then incomplete ();
     let byte = int_of_char (Bytes.get d.source d.offset) in
     d.offset <- d.offset + 1;
     byte
@@ -756,7 +759,6 @@ module Repeated_field = struct
 
   let to_list t = map_to_list identity t
 end
-(* Repeated_field*)
 
 module Pp = struct
   module F = Format
@@ -816,4 +818,3 @@ module Pp = struct
   let pp_brk pp_record (fmt : F.formatter) r : unit =
     F.fprintf fmt "@[<hv2>{ %a@;<1 -2>@]}" pp_record r
 end
-(* Pp *)

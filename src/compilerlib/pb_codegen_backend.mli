@@ -38,9 +38,9 @@ module Ot = Pb_codegen_ocaml_type
 
 val compile :
   unsigned_tag:bool ->
+  all_types:Pb_field_type.resolved Tt.proto_type list ->
   Pb_field_type.resolved Tt.proto ->
-  Pb_field_type.resolved Tt.proto_type ->
-  Ot.type_ list
+  Ot.proto
 
 (** Internal helpers.
 
@@ -60,7 +60,7 @@ module Internal : sig
     ?include_oneof_name:unit ->
     outer_message_names:string list ->
     unsigned_tag:bool ->
-    'a Tt.proto ->
+    all_types:'a Tt.proto_type list ->
     Pb_option.set ->
     string ->
     int Tt.oneof ->

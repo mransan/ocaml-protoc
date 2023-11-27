@@ -84,6 +84,14 @@ let function_name_of_user_defined ~function_prefix = function
   | { Ot.udt_module_prefix = None; Ot.udt_type_name; _ } ->
     sp "%s_%s" function_prefix udt_type_name
 
+let module_type_name_of_service_client (service : Ot.service) : string =
+  String.uppercase_ascii service.service_name ^ "_CLIENT"
+
+let module_type_name_of_service_server (service : Ot.service) : string =
+  String.uppercase_ascii service.service_name ^ "_SERVER"
+
+let function_name_of_rpc (rpc : Ot.rpc) = String.uncapitalize_ascii rpc.rpc_name
+
 let caml_file_name_of_proto_file_name ~proto_file_name =
   let splitted = Pb_util.rev_split_by_char '.' proto_file_name in
   if List.length splitted < 2 || List.hd splitted <> "proto" then

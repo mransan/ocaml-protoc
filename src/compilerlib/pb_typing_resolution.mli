@@ -69,7 +69,12 @@ end
 
 val resolve_types :
   Pb_field_type.unresolved Tt.proto_type list ->
-  Pb_field_type.resolved Tt.proto_type list
+  Types_by_scope.t * Pb_field_type.resolved Tt.proto_type list
 (** [resolve_types types] resolves all the field types for all the [types].
     If a field cannot be resolved then [Pb_exception.Compilation_error] is
     raised. *)
+
+val resolve_services :
+  Types_by_scope.t ->
+  Pb_field_type.unresolved Tt.service list ->
+  Pb_field_type.resolved Tt.service list
