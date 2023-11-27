@@ -6,8 +6,6 @@ module Value_mode = struct
   type stream
 end
 
-module Push_stream = Push_stream
-
 (** Service stubs, client side *)
 module Client = struct
   type _ mode =
