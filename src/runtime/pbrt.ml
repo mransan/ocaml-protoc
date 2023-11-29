@@ -151,41 +151,17 @@ module Decoder = struct
     let v = (varint [@inlined]) d in
     Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
 
-  let bits32 d =
-    let b1 = byte d in
-    let b2 = byte d in
-    let b3 = byte d in
-    let b4 = byte d in
-    Int32.(
-      add
-        (shift_left (of_int b4) 24)
-        (add
-           (shift_left (of_int b3) 16)
-           (add (shift_left (of_int b2) 8) (of_int b1))))
+  let[@inline] bits32 d =
+    if d.offset + 4 > d.limit then incomplete ();
+    let x = Bytes.get_int32_le d.source d.offset in
+    d.offset <- d.offset + 4;
+    x
 
-  let bits64 d =
-    let b1 = byte d in
-    let b2 = byte d in
-    let b3 = byte d in
-    let b4 = byte d in
-    let b5 = byte d in
-    let b6 = byte d in
-    let b7 = byte d in
-    let b8 = byte d in
-    Int64.(
-      add
-        (shift_left (of_int b8) 56)
-        (add
-           (shift_left (of_int b7) 48)
-           (add
-              (shift_left (of_int b6) 40)
-              (add
-                 (shift_left (of_int b5) 32)
-                 (add
-                    (shift_left (of_int b4) 24)
-                    (add
-                       (shift_left (of_int b3) 16)
-                       (add (shift_left (of_int b2) 8) (of_int b1))))))))
+  let[@inline] bits64 d =
+    if d.offset + 8 > d.limit then incomplete ();
+    let x = Bytes.get_int64_le d.source d.offset in
+    d.offset <- d.offset + 8;
+    x
 
   let int_as_varint d = Int64.to_int @@ (varint [@inlined]) d
 
@@ -285,24 +261,24 @@ module Decoder = struct
     in
     loop e0
 
-  let int_as_zigzag d = Int64.to_int @@ (zigzag [@inlined]) d
-  let int32_as_varint d = Int64.to_int32 ((varint [@inlined]) d)
-  let int32_as_zigzag d = Int64.to_int32 ((zigzag [@inlined]) d)
+  let[@inline] int_as_zigzag d = Int64.to_int @@ (zigzag [@inlined]) d
+  let[@inline] int32_as_varint d = Int64.to_int32 ((varint [@inlined]) d)
+  let[@inline] int32_as_zigzag d = Int64.to_int32 ((zigzag [@inlined]) d)
   let int64_as_varint = varint
   let int64_as_zigzag = zigzag
   let int32_as_bits32 = bits32
   let int64_as_bits64 = bits64
-  let uint32_as_varint d = `unsigned (int32_as_varint d)
-  let uint32_as_zigzag d = `unsigned (int32_as_zigzag d)
-  let uint64_as_varint d = `unsigned (varint d)
-  let uint64_as_zigzag d = `unsigned (zigzag d)
-  let uint32_as_bits32 d = `unsigned (bits32 d)
-  let uint64_as_bits64 d = `unsigned (bits64 d)
-  let bool d = bool_of_int64 "" ((varint [@inlined]) d)
-  let float_as_bits32 d = Int32.float_of_bits (bits32 d)
-  let float_as_bits64 d = Int64.float_of_bits (bits64 d)
-  let int_as_bits32 d = int_of_int32 "" (bits32 d)
-  let int_as_bits64 d = int_of_int64 "" (bits64 d)
+  let[@inline] uint32_as_varint d = `unsigned (int32_as_varint d)
+  let[@inline] uint32_as_zigzag d = `unsigned (int32_as_zigzag d)
+  let[@inline] uint64_as_varint d = `unsigned (varint d)
+  let[@inline] uint64_as_zigzag d = `unsigned (zigzag d)
+  let[@inline] uint32_as_bits32 d = `unsigned (bits32 d)
+  let[@inline] uint64_as_bits64 d = `unsigned (bits64 d)
+  let[@inline] bool d = bool_of_int64 "" ((varint [@inlined]) d)
+  let[@inline] float_as_bits32 d = Int32.float_of_bits (bits32 d)
+  let[@inline] float_as_bits64 d = Int64.float_of_bits (bits64 d)
+  let[@inline] int_as_bits32 d = int_of_int32 "" (bits32 d)
+  let[@inline] int_as_bits64 d = int_of_int64 "" (bits64 d)
 
   let string d =
     (* strings are always shorter than range of int *)
