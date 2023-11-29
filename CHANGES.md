@@ -1,3 +1,70 @@
+
+## 3.0
+
+Major version that breaks code for every user. Sorry!
+
+### Breaking
+
+- Generated code now always fits into 2 files: code
+    for `foo.proto` is produced in `foo.ml` and `foo.mli`.
+    This follows a fairly large internal refactor that enables
+    a plugin architecture internally (which facilitated codegen for
+    services).
+    All encoder/decoder functions also have a new name now,
+    so that they don't collide inside the same file.
+- CLI flags now use `--this-style` rather than `-this-style`
+- Bump minimal OCaml version to 4.08
+
+### Performance
+
+- encode probotufs backward, which means we can write directly
+    into a single buffer (which is not possible in a forward mode
+    because sub-messages require an unknown amount of prefix space
+    to write their size as a varint)
+- add C stubs for pbrt 
+- use Bytes functions to read/write fixed size integers
+- inlining annotations
+- more benchmarks, helping optimization overall
+- reduce allocations drastically, by having the generated code
+    create fewer closures
+
+
+### Services
+
+- add `pbrt_services` runtime library
+- generate code for `service` statements. This is a big feature
+    for users who want to implement RPC systems using protobuf.
+    The generated code is agnostic to whatever RPC implementation
+    will use it, it only packs together RPC method names and path
+    with the relevant encoders/decoders. Services require
+    both JSON and binary encoders/decoders to be present.
+
+### JSON
+
+- migrate `pbrt_yojson` into the main ocaml-protoc repo
+- JSON runtime support for empty messages
+- Add support for bytes in JSON encoding
+- Add support for encoding and decoding maps in JSON
+
+### Other features and fixes
+
+- add `--make` flag to generate `make` functions that take fewer
+    optional arguments. This helps preventing the user from
+    forgetting important arguments when they're encoding to protobuf.
+    Arguments actually marked as `optional` in the .proto file
+    are still optional.
+- Support maps/lists in options
+- add Pbrt.Decoder.of_substring
+- Allow options to be named like `(validate.rules).message.required`
+- support code generation for empty messages
+- Empty proto file is a valid proto as well
+
+### Testing
+
+- expect-style tests for parser
+- Tests for option parsing
+- Test demonstrating parse error printing
+
 ## 2.4
 
 - expose compiler library as `ocaml-protoc.compiler-lib`
