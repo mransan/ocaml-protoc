@@ -246,12 +246,13 @@ module Encoder : sig
 
   (** {2 Creator} *)
 
-  val create : unit -> t
+  val create : ?size:int -> unit -> t
   (** Create a new encoder. *)
 
   val clear : t -> unit
   (** Clear the content of the internal buffer(s), but does not release memory.
       This makes the encoder ready to encode another message.
+      @param size initial size in bytes
       @since 2.1 *)
 
   val reset : t -> unit
@@ -282,11 +283,11 @@ module Encoder : sig
       These combinators are used by generated code (or user combinators)
       to encode a OCaml value into the wire representation of protobufs. *)
 
-  val key : int * payload_kind -> t -> unit
-  (** [key (k, pk) e] writes a key and a payload kind to [e]. *)
+  val key : int -> payload_kind -> t -> unit
+  (** [key k pk e] writes a key and a payload kind to [e]. *)
 
-  val nested : (t -> unit) -> t -> unit
-  (** [nested f e] applies [f] to an encoder for a message nested in [e]. *)
+  val nested : ('a -> t -> unit) -> 'a -> t -> unit
+  (** [nested f x e] applies [f x] to an encoder for a message nested in [e]. *)
 
   val map_entry :
     encode_key:('a -> t -> unit) ->
@@ -362,6 +363,11 @@ module Encoder : sig
   val wrapper_bytes_value : bytes option -> t -> unit
 end
 
+module List_util : sig
+  val rev_iter : ('a -> unit) -> 'a list -> unit
+  (** [iter_rev f l] iterate over the list in reverse order *)
+end
+
 (** Optimized representation for repeated fields *)
 module Repeated_field : sig
   type 'a t
@@ -417,6 +423,8 @@ module Repeated_field : sig
 
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
   (** [iteri f c] applies [f] to all element in [c] *)
+
+  val rev_iter : ('a -> unit) -> 'a t -> unit
 
   val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** [fold_left f e0 c] accumulates [e0] through each elements *)

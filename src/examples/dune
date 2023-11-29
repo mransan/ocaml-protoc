@@ -65,3 +65,15 @@
  (modules file_server) ; just check that it compiles
  (package pbrt_services)
  (libraries pbrt pbrt_yojson pbrt_services))
+
+(rule
+ (targets orgchart.ml orgchart.mli)
+ (deps orgchart.proto)
+ (action
+  (run ocaml-protoc --pp --binary --ml_out ./ %{deps})))
+
+(test
+ (name orgchart_ml)
+ (modules orgchart orgchart_ml)
+ (package pbrt)
+ (libraries pbrt))

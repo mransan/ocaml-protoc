@@ -373,27 +373,32 @@ module Encoder = struct
         | _ -> None)
 
   type t = {
-    mutable b: bytes;
-    mutable len: int;
-    initial: bytes;
-    mutable sub: t option;
+    mutable b: bytes;  (** Slice of bytes (already written: [start…]) *)
+    mutable start: int;
+        (** Start of the slice in which data have been written *)
+    initial: bytes;  (** Initial buffer, for {!reset} *)
   }
 
-  let create () =
-    let b = Bytes.create 16 in
-    { b; len = 0; initial = b; sub = None }
+  let create ?(size = 16) () =
+    let len = max size 16 in
+    let b = Bytes.create len in
+    { b; start = len; initial = b }
 
-  let[@inline] clear self = self.len <- 0
-  let[@inline] length self = self.len
   let[@inline] cap self = Bytes.length self.b
+  let[@inline] clear self = self.start <- cap self
 
   let reset self =
-    self.len <- 0;
-    self.b <- self.initial
+    self.b <- self.initial;
+    self.start <- cap self
 
-  let to_string self = Bytes.sub_string self.b 0 self.len
-  let to_bytes self = Bytes.sub self.b 0 self.len
-  let write_chunks w self = w self.b 0 self.len
+  let[@inline] to_string self =
+    Bytes.sub_string self.b self.start (cap self - self.start)
+
+  let[@inline] to_bytes self =
+    Bytes.sub self.b self.start (cap self - self.start)
+
+  let[@inline] write_chunks w self : unit =
+    w self.b self.start (cap self - self.start)
 
   let next_cap_ self =
     min Sys.max_string_length
@@ -401,87 +406,92 @@ module Encoder = struct
        n + (n lsr 1))
 
   let[@inline never] grow_to_ self newcap =
-    if newcap = self.len then
+    if newcap = cap self then
       raise (Failure (Overflow "encoder size reached its max"));
     let b' = Bytes.create newcap in
-    Bytes.blit self.b 0 b' 0 self.len;
+    let len = cap self - self.start in
+    Bytes.blit self.b self.start b' (newcap - len) len;
+    self.start <- newcap - len;
     self.b <- b'
 
+  (** Grow to next size *)
   let[@inline never] grow_ self = grow_to_ self (next_cap_ self)
 
+  (** Grow to get [n] free bytes *)
+  let[@inline never] grow_reserve_n (self : t) n : unit =
+    let newcap = max (cap self + n) (next_cap_ self) in
+    grow_to_ self newcap;
+    assert (self.start >= n)
+
   let[@inline] add_char self c =
-    if self.len = cap self then grow_ self;
-    Bytes.unsafe_set self.b self.len c;
-    self.len <- 1 + self.len
+    if self.start = 0 then grow_ self;
+    self.start <- self.start - 1;
+    Bytes.unsafe_set self.b self.start c
+
+  (** Reserve [n] bytes, return the start offset of the newly allocated slice *)
+  let[@inline] reserve_n (self : t) (n : int) : int =
+    if self.start < n then grow_reserve_n self n;
+    self.start <- self.start - n;
+    self.start
 
   let add_bytes self b =
     let n = Bytes.length b in
-    if cap self < self.len + n then
-      grow_to_ self (max (next_cap_ self) (self.len + n));
-    Bytes.blit b 0 self.b self.len n;
-    self.len <- n + self.len
+    let start = reserve_n self n in
+    Bytes.blit b 0 self.b start n
 
-  let add_buffer self sub =
-    let n = sub.len in
-    if cap self < self.len + n then
-      grow_to_ self (max (next_cap_ self) (self.len + n));
-    Bytes.blit sub.b 0 self.b self.len n;
-    self.len <- n + self.len
+  external varint_size : (int64[@unboxed]) -> int
+    = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
+    [@@noalloc]
+  (** Compute how many bytes this int would occupy as varint *)
 
-  let varint (i : int64) e =
-    let i = ref i in
-    let continue = ref true in
-    while !continue do
-      let cur = Int64.(logand !i 0x7fL) in
-      if cur = !i then (
-        continue := false;
-        add_char e (Char.unsafe_chr Int64.(to_int cur))
-      ) else (
-        add_char e (Char.unsafe_chr Int64.(to_int (logor 0x80L cur)));
-        i := Int64.shift_right_logical !i 7
-      )
-    done
+  external varint_slice : bytes -> (int[@untagged]) -> (int64[@unboxed]) -> unit
+    = "caml_pbrt_varint_byte" "caml_pbrt_varint"
+    [@@noalloc]
+  (** Write this int as varint into the given slice *)
 
-  let int_as_varint i e = (varint [@inlined]) (Int64.of_int i) e
+  let[@inline] varint64 (i : int64) e =
+    let n_bytes = varint_size i in
+    let start = reserve_n e n_bytes in
+    varint_slice e.b start i
+
+  let int_as_varint i e =
+    let i = Int64.of_int i in
+    let n_bytes = varint_size i in
+    let start = reserve_n e n_bytes in
+    varint_slice e.b start i
 
   let zigzag i e =
-    (varint [@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
+    let i = Int64.of_int i in
+    let i = Int64.(logxor (shift_left i 1) (shift_right i 63)) in
+    let n_bytes = varint_size i in
+    let start = reserve_n e n_bytes in
+    varint_slice e.b start i
 
-  let bits32 i e =
-    add_char e (char_of_int Int32.(to_int (logand 0xffl i)));
-    add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 8))));
-    add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 16))));
-    add_char e (char_of_int Int32.(to_int (logand 0xffl (shift_right i 24))))
+  let[@inline] zigzag64 i e =
+    (varint64 [@inlined]) Int64.(logxor (shift_left i 1) (shift_right i 63)) e
 
-  let bits64 i e =
-    add_char e (char_of_int Int64.(to_int (logand 0xffL i)));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 8))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 16))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 24))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 32))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 40))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 48))));
-    add_char e (char_of_int Int64.(to_int (logand 0xffL (shift_right i 56))))
+  let[@inline] bits32 i e =
+    let start = reserve_n e 4 in
+    Bytes.set_int32_le e.b start i
+
+  let[@inline] bits64 i e =
+    let start = reserve_n e 8 in
+    Bytes.set_int64_le e.b start i
 
   let bytes b e =
-    int_as_varint (Bytes.length b) e;
-    add_bytes e b
+    add_bytes e b;
+    int_as_varint (Bytes.length b) e
 
-  let nested f e =
-    let e' =
-      match e.sub with
-      | Some e' -> e'
-      | None ->
-        let e' = create () in
-        e.sub <- Some e';
-        e'
-    in
-    f e';
-    int_as_varint (length e') e;
-    add_buffer e e';
-    clear e'
+  let[@inline] nested f x e =
+    (* compute length because it's not affected by a resize during
+       the call to [f] *)
+    let old_len = cap e - e.start in
+    f x e;
+    let new_len = cap e - e.start in
+    let size = new_len - old_len in
+    int_as_varint size e
 
-  let[@inline] key (k, pk) e =
+  let[@inline] key k pk e =
     let pk' =
       match pk with
       | Varint -> 0
@@ -492,22 +502,21 @@ module Encoder = struct
     int_as_varint (pk' lor (k lsl 3)) e
 
   let map_entry ~encode_key ~encode_value kv t =
-    let (key_value, key_pk), (value_value, value_pk) = kv in
-
     nested
-      (fun t ->
-        key (1, key_pk) t;
+      (fun kv t ->
+        let (key_value, key_pk), (value_value, value_pk) = kv in
+        encode_value value_value t;
+        key 2 value_pk t;
         encode_key key_value t;
-        key (2, value_pk) t;
-        encode_value value_value t)
-      t
+        key 1 key_pk t)
+      kv t
 
   let empty_nested e = add_char e (Char.unsafe_chr 0)
-  let int_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int i) e
-  let int32_as_varint i e = (varint [@inlined]) (Int64.of_int32 i) e
-  let int32_as_zigzag i e = (zigzag [@inlined]) (Int64.of_int32 i) e
-  let int64_as_varint = varint
-  let int64_as_zigzag = zigzag
+  let int_as_zigzag = zigzag
+  let int32_as_varint i e = (varint64 [@inlined]) (Int64.of_int32 i) e
+  let int32_as_zigzag i e = (zigzag64 [@inlined]) (Int64.of_int32 i) e
+  let int64_as_varint = varint64
+  let int64_as_zigzag = zigzag64
   let int32_as_bits32 = bits32
   let int64_as_bits64 = bits64
 
@@ -518,10 +527,10 @@ module Encoder = struct
     | `unsigned d -> int32_as_zigzag d
 
   let uint64_as_varint = function
-    | `unsigned d -> varint d
+    | `unsigned d -> varint64 d
 
   let uint64_as_zigzag = function
-    | `unsigned d -> zigzag d
+    | `unsigned d -> zigzag64 d
 
   let uint32_as_bits32 = function
     | `unsigned x -> bits32 x
@@ -529,7 +538,7 @@ module Encoder = struct
   let uint64_as_bits64 = function
     | `unsigned x -> bits64 x
 
-  let bool b e =
+  let[@inline] bool b e =
     add_char e
       (Char.unsafe_chr
          (if b then
@@ -537,92 +546,107 @@ module Encoder = struct
          else
            0))
 
-  let float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
-  let float_as_bits64 f e = bits64 (Int64.bits_of_float f) e
-  let int_as_bits32 i e = bits32 (Int32.of_int i) e
-  let int_as_bits64 i e = bits64 (Int64.of_int i) e
+  let[@inline] float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
+  let[@inline] float_as_bits64 f e = bits64 (Int64.bits_of_float f) e
+  let[@inline] int_as_bits32 i e = bits32 (Int32.of_int i) e
+  let[@inline] int_as_bits64 i e = bits64 (Int64.of_int i) e
 
-  let string s e =
+  let[@inline] string s e =
     (* safe: we're not going to modify the bytes, and [s] will
        not change. *)
     bytes (Bytes.unsafe_of_string s) e
 
-  let double_value_key = 1, Bits64
-
   let wrapper_double_value v e =
     nested
-      (fun e ->
-        key double_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some f -> float_as_bits64 f e)
-      e
-
-  let float_value_key = 1, Bits32
+        | Some f -> float_as_bits64 f e);
+        key 1 Bits64 e)
+      v e
 
   let wrapper_float_value v e =
     nested
-      (fun e ->
-        key float_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some f -> float_as_bits32 f e)
-      e
-
-  let int64_value_key = 1, Varint
+        | Some f -> float_as_bits32 f e);
+        key 1 Bits32 e)
+      v e
 
   let wrapper_int64_value v e =
     nested
-      (fun e ->
-        key int64_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some i -> int64_as_varint i e)
-      e
-
-  let int32_value_key = 1, Varint
+        | Some i -> int64_as_varint i e);
+        key 1 Varint e)
+      v e
 
   let wrapper_int32_value v e =
     nested
-      (fun e ->
-        key int32_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some i -> int32_as_varint i e)
-      e
-
-  let bool_value_key = 1, Varint
+        | Some i -> int32_as_varint i e);
+        key 1 Varint e)
+      v e
 
   let wrapper_bool_value v e =
     nested
-      (fun e ->
-        key bool_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some b -> bool b e)
-      e
-
-  let string_value_key = 1, Bytes
+        | Some b -> bool b e);
+        key 1 Varint e)
+      v e
 
   let wrapper_string_value v e =
     nested
-      (fun e ->
-        key string_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some s -> string s e)
-      e
-
-  let bytes_value_key = 1, Bytes
+        | Some s -> string s e);
+        key 1 Bytes e)
+      v e
 
   let wrapper_bytes_value v e =
     nested
-      (fun e ->
-        key bytes_value_key e;
-        match v with
+      (fun v e ->
+        (match v with
         | None -> ()
-        | Some b -> bytes b e)
-      e
+        | Some b -> bytes b e);
+        key 1 Bytes e)
+      v e
+end
+
+module List_util = struct
+  let[@inline] rev_iter f l =
+    let safe f l = List.iter f @@ List.rev l in
+    let rec direct i f l =
+      match l with
+      | [] -> ()
+      | [ x ] -> f x
+      | [ x; y ] ->
+        f y;
+        f x
+      | _ when i = 0 -> safe f l
+      | x :: y :: tl ->
+        direct (i - 1) f tl;
+        f y;
+        f x
+    in
+
+    match l with
+    | [] -> ()
+    | [ x ] -> f x
+    | [ x; y ] ->
+      f y;
+      f x
+    | x :: y :: tl ->
+      direct 200 f tl;
+      f y;
+      f x
 end
 
 module Repeated_field = struct
@@ -684,15 +708,8 @@ module Repeated_field = struct
     in
     Array.concat (List.rev l)
 
-  (** [list_rev_iter f l] iterate over the list in reverse order *)
-  let rec list_rev_iter f = function
-    | [] -> ()
-    | hd :: tl ->
-      list_rev_iter f tl;
-      f hd
-
   let iter f { i; a; l; _ } =
-    list_rev_iter
+    List_util.rev_iter
       (fun a ->
         let len = Array.length a - 1 in
         for j = 0 to len do
@@ -704,9 +721,22 @@ module Repeated_field = struct
       f (Array.unsafe_get a j)
     done
 
+  let rev_iter f { i; a; l; _ } =
+    let len = i - 1 in
+    for j = len downto 0 do
+      f (Array.unsafe_get a j)
+    done;
+    List.iter
+      (fun a ->
+        let len = Array.length a - 1 in
+        for j = len downto 0 do
+          f (Array.unsafe_get a j)
+        done)
+      l
+
   let iteri f { i; a; l; _ } =
     let counter = ref 0 in
-    list_rev_iter
+    List_util.rev_iter
       (fun a ->
         let len = Array.length a - 1 in
         for j = 0 to len do
