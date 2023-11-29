@@ -67,7 +67,7 @@
 (test
  (name file_server)
  (modules file_server) ; just check that it compiles
- (package pbrt_services)
+ (package ocaml-protoc)
  (libraries pbrt pbrt_yojson pbrt_services))
 
 (rule
