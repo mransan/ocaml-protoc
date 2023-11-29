@@ -98,34 +98,34 @@ let gen_rft_repeated sc var_name repeated_field =
 
   match rt, is_packed with
   | Ot.Rt_list, false ->
-    F.line sc "Pbrt.List_util.rev_iter (fun x -> ";
+    F.line sc "Pbrt.List_util.rev_iter_with (fun x encoder -> ";
     F.sub_scope sc (fun sc ->
         gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
-    F.linep sc ") %s;" var_name
+    F.linep sc ") %s encoder;" var_name
   | Ot.Rt_repeated_field, false ->
-    F.line sc "Pbrt.Repeated_field.rev_iter (fun x -> ";
+    F.line sc "Pbrt.Repeated_field.rev_iter_with (fun x encoder -> ";
     F.sub_scope sc (fun sc ->
         gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
-    F.linep sc ") %s;" var_name
+    F.linep sc ") %s encoder;" var_name
   | Ot.Rt_list, true ->
     F.line sc "Pbrt.Encoder.nested (fun lst encoder ->";
     F.sub_scope sc (fun sc ->
-        F.line sc "Pbrt.List_util.rev_iter (fun x -> ";
+        F.line sc "Pbrt.List_util.rev_iter_with (fun x encoder -> ";
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
-        F.linep sc ") lst;");
+        F.linep sc ") lst encoder;");
     F.linep sc ") %s encoder;" var_name;
     (* When packed the key is encoded once. *)
     gen_encode_field_key sc encoding_number pk is_packed
   | Ot.Rt_repeated_field, true ->
     F.line sc "Pbrt.Encoder.nested (fun lst encoder ->";
     F.sub_scope sc (fun sc ->
-        F.line sc "Pbrt.Repeated_field.rev_iter (fun x -> ";
+        F.line sc "Pbrt.Repeated_field.rev_iter_with (fun x encoder -> ";
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
-        F.linep sc ") lst;");
+        F.linep sc ") lst encoder;");
     F.linep sc ") %s encoder;" var_name;
     (* When packed the key is encoded once. *)
     gen_encode_field_key sc encoding_number pk is_packed
@@ -169,9 +169,15 @@ let gen_rft_associative sc var_name associative_field =
       gen_encode_field_type sc "x" (-1 (* TODO *)) value_pk false value_type);
   F.line sc ") in";
 
-  (match at with
-  | Ot.At_list -> F.line sc "Pbrt.List_util.rev_iter (fun (k, v) ->"
-  | Ot.At_hashtable -> F.line sc "Hashtbl.iter (fun k v ->");
+  let pass_encoder =
+    match at with
+    | Ot.At_list ->
+      F.line sc "Pbrt.List_util.rev_iter_with (fun (k, v) encoder ->";
+      true
+    | Ot.At_hashtable ->
+      F.line sc "Hashtbl.iter (fun k v ->";
+      false
+  in
   F.sub_scope sc (fun sc ->
       F.linep sc "let map_entry = (k, Pbrt.%s), (v, Pbrt.%s) in"
         (Pb_codegen_util.string_of_payload_kind ~capitalize:() key_pk false)
@@ -179,7 +185,10 @@ let gen_rft_associative sc var_name associative_field =
       F.line sc
         "Pbrt.Encoder.map_entry ~encode_key ~encode_value map_entry encoder;";
       gen_encode_field_key sc encoding_number Ot.Pk_bytes false);
-  F.linep sc ") %s;" var_name
+  if pass_encoder then
+    F.linep sc ") %s encoder;" var_name
+  else
+    F.linep sc ") %s;" var_name
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in

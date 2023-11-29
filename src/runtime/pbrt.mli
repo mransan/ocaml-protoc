@@ -364,8 +364,9 @@ module Encoder : sig
 end
 
 module List_util : sig
-  val rev_iter : ('a -> unit) -> 'a list -> unit
-  (** [iter_rev f l] iterate over the list in reverse order *)
+  val rev_iter_with : ('a -> 'b -> unit) -> 'a list -> 'b -> unit
+  (** [iter_rev_with f l st] iterate over the list in reverse order,
+    passing items and [st] to [f]. *)
 end
 
 (** Optimized representation for repeated fields *)
@@ -424,7 +425,7 @@ module Repeated_field : sig
   val iteri : (int -> 'a -> unit) -> 'a t -> unit
   (** [iteri f c] applies [f] to all element in [c] *)
 
-  val rev_iter : ('a -> unit) -> 'a t -> unit
+  val rev_iter_with : ('a -> 'b -> unit) -> 'a t -> 'b -> unit
 
   val fold_left : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
   (** [fold_left f e0 c] accumulates [e0] through each elements *)

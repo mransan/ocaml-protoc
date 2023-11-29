@@ -597,32 +597,38 @@ module Encoder = struct
 end
 
 module List_util = struct
-  let[@inline] rev_iter f l =
-    let safe f l = List.iter f @@ List.rev l in
-    let rec direct i f l =
+  let rev_iter_with f l st =
+    let rec iter_ f l st =
       match l with
       | [] -> ()
-      | [ x ] -> f x
+      | x :: tl ->
+        f x st;
+        iter_ f tl st
+    in
+    let rec direct i f l st =
+      match l with
+      | [] -> ()
+      | [ x ] -> f x st
       | [ x; y ] ->
-        f y;
-        f x
-      | _ when i = 0 -> safe f l
+        f y st;
+        f x st
+      | _ when i = 0 -> iter_ f (List.rev l) st
       | x :: y :: tl ->
-        direct (i - 1) f tl;
-        f y;
-        f x
+        direct (i - 1) f tl st;
+        f y st;
+        f x st
     in
 
     match l with
     | [] -> ()
-    | [ x ] -> f x
+    | [ x ] -> f x st
     | [ x; y ] ->
-      f y;
-      f x
+      f y st;
+      f x st
     | x :: y :: tl ->
-      direct 200 f tl;
-      f y;
-      f x
+      direct 200 f tl st;
+      f y st;
+      f x st
 end
 
 module Repeated_field = struct
@@ -685,41 +691,48 @@ module Repeated_field = struct
     Array.concat (List.rev l)
 
   let iter f { i; a; l; _ } =
-    List_util.rev_iter
-      (fun a ->
+    List_util.rev_iter_with
+      (fun a f ->
         let len = Array.length a - 1 in
         for j = 0 to len do
           f (Array.unsafe_get a j)
         done)
-      l;
+      l f;
     let len = i - 1 in
     for j = 0 to len do
       f (Array.unsafe_get a j)
     done
 
-  let rev_iter f { i; a; l; _ } =
-    let len = i - 1 in
+  let rec list_iter_with_ f l st =
+    match l with
+    | [] -> ()
+    | x :: tl ->
+      f x st;
+      list_iter_with_ f tl st
+
+  let rev_iter_with f (self : _ t) st =
+    let len = self.i - 1 in
     for j = len downto 0 do
-      f (Array.unsafe_get a j)
+      f (Array.unsafe_get self.a j) st
     done;
-    List.iter
-      (fun a ->
+    list_iter_with_
+      (fun a st ->
         let len = Array.length a - 1 in
         for j = len downto 0 do
-          f (Array.unsafe_get a j)
+          f (Array.unsafe_get a j) st
         done)
-      l
+      self.l st
 
   let iteri f { i; a; l; _ } =
     let counter = ref 0 in
-    List_util.rev_iter
-      (fun a ->
+    List_util.rev_iter_with
+      (fun a f ->
         let len = Array.length a - 1 in
         for j = 0 to len do
           f !counter (Array.unsafe_get a j);
           incr counter
         done)
-      l;
+      l f;
     let len = i - 1 in
     for j = 0 to len do
       f !counter (Array.unsafe_get a j);
