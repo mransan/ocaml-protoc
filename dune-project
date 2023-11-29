@@ -14,7 +14,7 @@
   (depends
     (odoc :with-doc)
     (pbrt (= :version))
-    (ocaml (>= 4.03)))
+    (ocaml (>= 4.08)))
   (tags (protoc protobuf codegen)))
 
 (package
@@ -23,14 +23,14 @@
   (depends
     stdlib-shims
     (odoc :with-doc)
-    (ocaml (>= 4.03)))
+    (ocaml (>= 4.08)))
   (tags (protobuf encode decode)))
 
 (package
   (name pbrt_yojson)
   (synopsis "Runtime library for ocaml-protoc to support JSON encoding/decoding")
   (depends
-    (ocaml (>= 4.03))
+    (ocaml (>= 4.08))
     (odoc :with-doc)
     (yojson (>= 1.6))
     base64)
@@ -40,7 +40,7 @@
   (name pbrt_services)
   (synopsis "Runtime library for ocaml-protoc to support RPC services")
   (depends
-    (ocaml (>= 4.03))
+    (ocaml (>= 4.08))
     (pbrt (= :version))
     (pbrt_yojson (= :version)))
   (tags (protobuf encode decode services rpc)))

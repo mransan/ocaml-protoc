@@ -11,7 +11,7 @@ homepage: "https://github.com/mransan/ocaml-protoc"
 bug-reports: "https://github.com/mransan/ocaml-protoc/issues"
 depends: [
   "dune" {>= "2.0"}
-  "ocaml" {>= "4.03"}
+  "ocaml" {>= "4.08"}
   "odoc" {with-doc}
   "yojson" {>= "1.6"}
   "base64"

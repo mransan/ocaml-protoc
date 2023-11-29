@@ -12,7 +12,7 @@ depends: [
   "dune" {>= "2.0"}
   "odoc" {with-doc}
   "pbrt" {= version}
-  "ocaml" {>= "4.03"}
+  "ocaml" {>= "4.08"}
 ]
 build: [
   ["dune" "subst"] {pinned}
