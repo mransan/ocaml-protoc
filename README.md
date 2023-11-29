@@ -1,6 +1,6 @@
 # ocaml-protoc [![build](https://github.com/mransan/ocaml-protoc/actions/workflows/main.yml/badge.svg)](https://github.com/mransan/ocaml-protoc/actions/workflows/main.yml)
 
-> :dromedary_camel: **A [protobuf](https://goo.gl/YqNT7Q) compiler for OCaml :dromedary_camel:.** 
+> :dromedary_camel: **A [protobuf](https://protobuf.dev/) compiler for OCaml :dromedary_camel:.** 
 
 * [Introduction](#introduction)
 * [Simple Example](#a-simple-example)
@@ -43,14 +43,12 @@ message Person {
 * **Run:**
 
 ```bash
-❯ ocaml-protoc -binary -ml_out ./ example.proto
-.. Generating example_types.mli
-.. Generating example_types.ml
-.. Generating example_pb.mli
-.. Generating example_pb.ml
+$ ocaml-protoc --binary --ml_out ./ example.proto
+.. Generating example.mli
+.. Generating example.ml
 ```
 
-* **example_types.mli**:
+* **example.mli**:
 
 ```OCaml
 (** example.proto Generated Types *)
@@ -74,20 +72,17 @@ val default_person :
   unit ->
   person
 (** [default_person ()] is the default value for type [person] *)
-```
 
-* **example_pb.mli**:
-
-```OCaml
 (** {2 Protobuf Encoding} *)
 
-val encode_person : Example_types.person -> Pbrt.Encoder.t -> unit
-(** [encode_person v encoder] encodes [v] with the given [encoder] *)
+val encode_pb_person : person -> Pbrt.Encoder.t -> unit
+(** [encode_pb_person v encoder] encodes [v] with the given [encoder] *)
+
 
 (** {2 Protobuf Decoding} *)
 
-val decode_person : Pbrt.Decoder.t -> Example_types.person
-(** [decode_person decoder] decodes a [person] value from [decoder] *)
+val decode_pb_person : Pbrt.Decoder.t -> person
+(** [decode_pb_person decoder] decodes a [person] binary value from [decoder] *)
 ```
 
 * in `main.ml`, write the following to encode a person value and save it to a file: 
@@ -96,7 +91,7 @@ val decode_person : Pbrt.Decoder.t -> Example_types.person
 let () =
 
   (* Create OCaml value of generated type *) 
-  let person = Example_types.({ 
+  let person = Example.({ 
     name = "John Doe"; 
     id = 1234l;
     email = Some "jdoe@example.com"; 
@@ -105,7 +100,7 @@ let () =
   
   (* Create a Protobuf encoder and encode value *)
   let encoder = Pbrt.Encoder.create () in 
-  Example_pb.encode_person person encoder; 
+  Example.encode_pb_person person encoder; 
 
   (* Output the protobuf message to a file *) 
   let oc = open_out "myfile" in 
@@ -128,12 +123,13 @@ let () =
   in 
   
   (* Decode the person and Pretty-print it *)
-  Example_pb.decode_person (Pbrt.Decoder.of_bytes bytes)
+  Example.decode_pb_person (Pbrt.Decoder.of_bytes bytes)
 ```
 
 * :heavy_exclamation_mark: **Int32** vs **int**
 
-*OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice. One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
+*OCaml users will immediately point to the use of `int32` type in the generated code which might not be the most convenient choice.
+One can modify this behavior using [custom extensions](doc/ocaml_extensions.md).* 
 
 ### Install & Build
 
@@ -142,37 +138,46 @@ let () =
 `ocaml-protoc` only depends on
 * the OCaml compiler distribution (byte code/native compiler).
 * dune
-* stdlib-shims
+* stdlib-shims for the compiler itself
+* a C99 compiler for the runtime library's stubs
 
 **Intall from OPAM**
 
 ```bash
-❯ opam install ocaml-protoc
+$ opam install ocaml-protoc
 ```
 
 **Or from source**
 
 ```bash
-❯ mkdir -p tmp/bin
-❯ export PREFIX=`pwd`/tmp
-❯ make install
+$ mkdir -p tmp/bin
+$ export PREFIX=`pwd`/tmp
+$ make install
 ```
 
 **Build your program** 
 
-Using [ocamlfind](http://projects.camlcity.org/projects/findlib.html) one can build the program above with the following:
+Using dune, the program can be compiled with:
+
+```
+(executable
+  (name main)
+  (modules main example)
+  (libraries pbrt))
+```
+
+More manually, the program can be built directly using [ocamlfind](http://projects.camlcity.org/projects/findlib.html):
 
 ```Bash
-❯ ocamlfind ocamlopt -linkpkg -package ocaml-protoc \
+$ ocamlfind ocamlopt -linkpkg -package pbrt \
     -o example \
-    example_types.mli example_types.ml \
-    example_types.mli example_types.ml \
+    example.mli example.ml \
     main.ml
 ```
 
 🏁 You can now run the example
 ```Bash
-❯ ./example
+$ ./example
 ```
 
 ### Runtime library
@@ -184,16 +189,16 @@ Online documentation [here](https://mransan.github.io/ocaml-protoc/dev/pbrt/Pbrt
 
 ### All Generated Files and Encodings:
 
-| file name | Command line switch | Description | Runtime | 
-| ------------- | ------------- | ----------| ------- |
-| \<name\>_**types.**{ml\|mli} |  | Type definition along with a constructor function to conveniently create values of that type | | 
-| \<name\>_**pb.**{ml\|mli}  | -binary  | Binary encodings | [ocaml-protoc][1] |
-| \<name\>_**yojson.**{ml\|mli} | -yojson | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | [ocaml-protoc-yojson][2] |
-| \<name\>_**bs.**{ml\|mli} | -bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] | 
-|  \<name\>_**pp.**{ml\|mli} | -pp | pretty printing functions based on the Format module. | [ocaml-protoc][1] |
+| Command line switch | Description | Runtime |
+| ------------- | ------------- | ----------|
+| | Type definition along with a `default` constructor function to conveniently create values of that type | |
+| --make | `make` constructor functions |  |
+| --binary  | Binary encodings | pbrt |
+| --yojson | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | pbrt_yojson |
+| --bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] |
+| --pp | pretty printing functions based on the Format module. | pbrt |
+| --services | RPC definitions. | pbrt_services |
 
-[1]:http://opam.ocaml.org/packages/ocaml-protoc/
-[2]:http://opam.ocaml.org/packages/ocaml-protoc-yojson/
 [3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 
 ### Protobuf <-> OCaml mapping
