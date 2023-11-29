@@ -1,4 +1,5 @@
 (test
  (name tests)
  (libraries pbrt ocaml-protoc.compiler-lib)
+ (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))

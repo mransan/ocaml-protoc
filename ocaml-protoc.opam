@@ -12,6 +12,8 @@ depends: [
   "dune" {>= "2.0"}
   "odoc" {with-doc}
   "pbrt" {= version}
+  "pbrt_yojson" {= version & with-test}
+  "pbrt_services" {= version & with-test}
   "ocaml" {>= "4.08"}
 ]
 build: [

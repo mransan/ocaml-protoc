@@ -1,6 +1,7 @@
 (test
   (name google_unittest)
   (flags :standard -w -11)
+  (package ocaml-protoc)
   (libraries pbrt))
 
 (rule

@@ -7,6 +7,7 @@
 (test
  (name example01)
  (modules t_example01 example01)
+ (package ocaml-protoc)
  (libraries pbrt))
 
 (rule
@@ -18,6 +19,7 @@
 (test
  (name example03)
  (modules t_example03 example03)
+ (package ocaml-protoc)
  (libraries pbrt))
 
 (rule
@@ -29,6 +31,7 @@
 (test
  (name example04)
  (modules t_example04 example04)
+ (package ocaml-protoc)
  (libraries pbrt))
 
 (rule
@@ -40,6 +43,7 @@
 (test
  (name example05)
  (modules t_example05 example05)
+ (package ocaml-protoc)
  (libraries pbrt))
 
 (rule
@@ -51,7 +55,7 @@
 (test
  (name calculator)
  (modules t_calculator calculator)
- (package pbrt_services)
+ (package ocaml-protoc)
  (libraries pbrt pbrt_yojson pbrt_services))
 
 (rule
@@ -75,5 +79,5 @@
 (test
  (name orgchart_ml)
  (modules orgchart orgchart_ml)
- (package pbrt)
+ (package ocaml-protoc)
  (libraries pbrt))

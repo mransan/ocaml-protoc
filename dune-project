@@ -14,6 +14,8 @@
   (depends
     (odoc :with-doc)
     (pbrt (= :version))
+    (pbrt_yojson (and (= :version) :with-test))
+    (pbrt_services (and (= :version) :with-test))
     (ocaml (>= 4.08)))
   (tags (protoc protobuf codegen)))
 

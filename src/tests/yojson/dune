@@ -1,6 +1,7 @@
 
-(executable
+(test
   (name yojson_unittest)
+  (package ocaml-protoc)
   (libraries pbrt pbrt_yojson))
 
 (rule
