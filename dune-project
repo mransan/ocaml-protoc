@@ -35,7 +35,7 @@
     (ocaml (>= 4.08))
     (odoc :with-doc)
     (yojson (>= 1.6))
-    base64)
+    (base64 (>= 2.0)) )
   (tags (protobuf encode decode)))
 
 (package
