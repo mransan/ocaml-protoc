@@ -1,1 +1,1 @@
-available: arch != "arm32" & arch != "x86_32"
+available: arch != "arm32" & arch != "x86_32" & arch != "ppc32" & arch != "ppc64"
