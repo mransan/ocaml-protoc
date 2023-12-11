@@ -1,4 +1,9 @@
 
+## 3.0.1
+
+- fix bug where code for services would be generated even if `--services`
+    is not passed on the CLI
+
 ## 3.0
 
 Major version that breaks code for every user. Sorry!
