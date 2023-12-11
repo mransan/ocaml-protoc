@@ -14,6 +14,7 @@ val codegen :
   generate_make:bool ->
   proto_file_options:Pb_option.set ->
   proto_file_name:string ->
+  services:bool ->
   Plugin.t list ->
   ocaml_mod
 (** [codegen types] returns a full code listing for the [.ml]

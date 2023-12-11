@@ -148,7 +148,7 @@ let generate_plugin (self : ocaml_mod) ocaml_types (p : Plugin.t) : unit =
   ()
 
 let codegen (proto : Ot.proto) ~generate_make:gen_make ~proto_file_options
-    ~proto_file_name (plugins : Plugin.t list) : ocaml_mod =
+    ~proto_file_name ~services (plugins : Plugin.t list) : ocaml_mod =
   let self = new_ocaml_mod ~proto_file_options ~proto_file_name () in
   generate_type_and_default self proto.proto_types;
   if List.exists Pb_codegen_plugin.requires_mutable_records plugins then
@@ -157,5 +157,5 @@ let codegen (proto : Ot.proto) ~generate_make:gen_make ~proto_file_options
   List.iter (generate_plugin self proto.proto_types) plugins;
 
   (* services come last, they need binary and json *)
-  generate_services self proto.proto_services;
+  if services then generate_services self proto.proto_services;
   self
