@@ -8,6 +8,7 @@
 * [Runtime library](#runtime-library)
 * [All Generated Files and Encodings](#all-generated-files-and-encodings)
 * [Protobuf <-> OCaml mapping](doc/protobuf_ocaml_mapping.md)
+* [Services](#services)
 * [Compiler Internals](doc/compiler_internals.md)
 * [Protobuf extensions](doc/ocaml_extensions.md)
 * [Benchmarking](doc/benchmarking.md)
@@ -201,6 +202,9 @@ Online documentation [here](https://mransan.github.io/ocaml-protoc/dev/pbrt/Pbrt
 
 [3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 
+### Protobuf <-> OCaml mapping
+see [here](doc/protobuf_ocaml_mapping.md).
+
 ### Services
 
 With the `--services` option, ocaml-protoc now generates stubs for service
@@ -375,8 +379,6 @@ server's main loop.
 
 </details>
 
-### Protobuf <-> OCaml mapping
-see [here](doc/protobuf_ocaml_mapping.md).
 
 ### Compiler Internals
 
