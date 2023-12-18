@@ -209,6 +209,8 @@ Online documentation [here](https://mransan.github.io/ocaml-protoc/dev/pbrt/Pbrt
 | --bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] |
 | --pp | pretty printing functions based on the Format module. | `pbrt` |
 | --services | RPC definitions. | `pbrt_services` |
+| --ocaml_all_types_ppx | Extend generated types with PPXs, e.g. allow deriving Eq,Ord  | |
+
 
 [3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 
