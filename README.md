@@ -167,6 +167,16 @@ Using dune, the program can be compiled with:
   (libraries pbrt))
 ```
 
+And the `example.proto` can be compiled with:
+```
+(rule
+ (targets example.ml example.mli)
+ (deps
+  (:proto example.proto))
+ (action
+  (run ocaml-protoc %{proto} --binary --ml_out .)))
+```
+
 More manually, the program can be built directly using [ocamlfind](http://projects.camlcity.org/projects/findlib.html):
 
 ```Bash
