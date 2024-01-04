@@ -132,12 +132,13 @@ let wrapper_type_of_type_name = function
     with the module name. (This is essentially expecting (rightly) a sub module
     with the same name.
  *)
-let user_defined_type_of_id ~(all_types : _ list) ~file_name i : Ot.field_type =
+let user_defined_type_of_id ?(empty_as_unit = true) ~(all_types : _ list)
+    ~file_name i : Ot.field_type =
   let module_prefix = module_prefix_of_file_name file_name in
   match Typing_util.type_of_id all_types i with
   | exception Not_found -> E.programmatic_error E.No_type_found_for_id
   | { Tt.file_name; spec; _ } as t ->
-    if Typing_util.is_empty_message t then
+    if Typing_util.is_empty_message t && empty_as_unit then
       Ot.Ft_unit
     else (
       let field_type_module_prefix = module_prefix_of_file_name file_name in
@@ -639,7 +640,9 @@ let compile_enum file_options file_name scope enum =
 let compile_rpc ~(file_name : string) ~all_types
     (rpc : Pb_field_type.resolved Tt.rpc) : Ot.rpc =
   let compile_ty ~stream (ty : int) : Ot.rpc_type =
-    let ty = user_defined_type_of_id ~all_types ~file_name ty in
+    let ty =
+      user_defined_type_of_id ~empty_as_unit:false ~all_types ~file_name ty
+    in
     if stream then
       Ot.Rpc_stream ty
     else
