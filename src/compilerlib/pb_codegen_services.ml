@@ -132,7 +132,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
     let req_mode_witness = String.capitalize_ascii req_mode in
     let res_mode_witness = String.capitalize_ascii res_mode in
 
-    F.linep sc "let _rpc_%s : (%s,%s,%s,%s) Server.rpc = " name req req_mode res
+    F.linep sc "let rpc_%s : (%s,%s,%s,%s) Server.rpc = " name req req_mode res
       res_mode;
     F.linep sc "  (Server.mk_rpc ~name:%S" rpc.rpc_name;
     F.linep sc "    ~req_mode:Server.%s" req_mode_witness;
@@ -169,7 +169,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
     List.iter
       (fun (rpc : Ot.rpc) ->
         let f = Pb_codegen_util.function_name_of_rpc rpc in
-        F.linep sc "       (%s %s);" f (spf "_rpc_%s" f))
+        F.linep sc "       (%s %s);" f (spf "rpc_%s" f))
       service.service_body;
     F.line sc "    ];";
     F.line sc "  }"
@@ -229,7 +229,23 @@ let gen_service_sig (service : Ot.service) sc : unit =
                 (Pb_codegen_util.function_name_of_rpc rpc)
                 (string_of_server_rpc rpc.rpc_req rpc.rpc_res))
             service.service_body;
-          F.linep sc "  unit -> 'handler Pbrt_services.Server.t");
+          F.linep sc "  unit -> 'handler Pbrt_services.Server.t";
+
+          F.empty_line sc;
+          F.line sc
+            "(** The individual server stubs are only exposed for advanced \
+             users. Casual users should prefer accessing them through {!make}. \
+             *)";
+          List.iter
+            (fun (rpc : Ot.rpc) ->
+              F.empty_line sc;
+              let name = Pb_codegen_util.function_name_of_rpc rpc in
+              let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
+              let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
+              F.linep sc "val rpc_%s : (%s,%s,%s,%s) Server.rpc" name req
+                req_mode res res_mode)
+            service.service_body);
+
       F.line sc "end";
 
       ());
