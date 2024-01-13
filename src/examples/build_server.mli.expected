@@ -80,13 +80,17 @@ module BuildServer : sig
   
   module Client : sig
     
-    val make : (file_path, unary, empty, unary) Client.rpc
+    val make_ : (file_path, unary, empty, unary) Client.rpc
   end
   
   module Server : sig
     (** Produce a server implementation from handlers *)
     val make : 
-      make:((file_path, unary, empty, unary) Server.rpc -> 'handler) ->
+      make_:((file_path, unary, empty, unary) Server.rpc -> 'handler) ->
       unit -> 'handler Pbrt_services.Server.t
+    
+    (** The individual server stubs are only exposed for advanced users. Casual users should prefer accessing them through {!make}. *)
+    
+    val make_ : (file_path,unary,empty,unary) Server.rpc
   end
 end

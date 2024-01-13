@@ -169,5 +169,15 @@ module Calculator : sig
       ping:((empty, unary, empty, unary) Server.rpc -> 'handler) ->
       get_pings:((empty, unary, i32, unary) Server.rpc -> 'handler) ->
       unit -> 'handler Pbrt_services.Server.t
+    
+    (** The individual server stubs are only exposed for advanced users. Casual users should prefer accessing them through {!make}. *)
+    
+    val add : (add_req,unary,i32,unary) Server.rpc
+    
+    val add_all : (add_all_req,unary,i32,unary) Server.rpc
+    
+    val ping : (empty,unary,empty,unary) Server.rpc
+    
+    val get_pings : (empty,unary,i32,unary) Server.rpc
   end
 end

@@ -118,7 +118,7 @@ module BuildServer = struct
   module Client = struct
     open Pbrt_services
     
-    let make : (file_path, unary, empty, unary) Client.rpc =
+    let make_ : (file_path, unary, empty, unary) Client.rpc =
       (Client.mk_rpc 
         ~package:[]
         ~service_name:"BuildServer" ~rpc_name:"make"
@@ -134,7 +134,7 @@ module BuildServer = struct
   module Server = struct
     open Pbrt_services
     
-    let _rpc_make : (file_path,unary,empty,unary) Server.rpc = 
+    let make_ : (file_path,unary,empty,unary) Server.rpc = 
       (Server.mk_rpc ~name:"make"
         ~req_mode:Server.Unary
         ~res_mode:Server.Unary
@@ -145,13 +145,13 @@ module BuildServer = struct
         () : _ Server.rpc)
     
     let make
-      ~make
+      ~make_:__handler__make_
       () : _ Server.t =
       { Server.
         service_name="BuildServer";
         package=[];
         handlers=[
-           (make _rpc_make);
+           (__handler__make_ make_);
         ];
       }
   end

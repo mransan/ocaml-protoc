@@ -395,7 +395,7 @@ module FileServer = struct
   module Server = struct
     open Pbrt_services
     
-    let _rpc_touch_file : (file_path,unary,empty,unary) Server.rpc = 
+    let touch_file : (file_path,unary,empty,unary) Server.rpc = 
       (Server.mk_rpc ~name:"touch_file"
         ~req_mode:Server.Unary
         ~res_mode:Server.Unary
@@ -405,7 +405,7 @@ module FileServer = struct
         ~decode_pb_req:decode_pb_file_path
         () : _ Server.rpc)
     
-    let _rpc_upload_file : (file_chunk,stream,file_crc,unary) Server.rpc = 
+    let upload_file : (file_chunk,stream,file_crc,unary) Server.rpc = 
       (Server.mk_rpc ~name:"upload_file"
         ~req_mode:Server.Stream
         ~res_mode:Server.Unary
@@ -415,7 +415,7 @@ module FileServer = struct
         ~decode_pb_req:decode_pb_file_chunk
         () : _ Server.rpc)
     
-    let _rpc_download_file : (file_path,unary,file_chunk,stream) Server.rpc = 
+    let download_file : (file_path,unary,file_chunk,stream) Server.rpc = 
       (Server.mk_rpc ~name:"download_file"
         ~req_mode:Server.Unary
         ~res_mode:Server.Stream
@@ -425,7 +425,7 @@ module FileServer = struct
         ~decode_pb_req:decode_pb_file_path
         () : _ Server.rpc)
     
-    let _rpc_ping_pong : (ping,stream,pong,stream) Server.rpc = 
+    let ping_pong : (ping,stream,pong,stream) Server.rpc = 
       (Server.mk_rpc ~name:"ping_pong"
         ~req_mode:Server.Stream
         ~res_mode:Server.Stream
@@ -436,19 +436,19 @@ module FileServer = struct
         () : _ Server.rpc)
     
     let make
-      ~touch_file
-      ~upload_file
-      ~download_file
-      ~ping_pong
+      ~touch_file:__handler__touch_file
+      ~upload_file:__handler__upload_file
+      ~download_file:__handler__download_file
+      ~ping_pong:__handler__ping_pong
       () : _ Server.t =
       { Server.
         service_name="FileServer";
         package=[];
         handlers=[
-           (touch_file _rpc_touch_file);
-           (upload_file _rpc_upload_file);
-           (download_file _rpc_download_file);
-           (ping_pong _rpc_ping_pong);
+           (__handler__touch_file touch_file);
+           (__handler__upload_file upload_file);
+           (__handler__download_file download_file);
+           (__handler__ping_pong ping_pong);
         ];
       }
   end
