@@ -132,7 +132,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
     let req_mode_witness = String.capitalize_ascii req_mode in
     let res_mode_witness = String.capitalize_ascii res_mode in
 
-    F.linep sc "let rpc_%s : (%s,%s,%s,%s) Server.rpc = " name req req_mode res
+    F.linep sc "let %s : (%s,%s,%s,%s) Server.rpc = " name req req_mode res
       res_mode;
     F.linep sc "  (Server.mk_rpc ~name:%S" rpc.rpc_name;
     F.linep sc "    ~req_mode:Server.%s" req_mode_witness;
@@ -149,6 +149,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
   in
 
   let gen_server sc =
+    let rpc_parameter_name name = spf "__handler__%s" name in
     F.line sc "open Pbrt_services";
     List.iter (gen_rpc sc) service.service_body;
 
@@ -158,7 +159,7 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
     List.iter
       (fun (rpc : Ot.rpc) ->
         let name = Pb_codegen_util.function_name_of_rpc rpc in
-        F.linep sc "  ~%s" name)
+        F.linep sc "  ~%s:%s" name (rpc_parameter_name name))
       service.service_body;
     F.line sc "  () : _ Server.t =";
     F.linep sc "  { Server.";
@@ -168,8 +169,8 @@ let gen_service_server_struct (service : Ot.service) sc : unit =
     F.line sc "    handlers=[";
     List.iter
       (fun (rpc : Ot.rpc) ->
-        let f = Pb_codegen_util.function_name_of_rpc rpc in
-        F.linep sc "       (%s %s);" f (spf "rpc_%s" f))
+        let name = Pb_codegen_util.function_name_of_rpc rpc in
+        F.linep sc "       (%s %s);" (rpc_parameter_name name) name)
       service.service_body;
     F.line sc "    ];";
     F.line sc "  }"
@@ -242,8 +243,8 @@ let gen_service_sig (service : Ot.service) sc : unit =
               let name = Pb_codegen_util.function_name_of_rpc rpc in
               let req, req_mode = ocaml_type_of_rpc_type rpc.rpc_req in
               let res, res_mode = ocaml_type_of_rpc_type rpc.rpc_res in
-              F.linep sc "val rpc_%s : (%s,%s,%s,%s) Server.rpc" name req
-                req_mode res res_mode)
+              F.linep sc "val %s : (%s,%s,%s,%s) Server.rpc" name req req_mode
+                res res_mode)
             service.service_body);
 
       F.line sc "end";
