@@ -1,0 +1,47 @@
+
+(** Code for example04.proto *)
+
+(* generated from "example04.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type int_list_nil = unit
+
+type int_list_cons = {
+  value : int;
+  next : int_list;
+}
+
+and int_list =
+  | Cons of int_list_cons
+  | Nil
+
+
+(** {2 Basic values} *)
+
+val default_int_list_nil : unit
+(** [default_int_list_nil ()] is the default value for type [int_list_nil] *)
+
+val default_int_list_cons : 
+  ?value:int ->
+  ?next:int_list ->
+  unit ->
+  int_list_cons
+(** [default_int_list_cons ()] is the default value for type [int_list_cons] *)
+
+val default_int_list : unit -> int_list
+(** [default_int_list ()] is the default value for type [int_list] *)
+
+
+(** {2 Formatters} *)
+
+val pp_int_list_nil : Format.formatter -> int_list_nil -> unit 
+(** [pp_int_list_nil v] formats v *)
+
+val pp_int_list_cons : Format.formatter -> int_list_cons -> unit 
+(** [pp_int_list_cons v] formats v *)
+
+val pp_int_list : Format.formatter -> int_list -> unit 
+(** [pp_int_list v] formats v *)

@@ -1,0 +1,87 @@
+
+(** Code for orgchart.proto *)
+
+(* generated from "orgchart.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type person = {
+  name : string;
+  age : int64;
+}
+
+type store = {
+  address : string;
+  employees : person list;
+  clients : person list;
+}
+
+type company = {
+  name : string;
+  stores : store list;
+  subsidiaries : company list;
+}
+
+
+(** {2 Basic values} *)
+
+val default_person : 
+  ?name:string ->
+  ?age:int64 ->
+  unit ->
+  person
+(** [default_person ()] is the default value for type [person] *)
+
+val default_store : 
+  ?address:string ->
+  ?employees:person list ->
+  ?clients:person list ->
+  unit ->
+  store
+(** [default_store ()] is the default value for type [store] *)
+
+val default_company : 
+  ?name:string ->
+  ?stores:store list ->
+  ?subsidiaries:company list ->
+  unit ->
+  company
+(** [default_company ()] is the default value for type [company] *)
+
+
+(** {2 Formatters} *)
+
+val pp_person : Format.formatter -> person -> unit 
+(** [pp_person v] formats v *)
+
+val pp_store : Format.formatter -> store -> unit 
+(** [pp_store v] formats v *)
+
+val pp_company : Format.formatter -> company -> unit 
+(** [pp_company v] formats v *)
+
+
+(** {2 Protobuf Encoding} *)
+
+val encode_pb_person : person -> Pbrt.Encoder.t -> unit
+(** [encode_pb_person v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_store : store -> Pbrt.Encoder.t -> unit
+(** [encode_pb_store v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_company : company -> Pbrt.Encoder.t -> unit
+(** [encode_pb_company v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Protobuf Decoding} *)
+
+val decode_pb_person : Pbrt.Decoder.t -> person
+(** [decode_pb_person decoder] decodes a [person] binary value from [decoder] *)
+
+val decode_pb_store : Pbrt.Decoder.t -> store
+(** [decode_pb_store decoder] decodes a [store] binary value from [decoder] *)
+
+val decode_pb_company : Pbrt.Decoder.t -> company
+(** [decode_pb_company decoder] decodes a [company] binary value from [decoder] *)

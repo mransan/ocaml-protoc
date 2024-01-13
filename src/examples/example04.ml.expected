@@ -1,0 +1,46 @@
+[@@@ocaml.warning "-27-30-39"]
+
+type int_list_nil = unit
+
+type int_list_cons = {
+  value : int;
+  next : int_list;
+}
+
+and int_list =
+  | Cons of int_list_cons
+  | Nil
+
+let rec default_int_list_nil = ()
+
+let rec default_int_list_cons 
+  ?value:((value:int) = 0)
+  ?next:((next:int_list) = default_int_list ())
+  () : int_list_cons  = {
+  value;
+  next;
+}
+
+and default_int_list () : int_list = Cons (default_int_list_cons ())
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_int_list_nil fmt (v:int_list_nil) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_int_list_cons fmt (v:int_list_cons) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "value" Pbrt.Pp.pp_int fmt v.value;
+    Pbrt.Pp.pp_record_field ~first:false "next" pp_int_list fmt v.next;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_int_list fmt (v:int_list) =
+  match v with
+  | Cons x -> Format.fprintf fmt "@[<hv2>Cons(@,%a)@]" pp_int_list_cons x
+  | Nil  -> Format.fprintf fmt "Nil"

@@ -1,0 +1,32 @@
+
+(** Code for example03.proto *)
+
+(* generated from "example03.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type string_some_none = unit
+
+type string_some =
+  | None
+  | Some of string
+
+
+(** {2 Basic values} *)
+
+val default_string_some_none : unit
+(** [default_string_some_none ()] is the default value for type [string_some_none] *)
+
+val default_string_some : unit -> string_some
+(** [default_string_some ()] is the default value for type [string_some] *)
+
+
+(** {2 Formatters} *)
+
+val pp_string_some_none : Format.formatter -> string_some_none -> unit 
+(** [pp_string_some_none v] formats v *)
+
+val pp_string_some : Format.formatter -> string_some -> unit 
+(** [pp_string_some v] formats v *)
