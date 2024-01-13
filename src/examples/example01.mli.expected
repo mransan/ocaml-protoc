@@ -1,0 +1,45 @@
+
+(** Code for example01.proto *)
+
+(* generated from "example01.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type person = {
+  name : string;
+  id : int32;
+  email : string;
+  phone : string list;
+}
+
+
+(** {2 Basic values} *)
+
+val default_person : 
+  ?name:string ->
+  ?id:int32 ->
+  ?email:string ->
+  ?phone:string list ->
+  unit ->
+  person
+(** [default_person ()] is the default value for type [person] *)
+
+
+(** {2 Formatters} *)
+
+val pp_person : Format.formatter -> person -> unit 
+(** [pp_person v] formats v *)
+
+
+(** {2 Protobuf Encoding} *)
+
+val encode_pb_person : person -> Pbrt.Encoder.t -> unit
+(** [encode_pb_person v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Protobuf Decoding} *)
+
+val decode_pb_person : Pbrt.Decoder.t -> person
+(** [decode_pb_person decoder] decodes a [person] binary value from [decoder] *)

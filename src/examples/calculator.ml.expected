@@ -1,0 +1,424 @@
+[@@@ocaml.warning "-27-30-39"]
+
+type div_by_zero = unit
+
+type i32 = {
+  value : int32;
+}
+
+type add_req = {
+  a : int32;
+  b : int32;
+}
+
+type add_all_req = {
+  ints : int32 list;
+}
+
+type empty = unit
+
+let rec default_div_by_zero = ()
+
+let rec default_i32 
+  ?value:((value:int32) = 0l)
+  () : i32  = {
+  value;
+}
+
+let rec default_add_req 
+  ?a:((a:int32) = 0l)
+  ?b:((b:int32) = 0l)
+  () : add_req  = {
+  a;
+  b;
+}
+
+let rec default_add_all_req 
+  ?ints:((ints:int32 list) = [])
+  () : add_all_req  = {
+  ints;
+}
+
+let rec default_empty = ()
+
+type i32_mutable = {
+  mutable value : int32;
+}
+
+let default_i32_mutable () : i32_mutable = {
+  value = 0l;
+}
+
+type add_req_mutable = {
+  mutable a : int32;
+  mutable b : int32;
+}
+
+let default_add_req_mutable () : add_req_mutable = {
+  a = 0l;
+  b = 0l;
+}
+
+type add_all_req_mutable = {
+  mutable ints : int32 list;
+}
+
+let default_add_all_req_mutable () : add_all_req_mutable = {
+  ints = [];
+}
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_div_by_zero fmt (v:div_by_zero) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_i32 fmt (v:i32) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "value" Pbrt.Pp.pp_int32 fmt v.value;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_add_req fmt (v:add_req) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "a" Pbrt.Pp.pp_int32 fmt v.a;
+    Pbrt.Pp.pp_record_field ~first:false "b" Pbrt.Pp.pp_int32 fmt v.b;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_add_all_req fmt (v:add_all_req) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "ints" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.ints;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_empty fmt (v:empty) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Encoding} *)
+
+let rec encode_pb_div_by_zero (v:div_by_zero) encoder = 
+()
+
+let rec encode_pb_i32 (v:i32) encoder = 
+  Pbrt.Encoder.int32_as_varint v.value encoder;
+  Pbrt.Encoder.key 0 Pbrt.Varint encoder; 
+  ()
+
+let rec encode_pb_add_req (v:add_req) encoder = 
+  Pbrt.Encoder.int32_as_varint v.a encoder;
+  Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
+  Pbrt.Encoder.int32_as_varint v.b encoder;
+  Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
+  ()
+
+let rec encode_pb_add_all_req (v:add_all_req) encoder = 
+  Pbrt.Encoder.nested (fun lst encoder ->
+    Pbrt.List_util.rev_iter_with (fun x encoder -> 
+      Pbrt.Encoder.int32_as_varint x encoder;
+    ) lst encoder;
+  ) v.ints encoder;
+  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  ()
+
+let rec encode_pb_empty (v:empty) encoder = 
+()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Decoding} *)
+
+let rec decode_pb_div_by_zero d =
+  match Pbrt.Decoder.key d with
+  | None -> ();
+  | Some (_, pk) -> 
+    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(div_by_zero)" pk
+
+let rec decode_pb_i32 d =
+  let v = default_i32_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (0, Pbrt.Varint) -> begin
+      v.value <- Pbrt.Decoder.int32_as_varint d;
+    end
+    | Some (0, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(i32), field(0)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    value = v.value;
+  } : i32)
+
+let rec decode_pb_add_req d =
+  let v = default_add_req_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Varint) -> begin
+      v.a <- Pbrt.Decoder.int32_as_varint d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(add_req), field(1)" pk
+    | Some (2, Pbrt.Varint) -> begin
+      v.b <- Pbrt.Decoder.int32_as_varint d;
+    end
+    | Some (2, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(add_req), field(2)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    a = v.a;
+    b = v.b;
+  } : add_req)
+
+let rec decode_pb_add_all_req d =
+  let v = default_add_all_req_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+      v.ints <- List.rev v.ints;
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.ints <- Pbrt.Decoder.packed_fold (fun l d -> (Pbrt.Decoder.int32_as_varint d)::l) [] d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(add_all_req), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    ints = v.ints;
+  } : add_all_req)
+
+let rec decode_pb_empty d =
+  match Pbrt.Decoder.key d with
+  | None -> ();
+  | Some (_, pk) -> 
+    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf YoJson Encoding} *)
+
+let rec encode_json_div_by_zero (v:div_by_zero) = 
+Pbrt_yojson.make_unit v
+
+let rec encode_json_i32 (v:i32) = 
+  let assoc = [] in 
+  let assoc = ("value", Pbrt_yojson.make_int (Int32.to_int v.value)) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_add_req (v:add_req) = 
+  let assoc = [] in 
+  let assoc = ("a", Pbrt_yojson.make_int (Int32.to_int v.a)) :: assoc in
+  let assoc = ("b", Pbrt_yojson.make_int (Int32.to_int v.b)) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_add_all_req (v:add_all_req) = 
+  let assoc = [] in 
+  let assoc =
+    let l = v.ints |> List.map Int32.to_int |> List.map Pbrt_yojson.make_int in 
+    ("ints", `List l) :: assoc 
+  in
+  `Assoc assoc
+
+let rec encode_json_empty (v:empty) = 
+Pbrt_yojson.make_unit v
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 JSON Decoding} *)
+
+let rec decode_json_div_by_zero d =
+Pbrt_yojson.unit d "div_by_zero" "empty record"
+
+let rec decode_json_i32 d =
+  let v = default_i32_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("value", json_value) -> 
+      v.value <- Pbrt_yojson.int32 json_value "i32" "value"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    value = v.value;
+  } : i32)
+
+let rec decode_json_add_req d =
+  let v = default_add_req_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("a", json_value) -> 
+      v.a <- Pbrt_yojson.int32 json_value "add_req" "a"
+    | ("b", json_value) -> 
+      v.b <- Pbrt_yojson.int32 json_value "add_req" "b"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    a = v.a;
+    b = v.b;
+  } : add_req)
+
+let rec decode_json_add_all_req d =
+  let v = default_add_all_req_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("ints", `List l) -> begin
+      v.ints <- List.map (function
+        | json_value -> Pbrt_yojson.int32 json_value "add_all_req" "ints"
+      ) l;
+    end
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    ints = v.ints;
+  } : add_all_req)
+
+let rec decode_json_empty d =
+Pbrt_yojson.unit d "empty" "empty record"
+
+module Calculator = struct
+  open Pbrt_services.Value_mode
+  module Client = struct
+    open Pbrt_services
+    
+    let add : (add_req, unary, i32, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"Calculator" ~rpc_name:"add"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_add_req
+        ~encode_pb_req:encode_pb_add_req
+        ~decode_json_res:decode_json_i32
+        ~decode_pb_res:decode_pb_i32
+        () : (add_req, unary, i32, unary) Client.rpc)
+    open Pbrt_services
+    
+    let add_all : (add_all_req, unary, i32, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"Calculator" ~rpc_name:"add_all"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_add_all_req
+        ~encode_pb_req:encode_pb_add_all_req
+        ~decode_json_res:decode_json_i32
+        ~decode_pb_res:decode_pb_i32
+        () : (add_all_req, unary, i32, unary) Client.rpc)
+    open Pbrt_services
+    
+    let ping : (empty, unary, empty, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"Calculator" ~rpc_name:"ping"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_empty
+        ~encode_pb_req:encode_pb_empty
+        ~decode_json_res:decode_json_empty
+        ~decode_pb_res:decode_pb_empty
+        () : (empty, unary, empty, unary) Client.rpc)
+    open Pbrt_services
+    
+    let get_pings : (empty, unary, i32, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"Calculator" ~rpc_name:"get_pings"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_empty
+        ~encode_pb_req:encode_pb_empty
+        ~decode_json_res:decode_json_i32
+        ~decode_pb_res:decode_pb_i32
+        () : (empty, unary, i32, unary) Client.rpc)
+  end
+  
+  module Server = struct
+    open Pbrt_services
+    
+    let _rpc_add : (add_req,unary,i32,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"add"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_i32
+        ~encode_pb_res:encode_pb_i32
+        ~decode_json_req:decode_json_add_req
+        ~decode_pb_req:decode_pb_add_req
+        () : _ Server.rpc)
+    
+    let _rpc_add_all : (add_all_req,unary,i32,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"add_all"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_i32
+        ~encode_pb_res:encode_pb_i32
+        ~decode_json_req:decode_json_add_all_req
+        ~decode_pb_req:decode_pb_add_all_req
+        () : _ Server.rpc)
+    
+    let _rpc_ping : (empty,unary,empty,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"ping"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_empty
+        ~encode_pb_res:encode_pb_empty
+        ~decode_json_req:decode_json_empty
+        ~decode_pb_req:decode_pb_empty
+        () : _ Server.rpc)
+    
+    let _rpc_get_pings : (empty,unary,i32,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"get_pings"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_i32
+        ~encode_pb_res:encode_pb_i32
+        ~decode_json_req:decode_json_empty
+        ~decode_pb_req:decode_pb_empty
+        () : _ Server.rpc)
+    
+    let make
+      ~add
+      ~add_all
+      ~ping
+      ~get_pings
+      () : _ Server.t =
+      { Server.
+        service_name="Calculator";
+        package=[];
+        handlers=[
+           (add _rpc_add);
+           (add_all _rpc_add_all);
+           (ping _rpc_ping);
+           (get_pings _rpc_get_pings);
+        ];
+      }
+  end
+  
+end

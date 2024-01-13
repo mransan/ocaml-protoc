@@ -1,0 +1,456 @@
+[@@@ocaml.warning "-27-30-39"]
+
+type file_chunk = {
+  path : string;
+  data : bytes;
+  crc : int32;
+}
+
+type file_path = {
+  path : string;
+}
+
+type file_crc = {
+  crc : int32;
+}
+
+type empty = unit
+
+type ping = unit
+
+type pong = unit
+
+let rec default_file_chunk 
+  ?path:((path:string) = "")
+  ?data:((data:bytes) = Bytes.create 0)
+  ?crc:((crc:int32) = 0l)
+  () : file_chunk  = {
+  path;
+  data;
+  crc;
+}
+
+let rec default_file_path 
+  ?path:((path:string) = "")
+  () : file_path  = {
+  path;
+}
+
+let rec default_file_crc 
+  ?crc:((crc:int32) = 0l)
+  () : file_crc  = {
+  crc;
+}
+
+let rec default_empty = ()
+
+let rec default_ping = ()
+
+let rec default_pong = ()
+
+type file_chunk_mutable = {
+  mutable path : string;
+  mutable data : bytes;
+  mutable crc : int32;
+}
+
+let default_file_chunk_mutable () : file_chunk_mutable = {
+  path = "";
+  data = Bytes.create 0;
+  crc = 0l;
+}
+
+type file_path_mutable = {
+  mutable path : string;
+}
+
+let default_file_path_mutable () : file_path_mutable = {
+  path = "";
+}
+
+type file_crc_mutable = {
+  mutable crc : int32;
+}
+
+let default_file_crc_mutable () : file_crc_mutable = {
+  crc = 0l;
+}
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_file_chunk fmt (v:file_chunk) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "path" Pbrt.Pp.pp_string fmt v.path;
+    Pbrt.Pp.pp_record_field ~first:false "data" Pbrt.Pp.pp_bytes fmt v.data;
+    Pbrt.Pp.pp_record_field ~first:false "crc" Pbrt.Pp.pp_int32 fmt v.crc;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_file_path fmt (v:file_path) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "path" Pbrt.Pp.pp_string fmt v.path;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_file_crc fmt (v:file_crc) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "crc" Pbrt.Pp.pp_int32 fmt v.crc;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_empty fmt (v:empty) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_ping fmt (v:ping) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_pong fmt (v:pong) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Encoding} *)
+
+let rec encode_pb_file_chunk (v:file_chunk) encoder = 
+  Pbrt.Encoder.string v.path encoder;
+  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  Pbrt.Encoder.bytes v.data encoder;
+  Pbrt.Encoder.key 2 Pbrt.Bytes encoder; 
+  Pbrt.Encoder.int32_as_varint v.crc encoder;
+  Pbrt.Encoder.key 3 Pbrt.Varint encoder; 
+  ()
+
+let rec encode_pb_file_path (v:file_path) encoder = 
+  Pbrt.Encoder.string v.path encoder;
+  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  ()
+
+let rec encode_pb_file_crc (v:file_crc) encoder = 
+  Pbrt.Encoder.int32_as_varint v.crc encoder;
+  Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
+  ()
+
+let rec encode_pb_empty (v:empty) encoder = 
+()
+
+let rec encode_pb_ping (v:ping) encoder = 
+()
+
+let rec encode_pb_pong (v:pong) encoder = 
+()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Decoding} *)
+
+let rec decode_pb_file_chunk d =
+  let v = default_file_chunk_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.path <- Pbrt.Decoder.string d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(1)" pk
+    | Some (2, Pbrt.Bytes) -> begin
+      v.data <- Pbrt.Decoder.bytes d;
+    end
+    | Some (2, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(2)" pk
+    | Some (3, Pbrt.Varint) -> begin
+      v.crc <- Pbrt.Decoder.int32_as_varint d;
+    end
+    | Some (3, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(3)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    path = v.path;
+    data = v.data;
+    crc = v.crc;
+  } : file_chunk)
+
+let rec decode_pb_file_path d =
+  let v = default_file_path_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.path <- Pbrt.Decoder.string d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(file_path), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    path = v.path;
+  } : file_path)
+
+let rec decode_pb_file_crc d =
+  let v = default_file_crc_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Varint) -> begin
+      v.crc <- Pbrt.Decoder.int32_as_varint d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(file_crc), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    crc = v.crc;
+  } : file_crc)
+
+let rec decode_pb_empty d =
+  match Pbrt.Decoder.key d with
+  | None -> ();
+  | Some (_, pk) -> 
+    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
+
+let rec decode_pb_ping d =
+  match Pbrt.Decoder.key d with
+  | None -> ();
+  | Some (_, pk) -> 
+    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(ping)" pk
+
+let rec decode_pb_pong d =
+  match Pbrt.Decoder.key d with
+  | None -> ();
+  | Some (_, pk) -> 
+    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(pong)" pk
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf YoJson Encoding} *)
+
+let rec encode_json_file_chunk (v:file_chunk) = 
+  let assoc = [] in 
+  let assoc = ("path", Pbrt_yojson.make_string v.path) :: assoc in
+  let assoc = ("data", Pbrt_yojson.make_bytes v.data) :: assoc in
+  let assoc = ("crc", Pbrt_yojson.make_int (Int32.to_int v.crc)) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_file_path (v:file_path) = 
+  let assoc = [] in 
+  let assoc = ("path", Pbrt_yojson.make_string v.path) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_file_crc (v:file_crc) = 
+  let assoc = [] in 
+  let assoc = ("crc", Pbrt_yojson.make_int (Int32.to_int v.crc)) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_empty (v:empty) = 
+Pbrt_yojson.make_unit v
+
+let rec encode_json_ping (v:ping) = 
+Pbrt_yojson.make_unit v
+
+let rec encode_json_pong (v:pong) = 
+Pbrt_yojson.make_unit v
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 JSON Decoding} *)
+
+let rec decode_json_file_chunk d =
+  let v = default_file_chunk_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("path", json_value) -> 
+      v.path <- Pbrt_yojson.string json_value "file_chunk" "path"
+    | ("data", json_value) -> 
+      v.data <- Pbrt_yojson.bytes json_value "file_chunk" "data"
+    | ("crc", json_value) -> 
+      v.crc <- Pbrt_yojson.int32 json_value "file_chunk" "crc"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    path = v.path;
+    data = v.data;
+    crc = v.crc;
+  } : file_chunk)
+
+let rec decode_json_file_path d =
+  let v = default_file_path_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("path", json_value) -> 
+      v.path <- Pbrt_yojson.string json_value "file_path" "path"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    path = v.path;
+  } : file_path)
+
+let rec decode_json_file_crc d =
+  let v = default_file_crc_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("crc", json_value) -> 
+      v.crc <- Pbrt_yojson.int32 json_value "file_crc" "crc"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    crc = v.crc;
+  } : file_crc)
+
+let rec decode_json_empty d =
+Pbrt_yojson.unit d "empty" "empty record"
+
+let rec decode_json_ping d =
+Pbrt_yojson.unit d "ping" "empty record"
+
+let rec decode_json_pong d =
+Pbrt_yojson.unit d "pong" "empty record"
+
+module FileServer = struct
+  open Pbrt_services.Value_mode
+  module Client = struct
+    open Pbrt_services
+    
+    let touch_file : (file_path, unary, empty, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"FileServer" ~rpc_name:"touch_file"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_file_path
+        ~encode_pb_req:encode_pb_file_path
+        ~decode_json_res:decode_json_empty
+        ~decode_pb_res:decode_pb_empty
+        () : (file_path, unary, empty, unary) Client.rpc)
+    open Pbrt_services
+    
+    let upload_file : (file_chunk, stream, file_crc, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"FileServer" ~rpc_name:"upload_file"
+        ~req_mode:Client.Stream
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_file_chunk
+        ~encode_pb_req:encode_pb_file_chunk
+        ~decode_json_res:decode_json_file_crc
+        ~decode_pb_res:decode_pb_file_crc
+        () : (file_chunk, stream, file_crc, unary) Client.rpc)
+    open Pbrt_services
+    
+    let download_file : (file_path, unary, file_chunk, stream) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"FileServer" ~rpc_name:"download_file"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Stream
+        ~encode_json_req:encode_json_file_path
+        ~encode_pb_req:encode_pb_file_path
+        ~decode_json_res:decode_json_file_chunk
+        ~decode_pb_res:decode_pb_file_chunk
+        () : (file_path, unary, file_chunk, stream) Client.rpc)
+    open Pbrt_services
+    
+    let ping_pong : (ping, stream, pong, stream) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"FileServer" ~rpc_name:"ping_pong"
+        ~req_mode:Client.Stream
+        ~res_mode:Client.Stream
+        ~encode_json_req:encode_json_ping
+        ~encode_pb_req:encode_pb_ping
+        ~decode_json_res:decode_json_pong
+        ~decode_pb_res:decode_pb_pong
+        () : (ping, stream, pong, stream) Client.rpc)
+  end
+  
+  module Server = struct
+    open Pbrt_services
+    
+    let _rpc_touch_file : (file_path,unary,empty,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"touch_file"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_empty
+        ~encode_pb_res:encode_pb_empty
+        ~decode_json_req:decode_json_file_path
+        ~decode_pb_req:decode_pb_file_path
+        () : _ Server.rpc)
+    
+    let _rpc_upload_file : (file_chunk,stream,file_crc,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"upload_file"
+        ~req_mode:Server.Stream
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_file_crc
+        ~encode_pb_res:encode_pb_file_crc
+        ~decode_json_req:decode_json_file_chunk
+        ~decode_pb_req:decode_pb_file_chunk
+        () : _ Server.rpc)
+    
+    let _rpc_download_file : (file_path,unary,file_chunk,stream) Server.rpc = 
+      (Server.mk_rpc ~name:"download_file"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Stream
+        ~encode_json_res:encode_json_file_chunk
+        ~encode_pb_res:encode_pb_file_chunk
+        ~decode_json_req:decode_json_file_path
+        ~decode_pb_req:decode_pb_file_path
+        () : _ Server.rpc)
+    
+    let _rpc_ping_pong : (ping,stream,pong,stream) Server.rpc = 
+      (Server.mk_rpc ~name:"ping_pong"
+        ~req_mode:Server.Stream
+        ~res_mode:Server.Stream
+        ~encode_json_res:encode_json_pong
+        ~encode_pb_res:encode_pb_pong
+        ~decode_json_req:decode_json_ping
+        ~decode_pb_req:decode_pb_ping
+        () : _ Server.rpc)
+    
+    let make
+      ~touch_file
+      ~upload_file
+      ~download_file
+      ~ping_pong
+      () : _ Server.t =
+      { Server.
+        service_name="FileServer";
+        package=[];
+        handlers=[
+           (touch_file _rpc_touch_file);
+           (upload_file _rpc_upload_file);
+           (download_file _rpc_download_file);
+           (ping_pong _rpc_ping_pong);
+        ];
+      }
+  end
+  
+end

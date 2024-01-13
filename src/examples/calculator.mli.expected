@@ -1,0 +1,173 @@
+
+(** Code for calculator.proto *)
+
+(* generated from "calculator.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type div_by_zero = unit
+
+type i32 = {
+  value : int32;
+}
+
+type add_req = {
+  a : int32;
+  b : int32;
+}
+
+type add_all_req = {
+  ints : int32 list;
+}
+
+type empty = unit
+
+
+(** {2 Basic values} *)
+
+val default_div_by_zero : unit
+(** [default_div_by_zero ()] is the default value for type [div_by_zero] *)
+
+val default_i32 : 
+  ?value:int32 ->
+  unit ->
+  i32
+(** [default_i32 ()] is the default value for type [i32] *)
+
+val default_add_req : 
+  ?a:int32 ->
+  ?b:int32 ->
+  unit ->
+  add_req
+(** [default_add_req ()] is the default value for type [add_req] *)
+
+val default_add_all_req : 
+  ?ints:int32 list ->
+  unit ->
+  add_all_req
+(** [default_add_all_req ()] is the default value for type [add_all_req] *)
+
+val default_empty : unit
+(** [default_empty ()] is the default value for type [empty] *)
+
+
+(** {2 Formatters} *)
+
+val pp_div_by_zero : Format.formatter -> div_by_zero -> unit 
+(** [pp_div_by_zero v] formats v *)
+
+val pp_i32 : Format.formatter -> i32 -> unit 
+(** [pp_i32 v] formats v *)
+
+val pp_add_req : Format.formatter -> add_req -> unit 
+(** [pp_add_req v] formats v *)
+
+val pp_add_all_req : Format.formatter -> add_all_req -> unit 
+(** [pp_add_all_req v] formats v *)
+
+val pp_empty : Format.formatter -> empty -> unit 
+(** [pp_empty v] formats v *)
+
+
+(** {2 Protobuf Encoding} *)
+
+val encode_pb_div_by_zero : div_by_zero -> Pbrt.Encoder.t -> unit
+(** [encode_pb_div_by_zero v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_i32 : i32 -> Pbrt.Encoder.t -> unit
+(** [encode_pb_i32 v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_add_req : add_req -> Pbrt.Encoder.t -> unit
+(** [encode_pb_add_req v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_add_all_req : add_all_req -> Pbrt.Encoder.t -> unit
+(** [encode_pb_add_all_req v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_empty : empty -> Pbrt.Encoder.t -> unit
+(** [encode_pb_empty v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Protobuf Decoding} *)
+
+val decode_pb_div_by_zero : Pbrt.Decoder.t -> div_by_zero
+(** [decode_pb_div_by_zero decoder] decodes a [div_by_zero] binary value from [decoder] *)
+
+val decode_pb_i32 : Pbrt.Decoder.t -> i32
+(** [decode_pb_i32 decoder] decodes a [i32] binary value from [decoder] *)
+
+val decode_pb_add_req : Pbrt.Decoder.t -> add_req
+(** [decode_pb_add_req decoder] decodes a [add_req] binary value from [decoder] *)
+
+val decode_pb_add_all_req : Pbrt.Decoder.t -> add_all_req
+(** [decode_pb_add_all_req decoder] decodes a [add_all_req] binary value from [decoder] *)
+
+val decode_pb_empty : Pbrt.Decoder.t -> empty
+(** [decode_pb_empty decoder] decodes a [empty] binary value from [decoder] *)
+
+
+(** {2 Protobuf YoJson Encoding} *)
+
+val encode_json_div_by_zero : div_by_zero -> Yojson.Basic.t
+(** [encode_json_div_by_zero v encoder] encodes [v] to to json *)
+
+val encode_json_i32 : i32 -> Yojson.Basic.t
+(** [encode_json_i32 v encoder] encodes [v] to to json *)
+
+val encode_json_add_req : add_req -> Yojson.Basic.t
+(** [encode_json_add_req v encoder] encodes [v] to to json *)
+
+val encode_json_add_all_req : add_all_req -> Yojson.Basic.t
+(** [encode_json_add_all_req v encoder] encodes [v] to to json *)
+
+val encode_json_empty : empty -> Yojson.Basic.t
+(** [encode_json_empty v encoder] encodes [v] to to json *)
+
+
+(** {2 JSON Decoding} *)
+
+val decode_json_div_by_zero : Yojson.Basic.t -> div_by_zero
+(** [decode_json_div_by_zero decoder] decodes a [div_by_zero] value from [decoder] *)
+
+val decode_json_i32 : Yojson.Basic.t -> i32
+(** [decode_json_i32 decoder] decodes a [i32] value from [decoder] *)
+
+val decode_json_add_req : Yojson.Basic.t -> add_req
+(** [decode_json_add_req decoder] decodes a [add_req] value from [decoder] *)
+
+val decode_json_add_all_req : Yojson.Basic.t -> add_all_req
+(** [decode_json_add_all_req decoder] decodes a [add_all_req] value from [decoder] *)
+
+val decode_json_empty : Yojson.Basic.t -> empty
+(** [decode_json_empty decoder] decodes a [empty] value from [decoder] *)
+
+
+(** {2 Services} *)
+
+(** Calculator service *)
+module Calculator : sig
+  open Pbrt_services
+  open Pbrt_services.Value_mode
+  
+  module Client : sig
+    
+    val add : (add_req, unary, i32, unary) Client.rpc
+    
+    val add_all : (add_all_req, unary, i32, unary) Client.rpc
+    
+    val ping : (empty, unary, empty, unary) Client.rpc
+    
+    val get_pings : (empty, unary, i32, unary) Client.rpc
+  end
+  
+  module Server : sig
+    (** Produce a server implementation from handlers *)
+    val make : 
+      add:((add_req, unary, i32, unary) Server.rpc -> 'handler) ->
+      add_all:((add_all_req, unary, i32, unary) Server.rpc -> 'handler) ->
+      ping:((empty, unary, empty, unary) Server.rpc -> 'handler) ->
+      get_pings:((empty, unary, i32, unary) Server.rpc -> 'handler) ->
+      unit -> 'handler Pbrt_services.Server.t
+  end
+end
