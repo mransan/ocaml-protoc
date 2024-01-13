@@ -3,6 +3,16 @@
 (rule
  (alias runtest)
  (action
+  (diff build_server.ml.expected build_server.ml)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff build_server.mli.expected build_server.mli)))
+
+(rule
+ (alias runtest)
+ (action
   (diff calculator.ml.expected calculator.ml)))
 
 (rule

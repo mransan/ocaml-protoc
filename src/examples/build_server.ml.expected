@@ -1,0 +1,159 @@
+[@@@ocaml.warning "-27-30-39"]
+
+type file_path = {
+  path : string;
+}
+
+type empty = unit
+
+let rec default_file_path 
+  ?path:((path:string) = "")
+  () : file_path  = {
+  path;
+}
+
+let rec default_empty = ()
+
+type file_path_mutable = {
+  mutable path : string;
+}
+
+let default_file_path_mutable () : file_path_mutable = {
+  path = "";
+}
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_file_path fmt (v:file_path) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "path" Pbrt.Pp.pp_string fmt v.path;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_empty fmt (v:empty) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_unit fmt ()
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Encoding} *)
+
+let rec encode_pb_file_path (v:file_path) encoder = 
+  Pbrt.Encoder.string v.path encoder;
+  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  ()
+
+let rec encode_pb_empty (v:empty) encoder = 
+()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Decoding} *)
+
+let rec decode_pb_file_path d =
+  let v = default_file_path_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.path <- Pbrt.Decoder.string d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(file_path), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    path = v.path;
+  } : file_path)
+
+let rec decode_pb_empty d =
+  match Pbrt.Decoder.key d with
+  | None -> ();
+  | Some (_, pk) -> 
+    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf YoJson Encoding} *)
+
+let rec encode_json_file_path (v:file_path) = 
+  let assoc = [] in 
+  let assoc = ("path", Pbrt_yojson.make_string v.path) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_empty (v:empty) = 
+Pbrt_yojson.make_unit v
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 JSON Decoding} *)
+
+let rec decode_json_file_path d =
+  let v = default_file_path_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("path", json_value) -> 
+      v.path <- Pbrt_yojson.string json_value "file_path" "path"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    path = v.path;
+  } : file_path)
+
+let rec decode_json_empty d =
+Pbrt_yojson.unit d "empty" "empty record"
+
+module BuildServer = struct
+  open Pbrt_services.Value_mode
+  module Client = struct
+    open Pbrt_services
+    
+    let make : (file_path, unary, empty, unary) Client.rpc =
+      (Client.mk_rpc 
+        ~package:[]
+        ~service_name:"BuildServer" ~rpc_name:"make"
+        ~req_mode:Client.Unary
+        ~res_mode:Client.Unary
+        ~encode_json_req:encode_json_file_path
+        ~encode_pb_req:encode_pb_file_path
+        ~decode_json_res:decode_json_empty
+        ~decode_pb_res:decode_pb_empty
+        () : (file_path, unary, empty, unary) Client.rpc)
+  end
+  
+  module Server = struct
+    open Pbrt_services
+    
+    let _rpc_make : (file_path,unary,empty,unary) Server.rpc = 
+      (Server.mk_rpc ~name:"make"
+        ~req_mode:Server.Unary
+        ~res_mode:Server.Unary
+        ~encode_json_res:encode_json_empty
+        ~encode_pb_res:encode_pb_empty
+        ~decode_json_req:decode_json_file_path
+        ~decode_pb_req:decode_pb_file_path
+        () : _ Server.rpc)
+    
+    let make
+      ~make
+      () : _ Server.t =
+      { Server.
+        service_name="BuildServer";
+        package=[];
+        handlers=[
+           (make _rpc_make);
+        ];
+      }
+  end
+  
+end

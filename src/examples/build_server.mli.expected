@@ -1,0 +1,92 @@
+
+(** Code for build_server.proto *)
+
+(* generated from "build_server.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type file_path = {
+  path : string;
+}
+
+type empty = unit
+
+
+(** {2 Basic values} *)
+
+val default_file_path : 
+  ?path:string ->
+  unit ->
+  file_path
+(** [default_file_path ()] is the default value for type [file_path] *)
+
+val default_empty : unit
+(** [default_empty ()] is the default value for type [empty] *)
+
+
+(** {2 Formatters} *)
+
+val pp_file_path : Format.formatter -> file_path -> unit 
+(** [pp_file_path v] formats v *)
+
+val pp_empty : Format.formatter -> empty -> unit 
+(** [pp_empty v] formats v *)
+
+
+(** {2 Protobuf Encoding} *)
+
+val encode_pb_file_path : file_path -> Pbrt.Encoder.t -> unit
+(** [encode_pb_file_path v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_empty : empty -> Pbrt.Encoder.t -> unit
+(** [encode_pb_empty v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Protobuf Decoding} *)
+
+val decode_pb_file_path : Pbrt.Decoder.t -> file_path
+(** [decode_pb_file_path decoder] decodes a [file_path] binary value from [decoder] *)
+
+val decode_pb_empty : Pbrt.Decoder.t -> empty
+(** [decode_pb_empty decoder] decodes a [empty] binary value from [decoder] *)
+
+
+(** {2 Protobuf YoJson Encoding} *)
+
+val encode_json_file_path : file_path -> Yojson.Basic.t
+(** [encode_json_file_path v encoder] encodes [v] to to json *)
+
+val encode_json_empty : empty -> Yojson.Basic.t
+(** [encode_json_empty v encoder] encodes [v] to to json *)
+
+
+(** {2 JSON Decoding} *)
+
+val decode_json_file_path : Yojson.Basic.t -> file_path
+(** [decode_json_file_path decoder] decodes a [file_path] value from [decoder] *)
+
+val decode_json_empty : Yojson.Basic.t -> empty
+(** [decode_json_empty decoder] decodes a [empty] value from [decoder] *)
+
+
+(** {2 Services} *)
+
+(** BuildServer service *)
+module BuildServer : sig
+  open Pbrt_services
+  open Pbrt_services.Value_mode
+  
+  module Client : sig
+    
+    val make : (file_path, unary, empty, unary) Client.rpc
+  end
+  
+  module Server : sig
+    (** Produce a server implementation from handlers *)
+    val make : 
+      make:((file_path, unary, empty, unary) Server.rpc -> 'handler) ->
+      unit -> 'handler Pbrt_services.Server.t
+  end
+end

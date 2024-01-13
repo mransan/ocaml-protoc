@@ -1,0 +1,12 @@
+// test that calling an RPC 'make' doesn't break the generated code
+
+syntax = "proto3";
+
+message FilePath { string path = 1; }
+
+message Empty {}
+
+service BuildServer {
+  // Run 'make' in the given directory.
+  rpc make(FilePath) returns (Empty);
+}
