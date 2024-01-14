@@ -4,16 +4,6 @@
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ %{deps})))
 
-(rule
- (alias runtest)
- (action
-  (diff example01.ml.expected example01.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff example01.mli.expected example01.mli)))
-
 (test
  (name example01)
  (modules t_example01 example01)
@@ -25,16 +15,6 @@
  (deps example03.proto)
  (action
   (run ocaml-protoc --pp --ml_out ./ %{deps})))
-
-(rule
- (alias runtest)
- (action
-  (diff example03.ml.expected example03.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff example03.mli.expected example03.mli)))
 
 (test
  (name example03)
@@ -48,16 +28,6 @@
  (action
   (run ocaml-protoc --pp --ml_out ./ %{deps})))
 
-(rule
- (alias runtest)
- (action
-  (diff example04.ml.expected example04.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff example04.mli.expected example04.mli)))
-
 (test
  (name example04)
  (modules t_example04 example04)
@@ -69,16 +39,6 @@
  (deps example05.proto)
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ %{deps})))
-
-(rule
- (alias runtest)
- (action
-  (diff example05.ml.expected example05.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff example05.mli.expected example05.mli)))
 
 (test
  (name example05)
@@ -92,16 +52,6 @@
  (action
   (run ocaml-protoc --binary --pp --yojson --services --ml_out ./ %{deps})))
 
-(rule
- (alias runtest)
- (action
-  (diff calculator.ml.expected calculator.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff calculator.mli.expected calculator.mli)))
-
 (test
  (name calculator)
  (modules t_calculator calculator)
@@ -113,16 +63,6 @@
  (deps file_server.proto)
  (action
   (run ocaml-protoc --binary --pp --yojson --services --ml_out ./ %{deps})))
-
-(rule
- (alias runtest)
- (action
-  (diff file_server.ml.expected file_server.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff file_server.mli.expected file_server.mli)))
 
 (test
  (name file_server)
@@ -136,18 +76,31 @@
  (action
   (run ocaml-protoc --pp --binary --ml_out ./ %{deps})))
 
-(rule
- (alias runtest)
- (action
-  (diff orgchart.ml.expected orgchart.ml)))
-
-(rule
- (alias runtest)
- (action
-  (diff orgchart.mli.expected orgchart.mli)))
-
 (test
  (name orgchart_ml)
  (modules orgchart orgchart_ml)
  (package ocaml-protoc)
  (libraries pbrt))
+
+(include dune.inc)
+
+(rule
+ (alias runtest)
+ (action
+  (diff dune.inc dune.inc.gen)))
+
+(rule
+ (deps
+  (:gen-dune ./gen-dune/main.exe))
+ (action
+  (with-stdout-to
+   dune.inc.gen
+   (run
+    %{gen-dune}
+    calculator
+    example01
+    example03
+    example04
+    example05
+    file_server
+    orgchart))))
