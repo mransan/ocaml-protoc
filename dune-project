@@ -47,3 +47,39 @@
     (pbrt_yojson (= :version)))
   (tags (protobuf encode decode services rpc)))
 
+(package
+  (name ocaml-protoc-tests)
+  (synopsis "Tests for ocaml-protoc and pbrt* packages")
+  (depends
+    (ocaml (>= 4.08))
+    (odoc :with-doc)
+    (base
+     (and
+      (>= v0.16)
+      (< v0.17)))
+    (base_quickcheck
+     (and
+      (>= v0.16)
+      (< v0.17)))
+    (ocaml-protoc (= :version))
+    (pbrt (= :version))
+    (pbrt_yojson (= :version))
+    (pbrt_services (= :version))
+    (ppx_compare
+     (and
+      (>= v0.16)
+      (< v0.17)))
+    (ppx_expect
+     (and
+      (>= v0.16)
+      (< v0.17)))
+    (ppx_sexp_conv
+     (and
+      (>= v0.16)
+      (< v0.17)))
+    (ppx_sexp_value
+     (and
+      (>= v0.16)
+      (< v0.17)))
+    (yojson (>= 1.6))))
+

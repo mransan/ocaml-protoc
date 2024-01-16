@@ -1,0 +1,19 @@
+(library
+ (name roundtrip_tests)
+ (public_name ocaml-protoc-tests.roundtrip-tests)
+ (inline_tests)
+ (flags :standard -w -66)
+ (libraries base base_quickcheck pbrt pbrt_yojson yojson)
+ (preprocess
+  (pps
+   ppx_expect
+   ppx_sexp_conv
+   ppx_sexp_value
+   ppx_compare
+   base_quickcheck.ppx_quickcheck)))
+
+(rule
+ (targets messages.ml messages.mli)
+ (deps messages.proto)
+ (action
+  (run ocaml-protoc --binary --yojson --pp --ml_out ./ %{deps})))
