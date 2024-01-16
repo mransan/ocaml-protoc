@@ -533,7 +533,6 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                     module_prefix;
                     spec = Variant variant;
                     type_level_ppx_extension;
-                    (* FIXME: is this correct behavior? *)
                     type_options = Pb_option.empty;
                   }
               in
@@ -637,11 +636,12 @@ let compile_enum file_options file_name scope enum =
 
   let cv_constructors =
     List.map
-      (fun { Tt.enum_value_name; Tt.enum_value_int } ->
+      (fun { Tt.enum_value_name; Tt.enum_value_int; Tt.enum_value_options } ->
         {
           Ot.cvc_name = constructor_name enum_value_name;
           Ot.cvc_binary_value = enum_value_int;
           Ot.cvc_string_value = enum_value_name;
+          Ot.cvc_options = enum_value_options;
         })
       enum_values
   in

@@ -133,6 +133,7 @@ and const_variant_constructor = {
   cvc_name: string;
   cvc_binary_value: int;
   cvc_string_value: string;
+  cvc_options: Pb_option.set;
 }
 
 and const_variant = {

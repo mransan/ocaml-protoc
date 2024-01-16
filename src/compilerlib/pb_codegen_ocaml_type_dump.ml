@@ -199,7 +199,8 @@ module PP = struct
   and print_const_variant_constructor sc cvc =
     F.linep sc "  Constructor: %s" cvc.cvc_name;
     F.linep sc "    Binary Value: %d, String Value: %s" cvc.cvc_binary_value
-      cvc.cvc_string_value
+      cvc.cvc_string_value;
+    F.linep sc "    Options: %s" (string_of_options cvc.cvc_options)
 
   (* Recursive function to print the type_spec *)
   let print_type_spec sc type_spec =

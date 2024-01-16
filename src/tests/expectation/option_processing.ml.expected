@@ -62,12 +62,16 @@ and default_person
   Const Variant: payment_system
     Constructor: Cash
       Binary Value: 0, String Value: CASH
+      Options: {"label": Constant_string "Cash"}
     Constructor: Credit_card
       Binary Value: 1, String Value: CREDIT_CARD
+      Options: {"label": Constant_string "Credit Card"}
     Constructor: Debit_card
       Binary Value: 2, String Value: DEBIT_CARD
+      Options: {"label": Constant_string "Debit Card"}
     Constructor: App
       Binary Value: 3, String Value: APP
+      Options: {"label": Constant_string "Mobile App"}
   Options: {"label": Constant_string "Payment method"}
 *)
 

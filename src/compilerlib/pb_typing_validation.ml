@@ -118,8 +118,9 @@ let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
   let enum_values =
     Pb_util.List.filter_map
       (function
-        | Pt.Enum_value { Pt.enum_value_name; enum_value_int } ->
-          Some Tt.{ enum_value_name; enum_value_int }
+        | Pt.Enum_value
+            { Pt.enum_value_name; enum_value_int; enum_value_options } ->
+          Some Tt.{ enum_value_name; enum_value_int; enum_value_options }
         | _ -> None)
       enum_body
   in

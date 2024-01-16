@@ -398,7 +398,7 @@ enum_body_content :
 
 enum_value :
   | T_ident T_equal T_int semicolon  { Pb_parsing_util.enum_value ~int_value:$3 (snd $1) }
-  | T_ident T_equal T_int field_options semicolon  { Pb_parsing_util.enum_value ~int_value:$3 (snd $1) }
+  | T_ident T_equal T_int field_options semicolon  { Pb_parsing_util.enum_value ~int_value:$3 ~options:$4 (snd $1) }
   | T_ident T_equal T_int {
     Pb_exception.missing_semicolon_for_enum_value (snd $1) (fst $1)
   }
