@@ -110,6 +110,8 @@ module Cmdline = struct
     yojson: bool ref;  (** whether yojson encoding is enabled *)
     bs: bool ref;  (** whether BuckleScript encoding is enabled *)
     pp: bool ref;  (** whether pretty printing is enabled *)
+    dump_type_repr: bool ref;
+        (** whether comments with debug ocaml type representation are added *)
     services: bool ref;  (** whether services code generation is enabled *)
     make: bool ref;  (** whether to generate "make" functions *)
     mutable cmd_line_file_options: File_options.t;
@@ -129,6 +131,7 @@ module Cmdline = struct
       yojson = ref false;
       bs = ref false;
       pp = ref false;
+      dump_type_repr = ref false;
       services = ref false;
       make = ref false;
       cmd_line_file_options = File_options.make ();
@@ -141,6 +144,10 @@ module Cmdline = struct
       "--bs", Arg.Set t.bs, " generate BuckleScript encoding";
       "--binary", Arg.Set t.binary, " generate binary encoding";
       "--pp", Arg.Set t.pp, " generate pretty print functions";
+      ( "--dump_type_repr",
+        Arg.Set t.dump_type_repr,
+        " generate comments with internal representation on generated OCaml \
+         types (useful for debugging ocaml-protoc itself)" );
       ( "--services",
         Arg.Set t.services,
         " generate code for services (requires json+binary)" );
@@ -162,7 +169,9 @@ module Cmdline = struct
   let anon_fun t proto_file_name = t.proto_file_name <- proto_file_name
 
   let validate t =
-    if (not !(t.yojson)) && (not !(t.binary)) && (not !(t.pp)) && not !(t.bs)
+    if
+      (not !(t.yojson)) && (not !(t.binary)) && (not !(t.pp)) && (not !(t.bs))
+      && not !(t.dump_type_repr)
     then (
       t.binary := true;
       t.pp := true

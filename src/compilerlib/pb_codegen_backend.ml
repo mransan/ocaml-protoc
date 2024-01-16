@@ -382,7 +382,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
   (* TODO maybe module_ should be resolved before `compile_message` since
      it is common with compile_enum
   *)
-  let { Tt.message_name; Tt.message_body; _ } = message in
+  let { Tt.message_name; Tt.message_body; Tt.message_options; _ } = message in
 
   let { Tt.message_names; _ } = scope in
 
@@ -403,7 +403,12 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
 
     let type_ =
       Ot.
-        { module_prefix; spec = Ot.Unit empty_record; type_level_ppx_extension }
+        {
+          module_prefix;
+          spec = Ot.Unit empty_record;
+          type_level_ppx_extension;
+          type_options = message_options;
+        }
     in
     [ type_ ]
   | Tt.Message_oneof_field f :: [] ->
@@ -412,7 +417,15 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
       variant_of_oneof ~unsigned_tag ~outer_message_names ~all_types
         file_options file_name f
     in
-    [ Ot.{ module_prefix; spec = Variant variant; type_level_ppx_extension } ]
+    [
+      Ot.
+        {
+          module_prefix;
+          spec = Variant variant;
+          type_level_ppx_extension;
+          type_options = message_options;
+        };
+    ]
   | _ ->
     let variants, fields =
       List.fold_left
@@ -485,6 +498,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_label = label_name_of_field_name field_name;
                   rf_field_type = record_field_type;
                   rf_mutable = mutable_;
+                  rf_options = field.field_options;
                 }
             in
 
@@ -508,6 +522,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                    * parser all the way down to here.
                    *)
                   rf_field_type = Rft_variant variant;
+                  rf_options = field.oneof_options;
                 }
             in
 
@@ -518,6 +533,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                     module_prefix;
                     spec = Variant variant;
                     type_level_ppx_extension;
+                    (* FIXME: is this correct behavior? *)
+                    type_options = Pb_option.empty;
                   }
               in
               t :: variants
@@ -583,6 +600,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_label = label_name_of_field_name map_name;
                   rf_field_type = record_field_type;
                   rf_mutable = is_mutable ~field_name:map_name map_options;
+                  rf_options = map_options;
                 }
             in
 
@@ -601,13 +619,19 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
     in
 
     let type_ =
-      Ot.{ module_prefix; spec = Record record; type_level_ppx_extension }
+      Ot.
+        {
+          module_prefix;
+          spec = Record record;
+          type_level_ppx_extension;
+          type_options = message_options;
+        }
     in
 
     List.rev (type_ :: variants)
 
 let compile_enum file_options file_name scope enum =
-  let { Tt.enum_name; enum_values; _ } = enum in
+  let { Tt.enum_name; enum_values; enum_options; _ } = enum in
   let module_prefix = module_prefix_of_file_name file_name in
   let { Tt.message_names; Tt.packages = _ } = scope in
 
@@ -635,6 +659,7 @@ let compile_enum file_options file_name scope enum =
         Const_variant
           { cv_name = type_name message_names enum_name; cv_constructors };
       type_level_ppx_extension;
+      type_options = enum_options;
     }
 
 let compile_rpc ~(file_name : string) ~all_types

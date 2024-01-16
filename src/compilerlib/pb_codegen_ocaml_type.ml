@@ -121,6 +121,7 @@ and record_field = {
   rf_label: string;
   rf_field_type: record_field_type;
   rf_mutable: bool;
+  rf_options: Pb_option.set;
 }
 
 and record = {
@@ -154,6 +155,7 @@ type type_ = {
         generated module and it is based on the `.proto` filename. *)
   spec: type_spec;
   type_level_ppx_extension: string option;
+  type_options: Pb_option.set;
 }
 
 (** RPC argument or return type. We require message types in RPC. *)

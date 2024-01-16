@@ -23,7 +23,7 @@ type option_name = string
 
 type t = option_name * value
 
-type set
+type set = t list
 (** Collection of options
 
     Can be used for field/message or file options *)
