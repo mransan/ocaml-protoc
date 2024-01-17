@@ -1,0 +1,414 @@
+[@@@ocaml.warning "-27-30-39"]
+
+type patch_copy = {
+  start : int64;
+  end_ : int64;
+}
+
+type patch_insert = {
+  raw_bytes : bytes;
+}
+
+type patch_op =
+  | Copy_op of patch_copy
+  | Insert_op of patch_insert
+
+and patch = {
+  op : patch_op;
+  id : int64;
+}
+
+type instructions = {
+  operations : patch list;
+}
+
+let rec default_patch_copy 
+  ?start:((start:int64) = 0L)
+  ?end_:((end_:int64) = 0L)
+  () : patch_copy  = {
+  start;
+  end_;
+}
+
+let rec default_patch_insert 
+  ?raw_bytes:((raw_bytes:bytes) = Bytes.create 0)
+  () : patch_insert  = {
+  raw_bytes;
+}
+
+let rec default_patch_op () : patch_op = Copy_op (default_patch_copy ())
+
+and default_patch 
+  ?op:((op:patch_op) = Copy_op (default_patch_copy ()))
+  ?id:((id:int64) = 0L)
+  () : patch  = {
+  op;
+  id;
+}
+
+let rec default_instructions 
+  ?operations:((operations:patch list) = [])
+  () : instructions  = {
+  operations;
+}
+
+type patch_copy_mutable = {
+  mutable start : int64;
+  mutable end_ : int64;
+}
+
+let default_patch_copy_mutable () : patch_copy_mutable = {
+  start = 0L;
+  end_ = 0L;
+}
+
+type patch_insert_mutable = {
+  mutable raw_bytes : bytes;
+}
+
+let default_patch_insert_mutable () : patch_insert_mutable = {
+  raw_bytes = Bytes.create 0;
+}
+
+type patch_mutable = {
+  mutable op : patch_op;
+  mutable id : int64;
+}
+
+let default_patch_mutable () : patch_mutable = {
+  op = Copy_op (default_patch_copy ());
+  id = 0L;
+}
+
+type instructions_mutable = {
+  mutable operations : patch list;
+}
+
+let default_instructions_mutable () : instructions_mutable = {
+  operations = [];
+}
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_patch_copy fmt (v:patch_copy) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "start" Pbrt.Pp.pp_int64 fmt v.start;
+    Pbrt.Pp.pp_record_field ~first:false "end_" Pbrt.Pp.pp_int64 fmt v.end_;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_patch_insert fmt (v:patch_insert) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "raw_bytes" Pbrt.Pp.pp_bytes fmt v.raw_bytes;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_patch_op fmt (v:patch_op) =
+  match v with
+  | Copy_op x -> Format.fprintf fmt "@[<hv2>Copy_op(@,%a)@]" pp_patch_copy x
+  | Insert_op x -> Format.fprintf fmt "@[<hv2>Insert_op(@,%a)@]" pp_patch_insert x
+
+and pp_patch fmt (v:patch) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "op" pp_patch_op fmt v.op;
+    Pbrt.Pp.pp_record_field ~first:false "id" Pbrt.Pp.pp_int64 fmt v.id;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_instructions fmt (v:instructions) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "operations" (Pbrt.Pp.pp_list pp_patch) fmt v.operations;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Encoding} *)
+
+let rec encode_pb_patch_copy (v:patch_copy) encoder = 
+  Pbrt.Encoder.int64_as_varint v.start encoder;
+  Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
+  Pbrt.Encoder.int64_as_varint v.end_ encoder;
+  Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
+  ()
+
+let rec encode_pb_patch_insert (v:patch_insert) encoder = 
+  Pbrt.Encoder.bytes v.raw_bytes encoder;
+  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  ()
+
+let rec encode_pb_patch_op (v:patch_op) encoder = 
+  begin match v with
+  | Copy_op x ->
+    Pbrt.Encoder.nested encode_pb_patch_copy x encoder;
+    Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
+  | Insert_op x ->
+    Pbrt.Encoder.nested encode_pb_patch_insert x encoder;
+    Pbrt.Encoder.key 4 Pbrt.Bytes encoder; 
+  end
+
+and encode_pb_patch (v:patch) encoder = 
+  begin match v.op with
+  | Copy_op x ->
+    Pbrt.Encoder.nested encode_pb_patch_copy x encoder;
+    Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
+  | Insert_op x ->
+    Pbrt.Encoder.nested encode_pb_patch_insert x encoder;
+    Pbrt.Encoder.key 4 Pbrt.Bytes encoder; 
+  end;
+  Pbrt.Encoder.int64_as_varint v.id encoder;
+  Pbrt.Encoder.key 5 Pbrt.Varint encoder; 
+  ()
+
+let rec encode_pb_instructions (v:instructions) encoder = 
+  Pbrt.List_util.rev_iter_with (fun x encoder -> 
+    Pbrt.Encoder.nested encode_pb_patch x encoder;
+    Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  ) v.operations encoder;
+  ()
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf Decoding} *)
+
+let rec decode_pb_patch_copy d =
+  let v = default_patch_copy_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Varint) -> begin
+      v.start <- Pbrt.Decoder.int64_as_varint d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(patch_copy), field(1)" pk
+    | Some (2, Pbrt.Varint) -> begin
+      v.end_ <- Pbrt.Decoder.int64_as_varint d;
+    end
+    | Some (2, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(patch_copy), field(2)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    start = v.start;
+    end_ = v.end_;
+  } : patch_copy)
+
+let rec decode_pb_patch_insert d =
+  let v = default_patch_insert_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.raw_bytes <- Pbrt.Decoder.bytes d;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(patch_insert), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    raw_bytes = v.raw_bytes;
+  } : patch_insert)
+
+let rec decode_pb_patch_op d = 
+  let rec loop () = 
+    let ret:patch_op = match Pbrt.Decoder.key d with
+      | None -> Pbrt.Decoder.malformed_variant "patch_op"
+      | Some (3, _) -> (Copy_op (decode_pb_patch_copy (Pbrt.Decoder.nested d)) : patch_op) 
+      | Some (4, _) -> (Insert_op (decode_pb_patch_insert (Pbrt.Decoder.nested d)) : patch_op) 
+      | Some (n, payload_kind) -> (
+        Pbrt.Decoder.skip d payload_kind; 
+        loop () 
+      )
+    in
+    ret
+  in
+  loop ()
+
+and decode_pb_patch d =
+  let v = default_patch_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (3, Pbrt.Bytes) -> begin
+      v.op <- Copy_op (decode_pb_patch_copy (Pbrt.Decoder.nested d));
+    end
+    | Some (3, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(patch), field(3)" pk
+    | Some (4, Pbrt.Bytes) -> begin
+      v.op <- Insert_op (decode_pb_patch_insert (Pbrt.Decoder.nested d));
+    end
+    | Some (4, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(patch), field(4)" pk
+    | Some (5, Pbrt.Varint) -> begin
+      v.id <- Pbrt.Decoder.int64_as_varint d;
+    end
+    | Some (5, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(patch), field(5)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    op = v.op;
+    id = v.id;
+  } : patch)
+
+let rec decode_pb_instructions d =
+  let v = default_instructions_mutable () in
+  let continue__= ref true in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+      v.operations <- List.rev v.operations;
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.operations <- (decode_pb_patch (Pbrt.Decoder.nested d)) :: v.operations;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(instructions), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  ({
+    operations = v.operations;
+  } : instructions)
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Protobuf YoJson Encoding} *)
+
+let rec encode_json_patch_copy (v:patch_copy) = 
+  let assoc = [] in 
+  let assoc = ("start", Pbrt_yojson.make_string (Int64.to_string v.start)) :: assoc in
+  let assoc = ("end", Pbrt_yojson.make_string (Int64.to_string v.end_)) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_patch_insert (v:patch_insert) = 
+  let assoc = [] in 
+  let assoc = ("rawBytes", Pbrt_yojson.make_bytes v.raw_bytes) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_patch_op (v:patch_op) = 
+  begin match v with
+  | Copy_op v -> `Assoc [("copyOp", encode_json_patch_copy v)]
+  | Insert_op v -> `Assoc [("insertOp", encode_json_patch_insert v)]
+  end
+
+and encode_json_patch (v:patch) = 
+  let assoc = [] in 
+  let assoc = match v.op with
+    | Copy_op v ->
+      ("copyOp", encode_json_patch_copy v) :: assoc 
+    | Insert_op v ->
+      ("insertOp", encode_json_patch_insert v) :: assoc 
+  in (* match v.op *)
+  let assoc = ("id", Pbrt_yojson.make_string (Int64.to_string v.id)) :: assoc in
+  `Assoc assoc
+
+let rec encode_json_instructions (v:instructions) = 
+  let assoc = [] in 
+  let assoc =
+    let l = v.operations |> List.map encode_json_patch in
+    ("operations", `List l) :: assoc 
+  in
+  `Assoc assoc
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 JSON Decoding} *)
+
+let rec decode_json_patch_copy d =
+  let v = default_patch_copy_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("start", json_value) -> 
+      v.start <- Pbrt_yojson.int64 json_value "patch_copy" "start"
+    | ("end", json_value) -> 
+      v.end_ <- Pbrt_yojson.int64 json_value "patch_copy" "end_"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    start = v.start;
+    end_ = v.end_;
+  } : patch_copy)
+
+let rec decode_json_patch_insert d =
+  let v = default_patch_insert_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("rawBytes", json_value) -> 
+      v.raw_bytes <- Pbrt_yojson.bytes json_value "patch_insert" "raw_bytes"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    raw_bytes = v.raw_bytes;
+  } : patch_insert)
+
+let rec decode_json_patch_op json =
+  let assoc = match json with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_yojson.E.malformed_variant "patch_op"
+    | ("copyOp", json_value)::_ -> 
+      (Copy_op ((decode_json_patch_copy json_value)) : patch_op)
+    | ("insertOp", json_value)::_ -> 
+      (Insert_op ((decode_json_patch_insert json_value)) : patch_op)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_json_patch d =
+  let v = default_patch_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("copyOp", json_value) -> 
+      v.op <- Copy_op ((decode_json_patch_copy json_value))
+    | ("insertOp", json_value) -> 
+      v.op <- Insert_op ((decode_json_patch_insert json_value))
+    | ("id", json_value) -> 
+      v.id <- Pbrt_yojson.int64 json_value "patch" "id"
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    op = v.op;
+    id = v.id;
+  } : patch)
+
+let rec decode_json_instructions d =
+  let v = default_instructions_mutable () in
+  let assoc = match d with
+    | `Assoc assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("operations", `List l) -> begin
+      v.operations <- List.map (function
+        | json_value -> (decode_json_patch json_value)
+      ) l;
+    end
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    operations = v.operations;
+  } : instructions)
