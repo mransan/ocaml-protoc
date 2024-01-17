@@ -363,7 +363,7 @@ module Calculator = struct
   module Server = struct
     open Pbrt_services
     
-    let _rpc_add : (add_req,unary,i32,unary) Server.rpc = 
+    let add : (add_req,unary,i32,unary) Server.rpc = 
       (Server.mk_rpc ~name:"add"
         ~req_mode:Server.Unary
         ~res_mode:Server.Unary
@@ -373,7 +373,7 @@ module Calculator = struct
         ~decode_pb_req:decode_pb_add_req
         () : _ Server.rpc)
     
-    let _rpc_add_all : (add_all_req,unary,i32,unary) Server.rpc = 
+    let add_all : (add_all_req,unary,i32,unary) Server.rpc = 
       (Server.mk_rpc ~name:"add_all"
         ~req_mode:Server.Unary
         ~res_mode:Server.Unary
@@ -383,7 +383,7 @@ module Calculator = struct
         ~decode_pb_req:decode_pb_add_all_req
         () : _ Server.rpc)
     
-    let _rpc_ping : (empty,unary,empty,unary) Server.rpc = 
+    let ping : (empty,unary,empty,unary) Server.rpc = 
       (Server.mk_rpc ~name:"ping"
         ~req_mode:Server.Unary
         ~res_mode:Server.Unary
@@ -393,7 +393,7 @@ module Calculator = struct
         ~decode_pb_req:decode_pb_empty
         () : _ Server.rpc)
     
-    let _rpc_get_pings : (empty,unary,i32,unary) Server.rpc = 
+    let get_pings : (empty,unary,i32,unary) Server.rpc = 
       (Server.mk_rpc ~name:"get_pings"
         ~req_mode:Server.Unary
         ~res_mode:Server.Unary
@@ -404,19 +404,19 @@ module Calculator = struct
         () : _ Server.rpc)
     
     let make
-      ~add
-      ~add_all
-      ~ping
-      ~get_pings
+      ~add:__handler__add
+      ~add_all:__handler__add_all
+      ~ping:__handler__ping
+      ~get_pings:__handler__get_pings
       () : _ Server.t =
       { Server.
         service_name="Calculator";
         package=[];
         handlers=[
-           (add _rpc_add);
-           (add_all _rpc_add_all);
-           (ping _rpc_ping);
-           (get_pings _rpc_get_pings);
+           (__handler__add add);
+           (__handler__add_all add_all);
+           (__handler__ping ping);
+           (__handler__get_pings get_pings);
         ];
       }
   end

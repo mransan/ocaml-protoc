@@ -90,7 +90,14 @@ let module_type_name_of_service_client (service : Ot.service) : string =
 let module_type_name_of_service_server (service : Ot.service) : string =
   String.uppercase_ascii service.service_name ^ "_SERVER"
 
-let function_name_of_rpc (rpc : Ot.rpc) = String.uncapitalize_ascii rpc.rpc_name
+let function_name_of_rpc_reserved_keywords_list = [ "make" ]
+
+let function_name_of_rpc (rpc : Ot.rpc) =
+  let candidate = String.uncapitalize_ascii rpc.rpc_name in
+  if List.mem candidate function_name_of_rpc_reserved_keywords_list then
+    candidate ^ "_"
+  else
+    candidate
 
 let caml_file_name_of_proto_file_name ~proto_file_name =
   let splitted = Pb_util.rev_split_by_char '.' proto_file_name in

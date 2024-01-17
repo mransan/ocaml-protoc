@@ -191,5 +191,15 @@ module FileServer : sig
       download_file:((file_path, unary, file_chunk, stream) Server.rpc -> 'handler) ->
       ping_pong:((ping, stream, pong, stream) Server.rpc -> 'handler) ->
       unit -> 'handler Pbrt_services.Server.t
+    
+    (** The individual server stubs are only exposed for advanced users. Casual users should prefer accessing them through {!make}. *)
+    
+    val touch_file : (file_path,unary,empty,unary) Server.rpc
+    
+    val upload_file : (file_chunk,stream,file_crc,unary) Server.rpc
+    
+    val download_file : (file_path,unary,file_chunk,stream) Server.rpc
+    
+    val ping_pong : (ping,stream,pong,stream) Server.rpc
   end
 end
