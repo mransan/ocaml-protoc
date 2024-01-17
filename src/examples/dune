@@ -94,6 +94,18 @@
  (package ocaml-protoc)
  (libraries pbrt pbrt_yojson pbrt_services))
 
+(rule
+ (targets oneof.ml oneof.mli)
+ (deps oneof.proto)
+ (action
+  (run ocaml-protoc --binary --pp --yojson --services --ml_out ./ %{deps})))
+
+(test
+ (name oneof)
+ (modules oneof) ; just check that it compiles
+ (package ocaml-protoc)
+ (libraries pbrt pbrt_yojson pbrt_services))
+
 (include dune.inc)
 
 (rule
@@ -116,4 +128,5 @@
     example04
     example05
     file_server
-    orgchart))))
+    orgchart
+    oneof))))

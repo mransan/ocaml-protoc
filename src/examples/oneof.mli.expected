@@ -1,0 +1,155 @@
+
+(** Code for oneof.proto *)
+
+(* generated from "oneof.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type patch_copy = {
+  start : int64;
+  end_ : int64;
+}
+
+type patch_insert = {
+  raw_bytes : bytes;
+}
+
+type patch_op =
+  | Copy_op of patch_copy
+  | Insert_op of patch_insert
+
+and patch = {
+  op : patch_op;
+  id : int64;
+}
+
+type instructions = {
+  operations : patch list;
+}
+
+
+(** {2 Basic values} *)
+
+val default_patch_copy : 
+  ?start:int64 ->
+  ?end_:int64 ->
+  unit ->
+  patch_copy
+(** [default_patch_copy ()] is the default value for type [patch_copy] *)
+
+val default_patch_insert : 
+  ?raw_bytes:bytes ->
+  unit ->
+  patch_insert
+(** [default_patch_insert ()] is the default value for type [patch_insert] *)
+
+val default_patch_op : unit -> patch_op
+(** [default_patch_op ()] is the default value for type [patch_op] *)
+
+val default_patch : 
+  ?op:patch_op ->
+  ?id:int64 ->
+  unit ->
+  patch
+(** [default_patch ()] is the default value for type [patch] *)
+
+val default_instructions : 
+  ?operations:patch list ->
+  unit ->
+  instructions
+(** [default_instructions ()] is the default value for type [instructions] *)
+
+
+(** {2 Formatters} *)
+
+val pp_patch_copy : Format.formatter -> patch_copy -> unit 
+(** [pp_patch_copy v] formats v *)
+
+val pp_patch_insert : Format.formatter -> patch_insert -> unit 
+(** [pp_patch_insert v] formats v *)
+
+val pp_patch_op : Format.formatter -> patch_op -> unit 
+(** [pp_patch_op v] formats v *)
+
+val pp_patch : Format.formatter -> patch -> unit 
+(** [pp_patch v] formats v *)
+
+val pp_instructions : Format.formatter -> instructions -> unit 
+(** [pp_instructions v] formats v *)
+
+
+(** {2 Protobuf Encoding} *)
+
+val encode_pb_patch_copy : patch_copy -> Pbrt.Encoder.t -> unit
+(** [encode_pb_patch_copy v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_patch_insert : patch_insert -> Pbrt.Encoder.t -> unit
+(** [encode_pb_patch_insert v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_patch_op : patch_op -> Pbrt.Encoder.t -> unit
+(** [encode_pb_patch_op v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_patch : patch -> Pbrt.Encoder.t -> unit
+(** [encode_pb_patch v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_instructions : instructions -> Pbrt.Encoder.t -> unit
+(** [encode_pb_instructions v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Protobuf Decoding} *)
+
+val decode_pb_patch_copy : Pbrt.Decoder.t -> patch_copy
+(** [decode_pb_patch_copy decoder] decodes a [patch_copy] binary value from [decoder] *)
+
+val decode_pb_patch_insert : Pbrt.Decoder.t -> patch_insert
+(** [decode_pb_patch_insert decoder] decodes a [patch_insert] binary value from [decoder] *)
+
+val decode_pb_patch_op : Pbrt.Decoder.t -> patch_op
+(** [decode_pb_patch_op decoder] decodes a [patch_op] binary value from [decoder] *)
+
+val decode_pb_patch : Pbrt.Decoder.t -> patch
+(** [decode_pb_patch decoder] decodes a [patch] binary value from [decoder] *)
+
+val decode_pb_instructions : Pbrt.Decoder.t -> instructions
+(** [decode_pb_instructions decoder] decodes a [instructions] binary value from [decoder] *)
+
+
+(** {2 Protobuf YoJson Encoding} *)
+
+val encode_json_patch_copy : patch_copy -> Yojson.Basic.t
+(** [encode_json_patch_copy v encoder] encodes [v] to to json *)
+
+val encode_json_patch_insert : patch_insert -> Yojson.Basic.t
+(** [encode_json_patch_insert v encoder] encodes [v] to to json *)
+
+val encode_json_patch_op : patch_op -> Yojson.Basic.t
+(** [encode_json_patch_op v encoder] encodes [v] to to json *)
+
+val encode_json_patch : patch -> Yojson.Basic.t
+(** [encode_json_patch v encoder] encodes [v] to to json *)
+
+val encode_json_instructions : instructions -> Yojson.Basic.t
+(** [encode_json_instructions v encoder] encodes [v] to to json *)
+
+
+(** {2 JSON Decoding} *)
+
+val decode_json_patch_copy : Yojson.Basic.t -> patch_copy
+(** [decode_json_patch_copy decoder] decodes a [patch_copy] value from [decoder] *)
+
+val decode_json_patch_insert : Yojson.Basic.t -> patch_insert
+(** [decode_json_patch_insert decoder] decodes a [patch_insert] value from [decoder] *)
+
+val decode_json_patch_op : Yojson.Basic.t -> patch_op
+(** [decode_json_patch_op decoder] decodes a [patch_op] value from [decoder] *)
+
+val decode_json_patch : Yojson.Basic.t -> patch
+(** [decode_json_patch decoder] decodes a [patch] value from [decoder] *)
+
+val decode_json_instructions : Yojson.Basic.t -> instructions
+(** [decode_json_instructions decoder] decodes a [instructions] value from [decoder] *)
+
+
+(** {2 Services} *)

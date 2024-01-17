@@ -73,6 +73,16 @@
 (rule
  (alias runtest)
  (action
+  (diff oneof.ml.expected oneof.ml)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff oneof.mli.expected oneof.mli)))
+
+(rule
+ (alias runtest)
+ (action
   (diff orgchart.ml.expected orgchart.ml)))
 
 (rule
