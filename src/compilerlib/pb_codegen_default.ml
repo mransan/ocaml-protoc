@@ -69,14 +69,7 @@ let record_field_default_info record_field =
       | Ot.At_hashtable -> "Hashtbl.create 128")
       (* TODO This initial value could be configurable either via
        * the default function or via a protobuf option. *)
-    | Ot.Rft_variant { Ot.v_constructors; _ } ->
-      (match v_constructors with
-      | [] -> assert false
-      | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
-        (match vc_field_type with
-        | Ot.Vct_nullary -> vc_constructor
-        | Ot.Vct_non_nullary_constructor field_type ->
-          sp "%s (%s)" vc_constructor (dfvft field_type None)))
+    | Ot.Rft_variant _ -> "None"
   in
   field_name, default_value, type_string
 

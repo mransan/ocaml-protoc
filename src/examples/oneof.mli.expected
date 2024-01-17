@@ -21,7 +21,7 @@ type patch_op =
   | Insert_op of patch_insert
 
 and patch = {
-  op : patch_op;
+  op : patch_op option;
   id : int64;
 }
 
@@ -49,7 +49,7 @@ val default_patch_op : unit -> patch_op
 (** [default_patch_op ()] is the default value for type [patch_op] *)
 
 val default_patch : 
-  ?op:patch_op ->
+  ?op:patch_op option ->
   ?id:int64 ->
   unit ->
   patch

@@ -14,7 +14,7 @@ type patch_op =
   | Insert_op of patch_insert
 
 and patch = {
-  op : patch_op;
+  op : patch_op option;
   id : int64;
 }
 
@@ -39,7 +39,7 @@ let rec default_patch_insert
 let rec default_patch_op () : patch_op = Copy_op (default_patch_copy ())
 
 and default_patch 
-  ?op:((op:patch_op) = Copy_op (default_patch_copy ()))
+  ?op:((op:patch_op option) = None)
   ?id:((id:int64) = 0L)
   () : patch  = {
   op;
@@ -71,12 +71,12 @@ let default_patch_insert_mutable () : patch_insert_mutable = {
 }
 
 type patch_mutable = {
-  mutable op : patch_op;
+  mutable op : patch_op option;
   mutable id : int64;
 }
 
 let default_patch_mutable () : patch_mutable = {
-  op = Copy_op (default_patch_copy ());
+  op = None;
   id = 0L;
 }
 
@@ -112,7 +112,7 @@ let rec pp_patch_op fmt (v:patch_op) =
 
 and pp_patch fmt (v:patch) = 
   let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "op" pp_patch_op fmt v.op;
+    Pbrt.Pp.pp_record_field ~first:true "op" (Pbrt.Pp.pp_option pp_patch_op) fmt v.op;
     Pbrt.Pp.pp_record_field ~first:false "id" Pbrt.Pp.pp_int64 fmt v.id;
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
@@ -151,12 +151,13 @@ let rec encode_pb_patch_op (v:patch_op) encoder =
 
 and encode_pb_patch (v:patch) encoder = 
   begin match v.op with
-  | Copy_op x ->
+  | Some Copy_op x ->
     Pbrt.Encoder.nested encode_pb_patch_copy x encoder;
     Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
-  | Insert_op x ->
+  | Some Insert_op x ->
     Pbrt.Encoder.nested encode_pb_patch_insert x encoder;
     Pbrt.Encoder.key 4 Pbrt.Bytes encoder; 
+  | None -> ()
   end;
   Pbrt.Encoder.int64_as_varint v.id encoder;
   Pbrt.Encoder.key 5 Pbrt.Varint encoder; 
@@ -238,12 +239,12 @@ and decode_pb_patch d =
     | None -> (
     ); continue__ := false
     | Some (3, Pbrt.Bytes) -> begin
-      v.op <- Copy_op (decode_pb_patch_copy (Pbrt.Decoder.nested d));
+      v.op <- Some (Copy_op (decode_pb_patch_copy (Pbrt.Decoder.nested d)));
     end
     | Some (3, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(patch), field(3)" pk
     | Some (4, Pbrt.Bytes) -> begin
-      v.op <- Insert_op (decode_pb_patch_insert (Pbrt.Decoder.nested d));
+      v.op <- Some (Insert_op (decode_pb_patch_insert (Pbrt.Decoder.nested d)));
     end
     | Some (4, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(patch), field(4)" pk
@@ -302,10 +303,11 @@ let rec encode_json_patch_op (v:patch_op) =
 and encode_json_patch (v:patch) = 
   let assoc = [] in 
   let assoc = match v.op with
-    | Copy_op v ->
+    | Some (Copy_op v) ->
       ("copyOp", encode_json_patch_copy v) :: assoc 
-    | Insert_op v ->
+    | Some (Insert_op v) ->
       ("insertOp", encode_json_patch_insert v) :: assoc 
+    | None -> assoc
   in (* match v.op *)
   let assoc = ("id", Pbrt_yojson.make_string (Int64.to_string v.id)) :: assoc in
   `Assoc assoc
@@ -381,9 +383,9 @@ and decode_json_patch d =
   in
   List.iter (function 
     | ("copyOp", json_value) -> 
-      v.op <- Copy_op ((decode_json_patch_copy json_value))
+      v.op <- Some (Copy_op ((decode_json_patch_copy json_value)))
     | ("insertOp", json_value) -> 
-      v.op <- Insert_op ((decode_json_patch_insert json_value))
+      v.op <- Some (Insert_op ((decode_json_patch_insert json_value)))
     | ("id", json_value) -> 
       v.id <- Pbrt_yojson.int64 json_value "patch" "id"
     

@@ -94,12 +94,14 @@ let gen_rft_variant sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| \"%s\" -> v.%s <- %s" json_label rf_label vc_constructor
+        F.linep sc "| \"%s\" -> v.%s <- Some %s" json_label rf_label
+          vc_constructor
       | Ot.Vct_non_nullary_constructor field_type ->
         let value_expression = value_expression ~r_name ~rf_label field_type in
         F.linep sc "| \"%s\" -> " json_label;
         F.linep sc "  let json = Js.Dict.unsafeGet json \"%s\" in" json_label;
-        F.linep sc "  v.%s <- %s (%s)" rf_label vc_constructor value_expression)
+        F.linep sc "  v.%s <- Some (%s (%s))" rf_label vc_constructor
+          value_expression)
     v_constructors
 
 (* Generate decode function for a record *)

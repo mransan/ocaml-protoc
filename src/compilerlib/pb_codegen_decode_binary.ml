@@ -169,9 +169,9 @@ let gen_rft_variant sc r_name rf_label { Ot.v_constructors; _ } =
           match vc_field_type with
           | Ot.Vct_nullary ->
             F.line sc "Pbrt.Decoder.empty_nested d;";
-            F.linep sc "v.%s <- %s;" rf_label vc_constructor
+            F.linep sc "v.%s <- Some %s;" rf_label vc_constructor
           | Ot.Vct_non_nullary_constructor field_type ->
-            F.linep sc "v.%s <- %s (%s);" rf_label vc_constructor
+            F.linep sc "v.%s <- Some (%s (%s));" rf_label vc_constructor
               (decode_field_expression field_type pk)))
     v_constructors
 

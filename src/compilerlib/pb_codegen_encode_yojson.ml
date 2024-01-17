@@ -133,7 +133,7 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
           let json_label =
             Pb_codegen_util.camel_case_of_constructor vc_constructor
           in
-          F.linep sc "| %s v ->" vc_constructor;
+          F.linep sc "| Some (%s v) ->" vc_constructor;
           F.sub_scope sc (fun sc ->
               match vc_field_type with
               | Ot.Vct_nullary ->
@@ -144,7 +144,8 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
                  with
                 | None -> F.linep sc "(\"%s\", `Null) :: assoc" json_label
                 | Some exp -> F.linep sc "%s :: assoc " exp)))
-        v_constructors);
+        v_constructors;
+      F.line sc "| None -> assoc");
 
   F.linep sc "in (* match v.%s *)" rf_label
 
