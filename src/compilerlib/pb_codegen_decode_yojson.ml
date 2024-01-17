@@ -89,14 +89,14 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| (\"%s\", _) -> v.%s <- %s" json_label rf_label
+        F.linep sc "| (\"%s\", _) -> v.%s <- Some %s" json_label rf_label
           vc_constructor
       | Ot.Vct_non_nullary_constructor field_type ->
         let match_variable_name, exp =
           field_pattern_match ~r_name ~rf_label field_type
         in
         F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-        F.linep sc "  v.%s <- %s (%s)" rf_label vc_constructor exp)
+        F.linep sc "  v.%s <- Some (%s (%s))" rf_label vc_constructor exp)
     v_constructors
 
 let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =

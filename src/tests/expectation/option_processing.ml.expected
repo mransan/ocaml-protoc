@@ -21,7 +21,7 @@ and person = {
   name : string;
   home : person_location option;
   picture : bytes;
-  id : person_id;
+  id : person_id option;
 }
 
 let rec default_payment_system () = (Cash:payment_system)
@@ -42,7 +42,7 @@ and default_person
   ?name:((name:string) = "")
   ?home:((home:person_location option) = None)
   ?picture:((picture:bytes) = Bytes.create 0)
-  ?id:((id:person_id) = X (""))
+  ?id:((id:person_id option) = None)
   () : person  = {
   id;
   email;

@@ -162,14 +162,15 @@ let gen_rft_variant sc var_name rf_label { Ot.v_constructors; _ } =
           let json_label =
             Pb_codegen_util.camel_case_of_constructor vc_constructor
           in
-          F.linep sc "| %s v ->" vc_constructor;
+          F.linep sc "| Some (%s v) ->" vc_constructor;
           F.sub_scope sc (fun sc ->
               match vc_field_type with
               | Ot.Vct_nullary ->
                 F.linep sc "Js.Dict.set json \"%s\" Js.Json.null" json_label
               | Ot.Vct_non_nullary_constructor field_type ->
                 gen_field sc var_name json_label field_type vc_payload_kind))
-        v_constructors);
+        v_constructors;
+      F.line sc "| None -> ()");
   F.linep sc "end; (* match v.%s *)" rf_label
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =

@@ -68,8 +68,8 @@ let string_of_record_field_type ?module_prefix = function
       (string_of_associative_type Ot.At_hashtable)
   | Ot.Rft_variant { Ot.v_name; _ } ->
     (match module_prefix with
-    | None -> v_name
-    | Some module_prefix -> module_prefix ^ "." ^ v_name)
+    | None -> v_name ^ " option"
+    | Some module_prefix -> module_prefix ^ "." ^ v_name ^ " option")
 
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`.
