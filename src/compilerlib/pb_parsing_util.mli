@@ -60,7 +60,10 @@ val oneof : ?oneof_body:Pt.oneof_body_content list -> string -> Pt.oneof
 val message_body_field : Pt.message_field -> Pt.message_body_content
 val message_body_map_field : Pt.map_field -> Pt.message_body_content
 val message_body_oneof_field : Pt.oneof -> Pt.message_body_content
-val enum_value : int_value:int -> string -> Pt.enum_body_content
+
+val enum_value :
+  int_value:int -> ?options:Pb_option.set -> string -> Pt.enum_body_content
+
 val enum_option : Pb_option.t -> Pt.enum_body_content
 val enum : ?enum_body:Pt.enum_body_content list -> string -> Pt.enum
 val extension_range_single_number : int -> Pt.extension_range

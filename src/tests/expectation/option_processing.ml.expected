@@ -1,0 +1,128 @@
+[@@@ocaml.warning "-27-30-39"]
+
+type payment_system =
+  | Cash 
+  | Credit_card 
+  | Debit_card 
+  | App 
+
+type person_location = {
+  lat : float;
+  lng : float;
+}
+
+type person_id =
+  | X of string
+  | Y of int32
+
+and person = {
+  id : int64;
+  email : string;
+  name : string;
+  home : person_location option;
+  picture : bytes;
+  id : person_id;
+}
+
+let rec default_payment_system () = (Cash:payment_system)
+
+let rec default_person_location 
+  ?lat:((lat:float) = 0.)
+  ?lng:((lng:float) = 0.)
+  () : person_location  = {
+  lat;
+  lng;
+}
+
+let rec default_person_id () : person_id = X ("")
+
+and default_person 
+  ?id:((id:int64) = 0L)
+  ?email:((email:string) = "")
+  ?name:((name:string) = "")
+  ?home:((home:person_location option) = None)
+  ?picture:((picture:bytes) = Bytes.create 0)
+  ?id:((id:person_id) = X (""))
+  () : person  = {
+  id;
+  email;
+  name;
+  home;
+  picture;
+  id;
+}
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Dump of internal representation for generated OCaml types} *)
+
+(* ----------------------------------------------------- *)
+(*
+  Module Prefix: Option_processing
+  Const Variant: payment_system
+    Constructor: Cash
+      Binary Value: 0, String Value: CASH
+      Options: {"label": Constant_string "Cash"}
+    Constructor: Credit_card
+      Binary Value: 1, String Value: CREDIT_CARD
+      Options: {"label": Constant_string "Credit Card"}
+    Constructor: Debit_card
+      Binary Value: 2, String Value: DEBIT_CARD
+      Options: {"label": Constant_string "Debit Card"}
+    Constructor: App
+      Binary Value: 3, String Value: APP
+      Options: {"label": Constant_string "Mobile App"}
+  Options: {"label": Constant_string "Payment method"}
+*)
+
+(* ----------------------------------------------------- *)
+(*
+  Module Prefix: Option_processing
+  Record: person_location
+  - Field: lat
+    Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 1, Payload Kind: Pk_bits64)
+    Field options: {"validate.rules.double": {"gte": Constant_int -90, "lte": Constant_int 90}}
+  - Field: lng
+    Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 2, Payload Kind: Pk_bits64)
+    Field options: {"validate.rules.double": {"gte": Constant_int -180, "lte": Constant_int 180}}
+  Options: {"validate.disabled": Constant_bool true}
+*)
+
+(* ----------------------------------------------------- *)
+(*
+  Module Prefix: Option_processing
+  Variant: person_id
+    Constructor: X
+      Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_string
+
+      Encoding Number: 6, Payload Kind: Pk_bytes
+    Constructor: Y
+      Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_int32
+
+      Encoding Number: 7, Payload Kind: Pk_varint (zigzag: false)
+  Options: {}
+*)
+
+(*
+  Module Prefix: Option_processing
+  Record: person
+  - Field: id
+    Rft_nolabel (Field Type: Ft_basic_type: Bt_int64, Encoding: 1, Payload Kind: Pk_varint (zigzag: false))
+    Field options: {"validate.rules.uint64.gt": Constant_int 999}
+  - Field: email
+    Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 2, Payload Kind: Pk_bytes)
+    Field options: {"validate.rules.string.email": Constant_bool true}
+  - Field: name
+    Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 3, Payload Kind: Pk_bytes)
+    Field options: {"validate.rules.string": {"pattern": Constant_string "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$", "max_bytes": Constant_int 256}}
+  - Field: home
+    Rft_optional (Field Type: Ft_user_defined_type: person_location, Encoding: 4, Payload Kind: Pk_bytes, Default Value: None)
+    Field options: {"validate.rules.message.required": Constant_bool true}
+  - Field: picture
+    Rft_nolabel (Field Type: Ft_basic_type: Bt_bytes, Encoding: 5, Payload Kind: Pk_bytes)
+    Field options: {"validate.rules.bytes": {"not_in": [Constant_string "foo", Constant_string "bar", Constant_string "baz"]}}
+  - Field: id
+    Rft_variant: person_id
+    Field options: {"validate.required": Constant_bool true}
+  Options: {"validate.disabled": Constant_bool true}
+*)

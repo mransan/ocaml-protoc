@@ -49,7 +49,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
   F.sub_scope sc (fun sc ->
       List.iter
-        (fun { Ot.rf_label; rf_field_type; rf_mutable } ->
+        (fun { Ot.rf_label; rf_field_type; rf_mutable; rf_options = _ } ->
           let prefix = field_prefix rf_mutable in
           let type_ =
             Pb_codegen_util.string_of_record_field_type rf_field_type

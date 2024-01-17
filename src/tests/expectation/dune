@@ -3,3 +3,14 @@
  (libraries pbrt ocaml-protoc.compiler-lib)
  (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))
+
+(rule
+ (targets option_processing.ml option_processing.mli)
+ (deps option_processing.proto)
+ (action
+  (run ocaml-protoc --dump_type_repr --ml_out ./ %{deps})))
+
+(rule
+ (alias runtest)
+ (action
+  (diff option_processing.ml.expected option_processing.ml)))

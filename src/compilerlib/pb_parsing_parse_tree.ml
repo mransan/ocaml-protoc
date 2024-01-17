@@ -79,6 +79,7 @@ type oneof = {
 type enum_value = {
   enum_value_name: string;
   enum_value_int: int;
+  enum_value_options: Pb_option.set;
 }
 
 type enum_body_content =

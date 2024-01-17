@@ -56,6 +56,10 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
   let plugins : Pb_codegen_plugin.t list =
     List.flatten
       [
+        (if !(cmdline.Cmdline.dump_type_repr) then
+          [ Pb_codegen_ocaml_type_dump.plugin ]
+        else
+          []);
         (if !(cmdline.Cmdline.pp) then
           [ Pb_codegen_pp.plugin ]
         else

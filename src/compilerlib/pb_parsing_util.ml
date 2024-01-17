@@ -68,8 +68,14 @@ let oneof_option option_ = Pt.Oneof_option option_
 let oneof ?(oneof_body = []) name = { Pt.oneof_name = name; Pt.oneof_body }
 let message_counter = ref 0
 
-let enum_value ~int_value name =
-  Pt.(Enum_value { enum_value_name = name; enum_value_int = int_value })
+let enum_value ~int_value ?(options = Pb_option.empty) name =
+  Pt.(
+    Enum_value
+      {
+        enum_value_name = name;
+        enum_value_int = int_value;
+        enum_value_options = options;
+      })
 
 let enum_option option_ = Pt.Enum_option option_
 

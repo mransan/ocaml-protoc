@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package examplepb;
+
+enum PAYMENT_SYSTEM {
+  option (label) = "Payment method";
+  // FIXME: Enum constructor options are currently not propagated to OCaml types
+  CASH = 0 [(label) = "Cash"];
+  CREDIT_CARD = 1 [(label) = "Credit Card"];
+  DEBIT_CARD = 2 [(label) = "Debit Card"];
+  APP = 3 [(label) = "Mobile App"];  
+}
+
+message Person {
+  option (validate.disabled) = true;
+
+  uint64 id = 1 [(validate.rules).uint64.gt = 999];
+
+  string email = 2 [(validate.rules).string.email = true];
+
+  string name = 3 [(validate.rules).string = {
+    pattern:   "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+    max_bytes: 256,
+  }];
+
+  Location home = 4 [(validate.rules).message.required = true];
+
+  message Location {
+    double lat = 1 [(validate.rules).double = {gte: -90,  lte: 90}];
+    double lng = 2 [(validate.rules).double = {gte: -180, lte: 180}];
+  }
+
+  bytes picture = 5 [(validate.rules).bytes = {not_in: ["foo", "bar", "baz"]}];
+
+  oneof id {
+    option (validate.required) = true;
+
+    string x = 6;
+    int32  y = 7;
+  }
+}
