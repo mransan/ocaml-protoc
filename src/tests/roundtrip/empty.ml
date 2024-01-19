@@ -1,9 +1,8 @@
-open! Base
-open! Base_quickcheck
-
 module T = struct
-  type t = unit [@@deriving equal, qcheck2, quickcheck, sexp_of]
+  type t = unit [@@deriving qcheck2]
 
+  let pp = Messages.pp_empty
+  let equal = Messages.equal_empty
   let encode_pb = Messages.encode_pb_empty
   let decode_pb = Messages.decode_pb_empty
   let encode_json = Messages.encode_json_empty

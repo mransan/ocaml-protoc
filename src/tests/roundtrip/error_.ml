@@ -1,10 +1,8 @@
-open! Base
-open! Base_quickcheck
-
 module T = struct
-  type t = Messages.error = { error: string }
-  [@@deriving equal, qcheck2, quickcheck, sexp_of]
+  type t = Messages.error = { error: string } [@@deriving qcheck2]
 
+  let pp = Messages.pp_error
+  let equal = Messages.equal_error
   let encode_pb = Messages.encode_pb_error
   let decode_pb = Messages.decode_pb_error
   let encode_json = Messages.encode_json_error

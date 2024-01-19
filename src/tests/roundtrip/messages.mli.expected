@@ -13,16 +13,20 @@ type person = {
   email : string;
   phone : string list;
 }
+[@@deriving show { with_path = false }, eq]
 
 type empty = unit
+[@@deriving show { with_path = false }, eq]
 
 type error = {
   error : string;
 }
+[@@deriving show { with_path = false }, eq]
 
 type unit_or_error =
   | Unit
   | Error of error
+[@@deriving show { with_path = false }, eq]
 
 
 (** {2 Basic values} *)
@@ -47,21 +51,6 @@ val default_error :
 
 val default_unit_or_error : unit -> unit_or_error
 (** [default_unit_or_error ()] is the default value for type [unit_or_error] *)
-
-
-(** {2 Formatters} *)
-
-val pp_person : Format.formatter -> person -> unit 
-(** [pp_person v] formats v *)
-
-val pp_empty : Format.formatter -> empty -> unit 
-(** [pp_empty v] formats v *)
-
-val pp_error : Format.formatter -> error -> unit 
-(** [pp_error v] formats v *)
-
-val pp_unit_or_error : Format.formatter -> unit_or_error -> unit 
-(** [pp_unit_or_error v] formats v *)
 
 
 (** {2 Protobuf Encoding} *)

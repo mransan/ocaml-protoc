@@ -11,17 +11,13 @@ depends: [
   "dune" {>= "2.0"}
   "ocaml" {>= "4.08"}
   "odoc" {with-doc}
-  "base" {>= "v0.16" & < "v0.17"}
-  "base_quickcheck" {>= "v0.16" & < "v0.17"}
   "ocaml-protoc" {= version}
   "pbrt" {= version}
   "pbrt_yojson" {= version}
   "pbrt_services" {= version}
-  "ppx_compare" {>= "v0.16" & < "v0.17"}
+  "ppx_deriving" {>= "5.2"}
   "ppx_deriving_qcheck" {>= "0.4"}
   "ppx_expect" {>= "v0.16" & < "v0.17"}
-  "ppx_sexp_conv" {>= "v0.16" & < "v0.17"}
-  "ppx_sexp_value" {>= "v0.16" & < "v0.17"}
   "qcheck" {>= "0.21"}
   "qcheck-core" {>= "0.21"}
   "yojson" {>= "1.6"}
