@@ -1,13 +1,8 @@
 module type S = sig
   type t
 
-  val pp : Format.formatter -> t -> unit
-  val equal : t -> t -> bool
+  val quickcheck : t Pbrt_quickcheck.Type_class.t
   val gen : t QCheck2.Gen.t
-  val encode_pb : t -> Pbrt.Encoder.t -> unit
-  val decode_pb : Pbrt.Decoder.t -> t
-  val encode_json : t -> Yojson.Basic.t
-  val decode_json : Yojson.Basic.t -> t
 end
 
 module Test_failure = struct
@@ -28,16 +23,16 @@ let () =
     | _ -> None)
 
 let show (type a) (module M : S with type t = a) (t : a) =
-  Format.asprintf "%a" M.pp t
+  Format.asprintf "%a" M.quickcheck.pp t
 
 let roundtrip_property_exn (type a) (module M : S with type t = a) ~encoder
     (t : a) =
   Pbrt.Encoder.clear encoder;
-  M.encode_pb t encoder;
+  M.quickcheck.encode_pb t encoder;
   let encoded = Pbrt.Encoder.to_string encoder in
   let decoder = Pbrt.Decoder.of_string encoded in
-  let decoded = M.decode_pb decoder in
-  if not (M.equal t decoded) then
+  let decoded = M.quickcheck.decode_pb decoder in
+  if not (M.quickcheck.equal t decoded) then
     raise
       (Test_failure
          {
@@ -47,9 +42,9 @@ let roundtrip_property_exn (type a) (module M : S with type t = a) ~encoder
            encoded;
          });
 
-  let encoded = M.encode_json t |> Yojson.Basic.to_string in
-  let decoded = M.decode_json (Yojson.Basic.from_string encoded) in
-  if not (M.equal t decoded) then
+  let encoded = M.quickcheck.encode_json t |> Yojson.Basic.to_string in
+  let decoded = M.quickcheck.decode_json (Yojson.Basic.from_string encoded) in
+  if not (M.quickcheck.equal t decoded) then
     raise
       (Test_failure
          {
@@ -71,8 +66,8 @@ let run (type a) ?(examples = []) (module M : S with type t = a) =
   match QCheck2.TestResult.get_state test_result with
   | Success -> ()
   | Error { instance; exn; backtrace = _ } ->
-    Format.printf "QCheck2.Test.check_cell failed\ninput: %a\nerror: %s@." M.pp
-      instance.instance (Printexc.to_string exn)
+    Format.printf "QCheck2.Test.check_cell failed\ninput: %a\nerror: %s@."
+      M.quickcheck.pp instance.instance (Printexc.to_string exn)
   | Failed { instances = _ } | Failed_other { msg = _ } ->
     (* These cases are never triggered because we systematically raise with
        added context if the property doesn't hold. *)

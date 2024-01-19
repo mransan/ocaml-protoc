@@ -277,3 +277,47 @@ let rec decode_json_unit_or_error json =
     | _ :: tl -> loop tl
   in
   loop assoc
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 QuickCheck} *)
+
+let quickcheck_person =
+  { Pbrt_quickcheck.Type_class.
+    pp = pp_person;
+    equal = equal_person;
+    encode_pb = encode_pb_person;
+    decode_pb = decode_pb_person;
+    encode_json = encode_json_person;
+    decode_json = decode_json_person;
+  }
+
+let quickcheck_empty =
+  { Pbrt_quickcheck.Type_class.
+    pp = pp_empty;
+    equal = equal_empty;
+    encode_pb = encode_pb_empty;
+    decode_pb = decode_pb_empty;
+    encode_json = encode_json_empty;
+    decode_json = decode_json_empty;
+  }
+
+let quickcheck_error =
+  { Pbrt_quickcheck.Type_class.
+    pp = pp_error;
+    equal = equal_error;
+    encode_pb = encode_pb_error;
+    decode_pb = decode_pb_error;
+    encode_json = encode_json_error;
+    decode_json = decode_json_error;
+  }
+
+let quickcheck_unit_or_error =
+  { Pbrt_quickcheck.Type_class.
+    pp = pp_unit_or_error;
+    equal = equal_unit_or_error;
+    encode_pb = encode_pb_unit_or_error;
+    decode_pb = decode_pb_unit_or_error;
+    encode_json = encode_json_unit_or_error;
+    decode_json = decode_json_unit_or_error;
+  }

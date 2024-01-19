@@ -7,12 +7,7 @@ module T = struct
   }
   [@@deriving qcheck2]
 
-  let pp = Messages.pp_person
-  let equal = Messages.equal_person
-  let encode_pb = Messages.encode_pb_person
-  let decode_pb = Messages.decode_pb_person
-  let encode_json = Messages.encode_json_person
-  let decode_json = Messages.decode_json_person
+  let quickcheck = Messages.quickcheck_person
 end
 
 include T

@@ -1,0 +1,7 @@
+(library
+ (public_name pbrt_quickcheck)
+ (wrapped false)
+ (libraries
+  pbrt
+  (re_export qcheck)
+  yojson))

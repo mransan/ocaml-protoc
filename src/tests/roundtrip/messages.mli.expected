@@ -111,3 +111,18 @@ val decode_json_error : Yojson.Basic.t -> error
 
 val decode_json_unit_or_error : Yojson.Basic.t -> unit_or_error
 (** [decode_json_unit_or_error decoder] decodes a [unit_or_error] value from [decoder] *)
+
+
+(** {2 QuickCheck} *)
+
+val quickcheck_person : person Pbrt_quickcheck.Type_class.t
+(** [quickcheck_person] contains helpers to test the type person with quickcheck *)
+
+val quickcheck_empty : empty Pbrt_quickcheck.Type_class.t
+(** [quickcheck_empty] contains helpers to test the type empty with quickcheck *)
+
+val quickcheck_error : error Pbrt_quickcheck.Type_class.t
+(** [quickcheck_error] contains helpers to test the type error with quickcheck *)
+
+val quickcheck_unit_or_error : unit_or_error Pbrt_quickcheck.Type_class.t
+(** [quickcheck_unit_or_error] contains helpers to test the type unit_or_error with quickcheck *)

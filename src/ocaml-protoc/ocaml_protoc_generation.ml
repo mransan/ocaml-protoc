@@ -76,6 +76,10 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
           [ Pb_codegen_encode_bs.plugin; Pb_codegen_decode_bs.plugin ]
         else
           []);
+        (if !(cmdline.Cmdline.quickcheck) then
+          [ Pb_codegen_quickcheck.plugin ]
+        else
+          []);
       ]
   in
 

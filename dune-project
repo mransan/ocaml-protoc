@@ -48,6 +48,15 @@
   (tags (protobuf encode decode services rpc)))
 
 (package
+  (name pbrt_quickcheck)
+  (synopsis "Runtime library for ocaml-protoc to support tests based on quickcheck")
+  (depends
+    (ocaml (>= 4.08))
+    (pbrt (= :version))
+    (pbrt_yojson (= :version)))
+  (tags (protobuf encode decode quickcheck rpc)))
+
+(package
   (name ocaml-protoc-tests)
   (synopsis "Tests for ocaml-protoc and pbrt* packages")
   (depends
