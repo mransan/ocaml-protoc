@@ -1,0 +1,124 @@
+
+(** Code for messages.proto *)
+
+(* generated from "messages.proto", do not edit *)
+
+
+
+(** {2 Types} *)
+
+type person = {
+  name : string;
+  id : int32;
+  email : string;
+  phone : string list;
+}
+
+type empty = unit
+
+type error = {
+  error : string;
+}
+
+type unit_or_error =
+  | Unit
+  | Error of error
+
+
+(** {2 Basic values} *)
+
+val default_person : 
+  ?name:string ->
+  ?id:int32 ->
+  ?email:string ->
+  ?phone:string list ->
+  unit ->
+  person
+(** [default_person ()] is the default value for type [person] *)
+
+val default_empty : unit
+(** [default_empty ()] is the default value for type [empty] *)
+
+val default_error : 
+  ?error:string ->
+  unit ->
+  error
+(** [default_error ()] is the default value for type [error] *)
+
+val default_unit_or_error : unit -> unit_or_error
+(** [default_unit_or_error ()] is the default value for type [unit_or_error] *)
+
+
+(** {2 Formatters} *)
+
+val pp_person : Format.formatter -> person -> unit 
+(** [pp_person v] formats v *)
+
+val pp_empty : Format.formatter -> empty -> unit 
+(** [pp_empty v] formats v *)
+
+val pp_error : Format.formatter -> error -> unit 
+(** [pp_error v] formats v *)
+
+val pp_unit_or_error : Format.formatter -> unit_or_error -> unit 
+(** [pp_unit_or_error v] formats v *)
+
+
+(** {2 Protobuf Encoding} *)
+
+val encode_pb_person : person -> Pbrt.Encoder.t -> unit
+(** [encode_pb_person v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_empty : empty -> Pbrt.Encoder.t -> unit
+(** [encode_pb_empty v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_error : error -> Pbrt.Encoder.t -> unit
+(** [encode_pb_error v encoder] encodes [v] with the given [encoder] *)
+
+val encode_pb_unit_or_error : unit_or_error -> Pbrt.Encoder.t -> unit
+(** [encode_pb_unit_or_error v encoder] encodes [v] with the given [encoder] *)
+
+
+(** {2 Protobuf Decoding} *)
+
+val decode_pb_person : Pbrt.Decoder.t -> person
+(** [decode_pb_person decoder] decodes a [person] binary value from [decoder] *)
+
+val decode_pb_empty : Pbrt.Decoder.t -> empty
+(** [decode_pb_empty decoder] decodes a [empty] binary value from [decoder] *)
+
+val decode_pb_error : Pbrt.Decoder.t -> error
+(** [decode_pb_error decoder] decodes a [error] binary value from [decoder] *)
+
+val decode_pb_unit_or_error : Pbrt.Decoder.t -> unit_or_error
+(** [decode_pb_unit_or_error decoder] decodes a [unit_or_error] binary value from [decoder] *)
+
+
+(** {2 Protobuf YoJson Encoding} *)
+
+val encode_json_person : person -> Yojson.Basic.t
+(** [encode_json_person v encoder] encodes [v] to to json *)
+
+val encode_json_empty : empty -> Yojson.Basic.t
+(** [encode_json_empty v encoder] encodes [v] to to json *)
+
+val encode_json_error : error -> Yojson.Basic.t
+(** [encode_json_error v encoder] encodes [v] to to json *)
+
+val encode_json_unit_or_error : unit_or_error -> Yojson.Basic.t
+(** [encode_json_unit_or_error v encoder] encodes [v] to to json *)
+
+
+(** {2 JSON Decoding} *)
+
+val decode_json_person : Yojson.Basic.t -> person
+(** [decode_json_person decoder] decodes a [person] value from [decoder] *)
+
+val decode_json_empty : Yojson.Basic.t -> empty
+(** [decode_json_empty decoder] decodes a [empty] value from [decoder] *)
+
+val decode_json_error : Yojson.Basic.t -> error
+(** [decode_json_error decoder] decodes a [error] value from [decoder] *)
+
+val decode_json_unit_or_error : Yojson.Basic.t -> unit_or_error
+(** [decode_json_unit_or_error decoder] decodes a [unit_or_error] value from [decoder] *)

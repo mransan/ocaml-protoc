@@ -17,3 +17,13 @@
  (deps messages.proto)
  (action
   (run ocaml-protoc --binary --yojson --pp --ml_out ./ %{deps})))
+
+(rule
+ (alias runtest)
+ (action
+  (diff messages.ml.expected messages.ml)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff messages.mli.expected messages.mli)))
