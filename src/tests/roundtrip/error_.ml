@@ -3,7 +3,7 @@ open! Base_quickcheck
 
 module T = struct
   type t = Messages.error = { error: string }
-  [@@deriving equal, quickcheck, sexp_of]
+  [@@deriving equal, qcheck2, quickcheck, sexp_of]
 
   let encode_pb = Messages.encode_pb_error
   let decode_pb = Messages.decode_pb_error

@@ -69,6 +69,7 @@
      (and
       (>= v0.16)
       (< v0.17)))
+    (ppx_deriving_qcheck (>= 0.4))
     (ppx_expect
      (and
       (>= v0.16)
@@ -81,5 +82,7 @@
      (and
       (>= v0.16)
       (< v0.17)))
+    (qcheck (>= 0.21))
+    (qcheck-core (>= 0.21))
     (yojson (>= 1.6))))
 

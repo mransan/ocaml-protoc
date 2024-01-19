@@ -8,7 +8,7 @@ module T = struct
     email: string;
     phone: string list;
   }
-  [@@deriving equal, quickcheck, sexp_of]
+  [@@deriving equal, qcheck2, quickcheck, sexp_of]
 
   let encode_pb = Messages.encode_pb_person
   let decode_pb = Messages.decode_pb_person

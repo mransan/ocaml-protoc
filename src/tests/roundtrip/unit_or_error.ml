@@ -5,7 +5,7 @@ module T = struct
   type t = Messages.unit_or_error =
     | Unit
     | Error of Error_.t
-  [@@deriving equal, quickcheck, sexp_of]
+  [@@deriving equal, qcheck2, quickcheck, sexp_of]
 
   let encode_pb = Messages.encode_pb_unit_or_error
   let decode_pb = Messages.decode_pb_unit_or_error
@@ -20,5 +20,7 @@ let%expect_test "roundtrip" =
   [%expect
     {|
     ("Base_quickcheck.Test.run: test failed" (input Unit)
-     (error ("Pbrt.Decoder.Failure(Malformed_variant(\"unit_or_error\"))"))) |}];
+     (error ("Pbrt.Decoder.Failure(Malformed_variant(\"unit_or_error\"))")))
+    ("QCheck2.Test.check_cell failed" ((input Unit))
+     ("Pbrt.Decoder.Failure(Malformed_variant(\"unit_or_error\"))")) |}];
   ()

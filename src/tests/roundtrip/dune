@@ -3,9 +3,10 @@
  (public_name ocaml-protoc-tests.roundtrip-tests)
  (inline_tests)
  (flags :standard -w -66)
- (libraries base base_quickcheck pbrt pbrt_yojson yojson)
+ (libraries base base_quickcheck pbrt pbrt_yojson qcheck qcheck-core yojson)
  (preprocess
   (pps
+   ppx_deriving_qcheck
    ppx_expect
    ppx_sexp_conv
    ppx_sexp_value
@@ -16,7 +17,17 @@
  (targets messages.ml messages.mli)
  (deps messages.proto)
  (action
-  (run ocaml-protoc --binary --yojson --pp --ml_out ./ %{deps})))
+  (run
+   ocaml-protoc
+   ; Currently qcheck & qcheck2 don't work with sigs, so the following doesn't work.
+   ;   --ocaml_all_types_ppx
+   ;   "deriving qcheck"
+   --binary
+   --yojson
+   --pp
+   --ml_out
+   ./
+   %{deps})))
 
 (rule
  (alias runtest)

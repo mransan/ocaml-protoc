@@ -18,9 +18,12 @@ depends: [
   "pbrt_yojson" {= version}
   "pbrt_services" {= version}
   "ppx_compare" {>= "v0.16" & < "v0.17"}
+  "ppx_deriving_qcheck" {>= "0.4"}
   "ppx_expect" {>= "v0.16" & < "v0.17"}
   "ppx_sexp_conv" {>= "v0.16" & < "v0.17"}
   "ppx_sexp_value" {>= "v0.16" & < "v0.17"}
+  "qcheck" {>= "0.21"}
+  "qcheck-core" {>= "0.21"}
   "yojson" {>= "1.6"}
 ]
 build: [
