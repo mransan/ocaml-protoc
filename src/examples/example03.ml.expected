@@ -2,13 +2,23 @@
 
 type string_some_none = unit
 
-type string_some =
+type string_some_t =
   | None
   | Some of string
 
+and string_some = {
+  t : string_some_t option;
+}
+
 let rec default_string_some_none = ()
 
-let rec default_string_some (): string_some = None
+let rec default_string_some_t (): string_some_t = None
+
+and default_string_some 
+  ?t:((t:string_some_t option) = None)
+  () : string_some  = {
+  t;
+}
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -20,7 +30,13 @@ let rec pp_string_some_none fmt (v:string_some_none) =
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
-let rec pp_string_some fmt (v:string_some) =
+let rec pp_string_some_t fmt (v:string_some_t) =
   match v with
   | None  -> Format.fprintf fmt "None"
   | Some x -> Format.fprintf fmt "@[<hv2>Some(@,%a)@]" Pbrt.Pp.pp_string x
+
+and pp_string_some fmt (v:string_some) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "t" (Pbrt.Pp.pp_option pp_string_some_t) fmt v.t;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()

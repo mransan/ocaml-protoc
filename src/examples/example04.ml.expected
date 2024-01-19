@@ -7,9 +7,13 @@ type int_list_cons = {
   next : int_list;
 }
 
-and int_list =
+and int_list_t =
   | Cons of int_list_cons
   | Nil
+
+and int_list = {
+  t : int_list_t option;
+}
 
 let rec default_int_list_nil = ()
 
@@ -21,7 +25,13 @@ let rec default_int_list_cons
   next;
 }
 
-and default_int_list () : int_list = Cons (default_int_list_cons ())
+and default_int_list_t () : int_list_t = Cons (default_int_list_cons ())
+
+and default_int_list 
+  ?t:((t:int_list_t option) = None)
+  () : int_list  = {
+  t;
+}
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -40,7 +50,13 @@ let rec pp_int_list_cons fmt (v:int_list_cons) =
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
-and pp_int_list fmt (v:int_list) =
+and pp_int_list_t fmt (v:int_list_t) =
   match v with
   | Cons x -> Format.fprintf fmt "@[<hv2>Cons(@,%a)@]" pp_int_list_cons x
   | Nil  -> Format.fprintf fmt "Nil"
+
+and pp_int_list fmt (v:int_list) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "t" (Pbrt.Pp.pp_option pp_int_list_t) fmt v.t;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()

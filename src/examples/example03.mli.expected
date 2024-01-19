@@ -9,9 +9,13 @@
 
 type string_some_none = unit
 
-type string_some =
+type string_some_t =
   | None
   | Some of string
+
+and string_some = {
+  t : string_some_t option;
+}
 
 
 (** {2 Basic values} *)
@@ -19,7 +23,13 @@ type string_some =
 val default_string_some_none : unit
 (** [default_string_some_none ()] is the default value for type [string_some_none] *)
 
-val default_string_some : unit -> string_some
+val default_string_some_t : unit -> string_some_t
+(** [default_string_some_t ()] is the default value for type [string_some_t] *)
+
+val default_string_some : 
+  ?t:string_some_t option ->
+  unit ->
+  string_some
 (** [default_string_some ()] is the default value for type [string_some] *)
 
 
@@ -27,6 +37,9 @@ val default_string_some : unit -> string_some
 
 val pp_string_some_none : Format.formatter -> string_some_none -> unit 
 (** [pp_string_some_none v] formats v *)
+
+val pp_string_some_t : Format.formatter -> string_some_t -> unit 
+(** [pp_string_some_t v] formats v *)
 
 val pp_string_some : Format.formatter -> string_some -> unit 
 (** [pp_string_some v] formats v *)

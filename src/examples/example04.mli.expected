@@ -14,9 +14,13 @@ type int_list_cons = {
   next : int_list;
 }
 
-and int_list =
+and int_list_t =
   | Cons of int_list_cons
   | Nil
+
+and int_list = {
+  t : int_list_t option;
+}
 
 
 (** {2 Basic values} *)
@@ -31,7 +35,13 @@ val default_int_list_cons :
   int_list_cons
 (** [default_int_list_cons ()] is the default value for type [int_list_cons] *)
 
-val default_int_list : unit -> int_list
+val default_int_list_t : unit -> int_list_t
+(** [default_int_list_t ()] is the default value for type [int_list_t] *)
+
+val default_int_list : 
+  ?t:int_list_t option ->
+  unit ->
+  int_list
 (** [default_int_list ()] is the default value for type [int_list] *)
 
 
@@ -42,6 +52,9 @@ val pp_int_list_nil : Format.formatter -> int_list_nil -> unit
 
 val pp_int_list_cons : Format.formatter -> int_list_cons -> unit 
 (** [pp_int_list_cons v] formats v *)
+
+val pp_int_list_t : Format.formatter -> int_list_t -> unit 
+(** [pp_int_list_t v] formats v *)
 
 val pp_int_list : Format.formatter -> int_list -> unit 
 (** [pp_int_list v] formats v *)

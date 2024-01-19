@@ -411,21 +411,6 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
         }
     in
     [ type_ ]
-  | Tt.Message_oneof_field f :: [] ->
-    let outer_message_names = message_names @ [ message_name ] in
-    let variant =
-      variant_of_oneof ~unsigned_tag ~outer_message_names ~all_types
-        file_options file_name f
-    in
-    [
-      Ot.
-        {
-          module_prefix;
-          spec = Variant variant;
-          type_level_ppx_extension;
-          type_options = message_options;
-        };
-    ]
   | _ ->
     let variants, fields =
       List.fold_left
