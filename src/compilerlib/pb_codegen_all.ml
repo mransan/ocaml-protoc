@@ -139,6 +139,10 @@ let generate_services (self : ocaml_mod) services : unit =
   generate_for_all_services services self.mli generate_service_sig
     (Some "Services")
 
+let generate_all_quickeck_tests (self : ocaml_mod) ocaml_types : unit =
+  Pb_codegen_quickcheck.gen_all_tests_sig ocaml_types self.mli;
+  Pb_codegen_quickcheck.gen_all_tests_struct ocaml_types self.ml
+
 let generate_plugin (self : ocaml_mod) ocaml_types (p : Plugin.t) : unit =
   let (module P) = p in
   F.line self.ml "[@@@ocaml.warning \"-27-30-39\"]";
@@ -148,14 +152,16 @@ let generate_plugin (self : ocaml_mod) ocaml_types (p : Plugin.t) : unit =
   ()
 
 let codegen (proto : Ot.proto) ~generate_make:gen_make ~proto_file_options
-    ~proto_file_name ~services (plugins : Plugin.t list) : ocaml_mod =
+    ~proto_file_name ~services ~quickcheck (plugins : Plugin.t list) : ocaml_mod
+    =
   let self = new_ocaml_mod ~proto_file_options ~proto_file_name () in
   generate_type_and_default self proto.proto_types;
   if List.exists Pb_codegen_plugin.requires_mutable_records plugins then
     generate_mutable_records self proto.proto_types;
   if gen_make then generate_make self proto.proto_types;
   List.iter (generate_plugin self proto.proto_types) plugins;
-
+  if quickcheck then
+    generate_all_quickeck_tests self (List.flatten proto.proto_types);
   (* services come last, they need binary and json *)
   if services then generate_services self proto.proto_services;
   self

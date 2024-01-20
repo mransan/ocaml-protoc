@@ -14,6 +14,10 @@ depends: [
   "ocaml" {>= "4.08"}
   "pbrt" {= version}
   "pbrt_yojson" {= version}
+  "ppx_deriving" {>= "5.2"}
+  "qcheck" {>= "0.21"}
+  "qcheck-core" {>= "0.21"}
+  "yojson" {>= "1.6"}
 ]
 build: [
   ["dune" "subst"] {pinned}

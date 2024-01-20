@@ -53,7 +53,11 @@
   (depends
     (ocaml (>= 4.08))
     (pbrt (= :version))
-    (pbrt_yojson (= :version)))
+    (pbrt_yojson (= :version))
+    (ppx_deriving (>= 5.2))
+    (qcheck (>= 0.21))
+    (qcheck-core (>= 0.21))
+    (yojson (>= 1.6)))
   (tags (protobuf encode decode quickcheck rpc)))
 
 (package
@@ -68,10 +72,6 @@
     (pbrt_services (= :version))
     (ppx_deriving (>= 5.2))
     (ppx_deriving_qcheck (>= 0.4))
-    (ppx_expect
-     (and
-      (>= v0.16)
-      (< v0.17)))
     (qcheck (>= 0.21))
     (qcheck-core (>= 0.21))
     (yojson (>= 1.6))))

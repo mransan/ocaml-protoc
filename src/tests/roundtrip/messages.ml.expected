@@ -6,20 +6,20 @@ type person = {
   email : string;
   phone : string list;
 }
-[@@deriving show { with_path = false }, eq]
+[@@deriving show { with_path = false }, eq, qcheck2]
 
 type empty = unit
-[@@deriving show { with_path = false }, eq]
+[@@deriving show { with_path = false }, eq, qcheck2]
 
 type error = {
   error : string;
 }
-[@@deriving show { with_path = false }, eq]
+[@@deriving show { with_path = false }, eq, qcheck2]
 
 type unit_or_error =
   | Unit
   | Error of error
-[@@deriving show { with_path = false }, eq]
+[@@deriving show { with_path = false }, eq, qcheck2]
 
 let rec default_person 
   ?name:((name:string) = "")
@@ -284,7 +284,9 @@ let rec decode_json_unit_or_error json =
 
 let quickcheck_person =
   { Pbrt_quickcheck.Type_class.
+    type_name = "person";
     pp = pp_person;
+    gen = gen_person;
     equal = equal_person;
     encode_pb = encode_pb_person;
     decode_pb = decode_pb_person;
@@ -292,9 +294,14 @@ let quickcheck_person =
     decode_json = decode_json_person;
   }
 
+let quickcheck_tests_person ?examples () =
+  Pbrt_quickcheck.Test.make quickcheck_person
+
 let quickcheck_empty =
   { Pbrt_quickcheck.Type_class.
+    type_name = "empty";
     pp = pp_empty;
+    gen = gen_empty;
     equal = equal_empty;
     encode_pb = encode_pb_empty;
     decode_pb = decode_pb_empty;
@@ -302,9 +309,14 @@ let quickcheck_empty =
     decode_json = decode_json_empty;
   }
 
+let quickcheck_tests_empty ?examples () =
+  Pbrt_quickcheck.Test.make quickcheck_empty
+
 let quickcheck_error =
   { Pbrt_quickcheck.Type_class.
+    type_name = "error";
     pp = pp_error;
+    gen = gen_error;
     equal = equal_error;
     encode_pb = encode_pb_error;
     decode_pb = decode_pb_error;
@@ -312,12 +324,28 @@ let quickcheck_error =
     decode_json = decode_json_error;
   }
 
+let quickcheck_tests_error ?examples () =
+  Pbrt_quickcheck.Test.make quickcheck_error
+
 let quickcheck_unit_or_error =
   { Pbrt_quickcheck.Type_class.
+    type_name = "unit_or_error";
     pp = pp_unit_or_error;
+    gen = gen_unit_or_error;
     equal = equal_unit_or_error;
     encode_pb = encode_pb_unit_or_error;
     decode_pb = decode_pb_unit_or_error;
     encode_json = encode_json_unit_or_error;
     decode_json = decode_json_unit_or_error;
   }
+
+let quickcheck_tests_unit_or_error ?examples () =
+  Pbrt_quickcheck.Test.make quickcheck_unit_or_error
+
+let all_quickcheck_tests () =
+  List.flatten [
+    quickcheck_tests_person ();
+    quickcheck_tests_empty ();
+    quickcheck_tests_error ();
+    quickcheck_tests_unit_or_error ();
+  ]

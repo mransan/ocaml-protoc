@@ -17,7 +17,6 @@ depends: [
   "pbrt_services" {= version}
   "ppx_deriving" {>= "5.2"}
   "ppx_deriving_qcheck" {>= "0.4"}
-  "ppx_expect" {>= "v0.16" & < "v0.17"}
   "qcheck" {>= "0.21"}
   "qcheck-core" {>= "0.21"}
   "yojson" {>= "1.6"}

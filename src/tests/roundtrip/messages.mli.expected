@@ -118,11 +118,25 @@ val decode_json_unit_or_error : Yojson.Basic.t -> unit_or_error
 val quickcheck_person : person Pbrt_quickcheck.Type_class.t
 (** [quickcheck_person] contains helpers to test the type person with quickcheck *)
 
+val quickcheck_tests_person : ?examples:person list -> unit -> QCheck2.Test.t list
+(** [quickcheck_tests_person ?examples ()] builds a test suite for the type "person". Inputs are generated with QuickCheck. Corner cases may be supplied via the [examples] parameters. *)
+
 val quickcheck_empty : empty Pbrt_quickcheck.Type_class.t
 (** [quickcheck_empty] contains helpers to test the type empty with quickcheck *)
+
+val quickcheck_tests_empty : ?examples:empty list -> unit -> QCheck2.Test.t list
+(** [quickcheck_tests_empty ?examples ()] builds a test suite for the type "empty". Inputs are generated with QuickCheck. Corner cases may be supplied via the [examples] parameters. *)
 
 val quickcheck_error : error Pbrt_quickcheck.Type_class.t
 (** [quickcheck_error] contains helpers to test the type error with quickcheck *)
 
+val quickcheck_tests_error : ?examples:error list -> unit -> QCheck2.Test.t list
+(** [quickcheck_tests_error ?examples ()] builds a test suite for the type "error". Inputs are generated with QuickCheck. Corner cases may be supplied via the [examples] parameters. *)
+
 val quickcheck_unit_or_error : unit_or_error Pbrt_quickcheck.Type_class.t
 (** [quickcheck_unit_or_error] contains helpers to test the type unit_or_error with quickcheck *)
+
+val quickcheck_tests_unit_or_error : ?examples:unit_or_error list -> unit -> QCheck2.Test.t list
+(** [quickcheck_tests_unit_or_error ?examples ()] builds a test suite for the type "unit_or_error". Inputs are generated with QuickCheck. Corner cases may be supplied via the [examples] parameters. *)
+
+val all_quickcheck_tests : unit -> QCheck2.Test.t list

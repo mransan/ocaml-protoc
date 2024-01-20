@@ -1,11 +1,9 @@
-(library
- (name roundtrip_tests)
- (public_name ocaml-protoc-tests.roundtrip-tests)
- (inline_tests)
+(test
+ (name main)
  (flags :standard -w -66)
  (libraries pbrt pbrt_yojson pbrt_quickcheck qcheck qcheck-core yojson)
  (preprocess
-  (pps ppx_deriving_qcheck ppx_expect ppx_deriving.show ppx_deriving.eq)))
+  (pps ppx_deriving_qcheck ppx_deriving.show ppx_deriving.eq)))
 
 (rule
  (targets messages.ml messages.mli)
@@ -14,7 +12,7 @@
   (run
    ocaml-protoc
    --ocaml_all_types_ppx
-   "deriving show { with_path = false }, eq"
+   "deriving show { with_path = false }, eq, qcheck2"
    --binary
    --yojson
    --quickcheck
