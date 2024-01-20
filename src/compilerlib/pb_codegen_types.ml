@@ -110,12 +110,11 @@ let print_ppx_extension { Ot.type_level_ppx_extension; _ } sc ~ocaml_file_kind =
               false, part :: acc)
           parts (false, [])
       in
-      if has_qcheck then
-        if List.is_empty parts then
-          None
-        else
-          Some (String.concat "," parts)
-      else
+      if has_qcheck then (
+        match parts with
+        | [] -> None
+        | _ :: _ -> Some (String.concat "," parts)
+      ) else
         type_level_ppx_extension
   in
   type_level_ppx_extension
