@@ -170,7 +170,8 @@ module PP = struct
     F.linep sc "    Field Type: %s\n"
       (string_of_variant_constructor_type vc.vc_field_type);
     F.linep sc "    Encoding Number: %d, Payload Kind: %s" vc.vc_encoding_number
-      (string_of_payload_kind vc.vc_payload_kind)
+      (string_of_payload_kind vc.vc_payload_kind);
+    F.linep sc "    Options: %s" (string_of_options vc.vc_options)
 
   (* Helper function to convert variant_constructor_type to string *)
   and string_of_variant_constructor_type vct =
