@@ -328,6 +328,7 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
               (match field_type with
               | Ft_unit -> Vct_nullary
               | _ -> Vct_non_nullary_constructor field_type);
+            vc_options = field.field_options;
           })
       oneof_field.Tt.oneof_fields
   in

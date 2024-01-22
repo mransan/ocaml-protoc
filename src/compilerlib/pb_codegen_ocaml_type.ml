@@ -106,6 +106,7 @@ and variant_constructor = {
   vc_field_type: variant_constructor_type;
   vc_encoding_number: encoding_number;
   vc_payload_kind: payload_kind;
+  vc_options: Pb_option.set;
 }
 
 and variant_constructor_type =

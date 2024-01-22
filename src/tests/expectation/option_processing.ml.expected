@@ -14,6 +14,7 @@ type person_location = {
 type person_id =
   | X of string
   | Y of int32
+  | Z of float
 
 and person = {
   id : int64;
@@ -96,10 +97,17 @@ and default_person
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_string
 
       Encoding Number: 6, Payload Kind: Pk_bytes
+      Options: {"validate.rules.string.prefix": Constant_string "foo"}
     Constructor: Y
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_int32
 
       Encoding Number: 7, Payload Kind: Pk_varint (zigzag: false)
+      Options: {"validate.rules.int32.gt": Constant_int 0}
+    Constructor: Z
+      Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_float
+
+      Encoding Number: 8, Payload Kind: Pk_bits32
+      Options: {}
   Options: {}
 *)
 
