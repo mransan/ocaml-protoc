@@ -161,6 +161,7 @@ let gen_rft_variant sc r_name rf_label { Ot.v_constructors; _ } =
         vc_field_type;
         vc_encoding_number;
         vc_payload_kind = pk;
+        vc_options = _;
       } =
         variant_constructor
       in
@@ -281,6 +282,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
       vc_field_type;
       vc_encoding_number;
       vc_payload_kind = pk;
+      vc_options = _;
     } =
       variant_constructor
     in

@@ -139,6 +139,7 @@ let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
         vc_field_type;
         vc_encoding_number;
         vc_payload_kind;
+        vc_options = _;
       } =
         constructor
       in
@@ -236,6 +237,7 @@ let gen_variant ?and_ variant sc =
             vc_field_type;
             vc_encoding_number;
             vc_payload_kind;
+            vc_options = _;
           } =
             variant_constructor
           in
