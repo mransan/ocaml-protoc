@@ -35,7 +35,8 @@ message Person {
   oneof id {
     option (validate.required) = true;
 
-    string x = 6;
-    int32  y = 7;
+    string x = 6 [(validate.rules).string.prefix = "foo"];
+    int32  y = 7 [(validate.rules).int32.gt = 0];
+    float  z = 8;
   }
 }
