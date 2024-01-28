@@ -27,8 +27,12 @@ let json_roundtrip (type a) (m : a Type_class.t) (t : a) =
 module Test = struct
   type t = QCheck2.Test.t
 
-  let make (type a) ?(examples = []) (m : a Type_class.t) =
-    let gen = QCheck2.Gen.graft_corners m.gen examples () in
+  let make (type a) ?gen (m : a Type_class.t) =
+    let gen =
+      match gen with
+      | Some gen -> gen
+      | None -> m.gen
+    in
     let print a = Format.asprintf "%a" m.pp a in
     let encoder = Pbrt.Encoder.create () in
     [

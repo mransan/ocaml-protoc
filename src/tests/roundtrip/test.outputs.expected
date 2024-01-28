@@ -9,4 +9,4 @@ Unit
 exception Pbrt.Decoder.Failure(Malformed_variant("unit_or_error"))
 
 ================================================================================
-failure (0 tests failed, 1 tests errored, ran 10 tests)
+failure (0 tests failed, 1 tests errored, ran 8 tests)

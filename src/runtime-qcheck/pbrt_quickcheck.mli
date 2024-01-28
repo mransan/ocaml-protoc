@@ -20,7 +20,8 @@ end
 module Test : sig
   type t = QCheck2.Test.t
 
-  val make : ?examples:'a list -> 'a Type_class.t -> t list
+  val make : ?gen:'a QCheck2.Gen.t -> 'a Type_class.t -> t list
   (** Generates a test suite for that type that checks that values roundtrip
-      through serializations. *)
+      through serializations. The generator to use can be overriden by
+      supplying [gen]. *)
 end

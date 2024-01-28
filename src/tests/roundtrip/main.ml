@@ -1,3 +1,8 @@
+type error = Messages.error = { error: string } [@@deriving qcheck2]
+
+let gen_error =
+  QCheck2.Gen.graft_corners gen_error [ { error = "Hello Error" } ] ()
+
 let () =
   (* Here we show how we can aggregate tests from several files and package them
      into a single executable. Individual tests may be added with specific
@@ -7,8 +12,6 @@ let () =
   QCheck_runner.run_tests_main
     (List.flatten
        [
-         Messages.quickcheck_tests_error
-           ~examples:[ { error = "Hello Error" } ]
-           ();
-         Messages.all_quickcheck_tests ();
+         Messages.quickcheck_tests_error ~gen:gen_error ();
+         Messages.all_quickcheck_tests ~include_error:false ();
        ])

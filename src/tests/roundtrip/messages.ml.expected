@@ -294,8 +294,8 @@ let quickcheck_person =
     decode_json = decode_json_person;
   }
 
-let quickcheck_tests_person ?examples () =
-  Pbrt_quickcheck.Test.make quickcheck_person
+let quickcheck_tests_person ?gen () =
+  Pbrt_quickcheck.Test.make ?gen quickcheck_person
 
 let quickcheck_empty =
   { Pbrt_quickcheck.Type_class.
@@ -309,8 +309,8 @@ let quickcheck_empty =
     decode_json = decode_json_empty;
   }
 
-let quickcheck_tests_empty ?examples () =
-  Pbrt_quickcheck.Test.make quickcheck_empty
+let quickcheck_tests_empty ?gen () =
+  Pbrt_quickcheck.Test.make ?gen quickcheck_empty
 
 let quickcheck_error =
   { Pbrt_quickcheck.Type_class.
@@ -324,8 +324,8 @@ let quickcheck_error =
     decode_json = decode_json_error;
   }
 
-let quickcheck_tests_error ?examples () =
-  Pbrt_quickcheck.Test.make quickcheck_error
+let quickcheck_tests_error ?gen () =
+  Pbrt_quickcheck.Test.make ?gen quickcheck_error
 
 let quickcheck_unit_or_error =
   { Pbrt_quickcheck.Type_class.
@@ -339,13 +339,18 @@ let quickcheck_unit_or_error =
     decode_json = decode_json_unit_or_error;
   }
 
-let quickcheck_tests_unit_or_error ?examples () =
-  Pbrt_quickcheck.Test.make quickcheck_unit_or_error
+let quickcheck_tests_unit_or_error ?gen () =
+  Pbrt_quickcheck.Test.make ?gen quickcheck_unit_or_error
 
-let all_quickcheck_tests () =
+let all_quickcheck_tests
+    ?(include_person = true)
+    ?(include_empty = true)
+    ?(include_error = true)
+    ?(include_unit_or_error = true)
+    () =
   List.flatten [
-    quickcheck_tests_person ();
-    quickcheck_tests_empty ();
-    quickcheck_tests_error ();
-    quickcheck_tests_unit_or_error ();
+    if include_person then quickcheck_tests_person () else [];
+    if include_empty then quickcheck_tests_empty () else [];
+    if include_error then quickcheck_tests_error () else [];
+    if include_unit_or_error then quickcheck_tests_unit_or_error () else [];
   ]
