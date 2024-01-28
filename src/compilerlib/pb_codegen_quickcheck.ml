@@ -70,7 +70,8 @@ let gen_all_tests_sig ts sc =
   F.linep sc
     "(** [all_quickcheck_tests ()] builds a test suite which, by default, \
      includes tests for all known types. Use [~include_test:false] to exclude \
-     a particular test. *)"
+     a particular test. *)";
+  F.empty_line sc
 
 let gen_all_tests_struct ts sc =
   F.line sc "let all_quickcheck_tests";
@@ -83,4 +84,5 @@ let gen_all_tests_struct ts sc =
       F.linep sc "    if include_%s then quickcheck_tests_%s () else [];"
         type_name type_name)
     ts;
-  F.line sc "  ]"
+  F.line sc "  ]";
+  F.empty_line sc
