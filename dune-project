@@ -59,3 +59,20 @@
     (qcheck-core (>= 0.21))
     (yojson (>= 1.6)))
   (tags (protobuf encode decode quickcheck rpc)))
+
+(package
+  (name ocaml-protoc-tests)
+  (synopsis "Tests for ocaml-protoc and pbrt* packages")
+  (depends
+    (ocaml (>= 4.08))
+    (odoc :with-doc)
+    (ocaml-protoc (= :version))
+    (pbrt (= :version))
+    (pbrt_yojson (= :version))
+    (pbrt_services (= :version))
+    (ppx_deriving (>= 5.2))
+    (ppx_deriving_qcheck (>= 0.4))
+    (qcheck (>= 0.21))
+    (qcheck-core (>= 0.21))
+    (yojson (>= 1.6))))
+
