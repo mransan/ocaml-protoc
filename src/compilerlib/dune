@@ -6,45 +6,17 @@
  (name ocaml_protoc_compiler_lib)
  (public_name ocaml-protoc.compiler-lib)
  (synopsis
-  "Compiler library for ocaml-protoc, to turn .proto files into OCaml code")
+   "Compiler library for ocaml-protoc, to turn .proto files into OCaml code")
  (wrapped true)
- (modules
-  pb_codegen_all
-  pb_codegen_backend
-  pb_codegen_decode_binary
-  pb_codegen_decode_bs
-  pb_codegen_decode_yojson
-  pb_codegen_default
-  pb_codegen_make
-  pb_codegen_encode_binary
-  pb_codegen_encode_bs
-  pb_codegen_encode_yojson
-  pb_codegen_formatting
-  pb_codegen_ocaml_type_dump
-  pb_codegen_ocaml_type
-  pb_codegen_pp
-  pb_codegen_quickcheck
-  pb_codegen_plugin
-  pb_codegen_types
-  pb_codegen_services
-  pb_codegen_util
-  pb_exception
-  pb_field_type
-  pb_location
-  pb_logger
-  pb_option
-  pb_parsing
-  pb_parsing_lexer
-  pb_parsing_parser
-  pb_parsing_parse_tree
-  pb_parsing_util
-  pb_typing_graph
-  pb_typing
-  pb_typing_recursion
-  pb_typing_resolution
-  pb_typing_type_tree
-  pb_typing_util
-  pb_typing_validation
-  pb_util
-  pb_format_util)
+ (modules pb_codegen_all pb_codegen_backend pb_codegen_decode_binary
+   pb_codegen_decode_bs pb_codegen_decode_yojson pb_codegen_default
+   pb_codegen_make pb_codegen_encode_binary pb_codegen_encode_bs
+   pb_codegen_encode_yojson pb_codegen_formatting pb_codegen_ocaml_type_dump
+   pb_codegen_ocaml_type pb_codegen_pp pb_codegen_quickcheck
+   pb_codegen_plugin pb_codegen_types pb_codegen_services pb_codegen_util
+   pb_exception pb_field_type pb_location pb_logger pb_option pb_parsing
+   pb_parsing_lexer pb_parsing_parser pb_parsing_parse_tree pb_parsing_util
+   pb_typing_graph pb_typing pb_typing_recursion pb_typing_resolution
+   pb_typing_type_tree pb_typing_util pb_typing_validation pb_util
+   pb_format_util)
  (libraries stdlib-shims))
