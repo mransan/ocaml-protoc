@@ -9,7 +9,7 @@ tags: ["protobuf" "encode" "decode"]
 homepage: "https://github.com/mransan/ocaml-protoc"
 bug-reports: "https://github.com/mransan/ocaml-protoc/issues"
 depends: [
-  "dune" {>= "2.0"}
+  "dune" {>= "2.2"}
   "stdlib-shims"
   "odoc" {with-doc}
   "ocaml" {>= "4.08"}

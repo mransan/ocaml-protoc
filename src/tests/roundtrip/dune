@@ -1,4 +1,4 @@
-(test
+(executable
  (name main)
  (flags :standard -w -66)
  (libraries pbrt pbrt_yojson pbrt_quickcheck qcheck qcheck-core yojson)
@@ -29,3 +29,17 @@
  (alias runtest)
  (action
   (diff messages.mli.expected messages.mli)))
+
+(rule
+ (target test.outputs)
+ (action
+  (with-accepted-exit-codes
+   (or 0 1)
+   (with-outputs-to
+    %{target}
+    (run ./%{dep:main.exe} --no-colors --seed 382079347)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff test.outputs.expected test.outputs)))

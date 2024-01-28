@@ -1,4 +1,4 @@
-(lang dune 2.0)
+(lang dune 2.2)
 (name ocaml-protoc)
 (generate_opam_files true)
 (version 3.0.1)

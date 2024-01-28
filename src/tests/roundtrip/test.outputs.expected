@@ -1,0 +1,12 @@
+random seed: 382079347
+
+=== Error ======================================================================
+
+Test unit_or_error.protobuf-roundtrip errored on (0 shrink steps):
+
+Unit
+
+exception Pbrt.Decoder.Failure(Malformed_variant("unit_or_error"))
+
+================================================================================
+failure (0 tests failed, 1 tests errored, ran 10 tests)
