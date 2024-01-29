@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - br-4.0
   pull_request:
 jobs:
   run:
