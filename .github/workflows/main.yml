@@ -34,6 +34,6 @@ jobs:
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
       #- run: opam exec -- make integration
-    - run: opam install ocamlformat 0.24.1
+    - run: opam install ocamlformat.0.24.1
     - run: opam exec -- dune build @fmt --auto-promote
     - run: git diff -q
