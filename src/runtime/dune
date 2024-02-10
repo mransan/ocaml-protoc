@@ -2,7 +2,10 @@
  (name pbrt)
  (public_name pbrt)
  (synopsis "Runtime library for ocaml-protoc")
- (foreign_stubs (language c) (flags :standard -std=c99 -O2) (names stubs))
+ (foreign_stubs
+  (language c)
+  (flags :standard -std=c99 -O2)
+  (names stubs))
  ; we need to increase -inline, so that the varint encoder/decoder can
  ; be remembered by the inliner.
  (ocamlopt_flags :standard -inline 100))

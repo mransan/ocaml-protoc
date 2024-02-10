@@ -25,7 +25,7 @@ let field_pattern_match ~r_name ~rf_label field_type =
       | Ot.Bt_bool -> decode "bool"
       | Ot.Bt_bytes -> decode "bytes"
     in
-    ("json_value", exp)
+    "json_value", exp
   | Ot.Ft_unit ->
     "json_value", sp "Pbrt_yojson.unit json_value \"%s\" \"%s\"" r_name rf_label
   (* TODO Wrapper: add similar one for wrapper type (with different
@@ -103,44 +103,42 @@ let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
   F.linep sc "| (\"%s\", `Assoc assoc) ->" json_label;
   F.sub_scope sc (fun sc ->
-    let value_name, value_exp = field_pattern_match ~r_name ~rf_label value_type in
-    let key_name = "key" in
-    let key_exp =
-      match key_type with
-      | Ot.Bt_string -> "key"
-      | Ot.Bt_int -> "(Int.of_string key)"
-      | Ot.Bt_int32 -> "(Int32.of_string key)"
-      | Ot.Bt_int64 -> "(Int64.of_string key)"
-      | Ot.Bt_uint32 -> "(`unsigned (Int32.of_string key))"
-      | Ot.Bt_uint64 -> "(`unsigned (Int64.of_string key))"
-      | Ot.Bt_bool -> "(Bool.of_string key)"
-      | Ot.Bt_float ->
-        Printf.eprintf "float cannot be used as a map key type";
-        exit 1
-      | Ot.Bt_bytes ->
-        Printf.eprintf "bytes cannot be used as a map key type";
-        exit 1
-    in
-    F.line sc "let assoc =";
-    F.sub_scope sc (fun sc ->
-      F.line sc "assoc";
-      F.linep sc "|> List.map (fun (%s, %s) -> (%s, %s)) "
-        key_name
-        value_name
-        key_exp
-        value_exp;
-      F.line sc "|> List.to_seq";
-      (* Passing through [Hashtbl.of_seq] even in the [At_list] case ensures that if there
-         is a repeated key we take the last value associated with it. *)
-      F.line sc "|> Hashtbl.of_seq");
-    F.line sc "in";
-    let assoc_exp =
-      match assoc_type with
-      | Ot.At_hashtable -> "assoc"
-      | Ot.At_list -> "assoc |> Hashtbl.to_seq |> List.of_seq"
-    in
-    F.linep sc "v.%s <- %s" rf_label assoc_exp);
-;;
+      let value_name, value_exp =
+        field_pattern_match ~r_name ~rf_label value_type
+      in
+      let key_name = "key" in
+      let key_exp =
+        match key_type with
+        | Ot.Bt_string -> "key"
+        | Ot.Bt_int -> "(Int.of_string key)"
+        | Ot.Bt_int32 -> "(Int32.of_string key)"
+        | Ot.Bt_int64 -> "(Int64.of_string key)"
+        | Ot.Bt_uint32 -> "(`unsigned (Int32.of_string key))"
+        | Ot.Bt_uint64 -> "(`unsigned (Int64.of_string key))"
+        | Ot.Bt_bool -> "(Bool.of_string key)"
+        | Ot.Bt_float ->
+          Printf.eprintf "float cannot be used as a map key type";
+          exit 1
+        | Ot.Bt_bytes ->
+          Printf.eprintf "bytes cannot be used as a map key type";
+          exit 1
+      in
+      F.line sc "let assoc =";
+      F.sub_scope sc (fun sc ->
+          F.line sc "assoc";
+          F.linep sc "|> List.map (fun (%s, %s) -> (%s, %s)) " key_name
+            value_name key_exp value_exp;
+          F.line sc "|> List.to_seq";
+          (* Passing through [Hashtbl.of_seq] even in the [At_list] case ensures that if there
+             is a repeated key we take the last value associated with it. *)
+          F.line sc "|> Hashtbl.of_seq");
+      F.line sc "in";
+      let assoc_exp =
+        match assoc_type with
+        | Ot.At_hashtable -> "assoc"
+        | Ot.At_list -> "assoc |> Hashtbl.to_seq |> List.of_seq"
+      in
+      F.linep sc "v.%s <- %s" rf_label assoc_exp)
 
 (* Generate decode function for a record *)
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
@@ -174,8 +172,10 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
               | Ot.Rft_required _ ->
                 Printf.eprintf "Only proto3 syntax supported in JSON encoding";
                 exit 1
-              | Ot.Rft_associative (assoc_type, _, (key_type, _), (value_type, _)) ->
-                gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type)
+              | Ot.Rft_associative
+                  (assoc_type, _, (key_type, _), (value_type, _)) ->
+                gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type
+                  ~value_type)
             r_fields;
 
           (* Unknown fields are simply ignored *)
