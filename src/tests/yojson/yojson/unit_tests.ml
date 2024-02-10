@@ -14,4 +14,3 @@ let () =
   assert (true = bool (`Bool true) "r" "f");
   assert (false = bool (`Bool false) "r" "f");
   ()
-
