@@ -1,11 +1,12 @@
-
 (test
-  (name yojson_unittest)
-  (package ocaml-protoc)
-  (libraries pbrt pbrt_yojson))
+ (name yojson_unittest)
+ (package ocaml-protoc)
+ (libraries pbrt pbrt_yojson))
 
 (rule
-  (targets yojson_unittest.ml yojson_unittest.mli)
-  (deps (:file yojson_unittest.proto))
-  (action (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe
-               %{file} --yojson --ml_out=.)))
+ (targets yojson_unittest.ml yojson_unittest.mli)
+ (deps
+  (:file yojson_unittest.proto))
+ (action
+  (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe %{file} --yojson
+    --ml_out=.)))

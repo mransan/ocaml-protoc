@@ -16,5 +16,5 @@
   (re_export pbrt)))
 
 (documentation
-  (package ocaml-protoc)
-  (mld_files index))
+ (package ocaml-protoc)
+ (mld_files index))

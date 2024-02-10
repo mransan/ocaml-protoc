@@ -107,13 +107,5 @@
  (action
   (with-stdout-to
    dune.inc.gen
-   (run
-    %{gen-dune}
-    build_server
-    calculator
-    example01
-    example03
-    example04
-    example05
-    file_server
-    orgchart))))
+   (run %{gen-dune} build_server calculator example01 example03 example04
+     example05 file_server orgchart))))

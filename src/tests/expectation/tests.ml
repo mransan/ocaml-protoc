@@ -225,7 +225,7 @@ let test_cases =
 
         rpc GetShelfWithSemicolon (GetShelfRequest) returns (GetShelfResponse) {};
       }
-    |}
+    |};
   ]
 
 let () = List.iter run test_cases
