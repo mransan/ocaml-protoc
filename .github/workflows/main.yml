@@ -15,8 +15,9 @@ jobs:
             #- macos-latest
             #- windows-latest
         ocaml-compiler:
-          - 4.08.x
-          - 4.12.x
+          - '4.08'
+          - '4.14'
+          - '5.1'
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -25,6 +26,8 @@ jobs:
     - uses: ocaml/setup-ocaml@v2
       with:
         ocaml-compiler: ${{ matrix.ocaml-compiler }}
+        allow-prerelease-opam: true
+        dune-cache: true
           #- run: sudo apt install protobuf-compiler libprotobuf-dev
     - run: opam pin -n .
     - run: opam depext -yt ocaml-protoc
@@ -32,3 +35,6 @@ jobs:
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
       #- run: opam exec -- make integration
+    - run: opam install ocamlformat.0.24.1
+    - run: opam exec -- dune build @fmt --auto-promote
+    - run: git diff -q

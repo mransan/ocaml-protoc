@@ -155,7 +155,7 @@ let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
             gen_encode_field_type sc ~with_key:true "x" vc_encoding_number
               vc_payload_kind false field_type))
     v_constructors;
-    F.line sc "| None -> ()";
+  F.line sc "| None -> ()";
   F.line sc "end;"
 
 let gen_rft_associative sc var_name associative_field =

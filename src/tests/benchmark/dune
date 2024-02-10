@@ -6,6 +6,5 @@
 
 (executable
  (name benchmark_single_ml)
- (modules benchmark_single_ml ocaml_test_types ocaml_test_runner
-   benchmark)
+ (modules benchmark_single_ml ocaml_test_types ocaml_test_runner benchmark)
  (libraries pbrt unix))

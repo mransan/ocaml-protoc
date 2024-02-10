@@ -1,16 +1,20 @@
 (test
-  (name google_unittest)
-  (flags :standard -w -11)
-  (package ocaml-protoc)
-  (libraries pbrt))
+ (name google_unittest)
+ (flags :standard -w -11)
+ (package ocaml-protoc)
+ (libraries pbrt))
 
 (rule
-  (targets unittest.ml unittest.mli)
-  (deps (:file unittest.proto) unittest_import.proto)
-  (action (run ocaml-protoc --ml_out . -I . %{file})))
+ (targets unittest.ml unittest.mli)
+ (deps
+  (:file unittest.proto)
+  unittest_import.proto)
+ (action
+  (run ocaml-protoc --ml_out . -I . %{file})))
 
 (rule
-  (targets unittest_import.ml unittest_import.mli)
-  (deps (:file unittest_import.proto))
-  (action (run ocaml-protoc --ml_out . -I . %{file})))
-
+ (targets unittest_import.ml unittest_import.mli)
+ (deps
+  (:file unittest_import.proto))
+ (action
+  (run ocaml-protoc --ml_out . -I . %{file})))

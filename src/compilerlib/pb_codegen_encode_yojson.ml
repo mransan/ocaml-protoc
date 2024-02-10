@@ -149,13 +149,8 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
 
   F.linep sc "in (* match v.%s *)" rf_label
 
-let gen_rft_assoc
-      sc
-      ~rf_label
-      ~assoc_type
-      ~key_type
-      ~value_field:(value_type, value_pk)
-  =
+let gen_rft_assoc sc ~rf_label ~assoc_type ~key_type
+    ~value_field:(value_type, value_pk) =
   let var_name = sp "v.%s" rf_label in
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
   let key_pat, key_exp =
@@ -177,44 +172,41 @@ let gen_rft_assoc
   let write_assoc_field ~fn ~var_name =
     F.line sc "let assoc_field =";
     F.sub_scope sc (fun sc ->
-      F.linep sc "%s" var_name;
-      (match assoc_type with
-       | Ot.At_list -> ()
-       | Ot.At_hashtable ->
-         F.line sc "|> Hashtbl.to_seq |> List.of_seq");
-      F.linep sc "|> List.map (fun (%s, value) -> %s, %s value)" key_pat key_exp fn);
-    F.line sc "in";
+        F.linep sc "%s" var_name;
+        (match assoc_type with
+        | Ot.At_list -> ()
+        | Ot.At_hashtable -> F.line sc "|> Hashtbl.to_seq |> List.of_seq");
+        F.linep sc "|> List.map (fun (%s, value) -> %s, %s value)" key_pat
+          key_exp fn);
+    F.line sc "in"
   in
   F.line sc "let assoc =";
   F.sub_scope sc (fun sc ->
-    (match value_type with
-     | Ot.Ft_unit -> unsupported json_label
-     | Ot.Ft_basic_type basic_type ->
-       let runtime_f, map_function =
-         runtime_function_for_basic_type json_label basic_type value_pk
-       in
-       (match map_function with
+      (match value_type with
+      | Ot.Ft_unit -> unsupported json_label
+      | Ot.Ft_basic_type basic_type ->
+        let runtime_f, map_function =
+          runtime_function_for_basic_type json_label basic_type value_pk
+        in
+        (match map_function with
         | None -> write_assoc_field ~fn:("Pbrt_yojson." ^ runtime_f) ~var_name
         | Some map_function ->
           let fn =
-            Printf.sprintf
-              "(fun value -> value |> %s |> Pbrt_yojson.%s)"
-              map_function
-              runtime_f
+            Printf.sprintf "(fun value -> value |> %s |> Pbrt_yojson.%s)"
+              map_function runtime_f
           in
           write_assoc_field ~fn ~var_name)
-     (* TODO Wrapper: add similar case for Ft_wrapper_type *)
-     (* User defined *)
-     | Ot.Ft_user_defined_type udt ->
-       let fn =
-         let function_prefix = "encode_json" in
-         Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
-       in
-       write_assoc_field ~fn ~var_name;
-     | _ -> unsupported json_label);
-    F.linep sc "(\"%s\", `Assoc assoc_field) :: assoc " json_label);
+      (* TODO Wrapper: add similar case for Ft_wrapper_type *)
+      (* User defined *)
+      | Ot.Ft_user_defined_type udt ->
+        let fn =
+          let function_prefix = "encode_json" in
+          Pb_codegen_util.function_name_of_user_defined ~function_prefix udt
+        in
+        write_assoc_field ~fn ~var_name
+      | _ -> unsupported json_label);
+      F.linep sc "(\"%s\", `Assoc assoc_field) :: assoc " json_label);
   F.line sc "in"
-;;
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in
