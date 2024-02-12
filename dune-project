@@ -9,20 +9,15 @@
 (license MIT)
 
 (package
-  (name ocaml-protoc)
-  (synopsis "Pure OCaml compiler for .proto files")
-  (depends
-    (odoc :with-doc)
-    (pbrt (= :version))
-    (pbrt_yojson (and (= :version) :with-test))
-    (pbrt_services (and (= :version) :with-test))
-    (ocaml (>= 4.08)))
-  (tags (protoc protobuf codegen)))
-
-(package
-  (name pbrt)
-  (synopsis "Runtime library for Protobuf tooling")
-  (depends
+(name ocaml-protoc)
+(synopsis "Pure OCaml compiler for .proto files")
+(depends
+(odoc :with-doc)
+(pbrt (= :version))
+(pbrt_yojson (and (= :version) :with-test))
+(pbrt_services (and (= :version) :with-test))
+(ocaml (>= 4.08)))
+(tags (protoc protobuf codegen)))(package  (name pbrt)  (synopsis "Runtime library for Protobuf tooling")  (depends
     stdlib-shims
     (odoc :with-doc)
     (ocaml (>= 4.08)))
