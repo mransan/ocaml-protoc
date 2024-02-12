@@ -72,22 +72,22 @@ let generate_for_all_types (ocaml_types : Ot.type_ list list) (sc : F.scope)
     F.empty_line sc);
 
   List.iter
-    (fun types ->
-      let (_ : bool) =
-        List.fold_left
-          (fun first type_ ->
-            let has_encoded =
-              if first then
-                f type_ sc
-              else
-                f ~and_:() type_ sc
-            in
-            F.empty_line sc;
-            first && not has_encoded)
-          true types
-      in
-      ())
-    ocaml_types
+(fun types ->
+let (_ : bool) =
+List.fold_left
+(fun first type_ ->
+let has_encoded =
+if first then
+f type_ sc
+else
+f ~and_:() type_ sc
+in
+F.empty_line sc;
+first && not has_encoded)
+true types
+in
+())
+ocaml_types
 
 let generate_for_all_services (services : Ot.service list) (sc : F.scope)
     (f : codegen_service_f) ocamldoc_title : unit =
