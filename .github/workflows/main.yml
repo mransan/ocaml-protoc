@@ -28,6 +28,8 @@ jobs:
     - run: opam pin -n .
     - run: opam depext -yt ocaml-protoc
     - run: opam install -t . --deps-only
+    - run: opam install ocamlformat.0.24.1
+    - run: opam exec -- dune build @fmt
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
       #- run: opam exec -- make integration
