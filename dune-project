@@ -3,6 +3,9 @@
 (generate_opam_files true)
 (version 3.0.1)
 
+(formatting
+ (enabled_for ocaml dune))
+
 (maintainers "Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes")
 (authors "Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes")
 (source (github mransan/ocaml-protoc))
