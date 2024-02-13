@@ -65,7 +65,7 @@ CAMLprim value caml_pbrt_varint_byte(value _str, value _idx, value _i) {
   CAMLparam3(_str, _idx, _i);
   char *str = Bytes_val(_str);
   int idx = Int_val(_idx);
-  int64_t i = Int64_val(_idx);
+  int64_t i = Int64_val(_i);
   pbrt_varint(str + idx, i);
   CAMLreturn(Val_unit);
 }
