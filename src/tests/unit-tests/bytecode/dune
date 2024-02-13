@@ -1,0 +1,7 @@
+
+(tests
+ (package ocaml-protoc)
+ (names varint wrapper_encoding pbrt_array)
+ (libraries pbrt ocaml-protoc.compiler-lib)
+ (modes byte)
+ (flags :standard -open Ocaml_protoc_compiler_lib))
