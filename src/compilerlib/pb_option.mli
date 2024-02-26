@@ -18,7 +18,11 @@ and value =
   | Message_literal of message_literal
   | List_literal of list_literal
 
-type option_name = string
+type name_part =
+  | Simple_name of string
+  | Extension_name of string
+
+type option_name = name_part list
 (** Option identifier *)
 
 type t = option_name * value
@@ -28,14 +32,16 @@ type set = t list
 
     Can be used for field/message or file options *)
 
+val stringify_option_name : option_name -> string
 val empty : set
-val add : set -> string -> value -> set
+val add : set -> option_name -> value -> set
 
 val merge : set -> set -> set
 (** [merge s1 s2] adds all the options from [s2] to [s1]. This means than in
     case of duplicates [s2] options will override [s1] options. *)
 
-val get : set -> string -> value option
+val get : set -> option_name -> value option
+val get_ext : set -> string -> value option
 val pp_constant : Format.formatter -> constant -> unit
 val pp_value : Format.formatter -> value -> unit
 val pp_message_literal : Format.formatter -> message_literal -> unit

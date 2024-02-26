@@ -74,29 +74,6 @@ module PP = struct
     | Constant_literal s ->
       Printf.sprintf "Constant_literal %S" (String.escaped s)
 
-  (* Helper function to convert value to string *)
-  let rec string_of_value value =
-    match value with
-    | Pb_option.Scalar_value c -> string_of_constant c
-    | Message_literal ml -> string_of_message_literal ml
-    | List_literal ll -> string_of_list_literal ll
-
-  (* Helper function to convert message_literal to string *)
-  and string_of_message_literal ml =
-    "{"
-    ^ String.concat ", "
-        (List.map
-           (fun (k, v) -> Printf.sprintf "%S: %s" k (string_of_value v))
-           ml)
-    ^ "}"
-
-  (* Helper function to convert list_literal to string *)
-  and string_of_list_literal ll =
-    "[" ^ String.concat ", " (List.map string_of_value ll) ^ "]"
-
-  (* Function to convert options (message_literal) to string *)
-  let string_of_options options = string_of_message_literal options
-
   (* Helper function to convert default_value to string *)
   let string_of_default_value dv =
     match dv with
@@ -171,7 +148,8 @@ module PP = struct
       (string_of_variant_constructor_type vc.vc_field_type);
     F.linep sc "    Encoding Number: %d, Payload Kind: %s" vc.vc_encoding_number
       (string_of_payload_kind vc.vc_payload_kind);
-    F.linep sc "    Options: %s" (string_of_options vc.vc_options)
+    F.linep sc "    Options: %s"
+      (Format.asprintf "%a" Pb_option.pp_set vc.vc_options)
 
   (* Helper function to convert variant_constructor_type to string *)
   and string_of_variant_constructor_type vct =
@@ -189,7 +167,8 @@ module PP = struct
   and print_record_field sc record_field =
     F.linep sc "- Field: %s" record_field.rf_label;
     print_record_field_type sc record_field.rf_field_type;
-    F.linep sc "  Field options: %s" (string_of_options record_field.rf_options)
+    F.linep sc "  Field options: %s"
+      (Format.asprintf "%a" Pb_option.pp_set record_field.rf_options)
 
   (* Recursive function to print a const_variant *)
   let rec print_const_variant sc const_variant =
@@ -201,7 +180,8 @@ module PP = struct
     F.linep sc "  Constructor: %s" cvc.cvc_name;
     F.linep sc "    Binary Value: %d, String Value: %s" cvc.cvc_binary_value
       cvc.cvc_string_value;
-    F.linep sc "    Options: %s" (string_of_options cvc.cvc_options)
+    F.linep sc "    Options: %s"
+      (Format.asprintf "%a" Pb_option.pp_set cvc.cvc_options)
 
   (* Recursive function to print the type_spec *)
   let print_type_spec sc type_spec =
@@ -215,7 +195,8 @@ module PP = struct
   let print_type sc type_ =
     F.linep sc "Module Prefix: %s" type_.module_prefix;
     print_type_spec sc type_.spec;
-    F.linep sc "Options: %s" (string_of_options type_.type_options);
+    F.linep sc "Options: %s"
+      (Format.asprintf "%a" Pb_option.pp_set type_.type_options);
     match type_.type_level_ppx_extension with
     | Some ext -> F.linep sc "PPX Extension: %s" ext
     | None -> ()

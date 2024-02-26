@@ -362,12 +362,12 @@ field_option :
   | option_identifier T_equal option_value { ($1, $3) }
 
 option_identifier_item :
-  | T_ident                   {snd $1}
-  | T_lparen T_ident T_rparen     {snd $2}
+  | T_ident                       {snd $1 |> Pb_parsing_util.option_name_of_ident}
+  | T_lparen T_ident T_rparen     {snd $2 |> Pb_parsing_util.option_name_extension}
 
 option_identifier :
   | option_identifier_item    {$1}
-  | option_identifier T_ident   {$1 ^ (snd $2)}
+  | option_identifier_item option_identifier {$1 @ $2}
 
 option :
   | T_option option_identifier T_equal option_value semicolon { ($2, $4) }
