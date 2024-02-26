@@ -195,7 +195,7 @@ let encoding_info_of_field_type ~all_types field_type : Ot.payload_kind =
 let encoding_of_field ~all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
     =
   let packed =
-    match Typing_util.field_option field "packed" with
+    match Typing_util.field_option field [ Pb_option.Simple_name "packed" ] with
     | Some Pb_option.(Scalar_value (Constant_bool x)) -> x
     | Some _ -> E.invalid_packed_option (Typing_util.field_name field)
     | None -> false
@@ -209,34 +209,34 @@ let encoding_of_field ~all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
 let compile_field_type ~unsigned_tag ~(all_types : _ Tt.proto_type list)
     file_options field_options file_name field_type : Ot.field_type =
   let ocaml_type =
-    match Pb_option.get field_options "ocaml_type" with
+    match Pb_option.get_ext field_options "ocaml_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) -> `Int_t
     | _ -> `None
   in
 
   let int32_type =
-    match Pb_option.get file_options "int32_type" with
+    match Pb_option.get_ext file_options "int32_type" with
     | Some Pb_option.(Scalar_value (Pb_option.Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int32)
   in
 
   let uint32_type =
-    match Pb_option.get file_options "int32_type" with
+    match Pb_option.get_ext file_options "int32_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint32)
   in
 
   let int64_type =
-    match Pb_option.get file_options "int64_type" with
+    match Pb_option.get_ext file_options "int64_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in
 
   let uint64_type =
-    match Pb_option.get file_options "int64_type" with
+    match Pb_option.get_ext file_options "int64_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint64)
@@ -289,13 +289,13 @@ let compile_field_type ~unsigned_tag ~(all_types : _ Tt.proto_type list)
   | `User_defined id, _ -> user_defined_type_of_id ~all_types ~file_name id
 
 let is_mutable ?field_name field_options =
-  match Pb_option.get field_options "ocaml_mutable" with
+  match Pb_option.get_ext field_options "ocaml_mutable" with
   | Some Pb_option.(Scalar_value (Constant_bool v)) -> v
   | Some _ -> Pb_exception.invalid_mutable_option ?field_name ()
   | None -> false
 
 let ocaml_container field_options =
-  match Pb_option.get field_options "ocaml_container" with
+  match Pb_option.get_ext field_options "ocaml_container" with
   | None -> None
   | Some Pb_option.(Scalar_value (Constant_literal container_name)) ->
     Some container_name
@@ -371,7 +371,7 @@ let process_all_types_ppx_extension file_name file_options
   match type_level_ppx_extension with
   | Some x -> Some x
   | None ->
-    Pb_option.get file_options "ocaml_all_types_ppx"
+    Pb_option.get_ext file_options "ocaml_all_types_ppx"
     |> string_of_string_option file_name
 
 let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
@@ -388,7 +388,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
   let { Tt.message_names; _ } = scope in
 
   let type_level_ppx_extension =
-    Typing_util.message_option message "ocaml_type_ppx"
+    Typing_util.message_option message
+      [ Pb_option.Extension_name "ocaml_type_ppx" ]
     |> string_of_string_option message_name
     |> process_all_types_ppx_extension file_name file_options
   in
@@ -633,7 +634,7 @@ let compile_enum file_options file_name scope enum =
   in
 
   let type_level_ppx_extension =
-    Typing_util.enum_option enum "ocaml_enum_ppx"
+    Typing_util.enum_option enum [ Pb_option.Extension_name "ocaml_enum_ppx" ]
     |> string_of_string_option enum_name
     |> process_all_types_ppx_extension file_name file_options
   in

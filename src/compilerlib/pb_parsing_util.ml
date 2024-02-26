@@ -128,6 +128,18 @@ let rpc ?(options = Pb_option.empty) ~req_stream ~req ~res_stream ~res rpc_name
 
 let option_map items = Pb_option.Message_literal items
 let option_list items = Pb_option.List_literal items
+
+let option_name_of_ident ident =
+  let ident =
+    if String.starts_with ~prefix:"." ident then
+      String.sub ident 1 (String.length ident - 1)
+    else
+      ident
+  in
+  ident |> String.split_on_char '.'
+  |> List.map (fun x -> Pb_option.Simple_name x)
+
+let option_name_extension ident = [ Pb_option.Extension_name ident ]
 let service ~content service_name = Pt.{ service_name; service_body = content }
 
 let import ?public file_name =
@@ -275,7 +287,7 @@ let finalize_syntax3 proto =
      in messages. Optional is now allowed, but default values might
      not be. *)
   let verify_no_default_field_options field_name message_name field_options =
-    match Pb_option.get field_options "default" with
+    match Pb_option.get field_options [ Pb_option.Simple_name "default" ] with
     | None -> ()
     | Some _ -> E.default_field_option_not_supported ~field_name ~message_name
   in
@@ -316,7 +328,8 @@ let finalize_syntax3 proto =
                 | `Bool ->
                   let field_options =
                     Pb_option.(
-                      add field_options "packed"
+                      add field_options
+                        [ Pb_option.Simple_name "packed" ]
                         (Scalar_value (Constant_bool true)))
                   in
                   { field with Pt.field_options }

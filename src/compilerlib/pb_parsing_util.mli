@@ -89,6 +89,8 @@ val rpc :
 
 val option_map : Pb_option.message_literal -> Pb_option.value
 val option_list : Pb_option.list_literal -> Pb_option.value
+val option_name_of_ident : string -> Pb_option.option_name
+val option_name_extension : string -> Pb_option.option_name
 val service_body_option : Pb_option.t -> Pt.service_body_content
 val service_body_rpc : Pt.rpc -> Pt.service_body_content
 val service : content:Pt.service_body_content list -> string -> Pt.service
