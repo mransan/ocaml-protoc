@@ -112,6 +112,7 @@ module Cmdline = struct
     pp: bool ref;  (** whether pretty printing is enabled *)
     dump_type_repr: bool ref;
         (** whether comments with debug ocaml type representation are added *)
+    quickcheck: bool ref;  (** whether quickcheck code generation is enabled *)
     services: bool ref;  (** whether services code generation is enabled *)
     make: bool ref;  (** whether to generate "make" functions *)
     mutable cmd_line_file_options: File_options.t;
@@ -132,6 +133,7 @@ module Cmdline = struct
       bs = ref false;
       pp = ref false;
       dump_type_repr = ref false;
+      quickcheck = ref false;
       services = ref false;
       make = ref false;
       cmd_line_file_options = File_options.make ();
@@ -148,6 +150,7 @@ module Cmdline = struct
         Arg.Set t.dump_type_repr,
         " generate comments with internal representation on generated OCaml \
          types (useful for debugging ocaml-protoc itself)" );
+      "--quickcheck", Arg.Set t.quickcheck, " generate quickcheck helpers";
       ( "--services",
         Arg.Set t.services,
         " generate code for services (requires json+binary)" );
@@ -175,6 +178,11 @@ module Cmdline = struct
     then (
       t.binary := true;
       t.pp := true
+    );
+
+    if !(t.quickcheck) then (
+      t.binary := true;
+      t.yojson := true
     );
 
     if !(t.services) then (

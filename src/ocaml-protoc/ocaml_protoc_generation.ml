@@ -76,15 +76,20 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
           [ Pb_codegen_encode_bs.plugin; Pb_codegen_decode_bs.plugin ]
         else
           []);
+        (if !(cmdline.Cmdline.quickcheck) then
+          [ Pb_codegen_quickcheck.plugin ]
+        else
+          []);
       ]
   in
 
   let services = !(cmdline.Cmdline.services) in
+  let quickcheck = !(cmdline.Cmdline.quickcheck) in
 
   let ocaml_mod : CG_all.ocaml_mod =
     CG_all.codegen ocaml_types ~generate_make:!(cmdline.make)
       ~proto_file_options ~proto_file_name:cmdline.proto_file_name ~services
-      plugins
+      ~quickcheck plugins
   in
 
   (* now write the files *)

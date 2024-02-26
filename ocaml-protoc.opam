@@ -9,7 +9,7 @@ tags: ["protoc" "protobuf" "codegen"]
 homepage: "https://github.com/mransan/ocaml-protoc"
 bug-reports: "https://github.com/mransan/ocaml-protoc/issues"
 depends: [
-  "dune" {>= "2.0"}
+  "dune" {>= "2.2"}
   "odoc" {with-doc}
   "pbrt" {= version}
   "pbrt_yojson" {= version & with-test}

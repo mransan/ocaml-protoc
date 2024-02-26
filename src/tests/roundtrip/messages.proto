@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+  repeated string phone = 4;
+}
+
+message Empty {}
+
+message Error { string error = 1; }
+
+message UnitOrError {
+  oneof unit_or_error {
+    Empty unit = 1;
+    Error error = 2;
+  }
+}
