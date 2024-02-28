@@ -136,10 +136,35 @@ let option_name_of_ident ident =
     else
       ident
   in
-  ident |> String.split_on_char '.'
-  |> List.map (fun x -> Pb_option.Simple_name x)
+  ident |> String.split_on_char '.' |> List.map (fun x -> Pt.Simple_name x)
 
-let option_name_extension ident = [ Pb_option.Extension_name ident ]
+let option_name_extension ident = [ Pt.Extension_name ident ]
+
+let normalize_option_name option_name value =
+  List.fold_right
+    (fun name_part acc ->
+      match name_part with
+      | Pt.Simple_name name -> Pb_option.Message_literal [ name, acc ]
+      | Pt.Extension_name name ->
+        failwith
+          (Printf.sprintf
+             "normalize_option_name: Extension_name '%s' is not supported in \
+              option_name"
+             name))
+    option_name value
+
+let option_name_from_part = function
+  | Pt.Simple_name x -> Pb_option.Simple_name x
+  | Pt.Extension_name x -> Pb_option.Extension_name x
+
+let normalize_option option_name value =
+  match option_name with
+  | [] -> failwith "option_name can't be an empty list!"
+  | [ single_item ] -> option_name_from_part single_item, value
+  | top_level_item :: rest ->
+    let new_value = normalize_option_name rest value in
+    option_name_from_part top_level_item, new_value
+
 let service ~content service_name = Pt.{ service_name; service_body = content }
 
 let import ?public file_name =
@@ -287,7 +312,7 @@ let finalize_syntax3 proto =
      in messages. Optional is now allowed, but default values might
      not be. *)
   let verify_no_default_field_options field_name message_name field_options =
-    match Pb_option.get field_options [ Pb_option.Simple_name "default" ] with
+    match Pb_option.get field_options (Pb_option.Simple_name "default") with
     | None -> ()
     | Some _ -> E.default_field_option_not_supported ~field_name ~message_name
   in
@@ -328,8 +353,7 @@ let finalize_syntax3 proto =
                 | `Bool ->
                   let field_options =
                     Pb_option.(
-                      add field_options
-                        [ Pb_option.Simple_name "packed" ]
+                      add field_options (Pb_option.Simple_name "packed")
                         (Scalar_value (Constant_bool true)))
                   in
                   { field with Pt.field_options }

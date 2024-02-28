@@ -195,7 +195,7 @@ let encoding_info_of_field_type ~all_types field_type : Ot.payload_kind =
 let encoding_of_field ~all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
     =
   let packed =
-    match Typing_util.field_option field [ Pb_option.Simple_name "packed" ] with
+    match Typing_util.field_option field (Pb_option.Simple_name "packed") with
     | Some Pb_option.(Scalar_value (Constant_bool x)) -> x
     | Some _ -> E.invalid_packed_option (Typing_util.field_name field)
     | None -> false
@@ -389,7 +389,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
 
   let type_level_ppx_extension =
     Typing_util.message_option message
-      [ Pb_option.Extension_name "ocaml_type_ppx" ]
+      (Pb_option.Extension_name "ocaml_type_ppx")
     |> string_of_string_option message_name
     |> process_all_types_ppx_extension file_name file_options
   in
@@ -634,7 +634,7 @@ let compile_enum file_options file_name scope enum =
   in
 
   let type_level_ppx_extension =
-    Typing_util.enum_option enum [ Pb_option.Extension_name "ocaml_enum_ppx" ]
+    Typing_util.enum_option enum (Pb_option.Extension_name "ocaml_enum_ppx")
     |> string_of_string_option enum_name
     |> process_all_types_ppx_extension file_name file_options
   in

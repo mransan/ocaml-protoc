@@ -18,12 +18,10 @@ and value =
   | Message_literal of message_literal
   | List_literal of list_literal
 
-type name_part =
+(** Option identifier *)
+type option_name =
   | Simple_name of string
   | Extension_name of string
-
-type option_name = name_part list
-(** Option identifier *)
 
 type t = option_name * value
 

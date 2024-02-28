@@ -25,6 +25,12 @@
 
 (** Protobuf parse tree *)
 
+type option_name_part =
+  | Simple_name of string
+  | Extension_name of string
+
+type option_name = option_name_part list
+
 type message_field_label =
   [ `Optional
   | `Required
