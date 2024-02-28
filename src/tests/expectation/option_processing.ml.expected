@@ -93,14 +93,14 @@ and default_person
   - Field: lat
     Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 1, Payload Kind: Pk_bits64)
     Field options: [{
-   "(validate.rules).double": {"gte": -90,
-                               "lte": 90}
+   "(validate.rules)": {"double": {"gte": -90,
+                                   "lte": 90}}
    }]
   - Field: lng
     Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 2, Payload Kind: Pk_bits64)
     Field options: [{
-   "(validate.rules).double": {"gte": -180,
-                               "lte": 180}
+   "(validate.rules)": {"double": {"gte": -180,
+                                   "lte": 180}}
    }]
   Options: [{
    "(validate.disabled)": true
@@ -116,14 +116,14 @@ and default_person
 
       Encoding Number: 6, Payload Kind: Pk_bytes
       Options: [{
-   "(validate.rules).string.prefix": "foo"
+   "(validate.rules)": {"string": {"prefix": "foo"}}
    }]
     Constructor: Y
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_int32
 
       Encoding Number: 7, Payload Kind: Pk_varint (zigzag: false)
       Options: [{
-   "(validate.rules).int32.gt": 0
+   "(validate.rules)": {"int32": {"gt": 0}}
    }]
     Constructor: Z
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_float
@@ -139,30 +139,30 @@ and default_person
   - Field: id
     Rft_nolabel (Field Type: Ft_basic_type: Bt_int64, Encoding: 1, Payload Kind: Pk_varint (zigzag: false))
     Field options: [{
-   "(validate.rules).uint64.gt": 999
+   "(validate.rules)": {"uint64": {"gt": 999}}
    }]
   - Field: email
     Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 2, Payload Kind: Pk_bytes)
     Field options: [{
-   "(validate.rules).string.email": true
+   "(validate.rules)": {"string": {"email": true}}
    }]
   - Field: name
     Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 3, Payload Kind: Pk_bytes)
     Field options: [{
-   "(validate.rules).string": {"pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
-                               "max_bytes": 256}
+   "(validate.rules)": {"string": {"pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+                                   "max_bytes": 256}}
    }]
   - Field: home
     Rft_optional (Field Type: Ft_user_defined_type: person_location, Encoding: 4, Payload Kind: Pk_bytes, Default Value: None)
     Field options: [{
-   "(validate.rules).message.required": true
+   "(validate.rules)": {"message": {"required": true}}
    }]
   - Field: picture
     Rft_nolabel (Field Type: Ft_basic_type: Bt_bytes, Encoding: 5, Payload Kind: Pk_bytes)
     Field options: [{
-   "(validate.rules).bytes": {"not_in": ["foo",
-                                         "bar",
-                                         "baz"]}
+   "(validate.rules)": {"bytes": {"not_in": ["foo",
+                                             "bar",
+                                             "baz"]}}
    }]
   - Field: id
     Rft_variant: person_id

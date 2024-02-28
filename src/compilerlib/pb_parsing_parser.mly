@@ -240,7 +240,7 @@ rpc_options_list :
   }
 
 rpc_option :
-  | T_option option_identifier T_equal option_value semicolon { ($2, $4) }
+  | T_option option_identifier T_equal option_value semicolon { Pb_parsing_util.normalize_option $2 $4 }
 
 option_value :
   | constant { Pb_option.Scalar_value $1 }
@@ -359,7 +359,7 @@ field_option_list :
   }
 
 field_option :
-  | option_identifier T_equal option_value { ($1, $3) }
+  | option_identifier T_equal option_value { Pb_parsing_util.normalize_option $1 $3 }
 
 option_identifier_item :
   | T_ident                       {snd $1 |> Pb_parsing_util.option_name_of_ident}
@@ -370,7 +370,7 @@ option_identifier :
   | option_identifier_item option_identifier {$1 @ $2}
 
 option :
-  | T_option option_identifier T_equal option_value semicolon { ($2, $4) }
+  | T_option option_identifier T_equal option_value semicolon { Pb_parsing_util.normalize_option $2 $4}
 
 constant :
   | T_int        { Pb_option.Constant_int $1 }

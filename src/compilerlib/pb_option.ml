@@ -5,11 +5,9 @@ type constant =
   | Constant_float of float
   | Constant_literal of string
 
-type name_part =
+type option_name =
   | Simple_name of string
   | Extension_name of string
-
-type option_name = name_part list
 
 type message_literal = (string * value) list
 and list_literal = value list
@@ -22,31 +20,82 @@ and value =
 type t = option_name * value
 type set = t list
 
-let name_part_to_string = function
+let stringify_option_name = function
   | Simple_name s -> s
   | Extension_name s -> "(" ^ s ^ ")"
 
-let stringify_option_name (option_name : option_name) : string =
-  let str_list = List.map name_part_to_string option_name in
-  String.concat "." str_list
-
-let name_part_equal a b =
+let option_name_equal a b =
   match a, b with
   | Simple_name a, Simple_name b -> String.equal a b
   | Extension_name a, Extension_name b -> String.equal a b
   | _ -> false
 
-let option_name_equal a b = List.equal name_part_equal a b
 let empty = []
-let add t option_name value = (option_name, value) :: t
-let merge t1 t2 = t2 @ t1
+
+let destructure_option_name option_name value =
+  List.fold_right
+    (fun name_part acc ->
+      match name_part with
+      | Simple_name name -> Message_literal [ name, acc ]
+      | Extension_name name ->
+        failwith
+          (Printf.sprintf "Extension_name '%s' is not supported in option_name"
+             name))
+    option_name value
+
+let rec merge_value v1 v2 =
+  match v1, v2 with
+  | Message_literal ml1, Message_literal ml2 ->
+    let rec merge_lists list1 list2 =
+      match list2 with
+      | [] -> list1
+      | (field, value) :: rest ->
+        let updated_list, is_merged =
+          List.fold_left
+            (fun (acc, merged) (f, v) ->
+              if f = field then (
+                match value, v with
+                | Message_literal _, Message_literal _ ->
+                  acc @ [ f, merge_value value v ], true
+                | _ -> acc @ [ f, value ], merged
+              ) else
+                acc @ [ f, v ], merged)
+            ([], false) list1
+        in
+        if is_merged then
+          merge_lists updated_list rest
+        else
+          merge_lists (updated_list @ [ field, value ]) rest
+    in
+    Message_literal (merge_lists ml1 ml2)
+  | _ -> v2
+
+let add option_set option_name value =
+  match
+    List.partition
+      (fun ((name, _) : t) -> option_name_equal name option_name)
+      option_set
+  with
+  | [], _ -> (option_name, value) :: option_set
+  | [ (_, existing_value) ], remainder ->
+    let merged_value = merge_value existing_value value in
+    (option_name, merged_value) :: remainder
+  | _ ->
+    failwith
+      "This should not happen, partition should result in at most single item \
+       in left component"
+
+let merge set1 set2 =
+  List.fold_left
+    (fun acc (option_name, value) -> add acc option_name value)
+    set1 set2
 
 let get t option_name =
   match List.find (fun (other, _) -> option_name_equal option_name other) t with
   | _, c -> Some c
   | exception Not_found -> None
 
-let get_ext t option_name = get t [ Extension_name option_name ]
+let get_ext t option_name = get t (Extension_name option_name)
 
 let pp_constant ppf = function
   | Constant_string s -> Format.fprintf ppf "%S" s

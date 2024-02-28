@@ -87,13 +87,13 @@ module File_options = struct
     let open Pb_option in
     empty
     |> map int32_type (fun s ->
-           [ Extension_name "int32_type" ], Scalar_value (Constant_literal s))
+           Extension_name "int32_type", Scalar_value (Constant_literal s))
     |> map int64_type (fun s ->
-           [ Extension_name "int64_type" ], Scalar_value (Constant_literal s))
+           Extension_name "int64_type", Scalar_value (Constant_literal s))
     |> map ocaml_file_ppx (fun s ->
-           [ Extension_name "ocaml_file_ppx" ], Scalar_value (Constant_string s))
+           Extension_name "ocaml_file_ppx", Scalar_value (Constant_string s))
     |> map ocaml_all_types_ppx (fun s ->
-           ( [ Extension_name "ocaml_all_types_ppx" ],
+           ( Extension_name "ocaml_all_types_ppx",
              Scalar_value (Constant_string s) ))
 end
 
