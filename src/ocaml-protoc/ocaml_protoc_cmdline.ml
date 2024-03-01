@@ -77,7 +77,7 @@ module File_options = struct
 
   (** Converts the command line values to Parse Tree file options
     *)
-  let to_file_options t : Pb_option.set =
+  let to_file_options t : Pb_raw_option.set =
     let { int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx } = t in
 
     let map x f options =
@@ -85,18 +85,18 @@ module File_options = struct
       | None -> options
       | Some x ->
         let option_name, option_value = f x in
-        Pb_option.add options option_name option_value
+        Pb_raw_option.add options option_name option_value
     in
-    let open Pb_option in
+    let open Pb_raw_option in
     empty
     |> map int32_type (fun s ->
-           Extension_name "int32_type", Scalar_value (Constant_literal s))
+           [ Extension_name "int32_type" ], Scalar_value (Constant_literal s))
     |> map int64_type (fun s ->
-           Extension_name "int64_type", Scalar_value (Constant_literal s))
+           [ Extension_name "int64_type" ], Scalar_value (Constant_literal s))
     |> map ocaml_file_ppx (fun s ->
-           Extension_name "ocaml_file_ppx", Scalar_value (Constant_string s))
+           [ Extension_name "ocaml_file_ppx" ], Scalar_value (Constant_string s))
     |> map ocaml_all_types_ppx (fun s ->
-           ( Extension_name "ocaml_all_types_ppx",
+           ( [ Extension_name "ocaml_all_types_ppx" ],
              Scalar_value (Constant_string s) ))
 end
 
