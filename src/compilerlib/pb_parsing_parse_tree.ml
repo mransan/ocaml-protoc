@@ -25,12 +25,6 @@
 
 (** Protobuf parse tree *)
 
-type option_name_part =
-  | Simple_name of string
-  | Extension_name of string
-
-type option_name = option_name_part list
-
 type message_field_label =
   [ `Optional
   | `Required
@@ -50,7 +44,7 @@ type 'a field = {
   field_number: int;
   field_label: 'a;
   field_type: Pb_field_type.unresolved_t;
-  field_options: Pb_option.set;
+  field_options: Pb_raw_option.set;
 }
 (** message field.
 
@@ -66,12 +60,12 @@ type map_field = {
   map_number: int;
   map_key_type: Pb_field_type.map_key_type;
   map_value_type: Pb_field_type.unresolved_t;
-  map_options: Pb_option.set;
+  map_options: Pb_raw_option.set;
 }
 
 type oneof_body_content =
   | Oneof_field of oneof_field
-  | Oneof_option of Pb_option.t
+  | Oneof_option of Pb_raw_option.t
 
 type oneof = {
   oneof_name: string;
@@ -82,12 +76,12 @@ type oneof = {
 type enum_value = {
   enum_value_name: string;
   enum_value_int: int;
-  enum_value_options: Pb_option.set;
+  enum_value_options: Pb_raw_option.set;
 }
 
 type enum_body_content =
   | Enum_value of enum_value
-  | Enum_option of Pb_option.t
+  | Enum_option of Pb_raw_option.t
 
 type enum = {
   enum_id: int;
@@ -114,7 +108,7 @@ type message_body_content =
   | Message_enum of enum
   | Message_extension of extension_range list
   | Message_reserved of extension_range list
-  | Message_option of Pb_option.t
+  | Message_option of Pb_raw_option.t
 
 and message = {
   id: int;
@@ -129,7 +123,7 @@ and message = {
 
 type rpc = {
   rpc_name: string;
-  rpc_options: Pb_option.set;
+  rpc_options: Pb_raw_option.set;
   rpc_req_stream: bool;
   rpc_req: Pb_field_type.unresolved_t;
   rpc_res_stream: bool;
@@ -138,7 +132,7 @@ type rpc = {
 
 type service_body_content =
   | Service_rpc of rpc
-  | Service_option of Pb_option.t
+  | Service_option of Pb_raw_option.t
 
 type service = {
   service_name: string;
@@ -160,7 +154,7 @@ type proto = {
   proto_file_name: string option;
   syntax: string option;
   imports: import list;
-  file_options: Pb_option.set;
+  file_options: Pb_raw_option.set;
   package: string option;
   messages: message list;
   services: service list;
@@ -196,7 +190,7 @@ let pp_field pp_label ppf field =
      field_options = %a;@,\
      }@]"
     field.field_name field.field_number pp_label field.field_label
-    Pb_field_type.pp_unresolved_t field.field_type Pb_option.pp_set
+    Pb_field_type.pp_unresolved_t field.field_type Pb_raw_option.pp_set
     field.field_options
 
 let pp_message_field ppf field = pp_field pp_message_field_label ppf field
@@ -213,11 +207,11 @@ let pp_map_field ppf map_field =
      }@]"
     map_field.map_name map_field.map_number Pb_field_type.pp_map_key_type
     map_field.map_key_type Pb_field_type.pp_unresolved_t
-    map_field.map_value_type Pb_option.pp_set map_field.map_options
+    map_field.map_value_type Pb_raw_option.pp_set map_field.map_options
 
 let pp_oneof_body_content ppf = function
   | Oneof_field field -> pp_oneof_field ppf field
-  | Oneof_option option -> Pb_option.pp_t ppf option
+  | Oneof_option option -> Pb_raw_option.pp_t ppf option
 
 let pp_oneof ppf oneof =
   fprintf ppf "{@[<v 2>%s = %S;@,%s = [@[<v>%a@]];@,@]}" "oneof_name"
@@ -234,7 +228,7 @@ let pp_enum_value ppf enum_value =
 let pp_enum_body_content ppf enum_body_content =
   match enum_body_content with
   | Enum_value enum_value -> pp_enum_value ppf enum_value
-  | Enum_option option -> Pb_option.pp_t ppf option
+  | Enum_option option -> Pb_raw_option.pp_t ppf option
 
 let pp_enum ppf enum =
   fprintf ppf
@@ -277,7 +271,7 @@ let rec pp_message_body_content ppf msg_body_content =
          ~pp_sep:(fun ppf () -> fprintf ppf ";@,")
          pp_extension_range)
       res_ranges
-  | Message_option option -> Pb_option.pp_t ppf option
+  | Message_option option -> Pb_raw_option.pp_t ppf option
 
 and pp_message ppf message =
   fprintf ppf
@@ -298,14 +292,14 @@ let pp_rpc ppf rpc =
      rpc_res_stream = %b;@,\
      rpc_res = %a;@,\
      }@]"
-    rpc.rpc_name Pb_option.pp_set rpc.rpc_options rpc.rpc_req_stream
+    rpc.rpc_name Pb_raw_option.pp_set rpc.rpc_options rpc.rpc_req_stream
     Pb_field_type.pp_unresolved_t rpc.rpc_req rpc.rpc_res_stream
     Pb_field_type.pp_unresolved_t rpc.rpc_res
 
 let rec pp_service_body_content ppf service_body_content =
   match service_body_content with
   | Service_rpc rpc -> pp_rpc ppf rpc
-  | Service_option option -> Pb_option.pp_t ppf option
+  | Service_option option -> Pb_raw_option.pp_t ppf option
 
 and pp_service ppf service =
   fprintf ppf "{@[<v 2>@,service_name = %S;@,service_body = [@[<v>%a@]];@,}@]"
@@ -343,7 +337,7 @@ let pp_proto ppf proto =
     (pp_print_option ~none:pp_none pp_print_string)
     proto.syntax
     (pp_print_list ~pp_sep:(fun ppf () -> fprintf ppf ";@,") pp_import)
-    proto.imports Pb_option.pp_set proto.file_options
+    proto.imports Pb_raw_option.pp_set proto.file_options
     (pp_print_option ~none:pp_none pp_print_string)
     proto.package
     (pp_print_list ~pp_sep:(fun ppf () -> fprintf ppf ";@,") pp_message)

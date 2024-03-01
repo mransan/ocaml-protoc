@@ -37,7 +37,7 @@ let scope_of_package : string option -> Tt.type_scope = function
   | None -> Typing_util.empty_scope
 
 let get_default field_name field_options : Pb_option.constant option =
-  match Pb_option.get field_options (Pb_option.Simple_name "default") with
+  match Pb_raw_option.get_simple field_options "default" with
   | Some (Pb_option.Scalar_value constant) -> Some constant
   | Some (Pb_option.Message_literal _) ->
     E.invalid_default_value ~field_name

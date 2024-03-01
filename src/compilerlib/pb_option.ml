@@ -32,17 +32,6 @@ let option_name_equal a b =
 
 let empty = []
 
-let destructure_option_name option_name value =
-  List.fold_right
-    (fun name_part acc ->
-      match name_part with
-      | Simple_name name -> Message_literal [ name, acc ]
-      | Extension_name name ->
-        failwith
-          (Printf.sprintf "Extension_name '%s' is not supported in option_name"
-             name))
-    option_name value
-
 let rec merge_value v1 v2 =
   match v1, v2 with
   | Message_literal ml1, Message_literal ml2 ->

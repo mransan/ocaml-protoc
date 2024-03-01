@@ -26,7 +26,7 @@
 module E = Pb_exception
 module Pt = Pb_parsing_parse_tree
 
-let field ?(options = Pb_option.empty) ~label ~number ~type_ name =
+let field ?(options = Pb_raw_option.empty) ~label ~number ~type_ name =
   {
     Pt.field_name = name;
     Pt.field_number = number;
@@ -35,7 +35,7 @@ let field ?(options = Pb_option.empty) ~label ~number ~type_ name =
     Pt.field_options = options;
   }
 
-let map_field ?options:(map_options = Pb_option.empty) ~number ~key_type
+let map_field ?options:(map_options = Pb_raw_option.empty) ~number ~key_type
     ~value_type name =
   let map_key_type =
     Pb_field_type.parse key_type |> function
@@ -54,7 +54,7 @@ let map_field ?options:(map_options = Pb_option.empty) ~number ~key_type
     Pt.map_options;
   }
 
-let oneof_field ?(options = Pb_option.empty) ~number ~type_ name =
+let oneof_field ?(options = Pb_raw_option.empty) ~number ~type_ name =
   Pt.Oneof_field
     {
       Pt.field_name = name;
@@ -68,7 +68,7 @@ let oneof_option option_ = Pt.Oneof_option option_
 let oneof ?(oneof_body = []) name = { Pt.oneof_name = name; Pt.oneof_body }
 let message_counter = ref 0
 
-let enum_value ~int_value ?(options = Pb_option.empty) name =
+let enum_value ~int_value ?(options = Pb_raw_option.empty) name =
   Pt.(
     Enum_value
       {
@@ -114,8 +114,8 @@ let message ~content message_name =
 let service_body_option option_ = Pt.Service_option option_
 let service_body_rpc rpc = Pt.Service_rpc rpc
 
-let rpc ?(options = Pb_option.empty) ~req_stream ~req ~res_stream ~res rpc_name
-    =
+let rpc ?(options = Pb_raw_option.empty) ~req_stream ~req ~res_stream ~res
+    rpc_name =
   Pt.
     {
       rpc_name;
@@ -136,34 +136,36 @@ let option_name_of_ident ident =
     else
       ident
   in
-  ident |> String.split_on_char '.' |> List.map (fun x -> Pt.Simple_name x)
+  ident |> String.split_on_char '.'
+  |> List.map (fun x -> Pb_raw_option.Simple_name x)
 
-let option_name_extension ident = [ Pt.Extension_name ident ]
+let option_name_extension ident = [ Pb_raw_option.Extension_name ident ]
 
-let normalize_option_name option_name value =
-  List.fold_right
-    (fun name_part acc ->
-      match name_part with
-      | Pt.Simple_name name -> Pb_option.Message_literal [ name, acc ]
-      | Pt.Extension_name name ->
-        failwith
-          (Printf.sprintf
-             "normalize_option_name: Extension_name '%s' is not supported in \
-              option_name"
-             name))
-    option_name value
+(* let normalize_option_name option_name value =
+     List.fold_right
+       (fun name_part acc ->
+         match name_part with
+         | Pb_raw_option.Simple_name name ->
+           Pb_option.Message_literal [ name, acc ]
+         | Pb_raw_option.Extension_name name ->
+           failwith
+             (Printf.sprintf
+                "normalize_option_name: Extension_name '%s' is not supported in \
+                 option_name"
+                name))
+       option_name value
 
-let option_name_from_part = function
-  | Pt.Simple_name x -> Pb_option.Simple_name x
-  | Pt.Extension_name x -> Pb_option.Extension_name x
+    let option_name_from_part = function
+     | Pb_raw_option.Simple_name x -> Pb_option.Simple_name x
+     | Pb_raw_option.Extension_name x -> Pb_option.Extension_name x
 
-let normalize_option option_name value =
-  match option_name with
-  | [] -> failwith "option_name can't be an empty list!"
-  | [ single_item ] -> option_name_from_part single_item, value
-  | top_level_item :: rest ->
-    let new_value = normalize_option_name rest value in
-    option_name_from_part top_level_item, new_value
+   let normalize_option option_name value =
+     match option_name with
+     | [] -> failwith "option_name can't be an empty list!"
+     | [ single_item ] -> option_name_from_part single_item, value
+     | top_level_item :: rest ->
+       let new_value = normalize_option_name rest value in
+       option_name_from_part top_level_item, new_value *)
 
 let service ~content service_name = Pt.{ service_name; service_body = content }
 
@@ -221,7 +223,7 @@ let proto ?syntax ?file_option ?package ?import ?message ?service ?enum ?proto
           package = None;
           messages = [];
           services = [];
-          file_options = Pb_option.empty;
+          file_options = Pb_raw_option.empty;
           enums = [];
           extends = [];
         }
@@ -272,7 +274,7 @@ let proto ?syntax ?file_option ?package ?import ?message ?service ?enum ?proto
     match file_option with
     | None -> proto
     | Some i ->
-      let file_options = Pb_option.add file_options (fst i) (snd i) in
+      let file_options = Pb_raw_option.add file_options (fst i) (snd i) in
       Pt.{ proto with file_options }
   in
 
@@ -312,7 +314,7 @@ let finalize_syntax3 proto =
      in messages. Optional is now allowed, but default values might
      not be. *)
   let verify_no_default_field_options field_name message_name field_options =
-    match Pb_option.get field_options (Pb_option.Simple_name "default") with
+    match Pb_raw_option.get field_options [ Simple_name "default" ] with
     | None -> ()
     | Some _ -> E.default_field_option_not_supported ~field_name ~message_name
   in
@@ -352,8 +354,8 @@ let finalize_syntax3 proto =
                 | #Pb_field_type.builtin_type_floating_point
                 | `Bool ->
                   let field_options =
-                    Pb_option.(
-                      add field_options (Pb_option.Simple_name "packed")
+                    Pb_raw_option.(
+                      add field_options [ Simple_name "packed" ]
                         (Scalar_value (Constant_bool true)))
                   in
                   { field with Pt.field_options }
