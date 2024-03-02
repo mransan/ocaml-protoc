@@ -25,6 +25,8 @@ and person = {
   id : person_id option;
 }
 
+type destructured_options = unit
+
 let rec default_payment_system () = (Cash:payment_system)
 
 let rec default_person_location 
@@ -52,6 +54,8 @@ and default_person
   picture;
   id;
 }
+
+let rec default_destructured_options = ()
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -102,9 +106,7 @@ and default_person
    "(validate.rules)": {"double": {"gte": -180,
                                    "lte": 180}}
    }]
-  Options: [{
-   "(validate.disabled)": true
-   }]
+  Options: []
 *)
 
 (* ----------------------------------------------------- *)
@@ -171,5 +173,18 @@ and default_person
    }]
   Options: [{
    "(validate.disabled)": true
+   }]
+*)
+
+(* ----------------------------------------------------- *)
+(*
+  Module Prefix: Option_processing
+  Empty Record: destructured_options
+  Options: [{
+   "(google.api.http)": {"custom": {"path": "/foo/bar/baz/{id}",
+                                    "kind": "FETCH"},
+                         "additional_bindings": [{"post": "/foo/bar/baz/",
+                                                  "body": "*"},
+                                                 {"get": "/foo/bar/baz/{id}"}]}
    }]
 *)

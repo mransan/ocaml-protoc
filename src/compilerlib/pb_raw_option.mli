@@ -19,5 +19,6 @@ val merge : set -> set -> set
 val get : set -> option_name -> Pb_option.value option
 val get_ext : set -> string -> Pb_option.value option
 val get_simple : set -> string -> Pb_option.value option
+val group_list_values : set -> set
 val pp_t : Format.formatter -> t -> unit
 val pp_set : Format.formatter -> set -> unit
