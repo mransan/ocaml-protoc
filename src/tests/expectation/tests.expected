@@ -713,8 +713,7 @@
                                      field_label = `Nolabel;
                                      field_type = Uint64;
                                      field_options = [{
-                                                        "(validate.rules)": {
-                                                      "uint64": {"gt": 999}}
+                                                        "(validate.rules).uint64.gt": 999
                                                         }];
                                      };
                                   {
@@ -723,8 +722,7 @@
                                      field_label = `Nolabel;
                                      field_type = String;
                                      field_options = [{
-                                                        "(validate.rules)": {
-                                                      "string": {"email": true}}
+                                                        "(validate.rules).string.email": true
                                                         }];
                                      };
                                   {
@@ -733,9 +731,9 @@
                                      field_label = `Nolabel;
                                      field_type = String;
                                      field_options = [{
-                                                        "(validate.rules)": {
-                                                      "string": {"pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
-                                                                 "max_bytes": 256}}
+                                                        "(validate.rules).string": {
+                                                      "pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+                                                      "max_bytes": 256}
                                                         }];
                                      };
                                   {
@@ -748,8 +746,7 @@
                                                      from_root: false
                                                      };
                                      field_options = [{
-                                                        "(validate.rules)": {
-                                                      "message": {"required": true}}
+                                                        "(validate.rules).message.required": true
                                                         }];
                                      };
                                   {
@@ -762,9 +759,9 @@
                                                         field_type = Double;
                                                         field_options = [
                                                         {
-                                                          "(validate.rules)": {
-                                                        "double": {"gte": -90,
-                                                                   "lte": 90}}
+                                                          "(validate.rules).double": {
+                                                        "gte": -90,
+                                                        "lte": 90}
                                                           }];
                                                         };
                                                      {
@@ -774,9 +771,9 @@
                                                         field_type = Double;
                                                         field_options = [
                                                         {
-                                                          "(validate.rules)": {
-                                                        "double": {"gte": -180,
-                                                                   "lte": 180}}
+                                                          "(validate.rules).double": {
+                                                        "gte": -180,
+                                                        "lte": 180}
                                                           }];
                                                         }];
                                      }];
@@ -795,8 +792,7 @@
                                                       field_type = String;
                                                       field_options = [
                                                       {
-                                                        "(validate.rules)": {
-                                                      "string": {"len": 5}}
+                                                        "(validate.rules).string.len": 5
                                                         }];
                                                       };
                                                    {
@@ -826,11 +822,10 @@
                                      field_label = `Nolabel;
                                      field_type = Uint32;
                                      field_options = [{
-                                                        "(validate.rules)": {
-                                                      "uint32": {"in": [
-                                                                 1,
-                                                                 2,
-                                                                 3]}}
+                                                        "(validate.rules).uint32": {
+                                                      "in": [1,
+                                                             2,
+                                                             3]}
                                                         }];
                                      };
                                   {
@@ -839,10 +834,9 @@
                                      field_label = `Nolabel;
                                      field_type = Float;
                                      field_options = [{
-                                                        "(validate.rules)": {
-                                                      "float": {"not_in": [
-                                                                0,
-                                                                0.990000]}}
+                                                        "(validate.rules).float": {
+                                                      "not_in": [0,
+                                                                 0.990000]}
                                                         }];
                                      }];
                   }];

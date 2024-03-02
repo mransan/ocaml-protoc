@@ -36,6 +36,31 @@ let get t option_name =
 let get_ext t option_name = get t [ Extension_name option_name ]
 let get_simple t option_name = get t [ Simple_name option_name ]
 
+let assoc_option_name key alist =
+  try Some (List.find (fun (k, _) -> option_name_equal k key) alist |> snd)
+  with Not_found -> None
+
+let remove_assoc_option_name key alist =
+  List.filter (fun (k, _) -> not (option_name_equal k key)) alist
+
+let group_list_values (set : set) : set =
+  let rec aux grouped = function
+    | [] ->
+      List.map
+        (function
+          | name, [ value ] -> name, value
+          | name, values -> name, Pb_option.List_literal (List.rev values))
+        grouped
+    | (name, value) :: xs ->
+      (match assoc_option_name name grouped with
+      | None -> aux ((name, [ value ]) :: grouped) xs
+      | Some prev_values ->
+        let grouped = remove_assoc_option_name name grouped in
+        aux ((name, value :: prev_values) :: grouped) xs)
+  in
+
+  aux [] set
+
 let pp_t ppf (name, value) =
   Format.fprintf ppf "{@;<1 2>%S: %a@;<1 2>}"
     (stringify_option_name name)

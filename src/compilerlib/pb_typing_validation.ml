@@ -28,6 +28,40 @@ module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree
 module Typing_util = Pb_typing_util
 
+let normalize_option_name option_name value =
+  List.fold_right
+    (fun name_part acc ->
+      match name_part with
+      | Pb_raw_option.Simple_name name ->
+        Pb_option.Message_literal [ name, acc ]
+      | Pb_raw_option.Extension_name name ->
+        failwith
+          (Printf.sprintf
+             "normalize_option_name: Extension_name '%s' is not supported in \
+              option_name"
+             name))
+    option_name value
+
+let option_name_from_part = function
+  | Pb_raw_option.Simple_name x -> Pb_option.Simple_name x
+  | Pb_raw_option.Extension_name x -> Pb_option.Extension_name x
+
+let normalize_option option_name value =
+  match option_name with
+  | [] -> failwith "option_name can't be an empty list!"
+  | [ single_item ] -> option_name_from_part single_item, value
+  | top_level_item :: rest ->
+    let new_value = normalize_option_name rest value in
+    option_name_from_part top_level_item, new_value
+
+let compile_options option_set =
+  let option_set = Pb_raw_option.group_list_values option_set in
+  List.fold_left
+    (fun set (option_name, value) ->
+      let option_name, value = normalize_option option_name value in
+      Pb_option.add set option_name value)
+    Pb_option.empty option_set
+
 let scope_of_package : string option -> Tt.type_scope = function
   | Some s ->
     {
@@ -51,6 +85,7 @@ let compile_field_p1 field_parsed : _ Tt.field =
   let { Pt.field_type; Pt.field_options; Pt.field_name; _ } = field_parsed in
 
   let field_default = get_default field_name field_options in
+  let field_options = compile_options field_options in
   { Tt.field_parsed; Tt.field_type; Tt.field_default; Tt.field_options }
 
 let compile_map_p1 map_parsed : _ Tt.map_field =
@@ -63,7 +98,7 @@ let compile_map_p1 map_parsed : _ Tt.map_field =
   } =
     map_parsed
   in
-
+  let map_options = compile_options map_options in
   Tt.{ map_name; map_number; map_key_type; map_value_type; map_options }
 
 let compile_oneof_p1 oneof_parsed : _ Tt.oneof =
@@ -74,6 +109,17 @@ let compile_oneof_p1 oneof_parsed : _ Tt.oneof =
       Tt.oneof_options = Pb_option.empty;
     }
   in
+  let oneof_options =
+    oneof_parsed.Pt.oneof_body
+    |> Pb_util.List.filter_map (function
+         | Pt.Oneof_option o -> Some o
+         | _ -> None)
+    |> List.fold_left
+         (fun oneof_options (name, value) ->
+           Pb_raw_option.add oneof_options name value)
+         Pb_raw_option.empty
+    |> compile_options
+  in
   let oneof =
     List.fold_left
       (fun acc -> function
@@ -82,15 +128,11 @@ let compile_oneof_p1 oneof_parsed : _ Tt.oneof =
             acc with
             Tt.oneof_fields = compile_field_p1 f :: acc.Tt.oneof_fields;
           }
-        | Pt.Oneof_option (name, value) ->
-          {
-            acc with
-            Tt.oneof_options = Pb_option.add acc.Tt.oneof_options name value;
-          })
+        | _ -> acc)
       init oneof_parsed.Pt.oneof_body
   in
   (* now reverse the fields so they're back in the original order *)
-  { oneof with Tt.oneof_fields = List.rev oneof.oneof_fields }
+  { oneof with Tt.oneof_fields = List.rev oneof.oneof_fields; Tt.oneof_options }
 
 let not_found f : bool =
   try
@@ -111,8 +153,7 @@ let make_proto_type ~file_name ~file_options ~id ~scope ~spec : _ Tt.proto_type
   { Tt.id; Tt.scope; Tt.file_name; Tt.file_options; Tt.spec }
 
 (** compile a [Pbpt] enum to a [Pbtt] type *)
-let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
-    scope parsed_enum =
+let compile_enum_p1 file_name file_options scope parsed_enum =
   let { Pt.enum_id; enum_name; enum_body } = parsed_enum in
 
   let enum_values =
@@ -120,6 +161,7 @@ let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
       (function
         | Pt.Enum_value
             { Pt.enum_value_name; enum_value_int; enum_value_options } ->
+          let enum_value_options = compile_options enum_value_options in
           Some Tt.{ enum_value_name; enum_value_int; enum_value_options }
         | _ -> None)
       enum_body
@@ -132,25 +174,19 @@ let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
          | _ -> None)
     |> List.fold_left
          (fun enum_options (name, value) ->
-           Pb_option.add enum_options name value)
-         Pb_option.empty
+           Pb_raw_option.add enum_options name value)
+         Pb_raw_option.empty
+    |> compile_options
   in
 
-  let spec =
-    Tt.Enum
-      {
-        Tt.enum_name;
-        Tt.enum_values;
-        Tt.enum_options = Pb_option.merge parent_options enum_options;
-      }
-  in
+  let spec = Tt.Enum { Tt.enum_name; Tt.enum_values; Tt.enum_options } in
 
   make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec
 
 (** compile a [Pbpt] message a list of [Pbtt] types (ie messages can
     defined more than one type). *)
-let rec validate_message ?(parent_options = Pb_option.empty) file_name
-    file_options message_scope parsed_message : _ Tt.proto_type list =
+let rec validate_message file_name file_options message_scope parsed_message :
+    _ Tt.proto_type list =
   let { Pt.id; Pt.message_name; Pt.message_body } = parsed_message in
 
   let { Tt.message_names; _ } = message_scope in
@@ -166,17 +202,12 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
     type ('a, 'b, 'd) t = {
       message_body: 'a list;
       extensions: 'b list;
-      options: Pb_option.set;
+      options: Pb_raw_option.set;
       all_types: 'd list;
     }
 
-    let e0 parent_options =
-      {
-        message_body = [];
-        extensions = [];
-        options = parent_options;
-        all_types = [];
-      }
+    let e0 =
+      { message_body = []; extensions = []; options = []; all_types = [] }
   end in
   let acc =
     List.fold_left
@@ -194,28 +225,23 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
           let field = Tt.Message_oneof_field (compile_oneof_p1 o) in
           { acc with Acc.message_body = field :: message_body }
         | Pt.Message_sub m ->
-          let parent_options = options in
           let all_sub_types =
-            validate_message ~parent_options file_name file_options sub_scope m
+            validate_message file_name file_options sub_scope m
           in
           { acc with Acc.all_types = all_types @ all_sub_types }
         | Pt.Message_enum parsed_enum ->
-          let parent_options = options in
           let enum =
-            compile_enum_p1 ~parent_options file_name file_options sub_scope
-              parsed_enum
+            compile_enum_p1 file_name file_options sub_scope parsed_enum
           in
           { acc with Acc.all_types = all_types @ [ enum ] }
         | Pt.Message_extension extension_ranges ->
           { acc with Acc.extensions = extensions @ extension_ranges }
         | Pt.Message_reserved _ ->
           acc (* TODO add support for checking reserved fields *)
-        | Pt.Message_option message_option ->
-          let options =
-            Pb_option.add options (fst message_option) (snd message_option)
-          in
+        | Pt.Message_option (name, value) ->
+          let options = Pb_raw_option.add options name value in
           { acc with Acc.options })
-      (Acc.e0 parent_options) message_body
+      Acc.e0 message_body
   in
 
   let message_body = List.rev acc.Acc.message_body in
@@ -264,7 +290,7 @@ let rec validate_message ?(parent_options = Pb_option.empty) file_name
     Tt.Message
       {
         Tt.extensions = acc.Acc.extensions;
-        message_options = acc.Acc.options;
+        message_options = acc.Acc.options |> compile_options;
         message_name;
         message_body;
       }
@@ -299,6 +325,7 @@ let validate_service (scope : Tt.type_scope) ~file_name (service : Pt.service) :
             | `User_defined ty -> ty
             | _ -> E.invalid_rpc_res_type ~service_name ~rpc_name ()
           in
+          let rpc_options = compile_options rpc_options in
           let rpc =
             {
               Tt.rpc_name;
@@ -334,6 +361,7 @@ let validate (proto : Pt.proto) : _ Tt.proto =
 
   let file_name = Pb_util.Option.default "" proto_file_name in
   let scope = scope_of_package package in
+  let file_options = compile_options file_options in
 
   let pbtt_msgs =
     List.fold_right
