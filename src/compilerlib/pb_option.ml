@@ -74,11 +74,6 @@ let add option_set option_name value =
       "This should not happen, partition should result in at most single item \
        in left component"
 
-let merge set1 set2 =
-  List.fold_left
-    (fun acc (option_name, value) -> add acc option_name value)
-    set1 set2
-
 let get t option_name =
   match List.find (fun (other, _) -> option_name_equal option_name other) t with
   | _, c -> Some c
