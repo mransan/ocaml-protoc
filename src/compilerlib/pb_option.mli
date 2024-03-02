@@ -34,10 +34,6 @@ val stringify_option_name : option_name -> string
 val empty : set
 val add : set -> option_name -> value -> set
 
-val merge : set -> set -> set
-(** [merge s1 s2] adds all the options from [s2] to [s1]. This means
-    than in case of duplicates [s2] options will override [s1] options. *)
-
 val get : set -> option_name -> value option
 val get_ext : set -> string -> value option
 val pp_constant : Format.formatter -> constant -> unit
