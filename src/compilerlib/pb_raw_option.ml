@@ -23,11 +23,6 @@ let option_name_equal = List.equal option_name_part_equal
 let empty = []
 let add option_set option_name value = (option_name, value) :: option_set
 
-let merge set1 set2 =
-  List.fold_left
-    (fun acc (option_name, value) -> add acc option_name value)
-    set1 set2
-
 let get t option_name =
   match List.find (fun (other, _) -> option_name_equal option_name other) t with
   | _, c -> Some c
@@ -42,6 +37,13 @@ let assoc_option_name key alist =
 
 let remove_assoc_option_name key alist =
   List.filter (fun (k, _) -> not (option_name_equal k key)) alist
+
+let merge set1 set2 =
+  List.fold_left
+    (fun acc (option_name, value) ->
+      let acc = remove_assoc_option_name option_name acc in
+      add acc option_name value)
+    set1 set2
 
 let group_list_values (set : set) : set =
   let rec aux grouped = function
