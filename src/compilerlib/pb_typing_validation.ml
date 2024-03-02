@@ -28,6 +28,7 @@ module Pt = Pb_parsing_parse_tree
 module Tt = Pb_typing_type_tree
 module Typing_util = Pb_typing_util
 
+(** Re-construct nested messages out of field path *)
 let normalize_option_name option_name value =
   List.fold_right
     (fun name_part acc ->
@@ -35,6 +36,8 @@ let normalize_option_name option_name value =
       | Pb_raw_option.Simple_name name ->
         Pb_option.Message_literal [ name, acc ]
       | Pb_raw_option.Extension_name name ->
+        (* TODO: Consider supporting Extension_name in option names, as in
+           (foo).bar.(.baz.bob) *)
         failwith
           (Printf.sprintf
              "normalize_option_name: Extension_name '%s' is not supported in \
@@ -49,16 +52,27 @@ let option_name_from_part = function
 let normalize_option option_name value =
   match option_name with
   | [] -> failwith "option_name can't be an empty list!"
-  | [ single_item ] -> option_name_from_part single_item, value
+  | [ single_item ] ->
+    (* Only one top level component in option name - nothing fancy is required
+       in this case *)
+    option_name_from_part single_item, value
   | top_level_item :: rest ->
+    (* Top level option is a message, and we need to reconstruct nested messages
+       inside the value, and leave only top level name component as actual option
+       name *)
     let new_value = normalize_option_name rest value in
     option_name_from_part top_level_item, new_value
 
+(** [compile_options set] is compiling raw options into Pb_option.set *)
 let compile_options option_set =
+  (* Handle destructured lists *)
   let option_set = Pb_raw_option.group_list_values option_set in
   List.fold_left
     (fun set (option_name, value) ->
+      (* Normalize option names into nested messages within values *)
       let option_name, value = normalize_option option_name value in
+      (* Pb_option.add is smart to merge nested messages, reconstructing the
+         final message values *)
       Pb_option.add set option_name value)
     Pb_option.empty option_set
 
@@ -109,6 +123,8 @@ let compile_oneof_p1 oneof_parsed : _ Tt.oneof =
       Tt.oneof_options = Pb_option.empty;
     }
   in
+  (* Compile one-of options separately, as compilation requires to see all raw
+     options at once *)
   let oneof_options =
     oneof_parsed.Pt.oneof_body
     |> Pb_util.List.filter_map (function
@@ -167,6 +183,8 @@ let compile_enum_p1 file_name file_options scope parsed_enum =
       enum_body
   in
 
+  (* Compile enum options separately, as compilation requires to see all raw
+     options at once *)
   let enum_options =
     enum_body
     |> Pb_util.List.filter_map (function

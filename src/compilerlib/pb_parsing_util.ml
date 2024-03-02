@@ -140,33 +140,6 @@ let option_name_of_ident ident =
   |> List.map (fun x -> Pb_raw_option.Simple_name x)
 
 let option_name_extension ident = [ Pb_raw_option.Extension_name ident ]
-
-(* let normalize_option_name option_name value =
-     List.fold_right
-       (fun name_part acc ->
-         match name_part with
-         | Pb_raw_option.Simple_name name ->
-           Pb_option.Message_literal [ name, acc ]
-         | Pb_raw_option.Extension_name name ->
-           failwith
-             (Printf.sprintf
-                "normalize_option_name: Extension_name '%s' is not supported in \
-                 option_name"
-                name))
-       option_name value
-
-    let option_name_from_part = function
-     | Pb_raw_option.Simple_name x -> Pb_option.Simple_name x
-     | Pb_raw_option.Extension_name x -> Pb_option.Extension_name x
-
-   let normalize_option option_name value =
-     match option_name with
-     | [] -> failwith "option_name can't be an empty list!"
-     | [ single_item ] -> option_name_from_part single_item, value
-     | top_level_item :: rest ->
-       let new_value = normalize_option_name rest value in
-       option_name_from_part top_level_item, new_value *)
-
 let service ~content service_name = Pt.{ service_name; service_body = content }
 
 let import ?public file_name =
