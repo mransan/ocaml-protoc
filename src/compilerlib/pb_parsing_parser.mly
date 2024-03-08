@@ -68,7 +68,7 @@
 /*Entry points*/
 
 %start field_options_
-%type <Pb_option.set> field_options_
+%type <Pb_raw_option.set> field_options_
 %start normal_field_
 %type <Pb_parsing_parse_tree.message_field> normal_field_
 %start enum_value_
@@ -86,7 +86,7 @@
 %start import_
 %type <Pb_parsing_parse_tree.import> import_
 %start option_
-%type <Pb_option.t> option_
+%type <Pb_raw_option.t> option_
 %start extension_range_list_
 %type <Pb_parsing_parse_tree.extension_range list> extension_range_list_
 %start extension_
@@ -129,7 +129,7 @@ proto:
 
 proto_content:
   | import              {Pb_parsing_util.proto ~import:$1  ()}
-  | option              {Pb_parsing_util.proto ~file_option:$1  ()}
+  | option              { (let x : Pb_raw_option.t = $1 in Pb_parsing_util.proto ~file_option:x  ())}
   | package_declaration {Pb_parsing_util.proto ~package:$1 ()}
   | message             {Pb_parsing_util.proto ~message:$1 ()}
   | service             {Pb_parsing_util.proto ~service:$1 ()}
@@ -227,16 +227,16 @@ rpc :
 rpc_options :
   | T_lbrace rpc_options_list T_rbrace           { $2 }
   | T_lbrace rpc_options_list T_rbrace semicolon { $2 }
-  | T_lbrace T_rbrace                            { Pb_option.empty }
-  | T_lbrace T_rbrace semicolon                  { Pb_option.empty };
+  | T_lbrace T_rbrace                            { Pb_raw_option.empty }
+  | T_lbrace T_rbrace semicolon                  { Pb_raw_option.empty };
 
 rpc_options_list :
   | rpc_option                          {
     let option_name, option_value = $1 in
-    Pb_option.add Pb_option.empty option_name option_value
+    Pb_raw_option.add Pb_raw_option.empty option_name option_value
   }
   | rpc_option rpc_options_list  {
-    Pb_option.add $2 (fst $1) (snd $1)
+    Pb_raw_option.add $2 (fst $1) (snd $1)
   }
 
 rpc_option :
@@ -347,32 +347,30 @@ label :
 
 field_options :
   | T_lbracket field_option_list T_rbracket { $2 }
-  | T_lbracket T_rbracket                   { Pb_option.empty };
+  | T_lbracket T_rbracket                   { Pb_raw_option.empty };
 
 field_option_list :
   | field_option                          {
     let option_name, option_value = $1 in
-    Pb_option.add Pb_option.empty option_name option_value
+    Pb_raw_option.add Pb_raw_option.empty option_name option_value
   }
   | field_option T_comma field_option_list  {
-    Pb_option.add $3 (fst $1) (snd $1)
+    Pb_raw_option.add $3 (fst $1) (snd $1)
   }
 
 field_option :
-  | T_ident T_equal option_value               { (snd $1, $3) }
-  | T_lparen T_ident T_rparen T_equal option_value { (snd $2, $5)}
-  | T_lparen T_ident T_rparen T_ident T_equal option_value { ((snd $2) ^ (snd $4), $6)}
+  | option_identifier T_equal option_value { ($1, $3) }
 
 option_identifier_item :
-  | T_ident                   {snd $1}
-  | T_lparen T_ident T_rparen     {snd $2}
+  | T_ident                       {snd $1 |> Pb_parsing_util.option_name_of_ident}
+  | T_lparen T_ident T_rparen     {snd $2 |> Pb_parsing_util.option_name_extension}
 
 option_identifier :
   | option_identifier_item    {$1}
-  | option_identifier T_ident   {$1 ^ (snd $2)}
+  | option_identifier_item option_identifier {$1 @ $2}
 
 option :
-  | T_option option_identifier T_equal option_value semicolon { ($2, $4) }
+  | T_option option_identifier T_equal option_value semicolon { (let foo: Pb_raw_option.t = ($2, $4) in foo) }
 
 constant :
   | T_int        { Pb_option.Constant_int $1 }

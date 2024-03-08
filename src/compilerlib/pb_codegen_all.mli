@@ -12,7 +12,7 @@ type ocaml_mod = {
 val codegen :
   Ot.proto ->
   generate_make:bool ->
-  proto_file_options:Pb_option.set ->
+  proto_file_options:Pb_raw_option.set ->
   proto_file_name:string ->
   services:bool ->
   Plugin.t list ->

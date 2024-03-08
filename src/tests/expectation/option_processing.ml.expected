@@ -25,6 +25,8 @@ and person = {
   id : person_id option;
 }
 
+type destructured_options = unit
+
 let rec default_payment_system () = (Cash:payment_system)
 
 let rec default_person_location 
@@ -53,6 +55,8 @@ and default_person
   id;
 }
 
+let rec default_destructured_options = ()
+
 [@@@ocaml.warning "-27-30-39"]
 
 (** {2 Dump of internal representation for generated OCaml types} *)
@@ -63,17 +67,27 @@ and default_person
   Const Variant: payment_system
     Constructor: Cash
       Binary Value: 0, String Value: CASH
-      Options: {"label": Constant_string "Cash"}
+      Options: [{
+   "(label)": "Cash"
+   }]
     Constructor: Credit_card
       Binary Value: 1, String Value: CREDIT_CARD
-      Options: {"label": Constant_string "Credit Card"}
+      Options: [{
+   "(label)": "Credit Card"
+   }]
     Constructor: Debit_card
       Binary Value: 2, String Value: DEBIT_CARD
-      Options: {"label": Constant_string "Debit Card"}
+      Options: [{
+   "(label)": "Debit Card"
+   }]
     Constructor: App
       Binary Value: 3, String Value: APP
-      Options: {"label": Constant_string "Mobile App"}
-  Options: {"label": Constant_string "Payment method"}
+      Options: [{
+   "(label)": "Mobile App"
+   }]
+  Options: [{
+   "(label)": "Payment method"
+   }]
 *)
 
 (* ----------------------------------------------------- *)
@@ -82,11 +96,17 @@ and default_person
   Record: person_location
   - Field: lat
     Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 1, Payload Kind: Pk_bits64)
-    Field options: {"validate.rules.double": {"gte": Constant_int -90, "lte": Constant_int 90}}
+    Field options: [{
+   "(validate.rules)": {"double": {"gte": -90,
+                                   "lte": 90}}
+   }]
   - Field: lng
     Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 2, Payload Kind: Pk_bits64)
-    Field options: {"validate.rules.double": {"gte": Constant_int -180, "lte": Constant_int 180}}
-  Options: {"validate.disabled": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"double": {"gte": -180,
+                                   "lte": 180}}
+   }]
+  Options: []
 *)
 
 (* ----------------------------------------------------- *)
@@ -97,18 +117,22 @@ and default_person
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_string
 
       Encoding Number: 6, Payload Kind: Pk_bytes
-      Options: {"validate.rules.string.prefix": Constant_string "foo"}
+      Options: [{
+   "(validate.rules)": {"string": {"prefix": "foo"}}
+   }]
     Constructor: Y
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_int32
 
       Encoding Number: 7, Payload Kind: Pk_varint (zigzag: false)
-      Options: {"validate.rules.int32.gt": Constant_int 0}
+      Options: [{
+   "(validate.rules)": {"int32": {"gt": 0}}
+   }]
     Constructor: Z
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_float
 
       Encoding Number: 8, Payload Kind: Pk_bits32
-      Options: {}
-  Options: {}
+      Options: []
+  Options: []
 *)
 
 (*
@@ -116,21 +140,51 @@ and default_person
   Record: person
   - Field: id
     Rft_nolabel (Field Type: Ft_basic_type: Bt_int64, Encoding: 1, Payload Kind: Pk_varint (zigzag: false))
-    Field options: {"validate.rules.uint64.gt": Constant_int 999}
+    Field options: [{
+   "(validate.rules)": {"uint64": {"gt": 999}}
+   }]
   - Field: email
     Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 2, Payload Kind: Pk_bytes)
-    Field options: {"validate.rules.string.email": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"string": {"email": true}}
+   }]
   - Field: name
     Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 3, Payload Kind: Pk_bytes)
-    Field options: {"validate.rules.string": {"pattern": Constant_string "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$", "max_bytes": Constant_int 256}}
+    Field options: [{
+   "(validate.rules)": {"string": {"pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+                                   "max_bytes": 256}}
+   }]
   - Field: home
     Rft_optional (Field Type: Ft_user_defined_type: person_location, Encoding: 4, Payload Kind: Pk_bytes, Default Value: None)
-    Field options: {"validate.rules.message.required": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"message": {"required": true}}
+   }]
   - Field: picture
     Rft_nolabel (Field Type: Ft_basic_type: Bt_bytes, Encoding: 5, Payload Kind: Pk_bytes)
-    Field options: {"validate.rules.bytes": {"not_in": [Constant_string "foo", Constant_string "bar", Constant_string "baz"]}}
+    Field options: [{
+   "(validate.rules)": {"bytes": {"not_in": ["foo",
+                                             "bar",
+                                             "baz"]}}
+   }]
   - Field: id
     Rft_variant: person_id
-    Field options: {"validate.required": Constant_bool true}
-  Options: {"validate.disabled": Constant_bool true}
+    Field options: [{
+   "(validate.required)": true
+   }]
+  Options: [{
+   "(validate.disabled)": true
+   }]
+*)
+
+(* ----------------------------------------------------- *)
+(*
+  Module Prefix: Option_processing
+  Empty Record: destructured_options
+  Options: [{
+   "(google.api.http)": {"custom": {"path": "/foo/bar/baz/{id}",
+                                    "kind": "FETCH"},
+                         "additional_bindings": [{"post": "/foo/bar/baz/",
+                                                  "body": "*"},
+                                                 {"get": "/foo/bar/baz/{id}"}]}
+   }]
 *)

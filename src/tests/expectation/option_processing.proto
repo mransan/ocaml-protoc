@@ -40,3 +40,15 @@ message Person {
     float  z = 8;
   }
 }
+
+message DestructuredOptions {
+  option (google.api.http).custom.kind = "FETCH";
+  option (google.api.http).custom.path = "/foo/bar/baz/{id}";
+  option (google.api.http).additional_bindings = {
+      get: "/foo/bar/baz/{id}"
+  };
+  option (google.api.http).additional_bindings = {
+      post: "/foo/bar/baz/",
+      body: "*"
+  };
+}

@@ -273,7 +273,7 @@
                   id = 7;
                   message_name = "OptionMessage";
                   message_body = [{
-                                    "my_option": true
+                                    "(my_option)": true
                                     };
                                   {
                                      field_name = "id";
@@ -281,7 +281,7 @@
                                      field_label = `Nolabel;
                                      field_type = Int32;
                                      field_options = [{
-                                                        "my_field_option": "value"
+                                                        "(my_field_option)": "value"
                                                         }];
                                      };
                                   {
@@ -713,7 +713,7 @@
                                      field_label = `Nolabel;
                                      field_type = Uint64;
                                      field_options = [{
-                                                        "validate.rules.uint64.gt": 999
+                                                        "(validate.rules).uint64.gt": 999
                                                         }];
                                      };
                                   {
@@ -722,7 +722,7 @@
                                      field_label = `Nolabel;
                                      field_type = String;
                                      field_options = [{
-                                                        "validate.rules.string.email": true
+                                                        "(validate.rules).string.email": true
                                                         }];
                                      };
                                   {
@@ -731,7 +731,7 @@
                                      field_label = `Nolabel;
                                      field_type = String;
                                      field_options = [{
-                                                        "validate.rules.string": {
+                                                        "(validate.rules).string": {
                                                       "pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
                                                       "max_bytes": 256}
                                                         }];
@@ -746,7 +746,7 @@
                                                      from_root: false
                                                      };
                                      field_options = [{
-                                                        "validate.rules.message.required": true
+                                                        "(validate.rules).message.required": true
                                                         }];
                                      };
                                   {
@@ -759,7 +759,7 @@
                                                         field_type = Double;
                                                         field_options = [
                                                         {
-                                                          "validate.rules.double": {
+                                                          "(validate.rules).double": {
                                                         "gte": -90,
                                                         "lte": 90}
                                                           }];
@@ -771,7 +771,7 @@
                                                         field_type = Double;
                                                         field_options = [
                                                         {
-                                                          "validate.rules.double": {
+                                                          "(validate.rules).double": {
                                                         "gte": -180,
                                                         "lte": 180}
                                                           }];
@@ -783,7 +783,7 @@
                   message_name = "Other";
                   message_body = [{oneof_name = "id";
                                      oneof_body = [{
-                                                     "validate.required": true
+                                                     "(validate.required)": true
                                                      };
                                                    {
                                                       field_name = "x";
@@ -792,7 +792,7 @@
                                                       field_type = String;
                                                       field_options = [
                                                       {
-                                                        "validate.rules.string.len": 5
+                                                        "(validate.rules).string.len": 5
                                                         }];
                                                       };
                                                    {
@@ -822,7 +822,7 @@
                                      field_label = `Nolabel;
                                      field_type = Uint32;
                                      field_options = [{
-                                                        "validate.rules.uint32": {
+                                                        "(validate.rules).uint32": {
                                                       "in": [1,
                                                              2,
                                                              3]}
@@ -834,7 +834,7 @@
                                      field_label = `Nolabel;
                                      field_type = Float;
                                      field_options = [{
-                                                        "validate.rules.float": {
+                                                        "(validate.rules).float": {
                                                       "not_in": [0,
                                                                  0.990000]}
                                                         }];
@@ -927,7 +927,7 @@
                {
                   service_name = "ShelfServiceV2";
                   service_body = [{
-                                    "some.config": "service_shelf"
+                                    "(some.config)": "service_shelf"
                                     };
                                   {
                                      rpc_name = "ListShelves";
@@ -996,10 +996,10 @@
                                   {
                                      rpc_name = "GetShelf";
                                      rpc_options = [{
-                                                      "const.config": "rpc_shelf"
+                                                      "(const.config)": "rpc_shelf"
                                                       },
                                                     {
-                                                      "google.api.http": {
+                                                      "(google.api.http)": {
                                                     "post": "/v1/shelves/{shelf}",
                                                     "body": "body"}
                                                       }];
