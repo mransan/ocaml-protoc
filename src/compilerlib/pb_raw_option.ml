@@ -44,7 +44,7 @@ let option_name_part_equal a b =
   | Extension_name a, Extension_name b -> String.equal a b
   | _ -> false
 
-let option_name_equal = List.equal option_name_part_equal
+let option_name_equal = Pb_util.List.equal option_name_part_equal
 let empty = []
 let add option_set option_name value = (option_name, value) :: option_set
 

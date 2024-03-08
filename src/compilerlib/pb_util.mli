@@ -84,6 +84,18 @@ module List : sig
 
   val find_opt : ('a -> bool) -> 'a list -> 'a option
   val find_map : ('a -> 'b option) -> 'a list -> 'b option
+
+  val equal : ('a -> 'a -> bool) -> 'a list -> 'a list -> bool
+  (** [equal eq [a1; ...; an] [b1; ..; bm]] holds when
+    the two input lists have the same length, and for each
+    pair of elements [ai], [bi] at the same position we have
+    [eq ai bi].
+
+    Note: the [eq] function may be called even if the
+    lists have different length. If you know your equality
+    function is costly, you may want to check {!compare_lengths}
+    first.
+*)
 end
 
 module Str_map : Map.S with type key = string
