@@ -42,6 +42,14 @@ val string_fold_lefti : ('a -> int -> char -> 'a) -> 'a -> string -> 'a
 val indentation_prefix : int -> string
 (** [indentation_prefix level] returns a string of [2 * level] spaces *)
 
+module String : sig
+  val starts_with :
+    prefix:(* comment thwarts tools/sync_stdlib_docs *) string -> string -> bool
+  (** [starts_with ][~prefix s] is [true] if and only if [s] starts with
+    [prefix].
+    *)
+end
+
 module Option : sig
   val default : 'a -> 'a option -> 'a
   (** [option_default x o] returns [x] is [o] is [None] otherwise [y]
@@ -93,6 +101,7 @@ module List : sig
 
     Note: the [eq] function may be called even if the
     lists have different length. If you know your equality
+
     function is costly, you may want to check {!compare_lengths}
     first.
 *)

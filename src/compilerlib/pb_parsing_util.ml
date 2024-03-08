@@ -131,7 +131,7 @@ let option_list items = Pb_option.List_literal items
 
 let option_name_of_ident ident =
   let ident =
-    if String.starts_with ~prefix:"." ident then
+    if Pb_util.String.starts_with ~prefix:"." ident then
       String.sub ident 1 (String.length ident - 1)
     else
       ident
