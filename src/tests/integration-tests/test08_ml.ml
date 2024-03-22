@@ -1,12 +1,36 @@
 module T = Test08
 
-let decode_ref_data () =
-  T.Node
-    {
-      T.value = 1l;
-      T.left = T.Node { T.value = 2l; T.left = T.Empty 0l; right = T.Empty 0l };
-      T.right = T.Node { T.value = 3l; T.left = T.Empty 0l; right = T.Empty 0l };
-    }
+let decode_ref_data () : T.tree =
+  {
+    t =
+      Some
+        (T.Node
+           {
+             T.value = 1l;
+             T.left =
+               {
+                 t =
+                   Some
+                     (T.Node
+                        {
+                          T.value = 2l;
+                          T.left = { t = Some (T.Empty 0l) };
+                          right = { t = Some (T.Empty 0l) };
+                        });
+               };
+             T.right =
+               {
+                 t =
+                   Some
+                     (T.Node
+                        {
+                          T.value = 3l;
+                          T.left = { t = Some (T.Empty 0l) };
+                          right = { t = Some (T.Empty 0l) };
+                        });
+               };
+           });
+  }
 
 let () =
   let mode = Test_util.parse_args () in

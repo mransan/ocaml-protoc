@@ -3,8 +3,28 @@ module T = Test07
 let decode_ref_data () =
   {
     T.value = 1l;
-    T.left = T.Node { T.value = 2l; T.left = T.Empty 0l; T.right = T.Empty 0l };
-    T.right = T.Node { T.value = 3l; T.left = T.Empty 0l; T.right = T.Empty 0l };
+    T.left =
+      {
+        t =
+          Some
+            (T.Node
+               {
+                 T.value = 2l;
+                 T.left = { t = Some (T.Empty 0l) };
+                 T.right = { t = Some (T.Empty 0l) };
+               });
+      };
+    T.right =
+      {
+        t =
+          Some
+            (T.Node
+               {
+                 T.value = 3l;
+                 T.left = { t = Some (T.Empty 0l) };
+                 T.right = { t = Some (T.Empty 0l) };
+               });
+      };
   }
 
 let () =
