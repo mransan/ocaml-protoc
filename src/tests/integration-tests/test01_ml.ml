@@ -9,7 +9,7 @@ let decode_ref_data () =
           last_name = "Doe";
           date_of_birth = 19820429l;
           tel_number = None;
-          employment = Employed_by "Google";
+          employment = Some (Employed_by "Google");
           marital_status = None;
           gender = Some Male;
         };
@@ -19,7 +19,7 @@ let decode_ref_data () =
           last_name = "Dupont";
           date_of_birth = 19820306l;
           tel_number = Some { area_code = 917l; number = 1111111l };
-          employment = Employed_by "INRIA";
+          employment = Some (Employed_by "INRIA");
           marital_status = None;
           gender = Some Female;
         };
@@ -52,7 +52,7 @@ let () =
         last_name = "Ransan";
         date_of_birth = 19820429l;
         tel_number = None;
-        employment = Self_employed 0l;
+        employment = None;
         marital_status = None;
         gender = None;
       }

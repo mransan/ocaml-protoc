@@ -3,8 +3,17 @@ module T = Test13
 let decode_pb_ref_data () =
   T.
     {
-      p2 = { empty = (); sub = Sub_empty };
-      p1 = { l = [ Empty; Int 1l; Empty; Int 2l ] };
+      p2 = { empty = (); sub = Some Sub_empty };
+      p1 =
+        {
+          l =
+            [
+              { t = Some Empty };
+              { t = Some (Int 1l) };
+              { t = Some Empty };
+              { t = Some (Int 2l) };
+            ];
+        };
     }
 
 let mode = Test_util.parse_args ()

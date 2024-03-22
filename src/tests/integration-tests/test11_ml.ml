@@ -12,7 +12,7 @@ let create_ref_data n =
               T.last_name = "Doe";
               T.date_of_birth = Int32.of_int n;
               T.tel_number = None;
-              T.employment = T.Employed_by "Google";
+              T.employment = Some (T.Employed_by "Google");
               T.marital_status = None;
             };
           T.p2 =
@@ -21,7 +21,7 @@ let create_ref_data n =
               T.last_name = "Dupont";
               T.date_of_birth = 19820306l;
               T.tel_number = Some { T.area_code = 917l; T.number = 1111111l };
-              T.employment = T.Employed_by "INRIA";
+              T.employment = Some (T.Employed_by "INRIA");
               T.marital_status = None;
             };
           T.contact_numbers =
