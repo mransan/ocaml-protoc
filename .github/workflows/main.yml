@@ -36,7 +36,7 @@ jobs:
     - run: opam exec -- dune runtest
 
     - run: sudo apt install protobuf-compiler libprotobuf-dev
-    - run: opam exec -- make integration
+    - run: opam exec -- make integration PB_LINC=/usr/lib/x86_64-linux-gnu/ PB_HINC=/usr/include/x86_64-linux-gnu/
 
   format:
     name: format
