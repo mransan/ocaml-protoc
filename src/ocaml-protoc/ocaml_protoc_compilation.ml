@@ -76,7 +76,7 @@ let compile cmdline cmd_line_files_options : Ot.proto * _ =
         {
           proto with
           Pt.file_options =
-            Pb_option.merge proto.Pt.file_options cmd_line_files_options;
+            Pb_raw_option.merge proto.Pt.file_options cmd_line_files_options;
         })
       protos
   in

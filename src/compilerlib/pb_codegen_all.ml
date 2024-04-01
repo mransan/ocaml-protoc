@@ -40,7 +40,7 @@ let new_ocaml_mod ~proto_file_options ~proto_file_name () : ocaml_mod =
   let self = { ml = F.empty_scope (); mli = F.empty_scope () } in
 
   let print_ppx sc =
-    match Pb_option.get proto_file_options "ocaml_file_ppx" with
+    match Pb_raw_option.get_ext proto_file_options "ocaml_file_ppx" with
     | None -> ()
     | Some Pb_option.(Scalar_value (Constant_string s)) ->
       F.linep sc "[@@@%s]" s

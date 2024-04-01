@@ -44,7 +44,6 @@ val validate : Pt.proto -> Pb_field_type.unresolved Tt.proto
 (** {2 Testing Only} *)
 
 val validate_message :
-  ?parent_options:Pb_option.set ->
   string ->
   Pb_option.set ->
   (* file options *)

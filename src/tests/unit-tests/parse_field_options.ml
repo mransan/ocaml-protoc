@@ -1,7 +1,7 @@
 let parse f s = f Pb_parsing_lexer.lexer (Lexing.from_string s)
 
 let has_option set option_name =
-  match Pb_option.get set option_name with
+  match Pb_raw_option.get_simple set option_name with
   | None -> false
   | Some _ -> true
 
@@ -9,7 +9,9 @@ module Pt = Pb_parsing_parse_tree
 
 let () =
   let test_default s =
-    Pb_option.get (parse Pb_parsing_parser.field_options_ s) "default"
+    Pb_raw_option.get_simple
+      (parse Pb_parsing_parser.field_options_ s)
+      "default"
     |> function
     | Some (Pb_option.Scalar_value x) -> x
     | _ -> assert false
@@ -32,7 +34,7 @@ let () =
 
 let () =
   let field_options = parse Pb_parsing_parser.field_options_ "[]" in
-  assert (field_options = Pb_option.empty)
+  assert (field_options = Pb_raw_option.empty)
 
 let () =
   let field_options = parse Pb_parsing_parser.field_options_ "[a=1,b=true]" in
@@ -46,6 +48,6 @@ let () =
   in
   assert (
     Some Pb_option.(Scalar_value (Constant_literal "int"))
-    = Pb_option.get field_options "ocaml_type")
+    = Pb_raw_option.get_ext field_options "ocaml_type")
 
 let () = print_endline "Parse Field Options ... Ok"
