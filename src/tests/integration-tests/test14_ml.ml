@@ -4,10 +4,10 @@ let decode_pb_ref_data () =
   T.
     {
       da = { aa = [ 1l; 2l; 3l; 4l ] };
-      db = Ba { aa = [ 1l; 2l; 3l; 4l ] };
+      db = { sub = Some (Ba { aa = [ 1l; 2l; 3l; 4l ] }) };
       dc =
         {
-          sub = Ca { aa = [ 1l; 2l; 3l; 4l ] };
+          sub = Some (Ca { aa = [ 1l; 2l; 3l; 4l ] });
           cc = Some { aa = [ 1l; 2l; 3l; 4l ] };
         };
     }
