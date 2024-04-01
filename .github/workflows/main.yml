@@ -35,6 +35,8 @@ jobs:
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
 
+    # integration tests
+    - run: opam install ppx_deriving -y
     - run: sudo apt install protobuf-compiler libprotobuf-dev
     - run: opam exec -- make integration PB_LINC=/usr/lib/x86_64-linux-gnu/ PB_HINC=/usr/include/x86_64-linux-gnu/
 
