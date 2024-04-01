@@ -1,6 +1,6 @@
 module T = Test24
 
-let decode_pb_ref_data () : T.a = T.Value "value"
+let decode_pb_ref_data () : T.a = T.{ x = Some (Value "value") }
 
 let () =
   let mode = Test_util.parse_args () in
