@@ -34,7 +34,23 @@ jobs:
     - run: opam install -t . --deps-only
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
-      #- run: opam exec -- make integration
+
+    - run: sudo apt install protobuf-compiler libprotobuf-dev
+    - run: opam exec -- make integration
+
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      #with:
+      #  submodules: true
+    - uses: ocaml/setup-ocaml@v2
+      with:
+        ocaml-compiler: 5.1
+        allow-prerelease-opam: true
+        dune-cache: true
+          #- run: sudo apt install protobuf-compiler libprotobuf-dev
     - run: opam install ocamlformat.0.24.1
     - run: opam exec -- dune build @fmt --auto-promote
     - run: git diff -q
