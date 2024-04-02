@@ -32,20 +32,23 @@ tests:
 
 # location of where the Google protoc compiler is installed
 PB_INSTALL ?= /usr/
-PB_HINC    = $(PB_INSTALL)/include
-PB_LINC    = $(PB_INSTALL)/lib
+PB_HINC    ?= $(PB_INSTALL)/include
+PB_LINC    ?= $(PB_INSTALL)/lib
 PROTOC     = $(PB_INSTALL)/bin/protoc
+
+PB_HINC_I = $(addprefix -I, $(PB_HINC))
+PB_LINC_L = $(addprefix -L, $(PB_LINC))
 
 export LD_LIBRARY_PATH=$(PB_LINC)
 
 $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
 	cd $(OCAMLOPTIONS_HINC) && \
-		$(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
+		$(PROTOC) --cpp_out ./ -I ./ $(PB_HINC_I) ocamloptions.proto
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
-		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
-		-L $(PB_LINC) \
+		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) $(PB_HINC_L) \
+		$(PB_LINC_L) \
 		$? \
 		-o $@ -l protobuf
 
@@ -54,8 +57,8 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
-		-I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) \
-		-L $(PB_LINC) -l protobuf \
+		-I ./ -I $(INTEGRATION_TESTS_DIR)  $(PB_HINC_I) \
+		$(PB_LINC_L) -l protobuf \
 		$? \
 		-o $@
 
@@ -64,7 +67,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 %.pb.cc: %.proto
 	$(PROTOC) \
 		--cpp_out $(INTEGRATION_TESTS_DIR) \
-		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) \
+		$(PB_HINC_I) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) \
 		$<
 
 
