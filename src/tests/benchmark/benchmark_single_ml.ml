@@ -45,8 +45,12 @@ let make_test_requests ~number_of_sample test_ids =
       let file_name =
         Printf.sprintf "test_%s_%i.data" (string_of_test_id test_id) difficulty
       in
-      let encode = Bench_t.{ type_ = Encode difficulty; file_name; test_id } in
-      let decode = Bench_t.{ type_ = Decode; file_name; test_id } in
+      let encode =
+        Bench_t.{ type_ = { t = Some (Encode difficulty) }; file_name; test_id }
+      in
+      let decode =
+        Bench_t.{ type_ = { t = Some Decode }; file_name; test_id }
+      in
 
       let init_cases, test_cases = acc in
       let test_cases = Util.append_n test_cases encode number_of_sample in
@@ -150,10 +154,10 @@ let print_compare_type ~metric responses test_ids =
             (fun data ->
               let open Bench_t in
               match data, metric with
-              | Encode { encode_time; _ }, `Encode_time ->
+              | Some (Encode { encode_time; _ }), `Encode_time ->
                 sum := !sum +. encode_time;
                 incr counter
-              | Decode { decode_time; _ }, `Decode_time ->
+              | Some (Decode { decode_time; _ }), `Decode_time ->
                 sum := !sum +. decode_time;
                 incr counter
               | _ -> ())
