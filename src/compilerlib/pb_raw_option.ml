@@ -48,6 +48,15 @@ let option_name_equal = Pb_util.List.equal option_name_part_equal
 let empty = []
 let add option_set option_name value = (option_name, value) :: option_set
 
+let add_or_replace option_set option_name value =
+  let option_set =
+    List.filter
+      (fun (option_name', _) ->
+        not (option_name_equal option_name' option_name))
+      option_set
+  in
+  add option_set option_name value
+
 let get t option_name =
   match List.find (fun (other, _) -> option_name_equal option_name other) t with
   | _, c -> Some c
