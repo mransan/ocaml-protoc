@@ -6,7 +6,10 @@
 
 (rule
  (targets test01.ml test01.mli)
- (deps test01.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test01.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ./ -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ocaml_all_types_ppx
@@ -21,7 +24,10 @@
 
 (rule
  (targets test02.ml test02.mli)
- (deps test02.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test02.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test02.proto)))
 
@@ -32,7 +38,10 @@
 
 (rule
  (targets test04.ml test04.mli)
- (deps test04.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test04.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test04.proto)))
 
@@ -43,7 +52,10 @@
 
 (rule
  (targets test05.ml test05.mli)
- (deps test05.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test05.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test05.proto)))
 
@@ -54,7 +66,10 @@
 
 (rule
  (targets test06.ml test06.mli)
- (deps test06.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test06.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test06.proto)))
 
@@ -65,7 +80,10 @@
 
 (rule
  (targets test07.ml test07.mli)
- (deps test07.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test07.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test07.proto)))
 
@@ -76,7 +94,10 @@
 
 (rule
  (targets test08.ml test08.mli)
- (deps test08.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test08.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test08.proto)))
 
@@ -87,7 +108,10 @@
 
 (rule
  (targets test09.ml test09.mli)
- (deps test09.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test09.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test09.proto)))
 
@@ -104,7 +128,10 @@
 
 (rule
  (targets test10.ml test10.mli)
- (deps test10.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test10.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test10.proto)))
 
@@ -115,7 +142,10 @@
 
 (rule
  (targets test11.ml test11.mli)
- (deps test11.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test11.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test11.proto)))
 
@@ -126,7 +156,10 @@
 
 (rule
  (targets test12.ml test12.mli)
- (deps test12.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test12.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test12.proto)))
 
@@ -137,7 +170,10 @@
 
 (rule
  (targets test13.ml test13.mli)
- (deps test13.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test13.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test13.proto)))
 
@@ -148,7 +184,10 @@
 
 (rule
  (targets test14.ml test14.mli)
- (deps test14.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test14.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test14.proto)))
 
@@ -159,7 +198,10 @@
 
 (rule
  (targets test15.ml test15.mli)
- (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test15.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test15.proto)))
@@ -171,7 +213,10 @@
 
 (rule
  (targets test16.ml test16.mli)
- (deps test16.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test16.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test16.proto)))
@@ -183,7 +228,10 @@
 
 (rule
  (targets test17.ml test17.mli)
- (deps test17.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test17.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test17.proto)))
@@ -195,7 +243,10 @@
 
 (rule
  (targets test18.ml test18.mli)
- (deps test18.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test18.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test18.proto)))
@@ -207,7 +258,10 @@
 
 (rule
  (targets test19.ml test19.mli)
- (deps test19.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test19.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test19.proto)))
@@ -219,7 +273,10 @@
 
 (rule
  (targets test20.ml test20.mli)
- (deps test20.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test20.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test20.proto)))
@@ -233,7 +290,10 @@
 
 (rule
  (targets test21.ml test21.mli)
- (deps test21.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test21.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test21.proto)))
@@ -247,7 +307,10 @@
 
 (rule
  (targets test22.ml test22.mli)
- (deps test22.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test22.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test22.proto)))
 
@@ -258,7 +321,10 @@
 
 (rule
  (targets test23.ml test23.mli)
- (deps test23.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test23.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test23.proto)))
 
@@ -269,7 +335,10 @@
 
 (rule
  (targets test24.ml test24.mli)
- (deps test24.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test24.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test24.proto)))
 
@@ -280,7 +349,10 @@
 
 (rule
  (targets test25.ml test25.mli)
- (deps test25.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test25.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test25.proto)))
 
@@ -291,7 +363,10 @@
 
 (rule
  (targets test26.ml test26.mli)
- (deps test26.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test26.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc -I %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./
     ./ test26.proto)))
@@ -303,7 +378,10 @@
 
 (rule
  (targets test27.ml test27.mli)
- (deps test27.proto ../../include/ocaml-protoc/ocamloptions.proto (source_tree google))
+ (deps
+  test27.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ test27.proto)))
 
