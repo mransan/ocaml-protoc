@@ -51,3 +51,5 @@ val validate_message :
   Tt.type_scope ->
   Pt.message ->
   Pb_field_type.unresolved Tt.proto_type list
+
+val compile_options : Pb_raw_option.set -> Pb_option.set

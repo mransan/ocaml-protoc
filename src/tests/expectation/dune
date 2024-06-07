@@ -1,5 +1,13 @@
 (test
- (name tests)
+ (name test_option_parsing)
+ (modules Test_option_parsing)
+ (libraries pbrt ocaml-protoc.compiler-lib)
+ (package ocaml-protoc)
+ (flags :standard -open Ocaml_protoc_compiler_lib))
+
+(test
+ (name test_option_compilation)
+ (modules Test_option_compilation)
  (libraries pbrt ocaml-protoc.compiler-lib)
  (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))
