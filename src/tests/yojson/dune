@@ -6,7 +6,7 @@
 (rule
  (targets yojson_unittest.ml yojson_unittest.mli)
  (deps
-   (:protoc %{project_root}/src/ocaml-protoc/ocaml_protoc.exe)
+  (:protoc %{project_root}/src/ocaml-protoc/ocaml_protoc.exe)
   (:file yojson_unittest.proto))
  (action
   (run %{protoc} %{file} --yojson --ml_out=.)))
