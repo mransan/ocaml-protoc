@@ -18,5 +18,5 @@ RUN opam exec -- dune runtest
 
 # integration tests
 RUN opam install ppx_deriving -y
-RUN opam exec -- make clean build integration PB_LINC=/usr/lib/x86_64-linux-gnu/ PB_HINC=/usr/include/x86_64-linux-gnu/
+RUN opam exec -- make clean build integration PB_LINC=/usr/lib/x86_64-linux-gnu/ PB_HINC=/usr/include/
 

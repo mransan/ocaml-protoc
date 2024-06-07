@@ -48,7 +48,7 @@ $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) $(PB_HINC_L) \
-		$(PB_LINC_L) \
+		$(PB_LINC_L) $(PB_HINC_I) \
 		$? \
 		-o $@ -l protobuf
 
@@ -58,7 +58,7 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR)  \
-		$(PB_LINC_L) \
+		$(PB_LINC_L) $(PB_HINC_I) \
 		$? \
 		-o $@ -l protobuf
 
