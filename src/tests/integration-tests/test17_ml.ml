@@ -1,7 +1,7 @@
 module T = Test17
 
 let decode_pb_ref_data () =
-  T.{ m1 = { i1 = 1; i2 = 2 }; m2 = 1; m3 = 1; o = M4 4 }
+  T.{ m1 = { i1 = 1; i2 = 2 }; m2 = 1; m3 = 1; o = Some (M4 4) }
 
 let mode = Test_util.parse_args ()
 

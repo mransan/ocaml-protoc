@@ -27,8 +27,9 @@ end
 
 module Make (T : T_sig) : Runner_sig = struct
   let run { Benchmark.type_; file_name; test_id } =
-    match type_ with
-    | Benchmark.Encode difficulty ->
+    match type_.t with
+    | None -> failwith "missing benchmark"
+    | Some (Encode difficulty) ->
       let t0 = Unix.gettimeofday () in
 
       let encoder = Pbrt.Encoder.create () in
@@ -53,8 +54,8 @@ module Make (T : T_sig) : Runner_sig = struct
           }
       in
 
-      Benchmark.{ difficulty_size; test_id; data = Encode encode_data }
-    | Benchmark.Decode ->
+      Benchmark.{ difficulty_size; test_id; data = Some (Encode encode_data) }
+    | Some Decode ->
       let t0 = Unix.gettimeofday () in
       let ic = open_in file_name in
       let len = in_channel_length ic in
@@ -69,11 +70,12 @@ module Make (T : T_sig) : Runner_sig = struct
           difficulty_size = T.difficulty_size v;
           test_id;
           data =
-            Decode
-              {
-                Benchmark.from_file_time = t1 -. t0;
-                Benchmark.decode_time = t2 -. t1;
-              };
+            Some
+              (Decode
+                 {
+                   Benchmark.from_file_time = t1 -. t0;
+                   Benchmark.decode_time = t2 -. t1;
+                 });
         }
 end
 (* Make *)

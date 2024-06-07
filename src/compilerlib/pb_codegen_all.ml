@@ -48,7 +48,7 @@ let new_ocaml_mod ~proto_file_options ~proto_file_name () : ocaml_mod =
   in
 
   (* write preludes *)
-  F.line self.ml "[@@@ocaml.warning \"-27-30-39\"]";
+  F.line self.ml "[@@@ocaml.warning \"-27-30-39-44\"]";
   F.empty_line self.ml;
   print_ppx self.ml;
   F.empty_line self.mli;

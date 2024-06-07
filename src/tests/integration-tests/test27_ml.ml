@@ -5,7 +5,7 @@ let test_data () =
     {
       enum1 = Value_with_option;
       unit_ = Some { unit_field = 1l };
-      one_of_is_keyword = Some (One_of_is_keyword_field 1l);
+      one_of_is_keyword = Some { message = Some (One_of_is_keyword_field 1l) };
     }
 
 let () =

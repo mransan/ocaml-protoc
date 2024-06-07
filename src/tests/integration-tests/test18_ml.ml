@@ -9,7 +9,8 @@ let decode_pb_ref_data () =
       int_to_message_value =
         [ 1l, { mv_field = "one" }; 2l, { mv_field = "two" } ];
       int_to_enum_value = [ 1l, Ev_1; 2l, Ev_2 ];
-      int_to_oneof_value = [ 1l, Ov_field1 "one"; 2l, Ov_field2 2l ];
+      int_to_oneof_value =
+        [ 1l, { t = Some (Ov_field1 "one") }; 2l, { t = Some (Ov_field2 2l) } ];
     }
 
 let mode = Test_util.parse_args ()

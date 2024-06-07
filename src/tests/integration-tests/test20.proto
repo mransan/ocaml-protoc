@@ -12,6 +12,7 @@ message M {
   option (ocaml_type_ppx) = "deriving show"; 
   required int32 f1 = 1;
   message Sub {
+    option (ocaml_type_ppx) = "deriving show"; 
     required int32 sub_f1 = 1;
   }
   required Sub f2 = 2; 

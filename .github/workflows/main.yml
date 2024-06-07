@@ -21,8 +21,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-      #with:
-      #  submodules: true
+      with:
+        submodules: true
     - uses: ocaml/setup-ocaml@v2
       with:
         ocaml-compiler: ${{ matrix.ocaml-compiler }}
@@ -34,7 +34,29 @@ jobs:
     - run: opam install -t . --deps-only
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
-      #- run: opam exec -- make integration
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - run: docker build -f dep/Dockerfile . --target=base
+    - run: docker build -f dep/Dockerfile . --target=run-the-damn-build
+
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      #with:
+      #  submodules: true
+    - uses: ocaml/setup-ocaml@v2
+      with:
+        ocaml-compiler: 5.1
+        allow-prerelease-opam: true
+        dune-cache: true
+          #- run: sudo apt install protobuf-compiler libprotobuf-dev
     - run: opam install ocamlformat.0.24.1
     - run: opam exec -- dune build @fmt --auto-promote
     - run: git diff -q
