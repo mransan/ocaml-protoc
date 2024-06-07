@@ -63,6 +63,7 @@ type set = t list
 val stringify_option_name : option_name -> string
 val empty : set
 val add : set -> option_name -> Pb_option.value -> set
+val add_or_replace : set -> option_name -> Pb_option.value -> set
 
 val merge : set -> set -> set
 (** [merge s1 s2] adds all the options from [s2] to [s1]. This means
