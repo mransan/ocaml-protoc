@@ -328,7 +328,7 @@ let finalize_syntax3 proto =
                 | `Bool ->
                   let field_options =
                     Pb_raw_option.(
-                      add field_options [ Simple_name "packed" ]
+                      add_or_replace field_options [ Simple_name "packed" ]
                         (Scalar_value (Constant_bool true)))
                   in
                   { field with Pt.field_options }

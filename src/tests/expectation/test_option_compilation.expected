@@ -60,15 +60,11 @@ COMPILED:
 RAW:
 [{
    "packed": true
-   },
- {
-   "packed": true
    }]
 
 COMPILED:
 [{
-   "packed": [true,
-              true]
+   "packed": true
    }]
 
 -- message options --
