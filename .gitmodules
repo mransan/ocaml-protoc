@@ -1,3 +1,0 @@
-[submodule "src/runtime-bs"]
-	path = src/runtime-bs
-	url = https://github.com/mransan/bs-ocaml-protoc-json.git
