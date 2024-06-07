@@ -1,0 +1,82 @@
+====================== <PROTO> ======================
+
+      message M {
+        option packed = true;
+      }
+    
+===================== </PROTO> ======================
+======================= <OPTIONS COMPILATION> =======================
+-- message options --
+RAW:
+[{
+   "packed": true
+   }]
+
+COMPILED:
+[{
+   "packed": true
+   }]
+====================== </OPTIONS COMPILATION> =======================
+
+
+====================== <PROTO> ======================
+
+      message PackedField {
+        repeated float inner = 1 [packed=true];
+      }
+    
+===================== </PROTO> ======================
+======================= <OPTIONS COMPILATION> =======================
+-- field options --
+RAW:
+[{
+   "packed": true
+   }]
+
+COMPILED:
+[{
+   "packed": true
+   }]
+
+-- message options --
+RAW:
+[]
+
+COMPILED:
+[]
+====================== </OPTIONS COMPILATION> =======================
+
+
+====================== <PROTO> ======================
+
+      syntax = "proto3";
+      message PackedField {
+        repeated float inner = 1 [packed=true];
+      }
+    
+===================== </PROTO> ======================
+======================= <OPTIONS COMPILATION> =======================
+-- field options --
+RAW:
+[{
+   "packed": true
+   },
+ {
+   "packed": true
+   }]
+
+COMPILED:
+[{
+   "packed": [true,
+              true]
+   }]
+
+-- message options --
+RAW:
+[]
+
+COMPILED:
+[]
+====================== </OPTIONS COMPILATION> =======================
+
+
