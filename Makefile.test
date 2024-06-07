@@ -57,10 +57,10 @@ $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
-		-I ./ -I $(INTEGRATION_TESTS_DIR)  $(PB_HINC_I) \
-		$(PB_LINC_L) -l protobuf \
+		-I ./ -I $(INTEGRATION_TESTS_DIR)  \
+		$(PB_LINC_L) \
 		$? \
-		-o $@
+		-o $@ -l protobuf
 
 .SECONDARY:
 
