@@ -1,0 +1,2480 @@
+[@@@ocaml.warning "-27-30-39-44"]
+
+type message_options = {
+  disabled : bool option;
+  ignored : bool option;
+}
+
+type oneof_options = {
+  required : bool option;
+}
+
+type message_rules = {
+  skip : bool option;
+  required : bool option;
+}
+
+type float_rules = {
+  const : float option;
+  lt : float option;
+  lte : float option;
+  gt : float option;
+  gte : float option;
+  in_ : float list;
+  not_in : float list;
+  ignore_empty : bool option;
+}
+
+type double_rules = {
+  const : float option;
+  lt : float option;
+  lte : float option;
+  gt : float option;
+  gte : float option;
+  in_ : float list;
+  not_in : float list;
+  ignore_empty : bool option;
+}
+
+type int32_rules = {
+  const : int32 option;
+  lt : int32 option;
+  lte : int32 option;
+  gt : int32 option;
+  gte : int32 option;
+  in_ : int32 list;
+  not_in : int32 list;
+  ignore_empty : bool option;
+}
+
+type int64_rules = {
+  const : int64 option;
+  lt : int64 option;
+  lte : int64 option;
+  gt : int64 option;
+  gte : int64 option;
+  in_ : int64 list;
+  not_in : int64 list;
+  ignore_empty : bool option;
+}
+
+type uint32_rules = {
+  const : int32 option;
+  lt : int32 option;
+  lte : int32 option;
+  gt : int32 option;
+  gte : int32 option;
+  in_ : int32 list;
+  not_in : int32 list;
+  ignore_empty : bool option;
+}
+
+type uint64_rules = {
+  const : int64 option;
+  lt : int64 option;
+  lte : int64 option;
+  gt : int64 option;
+  gte : int64 option;
+  in_ : int64 list;
+  not_in : int64 list;
+  ignore_empty : bool option;
+}
+
+type sint32_rules = {
+  const : int32 option;
+  lt : int32 option;
+  lte : int32 option;
+  gt : int32 option;
+  gte : int32 option;
+  in_ : int32 list;
+  not_in : int32 list;
+  ignore_empty : bool option;
+}
+
+type sint64_rules = {
+  const : int64 option;
+  lt : int64 option;
+  lte : int64 option;
+  gt : int64 option;
+  gte : int64 option;
+  in_ : int64 list;
+  not_in : int64 list;
+  ignore_empty : bool option;
+}
+
+type fixed32_rules = {
+  const : int32 option;
+  lt : int32 option;
+  lte : int32 option;
+  gt : int32 option;
+  gte : int32 option;
+  in_ : int32 list;
+  not_in : int32 list;
+  ignore_empty : bool option;
+}
+
+type fixed64_rules = {
+  const : int64 option;
+  lt : int64 option;
+  lte : int64 option;
+  gt : int64 option;
+  gte : int64 option;
+  in_ : int64 list;
+  not_in : int64 list;
+  ignore_empty : bool option;
+}
+
+type sfixed32_rules = {
+  const : int32 option;
+  lt : int32 option;
+  lte : int32 option;
+  gt : int32 option;
+  gte : int32 option;
+  in_ : int32 list;
+  not_in : int32 list;
+  ignore_empty : bool option;
+}
+
+type sfixed64_rules = {
+  const : int64 option;
+  lt : int64 option;
+  lte : int64 option;
+  gt : int64 option;
+  gte : int64 option;
+  in_ : int64 list;
+  not_in : int64 list;
+  ignore_empty : bool option;
+}
+
+type bool_rules = {
+  const : bool option;
+}
+
+type known_regex =
+  | Unknown 
+  | Http_header_name 
+  | Http_header_value 
+
+type string_rules_well_known =
+  | Email of bool
+  | Hostname of bool
+  | Ip of bool
+  | Ipv4 of bool
+  | Ipv6 of bool
+  | Uri of bool
+  | Uri_ref of bool
+  | Address of bool
+  | Uuid of bool
+  | Well_known_regex of known_regex
+
+and string_rules = {
+  const : string option;
+  len : int64 option;
+  min_len : int64 option;
+  max_len : int64 option;
+  len_bytes : int64 option;
+  min_bytes : int64 option;
+  max_bytes : int64 option;
+  pattern : string option;
+  prefix : string option;
+  suffix : string option;
+  contains : string option;
+  not_contains : string option;
+  in_ : string list;
+  not_in : string list;
+  well_known : string_rules_well_known option;
+  strict : bool option;
+  ignore_empty : bool option;
+}
+
+type bytes_rules_well_known =
+  | Ip of bool
+  | Ipv4 of bool
+  | Ipv6 of bool
+
+and bytes_rules = {
+  const : bytes option;
+  len : int64 option;
+  min_len : int64 option;
+  max_len : int64 option;
+  pattern : string option;
+  prefix : bytes option;
+  suffix : bytes option;
+  contains : bytes option;
+  in_ : bytes list;
+  not_in : bytes list;
+  well_known : bytes_rules_well_known option;
+  ignore_empty : bool option;
+}
+
+type enum_rules = {
+  const : int32 option;
+  defined_only : bool option;
+  in_ : int32 list;
+  not_in : int32 list;
+}
+
+type any_rules = {
+  required : bool option;
+  in_ : string list;
+  not_in : string list;
+}
+
+type field_rules_type =
+  | Float of float_rules
+  | Double of double_rules
+  | Int32 of int32_rules
+  | Int64 of int64_rules
+  | Uint32 of uint32_rules
+  | Uint64 of uint64_rules
+  | Sint32 of sint32_rules
+  | Sint64 of sint64_rules
+  | Fixed32 of fixed32_rules
+  | Fixed64 of fixed64_rules
+  | Sfixed32 of sfixed32_rules
+  | Sfixed64 of sfixed64_rules
+  | Bool of bool_rules
+  | String of string_rules
+  | Bytes of bytes_rules
+  | Enum of enum_rules
+  | Repeated of repeated_rules
+  | Map of map_rules
+  | Any of any_rules
+
+and field_rules = {
+  message : message_rules option;
+  type_ : field_rules_type option;
+}
+
+and repeated_rules = {
+  min_items : int64 option;
+  max_items : int64 option;
+  unique : bool option;
+  items : field_rules option;
+  ignore_empty : bool option;
+}
+
+and map_rules = {
+  min_pairs : int64 option;
+  max_pairs : int64 option;
+  no_sparse : bool option;
+  keys : field_rules option;
+  values : field_rules option;
+  ignore_empty : bool option;
+}
+
+type field_options = {
+  rules : field_rules option;
+}
+
+let rec default_message_options 
+  ?disabled:((disabled:bool option) = None)
+  ?ignored:((ignored:bool option) = None)
+  () : message_options  = {
+  disabled;
+  ignored;
+}
+
+let rec default_oneof_options 
+  ?required:((required:bool option) = None)
+  () : oneof_options  = {
+  required;
+}
+
+let rec default_message_rules 
+  ?skip:((skip:bool option) = None)
+  ?required:((required:bool option) = None)
+  () : message_rules  = {
+  skip;
+  required;
+}
+
+let rec default_float_rules 
+  ?const:((const:float option) = None)
+  ?lt:((lt:float option) = None)
+  ?lte:((lte:float option) = None)
+  ?gt:((gt:float option) = None)
+  ?gte:((gte:float option) = None)
+  ?in_:((in_:float list) = [])
+  ?not_in:((not_in:float list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : float_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_double_rules 
+  ?const:((const:float option) = None)
+  ?lt:((lt:float option) = None)
+  ?lte:((lte:float option) = None)
+  ?gt:((gt:float option) = None)
+  ?gte:((gte:float option) = None)
+  ?in_:((in_:float list) = [])
+  ?not_in:((not_in:float list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : double_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_int32_rules 
+  ?const:((const:int32 option) = None)
+  ?lt:((lt:int32 option) = None)
+  ?lte:((lte:int32 option) = None)
+  ?gt:((gt:int32 option) = None)
+  ?gte:((gte:int32 option) = None)
+  ?in_:((in_:int32 list) = [])
+  ?not_in:((not_in:int32 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : int32_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_int64_rules 
+  ?const:((const:int64 option) = None)
+  ?lt:((lt:int64 option) = None)
+  ?lte:((lte:int64 option) = None)
+  ?gt:((gt:int64 option) = None)
+  ?gte:((gte:int64 option) = None)
+  ?in_:((in_:int64 list) = [])
+  ?not_in:((not_in:int64 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : int64_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_uint32_rules 
+  ?const:((const:int32 option) = None)
+  ?lt:((lt:int32 option) = None)
+  ?lte:((lte:int32 option) = None)
+  ?gt:((gt:int32 option) = None)
+  ?gte:((gte:int32 option) = None)
+  ?in_:((in_:int32 list) = [])
+  ?not_in:((not_in:int32 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : uint32_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_uint64_rules 
+  ?const:((const:int64 option) = None)
+  ?lt:((lt:int64 option) = None)
+  ?lte:((lte:int64 option) = None)
+  ?gt:((gt:int64 option) = None)
+  ?gte:((gte:int64 option) = None)
+  ?in_:((in_:int64 list) = [])
+  ?not_in:((not_in:int64 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : uint64_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_sint32_rules 
+  ?const:((const:int32 option) = None)
+  ?lt:((lt:int32 option) = None)
+  ?lte:((lte:int32 option) = None)
+  ?gt:((gt:int32 option) = None)
+  ?gte:((gte:int32 option) = None)
+  ?in_:((in_:int32 list) = [])
+  ?not_in:((not_in:int32 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : sint32_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_sint64_rules 
+  ?const:((const:int64 option) = None)
+  ?lt:((lt:int64 option) = None)
+  ?lte:((lte:int64 option) = None)
+  ?gt:((gt:int64 option) = None)
+  ?gte:((gte:int64 option) = None)
+  ?in_:((in_:int64 list) = [])
+  ?not_in:((not_in:int64 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : sint64_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_fixed32_rules 
+  ?const:((const:int32 option) = None)
+  ?lt:((lt:int32 option) = None)
+  ?lte:((lte:int32 option) = None)
+  ?gt:((gt:int32 option) = None)
+  ?gte:((gte:int32 option) = None)
+  ?in_:((in_:int32 list) = [])
+  ?not_in:((not_in:int32 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : fixed32_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_fixed64_rules 
+  ?const:((const:int64 option) = None)
+  ?lt:((lt:int64 option) = None)
+  ?lte:((lte:int64 option) = None)
+  ?gt:((gt:int64 option) = None)
+  ?gte:((gte:int64 option) = None)
+  ?in_:((in_:int64 list) = [])
+  ?not_in:((not_in:int64 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : fixed64_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_sfixed32_rules 
+  ?const:((const:int32 option) = None)
+  ?lt:((lt:int32 option) = None)
+  ?lte:((lte:int32 option) = None)
+  ?gt:((gt:int32 option) = None)
+  ?gte:((gte:int32 option) = None)
+  ?in_:((in_:int32 list) = [])
+  ?not_in:((not_in:int32 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : sfixed32_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_sfixed64_rules 
+  ?const:((const:int64 option) = None)
+  ?lt:((lt:int64 option) = None)
+  ?lte:((lte:int64 option) = None)
+  ?gt:((gt:int64 option) = None)
+  ?gte:((gte:int64 option) = None)
+  ?in_:((in_:int64 list) = [])
+  ?not_in:((not_in:int64 list) = [])
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : sfixed64_rules  = {
+  const;
+  lt;
+  lte;
+  gt;
+  gte;
+  in_;
+  not_in;
+  ignore_empty;
+}
+
+let rec default_bool_rules 
+  ?const:((const:bool option) = None)
+  () : bool_rules  = {
+  const;
+}
+
+let rec default_known_regex () = (Unknown:known_regex)
+
+let rec default_string_rules_well_known () : string_rules_well_known = Email (false)
+
+and default_string_rules 
+  ?const:((const:string option) = None)
+  ?len:((len:int64 option) = None)
+  ?min_len:((min_len:int64 option) = None)
+  ?max_len:((max_len:int64 option) = None)
+  ?len_bytes:((len_bytes:int64 option) = None)
+  ?min_bytes:((min_bytes:int64 option) = None)
+  ?max_bytes:((max_bytes:int64 option) = None)
+  ?pattern:((pattern:string option) = None)
+  ?prefix:((prefix:string option) = None)
+  ?suffix:((suffix:string option) = None)
+  ?contains:((contains:string option) = None)
+  ?not_contains:((not_contains:string option) = None)
+  ?in_:((in_:string list) = [])
+  ?not_in:((not_in:string list) = [])
+  ?well_known:((well_known:string_rules_well_known option) = None)
+  ?strict:((strict:bool option) = Some (true))
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : string_rules  = {
+  const;
+  len;
+  min_len;
+  max_len;
+  len_bytes;
+  min_bytes;
+  max_bytes;
+  pattern;
+  prefix;
+  suffix;
+  contains;
+  not_contains;
+  in_;
+  not_in;
+  well_known;
+  strict;
+  ignore_empty;
+}
+
+let rec default_bytes_rules_well_known () : bytes_rules_well_known = Ip (false)
+
+and default_bytes_rules 
+  ?const:((const:bytes option) = None)
+  ?len:((len:int64 option) = None)
+  ?min_len:((min_len:int64 option) = None)
+  ?max_len:((max_len:int64 option) = None)
+  ?pattern:((pattern:string option) = None)
+  ?prefix:((prefix:bytes option) = None)
+  ?suffix:((suffix:bytes option) = None)
+  ?contains:((contains:bytes option) = None)
+  ?in_:((in_:bytes list) = [])
+  ?not_in:((not_in:bytes list) = [])
+  ?well_known:((well_known:bytes_rules_well_known option) = None)
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : bytes_rules  = {
+  const;
+  len;
+  min_len;
+  max_len;
+  pattern;
+  prefix;
+  suffix;
+  contains;
+  in_;
+  not_in;
+  well_known;
+  ignore_empty;
+}
+
+let rec default_enum_rules 
+  ?const:((const:int32 option) = None)
+  ?defined_only:((defined_only:bool option) = None)
+  ?in_:((in_:int32 list) = [])
+  ?not_in:((not_in:int32 list) = [])
+  () : enum_rules  = {
+  const;
+  defined_only;
+  in_;
+  not_in;
+}
+
+let rec default_any_rules 
+  ?required:((required:bool option) = None)
+  ?in_:((in_:string list) = [])
+  ?not_in:((not_in:string list) = [])
+  () : any_rules  = {
+  required;
+  in_;
+  not_in;
+}
+
+let rec default_field_rules_type () : field_rules_type = Float (default_float_rules ())
+
+and default_field_rules 
+  ?message:((message:message_rules option) = None)
+  ?type_:((type_:field_rules_type option) = None)
+  () : field_rules  = {
+  message;
+  type_;
+}
+
+and default_repeated_rules 
+  ?min_items:((min_items:int64 option) = None)
+  ?max_items:((max_items:int64 option) = None)
+  ?unique:((unique:bool option) = None)
+  ?items:((items:field_rules option) = None)
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : repeated_rules  = {
+  min_items;
+  max_items;
+  unique;
+  items;
+  ignore_empty;
+}
+
+and default_map_rules 
+  ?min_pairs:((min_pairs:int64 option) = None)
+  ?max_pairs:((max_pairs:int64 option) = None)
+  ?no_sparse:((no_sparse:bool option) = None)
+  ?keys:((keys:field_rules option) = None)
+  ?values:((values:field_rules option) = None)
+  ?ignore_empty:((ignore_empty:bool option) = None)
+  () : map_rules  = {
+  min_pairs;
+  max_pairs;
+  no_sparse;
+  keys;
+  values;
+  ignore_empty;
+}
+
+let rec default_field_options 
+  ?rules:((rules:field_rules option) = None)
+  () : field_options  = {
+  rules;
+}
+
+type message_options_mutable = {
+  mutable disabled : bool option;
+  mutable ignored : bool option;
+}
+
+let default_message_options_mutable () : message_options_mutable = {
+  disabled = None;
+  ignored = None;
+}
+
+type oneof_options_mutable = {
+  mutable required : bool option;
+}
+
+let default_oneof_options_mutable () : oneof_options_mutable = {
+  required = None;
+}
+
+type message_rules_mutable = {
+  mutable skip : bool option;
+  mutable required : bool option;
+}
+
+let default_message_rules_mutable () : message_rules_mutable = {
+  skip = None;
+  required = None;
+}
+
+type float_rules_mutable = {
+  mutable const : float option;
+  mutable lt : float option;
+  mutable lte : float option;
+  mutable gt : float option;
+  mutable gte : float option;
+  mutable in_ : float list;
+  mutable not_in : float list;
+  mutable ignore_empty : bool option;
+}
+
+let default_float_rules_mutable () : float_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type double_rules_mutable = {
+  mutable const : float option;
+  mutable lt : float option;
+  mutable lte : float option;
+  mutable gt : float option;
+  mutable gte : float option;
+  mutable in_ : float list;
+  mutable not_in : float list;
+  mutable ignore_empty : bool option;
+}
+
+let default_double_rules_mutable () : double_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type int32_rules_mutable = {
+  mutable const : int32 option;
+  mutable lt : int32 option;
+  mutable lte : int32 option;
+  mutable gt : int32 option;
+  mutable gte : int32 option;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_int32_rules_mutable () : int32_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type int64_rules_mutable = {
+  mutable const : int64 option;
+  mutable lt : int64 option;
+  mutable lte : int64 option;
+  mutable gt : int64 option;
+  mutable gte : int64 option;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_int64_rules_mutable () : int64_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type uint32_rules_mutable = {
+  mutable const : int32 option;
+  mutable lt : int32 option;
+  mutable lte : int32 option;
+  mutable gt : int32 option;
+  mutable gte : int32 option;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_uint32_rules_mutable () : uint32_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type uint64_rules_mutable = {
+  mutable const : int64 option;
+  mutable lt : int64 option;
+  mutable lte : int64 option;
+  mutable gt : int64 option;
+  mutable gte : int64 option;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_uint64_rules_mutable () : uint64_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type sint32_rules_mutable = {
+  mutable const : int32 option;
+  mutable lt : int32 option;
+  mutable lte : int32 option;
+  mutable gt : int32 option;
+  mutable gte : int32 option;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_sint32_rules_mutable () : sint32_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type sint64_rules_mutable = {
+  mutable const : int64 option;
+  mutable lt : int64 option;
+  mutable lte : int64 option;
+  mutable gt : int64 option;
+  mutable gte : int64 option;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_sint64_rules_mutable () : sint64_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type fixed32_rules_mutable = {
+  mutable const : int32 option;
+  mutable lt : int32 option;
+  mutable lte : int32 option;
+  mutable gt : int32 option;
+  mutable gte : int32 option;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_fixed32_rules_mutable () : fixed32_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type fixed64_rules_mutable = {
+  mutable const : int64 option;
+  mutable lt : int64 option;
+  mutable lte : int64 option;
+  mutable gt : int64 option;
+  mutable gte : int64 option;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_fixed64_rules_mutable () : fixed64_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type sfixed32_rules_mutable = {
+  mutable const : int32 option;
+  mutable lt : int32 option;
+  mutable lte : int32 option;
+  mutable gt : int32 option;
+  mutable gte : int32 option;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_sfixed32_rules_mutable () : sfixed32_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type sfixed64_rules_mutable = {
+  mutable const : int64 option;
+  mutable lt : int64 option;
+  mutable lte : int64 option;
+  mutable gt : int64 option;
+  mutable gte : int64 option;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool option;
+}
+
+let default_sfixed64_rules_mutable () : sfixed64_rules_mutable = {
+  const = None;
+  lt = None;
+  lte = None;
+  gt = None;
+  gte = None;
+  in_ = [];
+  not_in = [];
+  ignore_empty = None;
+}
+
+type bool_rules_mutable = {
+  mutable const : bool option;
+}
+
+let default_bool_rules_mutable () : bool_rules_mutable = {
+  const = None;
+}
+
+type string_rules_mutable = {
+  mutable const : string option;
+  mutable len : int64 option;
+  mutable min_len : int64 option;
+  mutable max_len : int64 option;
+  mutable len_bytes : int64 option;
+  mutable min_bytes : int64 option;
+  mutable max_bytes : int64 option;
+  mutable pattern : string option;
+  mutable prefix : string option;
+  mutable suffix : string option;
+  mutable contains : string option;
+  mutable not_contains : string option;
+  mutable in_ : string list;
+  mutable not_in : string list;
+  mutable well_known : string_rules_well_known option;
+  mutable strict : bool option;
+  mutable ignore_empty : bool option;
+}
+
+let default_string_rules_mutable () : string_rules_mutable = {
+  const = None;
+  len = None;
+  min_len = None;
+  max_len = None;
+  len_bytes = None;
+  min_bytes = None;
+  max_bytes = None;
+  pattern = None;
+  prefix = None;
+  suffix = None;
+  contains = None;
+  not_contains = None;
+  in_ = [];
+  not_in = [];
+  well_known = None;
+  strict = Some (true);
+  ignore_empty = None;
+}
+
+type bytes_rules_mutable = {
+  mutable const : bytes option;
+  mutable len : int64 option;
+  mutable min_len : int64 option;
+  mutable max_len : int64 option;
+  mutable pattern : string option;
+  mutable prefix : bytes option;
+  mutable suffix : bytes option;
+  mutable contains : bytes option;
+  mutable in_ : bytes list;
+  mutable not_in : bytes list;
+  mutable well_known : bytes_rules_well_known option;
+  mutable ignore_empty : bool option;
+}
+
+let default_bytes_rules_mutable () : bytes_rules_mutable = {
+  const = None;
+  len = None;
+  min_len = None;
+  max_len = None;
+  pattern = None;
+  prefix = None;
+  suffix = None;
+  contains = None;
+  in_ = [];
+  not_in = [];
+  well_known = None;
+  ignore_empty = None;
+}
+
+type enum_rules_mutable = {
+  mutable const : int32 option;
+  mutable defined_only : bool option;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+}
+
+let default_enum_rules_mutable () : enum_rules_mutable = {
+  const = None;
+  defined_only = None;
+  in_ = [];
+  not_in = [];
+}
+
+type any_rules_mutable = {
+  mutable required : bool option;
+  mutable in_ : string list;
+  mutable not_in : string list;
+}
+
+let default_any_rules_mutable () : any_rules_mutable = {
+  required = None;
+  in_ = [];
+  not_in = [];
+}
+
+type field_rules_mutable = {
+  mutable message : message_rules option;
+  mutable type_ : field_rules_type option;
+}
+
+let default_field_rules_mutable () : field_rules_mutable = {
+  message = None;
+  type_ = None;
+}
+
+type repeated_rules_mutable = {
+  mutable min_items : int64 option;
+  mutable max_items : int64 option;
+  mutable unique : bool option;
+  mutable items : field_rules option;
+  mutable ignore_empty : bool option;
+}
+
+let default_repeated_rules_mutable () : repeated_rules_mutable = {
+  min_items = None;
+  max_items = None;
+  unique = None;
+  items = None;
+  ignore_empty = None;
+}
+
+type map_rules_mutable = {
+  mutable min_pairs : int64 option;
+  mutable max_pairs : int64 option;
+  mutable no_sparse : bool option;
+  mutable keys : field_rules option;
+  mutable values : field_rules option;
+  mutable ignore_empty : bool option;
+}
+
+let default_map_rules_mutable () : map_rules_mutable = {
+  min_pairs = None;
+  max_pairs = None;
+  no_sparse = None;
+  keys = None;
+  values = None;
+  ignore_empty = None;
+}
+
+type field_options_mutable = {
+  mutable rules : field_rules option;
+}
+
+let default_field_options_mutable () : field_options_mutable = {
+  rules = None;
+}
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Pb_option.set Decoding} *)
+
+let rec decode_pb_options_message_options d =
+  let v = default_message_options_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("disabled", pb_options_value) -> 
+      v.disabled <- Some (Pbrt_pb_options.bool pb_options_value "message_options" "disabled")
+    | ("ignored", pb_options_value) -> 
+      v.ignored <- Some (Pbrt_pb_options.bool pb_options_value "message_options" "ignored")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    disabled = v.disabled;
+    ignored = v.ignored;
+  } : message_options)
+
+let rec decode_pb_options_oneof_options d =
+  let v = default_oneof_options_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("required", pb_options_value) -> 
+      v.required <- Some (Pbrt_pb_options.bool pb_options_value "oneof_options" "required")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    required = v.required;
+  } : oneof_options)
+
+let rec decode_pb_options_message_rules d =
+  let v = default_message_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("skip", pb_options_value) -> 
+      v.skip <- Some (Pbrt_pb_options.bool pb_options_value "message_rules" "skip")
+    | ("required", pb_options_value) -> 
+      v.required <- Some (Pbrt_pb_options.bool pb_options_value "message_rules" "required")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    skip = v.skip;
+    required = v.required;
+  } : message_rules)
+
+let rec decode_pb_options_float_rules d =
+  let v = default_float_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.float pb_options_value "float_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.float pb_options_value "float_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.float pb_options_value "float_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.float pb_options_value "float_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.float pb_options_value "float_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.float pb_options_value "float_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.float pb_options_value "float_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "float_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : float_rules)
+
+let rec decode_pb_options_double_rules d =
+  let v = default_double_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.float pb_options_value "double_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.float pb_options_value "double_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.float pb_options_value "double_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.float pb_options_value "double_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.float pb_options_value "double_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.float pb_options_value "double_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.float pb_options_value "double_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "double_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : double_rules)
+
+let rec decode_pb_options_int32_rules d =
+  let v = default_int32_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int32 pb_options_value "int32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int32 pb_options_value "int32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int32 pb_options_value "int32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int32 pb_options_value "int32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int32 pb_options_value "int32_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "int32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "int32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "int32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : int32_rules)
+
+let rec decode_pb_options_int64_rules d =
+  let v = default_int64_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int64 pb_options_value "int64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int64 pb_options_value "int64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int64 pb_options_value "int64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int64 pb_options_value "int64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int64 pb_options_value "int64_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "int64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "int64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "int64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : int64_rules)
+
+let rec decode_pb_options_uint32_rules d =
+  let v = default_uint32_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "uint32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "uint32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "uint32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : uint32_rules)
+
+let rec decode_pb_options_uint64_rules d =
+  let v = default_uint64_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "uint64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "uint64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "uint64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : uint64_rules)
+
+let rec decode_pb_options_sint32_rules d =
+  let v = default_sint32_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sint32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sint32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "sint32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : sint32_rules)
+
+let rec decode_pb_options_sint64_rules d =
+  let v = default_sint64_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sint64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sint64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "sint64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : sint64_rules)
+
+let rec decode_pb_options_fixed32_rules d =
+  let v = default_fixed32_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "fixed32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : fixed32_rules)
+
+let rec decode_pb_options_fixed64_rules d =
+  let v = default_fixed64_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "fixed64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : fixed64_rules)
+
+let rec decode_pb_options_sfixed32_rules d =
+  let v = default_sfixed32_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "sfixed32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : sfixed32_rules)
+
+let rec decode_pb_options_sfixed64_rules d =
+  let v = default_sfixed64_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      v.lt <- Some (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      v.lte <- Some (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      v.gt <- Some (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      v.gte <- Some (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "gte")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "sfixed64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    lt = v.lt;
+    lte = v.lte;
+    gt = v.gt;
+    gte = v.gte;
+    in_ = v.in_;
+    not_in = v.not_in;
+    ignore_empty = v.ignore_empty;
+  } : sfixed64_rules)
+
+let rec decode_pb_options_bool_rules d =
+  let v = default_bool_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.bool pb_options_value "bool_rules" "const")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+  } : bool_rules)
+
+let rec decode_pb_options_known_regex pb_options =
+  match pb_options with
+  | Ocaml_protoc_compiler_lib.Pb_option.Scalar_value (Constant_literal "UNKNOWN") -> (Unknown : known_regex)
+  | Ocaml_protoc_compiler_lib.Pb_option.Scalar_value (Constant_literal "HTTP_HEADER_NAME") -> (Http_header_name : known_regex)
+  | Ocaml_protoc_compiler_lib.Pb_option.Scalar_value (Constant_literal "HTTP_HEADER_VALUE") -> (Http_header_value : known_regex)
+  | _ -> Pbrt_pb_options.E.malformed_variant "known_regex"
+
+let rec decode_pb_options_string_rules_well_known pb_options =
+  let assoc = match pb_options with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_pb_options.E.malformed_variant "string_rules_well_known"
+    | ("email", pb_options_value)::_ -> 
+      (Email (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Email") : string_rules_well_known)
+    | ("hostname", pb_options_value)::_ -> 
+      (Hostname (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Hostname") : string_rules_well_known)
+    | ("ip", pb_options_value)::_ -> 
+      (Ip (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Ip") : string_rules_well_known)
+    | ("ipv4", pb_options_value)::_ -> 
+      (Ipv4 (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Ipv4") : string_rules_well_known)
+    | ("ipv6", pb_options_value)::_ -> 
+      (Ipv6 (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Ipv6") : string_rules_well_known)
+    | ("uri", pb_options_value)::_ -> 
+      (Uri (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Uri") : string_rules_well_known)
+    | ("uriRef", pb_options_value)::_ -> 
+      (Uri_ref (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Uri_ref") : string_rules_well_known)
+    | ("address", pb_options_value)::_ -> 
+      (Address (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Address") : string_rules_well_known)
+    | ("uuid", pb_options_value)::_ -> 
+      (Uuid (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Uuid") : string_rules_well_known)
+    | ("wellKnownRegex", pb_options_value)::_ -> 
+      (Well_known_regex ((decode_pb_options_known_regex pb_options_value)) : string_rules_well_known)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_string_rules d =
+  let v = default_string_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.string pb_options_value "string_rules" "const")
+    | ("len", pb_options_value) -> 
+      v.len <- Some (Pbrt_pb_options.int64 pb_options_value "string_rules" "len")
+    | ("min_len", pb_options_value) -> 
+      v.min_len <- Some (Pbrt_pb_options.int64 pb_options_value "string_rules" "min_len")
+    | ("max_len", pb_options_value) -> 
+      v.max_len <- Some (Pbrt_pb_options.int64 pb_options_value "string_rules" "max_len")
+    | ("len_bytes", pb_options_value) -> 
+      v.len_bytes <- Some (Pbrt_pb_options.int64 pb_options_value "string_rules" "len_bytes")
+    | ("min_bytes", pb_options_value) -> 
+      v.min_bytes <- Some (Pbrt_pb_options.int64 pb_options_value "string_rules" "min_bytes")
+    | ("max_bytes", pb_options_value) -> 
+      v.max_bytes <- Some (Pbrt_pb_options.int64 pb_options_value "string_rules" "max_bytes")
+    | ("pattern", pb_options_value) -> 
+      v.pattern <- Some (Pbrt_pb_options.string pb_options_value "string_rules" "pattern")
+    | ("prefix", pb_options_value) -> 
+      v.prefix <- Some (Pbrt_pb_options.string pb_options_value "string_rules" "prefix")
+    | ("suffix", pb_options_value) -> 
+      v.suffix <- Some (Pbrt_pb_options.string pb_options_value "string_rules" "suffix")
+    | ("contains", pb_options_value) -> 
+      v.contains <- Some (Pbrt_pb_options.string pb_options_value "string_rules" "contains")
+    | ("not_contains", pb_options_value) -> 
+      v.not_contains <- Some (Pbrt_pb_options.string pb_options_value "string_rules" "not_contains")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.string pb_options_value "string_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.string pb_options_value "string_rules" "not_in"
+      ) l;
+    end
+    | ("email", pb_options_value) -> 
+      v.well_known <- Some (Email (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("hostname", pb_options_value) -> 
+      v.well_known <- Some (Hostname (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("ip", pb_options_value) -> 
+      v.well_known <- Some (Ip (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("ipv4", pb_options_value) -> 
+      v.well_known <- Some (Ipv4 (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("ipv6", pb_options_value) -> 
+      v.well_known <- Some (Ipv6 (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("uri", pb_options_value) -> 
+      v.well_known <- Some (Uri (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("uriRef", pb_options_value) -> 
+      v.well_known <- Some (Uri_ref (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("address", pb_options_value) -> 
+      v.well_known <- Some (Address (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("uuid", pb_options_value) -> 
+      v.well_known <- Some (Uuid (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+    | ("wellKnownRegex", pb_options_value) -> 
+      v.well_known <- Some (Well_known_regex ((decode_pb_options_known_regex pb_options_value)))
+    | ("strict", pb_options_value) -> 
+      v.strict <- Some (Pbrt_pb_options.bool pb_options_value "string_rules" "strict")
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "string_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    len = v.len;
+    min_len = v.min_len;
+    max_len = v.max_len;
+    len_bytes = v.len_bytes;
+    min_bytes = v.min_bytes;
+    max_bytes = v.max_bytes;
+    pattern = v.pattern;
+    prefix = v.prefix;
+    suffix = v.suffix;
+    contains = v.contains;
+    not_contains = v.not_contains;
+    in_ = v.in_;
+    not_in = v.not_in;
+    well_known = v.well_known;
+    strict = v.strict;
+    ignore_empty = v.ignore_empty;
+  } : string_rules)
+
+let rec decode_pb_options_bytes_rules_well_known pb_options =
+  let assoc = match pb_options with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_pb_options.E.malformed_variant "bytes_rules_well_known"
+    | ("ip", pb_options_value)::_ -> 
+      (Ip (Pbrt_pb_options.bool pb_options_value "bytes_rules_well_known" "Ip") : bytes_rules_well_known)
+    | ("ipv4", pb_options_value)::_ -> 
+      (Ipv4 (Pbrt_pb_options.bool pb_options_value "bytes_rules_well_known" "Ipv4") : bytes_rules_well_known)
+    | ("ipv6", pb_options_value)::_ -> 
+      (Ipv6 (Pbrt_pb_options.bool pb_options_value "bytes_rules_well_known" "Ipv6") : bytes_rules_well_known)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_bytes_rules d =
+  let v = default_bytes_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "const")
+    | ("len", pb_options_value) -> 
+      v.len <- Some (Pbrt_pb_options.int64 pb_options_value "bytes_rules" "len")
+    | ("min_len", pb_options_value) -> 
+      v.min_len <- Some (Pbrt_pb_options.int64 pb_options_value "bytes_rules" "min_len")
+    | ("max_len", pb_options_value) -> 
+      v.max_len <- Some (Pbrt_pb_options.int64 pb_options_value "bytes_rules" "max_len")
+    | ("pattern", pb_options_value) -> 
+      v.pattern <- Some (Pbrt_pb_options.string pb_options_value "bytes_rules" "pattern")
+    | ("prefix", pb_options_value) -> 
+      v.prefix <- Some (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "prefix")
+    | ("suffix", pb_options_value) -> 
+      v.suffix <- Some (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "suffix")
+    | ("contains", pb_options_value) -> 
+      v.contains <- Some (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "contains")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.bytes pb_options_value "bytes_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.bytes pb_options_value "bytes_rules" "not_in"
+      ) l;
+    end
+    | ("ip", pb_options_value) -> 
+      v.well_known <- Some (Ip (Pbrt_pb_options.bool pb_options_value "bytes_rules" "well_known"))
+    | ("ipv4", pb_options_value) -> 
+      v.well_known <- Some (Ipv4 (Pbrt_pb_options.bool pb_options_value "bytes_rules" "well_known"))
+    | ("ipv6", pb_options_value) -> 
+      v.well_known <- Some (Ipv6 (Pbrt_pb_options.bool pb_options_value "bytes_rules" "well_known"))
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "bytes_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    len = v.len;
+    min_len = v.min_len;
+    max_len = v.max_len;
+    pattern = v.pattern;
+    prefix = v.prefix;
+    suffix = v.suffix;
+    contains = v.contains;
+    in_ = v.in_;
+    not_in = v.not_in;
+    well_known = v.well_known;
+    ignore_empty = v.ignore_empty;
+  } : bytes_rules)
+
+let rec decode_pb_options_enum_rules d =
+  let v = default_enum_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      v.const <- Some (Pbrt_pb_options.int32 pb_options_value "enum_rules" "const")
+    | ("defined_only", pb_options_value) -> 
+      v.defined_only <- Some (Pbrt_pb_options.bool pb_options_value "enum_rules" "defined_only")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "enum_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "enum_rules" "not_in"
+      ) l;
+    end
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    const = v.const;
+    defined_only = v.defined_only;
+    in_ = v.in_;
+    not_in = v.not_in;
+  } : enum_rules)
+
+let rec decode_pb_options_any_rules d =
+  let v = default_any_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("required", pb_options_value) -> 
+      v.required <- Some (Pbrt_pb_options.bool pb_options_value "any_rules" "required")
+    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.in_ <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.string pb_options_value "any_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      v.not_in <- List.map (function
+        | pb_options_value -> Pbrt_pb_options.string pb_options_value "any_rules" "not_in"
+      ) l;
+    end
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    required = v.required;
+    in_ = v.in_;
+    not_in = v.not_in;
+  } : any_rules)
+
+let rec decode_pb_options_field_rules_type pb_options =
+  let assoc = match pb_options with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_pb_options.E.malformed_variant "field_rules_type"
+    | ("float", pb_options_value)::_ -> 
+      (Float ((decode_pb_options_float_rules pb_options_value)) : field_rules_type)
+    | ("double", pb_options_value)::_ -> 
+      (Double ((decode_pb_options_double_rules pb_options_value)) : field_rules_type)
+    | ("int32", pb_options_value)::_ -> 
+      (Int32 ((decode_pb_options_int32_rules pb_options_value)) : field_rules_type)
+    | ("int64", pb_options_value)::_ -> 
+      (Int64 ((decode_pb_options_int64_rules pb_options_value)) : field_rules_type)
+    | ("uint32", pb_options_value)::_ -> 
+      (Uint32 ((decode_pb_options_uint32_rules pb_options_value)) : field_rules_type)
+    | ("uint64", pb_options_value)::_ -> 
+      (Uint64 ((decode_pb_options_uint64_rules pb_options_value)) : field_rules_type)
+    | ("sint32", pb_options_value)::_ -> 
+      (Sint32 ((decode_pb_options_sint32_rules pb_options_value)) : field_rules_type)
+    | ("sint64", pb_options_value)::_ -> 
+      (Sint64 ((decode_pb_options_sint64_rules pb_options_value)) : field_rules_type)
+    | ("fixed32", pb_options_value)::_ -> 
+      (Fixed32 ((decode_pb_options_fixed32_rules pb_options_value)) : field_rules_type)
+    | ("fixed64", pb_options_value)::_ -> 
+      (Fixed64 ((decode_pb_options_fixed64_rules pb_options_value)) : field_rules_type)
+    | ("sfixed32", pb_options_value)::_ -> 
+      (Sfixed32 ((decode_pb_options_sfixed32_rules pb_options_value)) : field_rules_type)
+    | ("sfixed64", pb_options_value)::_ -> 
+      (Sfixed64 ((decode_pb_options_sfixed64_rules pb_options_value)) : field_rules_type)
+    | ("bool", pb_options_value)::_ -> 
+      (Bool ((decode_pb_options_bool_rules pb_options_value)) : field_rules_type)
+    | ("string", pb_options_value)::_ -> 
+      (String ((decode_pb_options_string_rules pb_options_value)) : field_rules_type)
+    | ("bytes", pb_options_value)::_ -> 
+      (Bytes ((decode_pb_options_bytes_rules pb_options_value)) : field_rules_type)
+    | ("enum", pb_options_value)::_ -> 
+      (Enum ((decode_pb_options_enum_rules pb_options_value)) : field_rules_type)
+    | ("repeated", pb_options_value)::_ -> 
+      (Repeated ((decode_pb_options_repeated_rules pb_options_value)) : field_rules_type)
+    | ("map", pb_options_value)::_ -> 
+      (Map ((decode_pb_options_map_rules pb_options_value)) : field_rules_type)
+    | ("any", pb_options_value)::_ -> 
+      (Any ((decode_pb_options_any_rules pb_options_value)) : field_rules_type)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_field_rules d =
+  let v = default_field_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("message", pb_options_value) -> 
+      v.message <- Some ((decode_pb_options_message_rules pb_options_value))
+    | ("float", pb_options_value) -> 
+      v.type_ <- Some (Float ((decode_pb_options_float_rules pb_options_value)))
+    | ("double", pb_options_value) -> 
+      v.type_ <- Some (Double ((decode_pb_options_double_rules pb_options_value)))
+    | ("int32", pb_options_value) -> 
+      v.type_ <- Some (Int32 ((decode_pb_options_int32_rules pb_options_value)))
+    | ("int64", pb_options_value) -> 
+      v.type_ <- Some (Int64 ((decode_pb_options_int64_rules pb_options_value)))
+    | ("uint32", pb_options_value) -> 
+      v.type_ <- Some (Uint32 ((decode_pb_options_uint32_rules pb_options_value)))
+    | ("uint64", pb_options_value) -> 
+      v.type_ <- Some (Uint64 ((decode_pb_options_uint64_rules pb_options_value)))
+    | ("sint32", pb_options_value) -> 
+      v.type_ <- Some (Sint32 ((decode_pb_options_sint32_rules pb_options_value)))
+    | ("sint64", pb_options_value) -> 
+      v.type_ <- Some (Sint64 ((decode_pb_options_sint64_rules pb_options_value)))
+    | ("fixed32", pb_options_value) -> 
+      v.type_ <- Some (Fixed32 ((decode_pb_options_fixed32_rules pb_options_value)))
+    | ("fixed64", pb_options_value) -> 
+      v.type_ <- Some (Fixed64 ((decode_pb_options_fixed64_rules pb_options_value)))
+    | ("sfixed32", pb_options_value) -> 
+      v.type_ <- Some (Sfixed32 ((decode_pb_options_sfixed32_rules pb_options_value)))
+    | ("sfixed64", pb_options_value) -> 
+      v.type_ <- Some (Sfixed64 ((decode_pb_options_sfixed64_rules pb_options_value)))
+    | ("bool", pb_options_value) -> 
+      v.type_ <- Some (Bool ((decode_pb_options_bool_rules pb_options_value)))
+    | ("string", pb_options_value) -> 
+      v.type_ <- Some (String ((decode_pb_options_string_rules pb_options_value)))
+    | ("bytes", pb_options_value) -> 
+      v.type_ <- Some (Bytes ((decode_pb_options_bytes_rules pb_options_value)))
+    | ("enum", pb_options_value) -> 
+      v.type_ <- Some (Enum ((decode_pb_options_enum_rules pb_options_value)))
+    | ("repeated", pb_options_value) -> 
+      v.type_ <- Some (Repeated ((decode_pb_options_repeated_rules pb_options_value)))
+    | ("map", pb_options_value) -> 
+      v.type_ <- Some (Map ((decode_pb_options_map_rules pb_options_value)))
+    | ("any", pb_options_value) -> 
+      v.type_ <- Some (Any ((decode_pb_options_any_rules pb_options_value)))
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    message = v.message;
+    type_ = v.type_;
+  } : field_rules)
+
+and decode_pb_options_repeated_rules d =
+  let v = default_repeated_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("min_items", pb_options_value) -> 
+      v.min_items <- Some (Pbrt_pb_options.int64 pb_options_value "repeated_rules" "min_items")
+    | ("max_items", pb_options_value) -> 
+      v.max_items <- Some (Pbrt_pb_options.int64 pb_options_value "repeated_rules" "max_items")
+    | ("unique", pb_options_value) -> 
+      v.unique <- Some (Pbrt_pb_options.bool pb_options_value "repeated_rules" "unique")
+    | ("items", pb_options_value) -> 
+      v.items <- Some ((decode_pb_options_field_rules pb_options_value))
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "repeated_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    min_items = v.min_items;
+    max_items = v.max_items;
+    unique = v.unique;
+    items = v.items;
+    ignore_empty = v.ignore_empty;
+  } : repeated_rules)
+
+and decode_pb_options_map_rules d =
+  let v = default_map_rules_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("min_pairs", pb_options_value) -> 
+      v.min_pairs <- Some (Pbrt_pb_options.int64 pb_options_value "map_rules" "min_pairs")
+    | ("max_pairs", pb_options_value) -> 
+      v.max_pairs <- Some (Pbrt_pb_options.int64 pb_options_value "map_rules" "max_pairs")
+    | ("no_sparse", pb_options_value) -> 
+      v.no_sparse <- Some (Pbrt_pb_options.bool pb_options_value "map_rules" "no_sparse")
+    | ("keys", pb_options_value) -> 
+      v.keys <- Some ((decode_pb_options_field_rules pb_options_value))
+    | ("values", pb_options_value) -> 
+      v.values <- Some ((decode_pb_options_field_rules pb_options_value))
+    | ("ignore_empty", pb_options_value) -> 
+      v.ignore_empty <- Some (Pbrt_pb_options.bool pb_options_value "map_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    min_pairs = v.min_pairs;
+    max_pairs = v.max_pairs;
+    no_sparse = v.no_sparse;
+    keys = v.keys;
+    values = v.values;
+    ignore_empty = v.ignore_empty;
+  } : map_rules)
+
+let rec decode_pb_options_field_options d =
+  let v = default_field_options_mutable () in
+  let assoc = match d with
+    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("rules", pb_options_value) -> 
+      v.rules <- Some ((decode_pb_options_field_rules pb_options_value))
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  ({
+    rules = v.rules;
+  } : field_options)
+
+[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_message_options fmt (v:message_options) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "disabled" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.disabled;
+    Pbrt.Pp.pp_record_field ~first:false "ignored" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignored;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_oneof_options fmt (v:oneof_options) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "required" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.required;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_message_rules fmt (v:message_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "skip" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.skip;
+    Pbrt.Pp.pp_record_field ~first:false "required" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.required;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_float_rules fmt (v:float_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_double_rules fmt (v:double_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_float) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_int32_rules fmt (v:int32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_int64_rules fmt (v:int64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_uint32_rules fmt (v:uint32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_uint64_rules fmt (v:uint64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sint32_rules fmt (v:sint32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sint64_rules fmt (v:sint64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_fixed32_rules fmt (v:fixed32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_fixed64_rules fmt (v:fixed64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sfixed32_rules fmt (v:sfixed32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sfixed64_rules fmt (v:sfixed64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "lt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lt;
+    Pbrt.Pp.pp_record_field ~first:false "lte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.lte;
+    Pbrt.Pp.pp_record_field ~first:false "gt" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gt;
+    Pbrt.Pp.pp_record_field ~first:false "gte" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_bool_rules fmt (v:bool_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.const;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_known_regex fmt (v:known_regex) =
+  match v with
+  | Unknown -> Format.fprintf fmt "Unknown"
+  | Http_header_name -> Format.fprintf fmt "Http_header_name"
+  | Http_header_value -> Format.fprintf fmt "Http_header_value"
+
+let rec pp_string_rules_well_known fmt (v:string_rules_well_known) =
+  match v with
+  | Email x -> Format.fprintf fmt "@[<hv2>Email(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Hostname x -> Format.fprintf fmt "@[<hv2>Hostname(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ip x -> Format.fprintf fmt "@[<hv2>Ip(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv4 x -> Format.fprintf fmt "@[<hv2>Ipv4(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv6 x -> Format.fprintf fmt "@[<hv2>Ipv6(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Uri x -> Format.fprintf fmt "@[<hv2>Uri(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Uri_ref x -> Format.fprintf fmt "@[<hv2>Uri_ref(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Address x -> Format.fprintf fmt "@[<hv2>Address(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Uuid x -> Format.fprintf fmt "@[<hv2>Uuid(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Well_known_regex x -> Format.fprintf fmt "@[<hv2>Well_known_regex(@,%a)@]" pp_known_regex x
+
+and pp_string_rules fmt (v:string_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "len" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.len;
+    Pbrt.Pp.pp_record_field ~first:false "min_len" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.min_len;
+    Pbrt.Pp.pp_record_field ~first:false "max_len" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.max_len;
+    Pbrt.Pp.pp_record_field ~first:false "len_bytes" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.len_bytes;
+    Pbrt.Pp.pp_record_field ~first:false "min_bytes" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.min_bytes;
+    Pbrt.Pp.pp_record_field ~first:false "max_bytes" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.max_bytes;
+    Pbrt.Pp.pp_record_field ~first:false "pattern" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.pattern;
+    Pbrt.Pp.pp_record_field ~first:false "prefix" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.prefix;
+    Pbrt.Pp.pp_record_field ~first:false "suffix" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.suffix;
+    Pbrt.Pp.pp_record_field ~first:false "contains" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.contains;
+    Pbrt.Pp.pp_record_field ~first:false "not_contains" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.not_contains;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "well_known" (Pbrt.Pp.pp_option pp_string_rules_well_known) fmt v.well_known;
+    Pbrt.Pp.pp_record_field ~first:false "strict" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.strict;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_bytes_rules_well_known fmt (v:bytes_rules_well_known) =
+  match v with
+  | Ip x -> Format.fprintf fmt "@[<hv2>Ip(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv4 x -> Format.fprintf fmt "@[<hv2>Ipv4(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv6 x -> Format.fprintf fmt "@[<hv2>Ipv6(@,%a)@]" Pbrt.Pp.pp_bool x
+
+and pp_bytes_rules fmt (v:bytes_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bytes) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "len" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.len;
+    Pbrt.Pp.pp_record_field ~first:false "min_len" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.min_len;
+    Pbrt.Pp.pp_record_field ~first:false "max_len" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.max_len;
+    Pbrt.Pp.pp_record_field ~first:false "pattern" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.pattern;
+    Pbrt.Pp.pp_record_field ~first:false "prefix" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bytes) fmt v.prefix;
+    Pbrt.Pp.pp_record_field ~first:false "suffix" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bytes) fmt v.suffix;
+    Pbrt.Pp.pp_record_field ~first:false "contains" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bytes) fmt v.contains;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_bytes) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_bytes) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "well_known" (Pbrt.Pp.pp_option pp_bytes_rules_well_known) fmt v.well_known;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_enum_rules fmt (v:enum_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "const" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int32) fmt v.const;
+    Pbrt.Pp.pp_record_field ~first:false "defined_only" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.defined_only;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_any_rules fmt (v:any_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "required" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.required;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.not_in;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_field_rules_type fmt (v:field_rules_type) =
+  match v with
+  | Float x -> Format.fprintf fmt "@[<hv2>Float(@,%a)@]" pp_float_rules x
+  | Double x -> Format.fprintf fmt "@[<hv2>Double(@,%a)@]" pp_double_rules x
+  | Int32 x -> Format.fprintf fmt "@[<hv2>Int32(@,%a)@]" pp_int32_rules x
+  | Int64 x -> Format.fprintf fmt "@[<hv2>Int64(@,%a)@]" pp_int64_rules x
+  | Uint32 x -> Format.fprintf fmt "@[<hv2>Uint32(@,%a)@]" pp_uint32_rules x
+  | Uint64 x -> Format.fprintf fmt "@[<hv2>Uint64(@,%a)@]" pp_uint64_rules x
+  | Sint32 x -> Format.fprintf fmt "@[<hv2>Sint32(@,%a)@]" pp_sint32_rules x
+  | Sint64 x -> Format.fprintf fmt "@[<hv2>Sint64(@,%a)@]" pp_sint64_rules x
+  | Fixed32 x -> Format.fprintf fmt "@[<hv2>Fixed32(@,%a)@]" pp_fixed32_rules x
+  | Fixed64 x -> Format.fprintf fmt "@[<hv2>Fixed64(@,%a)@]" pp_fixed64_rules x
+  | Sfixed32 x -> Format.fprintf fmt "@[<hv2>Sfixed32(@,%a)@]" pp_sfixed32_rules x
+  | Sfixed64 x -> Format.fprintf fmt "@[<hv2>Sfixed64(@,%a)@]" pp_sfixed64_rules x
+  | Bool x -> Format.fprintf fmt "@[<hv2>Bool(@,%a)@]" pp_bool_rules x
+  | String x -> Format.fprintf fmt "@[<hv2>String(@,%a)@]" pp_string_rules x
+  | Bytes x -> Format.fprintf fmt "@[<hv2>Bytes(@,%a)@]" pp_bytes_rules x
+  | Enum x -> Format.fprintf fmt "@[<hv2>Enum(@,%a)@]" pp_enum_rules x
+  | Repeated x -> Format.fprintf fmt "@[<hv2>Repeated(@,%a)@]" pp_repeated_rules x
+  | Map x -> Format.fprintf fmt "@[<hv2>Map(@,%a)@]" pp_map_rules x
+  | Any x -> Format.fprintf fmt "@[<hv2>Any(@,%a)@]" pp_any_rules x
+
+and pp_field_rules fmt (v:field_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "message" (Pbrt.Pp.pp_option pp_message_rules) fmt v.message;
+    Pbrt.Pp.pp_record_field ~first:false "type_" (Pbrt.Pp.pp_option pp_field_rules_type) fmt v.type_;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_repeated_rules fmt (v:repeated_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "min_items" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.min_items;
+    Pbrt.Pp.pp_record_field ~first:false "max_items" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.max_items;
+    Pbrt.Pp.pp_record_field ~first:false "unique" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.unique;
+    Pbrt.Pp.pp_record_field ~first:false "items" (Pbrt.Pp.pp_option pp_field_rules) fmt v.items;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_map_rules fmt (v:map_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "min_pairs" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.min_pairs;
+    Pbrt.Pp.pp_record_field ~first:false "max_pairs" (Pbrt.Pp.pp_option Pbrt.Pp.pp_int64) fmt v.max_pairs;
+    Pbrt.Pp.pp_record_field ~first:false "no_sparse" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.no_sparse;
+    Pbrt.Pp.pp_record_field ~first:false "keys" (Pbrt.Pp.pp_option pp_field_rules) fmt v.keys;
+    Pbrt.Pp.pp_record_field ~first:false "values" (Pbrt.Pp.pp_option pp_field_rules) fmt v.values;
+    Pbrt.Pp.pp_record_field ~first:false "ignore_empty" (Pbrt.Pp.pp_option Pbrt.Pp.pp_bool) fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_field_options fmt (v:field_options) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "rules" (Pbrt.Pp.pp_option pp_field_rules) fmt v.rules;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
