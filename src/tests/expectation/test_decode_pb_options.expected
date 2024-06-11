@@ -1,0 +1,87 @@
+====================== <OPTIONS> ======================
+[{
+   "(validate.rules)": {"uint64": {"gt": 999}}
+   }]
+===================== </OPTIONS> ======================
+======================= <PARSED> =======================
+{ message = None;
+  type_ = Some(Uint64({ const = None; lt = None; lte = None; gt = Some(999); gte = None; in_ = []; not_in = []; ignore_empty = None; }));
+}
+====================== </PARSED> =======================
+
+
+====================== <OPTIONS> ======================
+[{
+   "(validate.rules)": {"string": {"email": true}}
+   }]
+===================== </OPTIONS> ======================
+======================= <PARSED> =======================
+{ message = None;
+  type_ =
+    Some(
+      String(
+        { const = None;
+          len = None;
+          min_len = None;
+          max_len = None;
+          len_bytes = None;
+          min_bytes = None;
+          max_bytes = None;
+          pattern = None;
+          prefix = None;
+          suffix = None;
+          contains = None;
+          not_contains = None;
+          in_ = [];
+          not_in = [];
+          well_known = Some(Email(true));
+          strict = Some(true);
+          ignore_empty = None;
+        }));
+}
+====================== </PARSED> =======================
+
+
+====================== <OPTIONS> ======================
+[{
+   "(validate.rules)": {"string": {"pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+                                   "max_bytes": 256}}
+   }]
+===================== </OPTIONS> ======================
+======================= <PARSED> =======================
+{ message = None;
+  type_ =
+    Some(
+      String(
+        { const = None;
+          len = None;
+          min_len = None;
+          max_len = None;
+          len_bytes = None;
+          min_bytes = None;
+          max_bytes = Some(256);
+          pattern = Some("^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$");
+          prefix = None;
+          suffix = None;
+          contains = None;
+          not_contains = None;
+          in_ = [];
+          not_in = [];
+          well_known = None;
+          strict = Some(true);
+          ignore_empty = None;
+        }));
+}
+====================== </PARSED> =======================
+
+
+====================== <OPTIONS> ======================
+[{
+   "(validate.rules)": {"message": {"required": true}}
+   }]
+===================== </OPTIONS> ======================
+======================= <PARSED> =======================
+{ message = Some({ skip = None; required = Some(true); }); type_ = None; }
+====================== </PARSED> =======================
+
+

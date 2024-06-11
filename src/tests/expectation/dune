@@ -12,6 +12,20 @@
  (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))
 
+(test
+ (name it_compiles)
+ (modules It_compiles Option_processing)
+ (libraries pbrt ocaml-protoc.compiler-lib)
+ (package ocaml-protoc)
+ (flags :standard -open Ocaml_protoc_compiler_lib))
+
+(test
+ (name test_decode_pb_options)
+ (libraries pbrt ocaml-protoc.compiler-lib ocaml-protoc.rt-pb-options)
+ (package ocaml-protoc)
+ (flags :standard -open Ocaml_protoc_compiler_lib)
+ (modules Test_decode_pb_options Validate))
+
 (rule
  (targets option_processing.ml option_processing.mli)
  (deps option_processing.proto)
@@ -22,3 +36,14 @@
  (alias runtest)
  (action
   (diff option_processing.ml.expected option_processing.ml)))
+
+(rule
+ (targets validate.ml validate.mli)
+ (deps validate.proto)
+ (action
+  (run ocaml-protoc --pb_options --pp --ml_out ./ %{deps})))
+
+(rule
+ (alias runtest)
+ (action
+  (diff validate.ml.expected validate.ml)))

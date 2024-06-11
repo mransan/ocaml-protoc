@@ -11,7 +11,7 @@ type person_location = {
   lng : float;
 }
 
-type person_id =
+type person_xyz =
   | X of string
   | Y of int32
   | Z of float
@@ -22,7 +22,7 @@ and person = {
   name : string;
   home : person_location option;
   picture : bytes;
-  id : person_id option;
+  xyz : person_xyz option;
 }
 
 type destructured_options = unit
@@ -37,7 +37,7 @@ let rec default_person_location
   lng;
 }
 
-let rec default_person_id () : person_id = X ("")
+let rec default_person_xyz () : person_xyz = X ("")
 
 and default_person 
   ?id:((id:int64) = 0L)
@@ -45,14 +45,14 @@ and default_person
   ?name:((name:string) = "")
   ?home:((home:person_location option) = None)
   ?picture:((picture:bytes) = Bytes.create 0)
-  ?id:((id:person_id option) = None)
+  ?xyz:((xyz:person_xyz option) = None)
   () : person  = {
   id;
   email;
   name;
   home;
   picture;
-  id;
+  xyz;
 }
 
 let rec default_destructured_options = ()
@@ -112,7 +112,7 @@ let rec default_destructured_options = ()
 (* ----------------------------------------------------- *)
 (*
   Module Prefix: Option_processing
-  Variant: person_id
+  Variant: person_xyz
     Constructor: X
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_string
 
@@ -166,8 +166,8 @@ let rec default_destructured_options = ()
                                              "bar",
                                              "baz"]}}
    }]
-  - Field: id
-    Rft_variant: person_id
+  - Field: xyz
+    Rft_variant: person_xyz
     Field options: [{
    "(validate.required)": true
    }]
