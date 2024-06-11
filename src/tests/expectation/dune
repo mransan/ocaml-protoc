@@ -12,6 +12,13 @@
  (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))
 
+(test
+ (name it_compiles)
+ (modules It_compiles Option_processing)
+ (libraries pbrt ocaml-protoc.compiler-lib)
+ (package ocaml-protoc)
+ (flags :standard -open Ocaml_protoc_compiler_lib))
+
 (rule
  (targets option_processing.ml option_processing.mli)
  (deps option_processing.proto)
