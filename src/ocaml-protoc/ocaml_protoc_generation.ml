@@ -60,6 +60,10 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
            [ Pb_codegen_ocaml_type_dump.plugin ]
          else
            []);
+        (if !(cmdline.Cmdline.pb_options) then
+           [ Pb_codegen_decode_pb_options.plugin ]
+         else
+           []);
         (if !(cmdline.Cmdline.pp) then
            [ Pb_codegen_pp.plugin ]
          else

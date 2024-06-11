@@ -111,6 +111,8 @@ module Cmdline = struct
     pp: bool ref;  (** whether pretty printing is enabled *)
     dump_type_repr: bool ref;
         (** whether comments with debug ocaml type representation are added *)
+    pb_options: bool ref;
+        (** generate decoding for protobuf options (protobuf text format) *)
     services: bool ref;  (** whether services code generation is enabled *)
     encode_only: bool ref;  (** If true, skip decoders *)
     decode_only: bool ref;  (** If true, skip encoders *)
@@ -137,6 +139,7 @@ module Cmdline = struct
       encode_only = ref false;
       decode_only = ref false;
       dump_type_repr = ref false;
+      pb_options = ref false;
       services = ref false;
       make = ref false;
       cmd_line_file_options = File_options.make ();
@@ -153,6 +156,9 @@ module Cmdline = struct
         Arg.Set t.dump_type_repr,
         " generate comments with internal representation on generated OCaml \
          types (useful for debugging ocaml-protoc itself)" );
+      ( "--pb_options",
+        Arg.Set t.pb_options,
+        " generate decoders for protobuf options (proto text format)" );
       ( "--services",
         Arg.Set t.services,
         " generate code for services (requires json+binary)" );
