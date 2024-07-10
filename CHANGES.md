@@ -1,4 +1,18 @@
 
+## 3.1
+
+- Expose one-of per-constructor options
+- Support options for enum values
+- expose server stubs for advanced users
+
+- fix: only generate services from the current file
+- silence warning 44 in generated code
+- Use generated encoders/decoders for empty messages in rpc
+
+breaking:
+
+- remove bs runtime, we don't support it going forward
+
 ## 3.0.2
 
 - fix segfault in pbrt in bytecode
