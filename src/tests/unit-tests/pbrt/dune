@@ -1,0 +1,6 @@
+
+(tests
+ (package pbrt)
+ (names pbrt_array wrapper_encoding varint)
+ (libraries pbrt)
+ (flags :standard))
