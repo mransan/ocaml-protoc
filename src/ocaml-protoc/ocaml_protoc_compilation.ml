@@ -94,13 +94,16 @@ let compile cmdline cmd_line_files_options : Ot.proto * _ =
      (compilation unit) *)
   let typed_proto =
     {
-      typed_proto with
       Tt.proto_types =
         List.filter
           (function
             | { Tt.file_name; _ } :: _ when file_name = proto_file_name -> true
             | _ -> false)
           typed_proto.proto_types;
+      proto_services =
+        List.filter
+          (fun s -> s.Tt.service_file_name = proto_file_name)
+          typed_proto.proto_services;
     }
   in
 

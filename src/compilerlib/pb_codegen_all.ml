@@ -128,7 +128,8 @@ let generate_mutable_records (self : ocaml_mod) ocaml_types : unit =
       | _ -> ())
     ocaml_types
 
-let generate_service_struct service sc : unit =
+let generate_service_struct (service : Ot.service) sc : unit =
+  Pb_logger.log "Generating code for service %s\n" service.service_name;
   Pb_codegen_services.gen_service_struct service sc
 
 let generate_service_sig service sc : unit =
