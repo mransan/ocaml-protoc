@@ -1,4 +1,8 @@
 
+## 3.0.2
+
+- fix segfault in pbrt in bytecode
+
 ## 3.0.1
 
 - fix bug where code for services would be generated even if `--services`
