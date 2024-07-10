@@ -1,4 +1,3 @@
-
 (tests
  (package pbrt)
  (names pbrt_array wrapper_encoding varint)
