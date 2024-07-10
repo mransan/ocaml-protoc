@@ -1,1 +1,15 @@
 available: arch != "arm32" & arch != "x86_32" & arch != "ppc32" & arch != "ppc64"
+build: [
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@src/tests/unit-tests/pbrt/runtest" {with-test}  # custom path
+    "@doc" {with-doc}
+  ]
+]

@@ -12,6 +12,7 @@ depends: [
   "dune" {>= "2.0"}
   "ocaml" {>= "4.08"}
   "pbrt" {= version}
+  "ocaml-protoc" {= version & with-test}
   "pbrt_yojson" {= version}
 ]
 build: [

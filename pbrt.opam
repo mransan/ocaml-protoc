@@ -14,6 +14,8 @@ depends: [
   "odoc" {with-doc}
   "ocaml" {>= "4.08"}
 ]
+dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"
+available: arch != "arm32" & arch != "x86_32" & arch != "ppc32" & arch != "ppc64"
 build: [
   ["dune" "subst"] {pinned}
   [
@@ -24,9 +26,7 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
+    "@src/tests/unit-tests/pbrt/runtest" {with-test}  # custom path
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"
-available: arch != "arm32" & arch != "x86_32" & arch != "ppc32" & arch != "ppc64"

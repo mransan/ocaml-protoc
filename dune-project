@@ -44,6 +44,7 @@
   (depends
     (ocaml (>= 4.08))
     (pbrt (= :version))
+    (ocaml-protoc (and (= :version) :with-test))
     (pbrt_yojson (= :version)))
   (tags (protobuf encode decode services rpc)))
 

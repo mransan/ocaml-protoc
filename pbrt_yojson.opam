@@ -16,6 +16,7 @@ depends: [
   "yojson" {>= "1.6"}
   "base64" {>= "3.0"}
 ]
+dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"
 build: [
   ["dune" "subst"] {pinned}
   [
@@ -26,8 +27,7 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
+    "@src/tests/yojson/runtest" {with-test}
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"

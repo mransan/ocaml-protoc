@@ -1,0 +1,14 @@
+build: [
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@src/tests/yojson/runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
