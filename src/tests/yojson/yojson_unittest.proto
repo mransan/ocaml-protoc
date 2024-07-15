@@ -27,6 +27,8 @@ message AllBasicTypes {
    repeated string    repeated14 = 34;
 }
 
+message Empty {}
+
 message SmallMessage {
   string sm_string = 1;
 }
@@ -73,4 +75,13 @@ message Test {
   SingleOneOf single_one_of_recursive = 9; 
   repeated Enum repeated_enum = 10;
   repeated ABasicMessage basic = 11;
+}
+
+message NestedUnit {
+  oneof yolo {
+    int32 x = 1;
+    Empty empty = 2;
+  }
+
+  string other = 3;
 }
