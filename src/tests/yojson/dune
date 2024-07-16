@@ -8,5 +8,5 @@
  (deps
   (:file yojson_unittest.proto))
  (action
-  (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe %{file} --yojson --pp
-    --ml_out=.)))
+  (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe %{file} --yojson
+    --pp --ml_out=.)))
