@@ -1,7 +1,7 @@
 (lang dune 2.0)
 (name ocaml-protoc)
 (generate_opam_files true)
-(version 3.1)
+(version 3.1.1)
 
 (maintainers "Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes")
 (authors "Maxime Ransan <maxime.ransan@gmail.com>" "Simon Cruanes")

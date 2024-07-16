@@ -1,4 +1,8 @@
 
+## 3.1.1
+
+- fix error in codegen for nested `oneof` in yojson
+
 ## 3.1
 
 - Expose one-of per-constructor options
