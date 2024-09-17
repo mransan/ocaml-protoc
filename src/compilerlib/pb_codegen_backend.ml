@@ -69,7 +69,8 @@ let fix_ocaml_keyword_conflict s =
   | "new" | "nonrec" | "object" | "of" | "open" | "or" | "private" | "rec"
   | "sig" | "struct" | "then" | "to" | "true" | "try" | "type" | "unit" | "val"
   | "virtual" | "when" | "while" | "with" | "mod" | "land" | "lor" | "lxor"
-  | "lsl" | "lsr" | "asr" ->
+  | "lsl" | "lsr" | "asr" | "option" | "list" | "string" | "int" | "float" 
+  | "array" | "char" | "bytes" | "bool" | "nativeint" | "int32" | "int64" ->
     s ^ "_"
   | _ -> s
 
