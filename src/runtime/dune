@@ -1,10 +1,20 @@
+(rule
+ (target compile-flags.sexp)
+ ; error D8016 in MSVC to mix incompatible flags  
+ (enabled_if (= %{ocaml-config:ccomp_type} "msvc"))
+ (action (with-stdout-to %{target} (echo "()"))))
+(rule
+ (target compile-flags.sexp)
+ (enabled_if (<> %{ocaml-config:ccomp_type} "msvc"))
+ (action (with-stdout-to %{target} (echo "(-std=c99 -O2)"))))
+
 (library
  (name pbrt)
  (public_name pbrt)
  (synopsis "Runtime library for ocaml-protoc")
  (foreign_stubs
   (language c)
-  (flags :standard -std=c99 -O2)
+  (flags :standard (:include compile-flags.sexp))
   (names stubs))
  ; we need to increase -inline, so that the varint encoder/decoder can
  ; be remembered by the inliner.
