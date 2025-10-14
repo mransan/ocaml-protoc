@@ -16,13 +16,14 @@ jobs:
         ocaml-compiler:
           - '4.08'
           - '4.14'
-          - '5.1'
+          - '5.01'
+          - '5.04'
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
       #with:
       #  submodules: true
-    - uses: ocaml/setup-ocaml@v2
+    - uses: ocaml/setup-ocaml@v3
       with:
         ocaml-compiler: ${{ matrix.ocaml-compiler }}
         allow-prerelease-opam: true
@@ -34,6 +35,6 @@ jobs:
     - run: opam exec -- dune build @install
     - run: opam exec -- dune runtest
       #- run: opam exec -- make integration
-    - run: opam install ocamlformat.0.24.1
+    - run: opam install ocamlformat.0.27.0
     - run: opam exec -- dune build @fmt --auto-promote
     - run: git diff -q
