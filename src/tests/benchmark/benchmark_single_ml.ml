@@ -65,17 +65,14 @@ let make_test_requests ~number_of_sample test_ids =
     (number_of_sample * 2 * 5 * 10 * List.length test_ids);
   Array.of_list init_cases, test_cases
 
-(** Prints the test results for a single metric and a list of test id, 
-    in a table format so that one can easily compare the performance 
-    of various test data structures. 
+(** Prints the test results for a single metric and a list of test id, in a
+    table format so that one can easily compare the performance of various test
+    data structures.
 
     For instance:
 
-    Size     Test 1,    Test 2,     Test i, 
-      10      0.001,     0.001,      0.002, 
-     100      0.010,     0.010,      0.020,
-
- *)
+    Size Test 1, Test 2, Test i, 10 0.001, 0.001, 0.002, 100 0.010, 0.010,
+    0.020, *)
 let print_compare_type ~metric responses test_ids =
   (* Organize response per difficulty then per test id:
    

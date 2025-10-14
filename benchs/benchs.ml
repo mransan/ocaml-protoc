@@ -494,7 +494,7 @@ module Varint_size = struct
   module C_while = struct
     external varint_size : (int64[@unboxed]) -> int
       = "b_caml_pbrt_varint_size_byte" "b_caml_pbrt_varint_size"
-      [@@noalloc]
+    [@@noalloc]
 
     let loop ~n =
       for i = 1 to n do
@@ -628,11 +628,11 @@ module Nested = struct
       name = "bigcorp";
       subsidiaries =
         (if depth = 0 then
-          []
-        else (
-          let c = mk_company ~n ~depth:(depth - 1) in
-          [ c; c ]
-        ));
+           []
+         else (
+           let c = mk_company ~n ~depth:(depth - 1) in
+           [ c; c ]
+         ));
       stores =
         List.init n (fun i ->
             {
@@ -1110,7 +1110,7 @@ module Nested = struct
     external varint_slice :
       bytes -> (int[@untagged]) -> (int64[@unboxed]) -> unit
       = "b_caml_pbrt_varint_byte" "b_caml_pbrt_varint"
-      [@@noalloc]
+    [@@noalloc]
 
     let[@inline] varint (i : int64) (e : t) : unit =
       let n_bytes = varint_size i in

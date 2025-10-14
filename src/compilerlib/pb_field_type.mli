@@ -31,37 +31,28 @@ type type_path = string list
     For instance in the following field definition:
     [required foo.bar.Msg1 f = 1]
 
-    The [type_path] would be [["foo"; "bar"]]
-  *)
+    The [type_path] would be [["foo"; "bar"]] *)
 
 type unresolved = {
   type_path: type_path;
   type_name: string;
   from_root: bool;
-      (** from_root indicates that the scope for the type is
-          from the root of the type system. (ie starts with '.') *)
+      (** from_root indicates that the scope for the type is from the root of
+          the type system. (ie starts with '.') *)
 }
-(** In the first phase of the compilation
-    the field of message type are not resolved but only
-    properly parsed.
+(** In the first phase of the compilation the field of message type are not
+    resolved but only properly parsed.
 
-    The following type summarizes the information of a field
-    type.
+    The following type summarizes the information of a field type.
 
-    In the following field definition:
-    [required foo.bar.Msg1 f = 1]
+    In the following field definition: [required foo.bar.Msg1 f = 1]
 
-    The unresolved type would be: [{
-      scope=["foo";"bar"];
-      type_name="Msg1";
-      from_root = false
-    }]
- *)
+    The unresolved type would be:
+    [{ scope=["foo";"bar"]; type_name="Msg1"; from_root = false }] *)
 
 type resolved = int
-(** After phase 2 compilation the field type is resolved to a
-    known message which can be uniquely identified by its id.
-  *)
+(** After phase 2 compilation the field type is resolved to a known message
+    which can be uniquely identified by its id. *)
 
 type builtin_type_floating_point =
   [ `Double
@@ -114,12 +105,10 @@ type 'a t =
   ]
 (** field type.
 
-    The ['a] type is for re-using the same type
-    definition for the 2 compilation phases.
+    The ['a] type is for re-using the same type definition for the 2 compilation
+    phases.
 
-    After Phase 1 ['a] is [unresolved] while after Phase2
-    ['a] is [resolved].
-  *)
+    After Phase 1 ['a] is [unresolved] while after Phase2 ['a] is [resolved]. *)
 
 type unresolved_t = unresolved t
 type resolved_t = resolved t

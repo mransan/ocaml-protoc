@@ -36,23 +36,21 @@ type node
 type graph
 (** Graph. *)
 
-(** {2 Creators } *)
+(** {2 Creators} *)
 
 val create_node : id -> id list -> node
-(** [create_node id sub] create a node uniquely identified with [id]
-    and connections to other nodes in [sub].
+(** [create_node id sub] create a node uniquely identified with [id] and
+    connections to other nodes in [sub].
 
     The client application is responsible to ensure that the graph is
-    consistent, by adding all nodes identified in [sub] to the same
-    graph later.
-  *)
+    consistent, by adding all nodes identified in [sub] to the same graph later.
+*)
 
 val empty_graph : graph
 (** [empty_graph ()] create a new empty graph.*)
 
 val add_node : node -> graph -> graph
-(** [add_node node graph] add [node] to [graph]
- *)
+(** [add_node node graph] add [node] to [graph] *)
 
 (** {2 Algorithms} *)
 
@@ -61,5 +59,4 @@ val tarjan : graph -> id list list
     a graph.
 
     The returned list is order in decreasing order of dependencies. This means
-    the last component of the list does not link to any other components.
- *)
+    the last component of the list does not link to any other components. *)

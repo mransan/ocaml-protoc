@@ -25,19 +25,17 @@
 
 (** Typing compilation step *)
 
-(** This module performs the typing step in the compilation process by
-    doing the following:
-    {ul
-    {- Type tree construction and validation}
-    {- Type resolution}
-    {- Recursion analysis by grouping together all the mutually recursive
-       types.}
-    } *)
+(** This module performs the typing step in the compilation process by doing the
+    following:
+    - Type tree construction and validation
+    - Type resolution
+    - Recursion analysis by grouping together all the mutually recursive types.
+*)
 
 module Tt = Pb_typing_type_tree
 
 val perform_typing :
   Pb_parsing_parse_tree.proto list -> Pb_field_type.resolved Tt.proto
-(** [perform_typing parsed_tree] returned the type tree organized in groups
-    of fully resolved types. Each group contains all the mutually recursive
-    types and the type group by reverse dependency order. *)
+(** [perform_typing parsed_tree] returned the type tree organized in groups of
+    fully resolved types. Each group contains all the mutually recursive types
+    and the type group by reverse dependency order. *)

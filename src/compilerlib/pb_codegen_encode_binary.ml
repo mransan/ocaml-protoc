@@ -266,11 +266,11 @@ let gen_const_variant ?and_ cv sc =
         (fun { Ot.cvc_name; cvc_binary_value; _ } ->
           F.line sc
             (if cvc_binary_value > 0 then
-              sp "| %s -> Pbrt.Encoder.int_as_varint %i encoder" cvc_name
-                cvc_binary_value
-            else
-              sp "| %s -> Pbrt.Encoder.int_as_varint (%i) encoder" cvc_name
-                cvc_binary_value))
+               sp "| %s -> Pbrt.Encoder.int_as_varint %i encoder" cvc_name
+                 cvc_binary_value
+             else
+               sp "| %s -> Pbrt.Encoder.int_as_varint (%i) encoder" cvc_name
+                 cvc_binary_value))
         cv_constructors)
 
 let gen_struct ?and_ t sc =

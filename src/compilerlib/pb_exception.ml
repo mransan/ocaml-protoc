@@ -23,7 +23,7 @@
 
 *)
 
-(** {2 Compilation errors } *)
+(** {2 Compilation errors} *)
 
 module P = Printf
 module Loc = Pb_location

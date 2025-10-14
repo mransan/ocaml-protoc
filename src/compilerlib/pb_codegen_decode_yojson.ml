@@ -4,9 +4,8 @@ module F = Pb_codegen_formatting
 let sp = Pb_codegen_util.sp
 
 (** Function which returns all the possible pattern match for reading a JSON
-   value into an OCaml value. The protobuf JSON encoding rules
-   are defined here:
-   https://developers.google.com/protocol-buffers/docs/proto3#json *)
+    value into an OCaml value. The protobuf JSON encoding rules are defined
+    here: https://developers.google.com/protocol-buffers/docs/proto3#json *)
 let field_pattern_match ~r_name ~rf_label field_type =
   match field_type with
   | Ot.Ft_basic_type bt ->

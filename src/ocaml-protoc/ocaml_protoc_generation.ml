@@ -57,25 +57,25 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
     List.flatten
       [
         (if !(cmdline.Cmdline.dump_type_repr) then
-          [ Pb_codegen_ocaml_type_dump.plugin ]
-        else
-          []);
+           [ Pb_codegen_ocaml_type_dump.plugin ]
+         else
+           []);
         (if !(cmdline.Cmdline.pp) then
-          [ Pb_codegen_pp.plugin ]
-        else
-          []);
+           [ Pb_codegen_pp.plugin ]
+         else
+           []);
         (if !(cmdline.Cmdline.binary) then
-          [ Pb_codegen_encode_binary.plugin; Pb_codegen_decode_binary.plugin ]
-        else
-          []);
+           [ Pb_codegen_encode_binary.plugin; Pb_codegen_decode_binary.plugin ]
+         else
+           []);
         (if !(cmdline.Cmdline.yojson) then
-          [ Pb_codegen_encode_yojson.plugin; Pb_codegen_decode_yojson.plugin ]
-        else
-          []);
+           [ Pb_codegen_encode_yojson.plugin; Pb_codegen_decode_yojson.plugin ]
+         else
+           []);
         (if !(cmdline.Cmdline.bs) then
-          [ Pb_codegen_encode_bs.plugin; Pb_codegen_decode_bs.plugin ]
-        else
-          []);
+           [ Pb_codegen_encode_bs.plugin; Pb_codegen_decode_bs.plugin ]
+         else
+           []);
       ]
   in
 

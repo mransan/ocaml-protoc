@@ -30,8 +30,7 @@ val rev_split_by_char : char -> string -> string list
     and return the component in reverse order (ie from right to left).
 
     For instance when splitting a filename with the '.' character, the file
-    extension will be the head of the returned list.
- *)
+    extension will be the head of the returned list. *)
 
 val string_of_string_list : string list -> string
 (** [string_of_string_list l] returns a debug string of [l] *)
@@ -44,23 +43,22 @@ val indentation_prefix : int -> string
 
 module Option : sig
   val default : 'a -> 'a option -> 'a
-  (** [option_default x o] returns [x] is [o] is [None] otherwise [y]
-      when [o] is [Some y].
-   *)
+  (** [option_default x o] returns [x] is [o] is [None] otherwise [y] when [o]
+      is [Some y]. *)
 
   val min_value : 'a option -> 'a option -> 'a option
-  (** [min_value x y] returns the min value of the x and y if x and y are of
-      the form [Some _]. If [x] or [y] is [None] then [Invalid_argument]
-      exception is raised *)
+  (** [min_value x y] returns the min value of the x and y if x and y are of the
+      form [Some _]. If [x] or [y] is [None] then [Invalid_argument] exception
+      is raised *)
 
   val eq_value : 'a option -> 'a option -> bool
-  (** [eq_value x y] returns [true] if both [x] and [y] are of
-      the form [Some _]. If [x] or [y] is [None] then [Invalid_argument]
-      exception is raised *)
+  (** [eq_value x y] returns [true] if both [x] and [y] are of the form
+      [Some _]. If [x] or [y] is [None] then [Invalid_argument] exception is
+      raised *)
 
   val string_of_option : ('a -> string) -> 'a option -> string
-  (** [string_of_option f x] returns string representation of [x] using
-      [f] when [x] is of the form [Some _]. *)
+  (** [string_of_option f x] returns string representation of [x] using [f] when
+      [x] is of the form [Some _]. *)
 end
 
 val read_file : string -> string
@@ -74,13 +72,12 @@ module List : sig
   (** [apply_until f l] applies [f ei] until it returns [Some x]
 
       If the end of the list is reached without [f] returning [Some _] then
-      [None] is returned.
-   *)
+      [None] is returned. *)
 
   val filter_map : ('a -> 'b option) -> 'a list -> 'b list
   (** [filter_map f l] returns the list of element [x] for which [f] returned
-      [Some x]. The length of the returned list will be less or equal than
-      the length of the input list [l]. *)
+      [Some x]. The length of the returned list will be less or equal than the
+      length of the input list [l]. *)
 
   val find_opt : ('a -> bool) -> 'a list -> 'a option
   val find_map : ('a -> 'b option) -> 'a list -> 'b option

@@ -35,14 +35,14 @@ type payload_kind =
 
 type user_defined_type = {
   udt_module_prefix: string option;
-      (** since code generated is split in multiple file (type, binary, json, ..)
-     this defines the prefix for the given type, the suffix will
-     be defined by each generator *)
+      (** since code generated is split in multiple file (type, binary, json,
+          ..) this defines the prefix for the given type, the suffix will be
+          defined by each generator *)
   udt_type_name: string;
       (** OCaml type name ie not the type name in proto file *)
   udt_type: [ `Message | `Enum ];
-      (** Need to keep track of this since encoding logic in binary
-     format is quite different *)
+      (** Need to keep track of this since encoding logic in binary format is
+          quite different *)
 }
 
 type basic_type =
@@ -66,9 +66,9 @@ type field_type =
   | Ft_basic_type of basic_type
   | Ft_user_defined_type of user_defined_type
   | Ft_wrapper_type of wrapper_type
-      (** New wrapper type which indicates that the corresponding ocaml
-     Type should be an `option` along with the fact that it is encoded with
-     special rules *)
+      (** New wrapper type which indicates that the corresponding ocaml Type
+          should be an `option` along with the fact that it is encoded with
+          special rules *)
 
 type default_value = Pb_option.constant option
 
@@ -152,9 +152,9 @@ and type_spec =
 
 type type_ = {
   module_prefix: string;
-      (** code generation leads to several file/module being generated for
-        a given [type_]. [module_prefix] is the common prefix for all those
-        generated module and it is based on the `.proto` filename. *)
+      (** code generation leads to several file/module being generated for a
+          given [type_]. [module_prefix] is the common prefix for all those
+          generated module and it is based on the `.proto` filename. *)
   spec: type_spec;
   type_level_ppx_extension: string option;
   type_options: Pb_option.set;

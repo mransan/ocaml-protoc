@@ -147,8 +147,8 @@ let compile_enum_p1 ?(parent_options = Pb_option.empty) file_name file_options
 
   make_proto_type ~file_name ~file_options ~id:enum_id ~scope ~spec
 
-(** compile a [Pbpt] message a list of [Pbtt] types (ie messages can
-    defined more than one type). *)
+(** compile a [Pbpt] message a list of [Pbtt] types (ie messages can defined
+    more than one type). *)
 let rec validate_message ?(parent_options = Pb_option.empty) file_name
     file_options message_scope parsed_message : _ Tt.proto_type list =
   let { Pt.id; Pt.message_name; Pt.message_body } = parsed_message in

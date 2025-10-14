@@ -8,11 +8,11 @@ let rec mk_company ~n ~depth : company =
     name = "bigcorp";
     subsidiaries =
       (if depth = 0 then
-        []
-      else (
-        let c = mk_company ~n ~depth:(depth - 1) in
-        [ c; c ]
-      ));
+         []
+       else (
+         let c = mk_company ~n ~depth:(depth - 1) in
+         [ c; c ]
+       ));
     stores =
       List.init n (fun i ->
           {

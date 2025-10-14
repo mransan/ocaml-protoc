@@ -417,12 +417,12 @@ module Encoder = struct
 
   external varint_size : (int64[@unboxed]) -> int
     = "caml_pbrt_varint_size_byte" "caml_pbrt_varint_size"
-    [@@noalloc]
+  [@@noalloc]
   (** Compute how many bytes this int would occupy as varint *)
 
   external varint_slice : bytes -> (int[@untagged]) -> (int64[@unboxed]) -> unit
     = "caml_pbrt_varint_byte" "caml_pbrt_varint"
-    [@@noalloc]
+  [@@noalloc]
   (** Write this int as varint into the given slice *)
 
   let[@inline] varint64 (i : int64) e =
@@ -518,9 +518,9 @@ module Encoder = struct
     add_char e
       (Char.unsafe_chr
          (if b then
-           1
-         else
-           0))
+            1
+          else
+            0))
 
   let[@inline] float_as_bits32 f e = bits32 (Int32.bits_of_float f) e
   let[@inline] float_as_bits64 f e = bits64 (Int64.bits_of_float f) e
@@ -641,12 +641,10 @@ module Repeated_field = struct
   }
   (** [t] is a container optimized for fast repeated inserts.
 
-      It is made of a list of growing size array [l] as well as
-      a current array [a] in which inserts are performed until
-      [a] is full and appended to [l].
+      It is made of a list of growing size array [l] as well as a current array
+      [a] in which inserts are performed until [a] is full and appended to [l].
 
-      The main growing logic is implemented in the [add] functions.
-    *)
+      The main growing logic is implemented in the [add] functions. *)
 
   let make v = { s = 16; i = 0; a = Array.make 16 v; l = [] }
 

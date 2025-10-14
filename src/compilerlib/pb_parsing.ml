@@ -95,7 +95,10 @@ let parse_single_file (file_name, file_content) =
   let lexbuf = Lexing.from_string file_content in
   let pos = lexbuf.Lexing.lex_curr_p in
   lexbuf.Lexing.lex_curr_p <- Lexing.{ pos with pos_fname = file_name };
-  let buffer_size = 5 (* Adjust as needed *) in
+  let buffer_size =
+    5
+    (* Adjust as needed *)
+  in
   let next_token, error_context_tokens = custom_lexer_with_buffer buffer_size in
   let proto =
     try Pb_parsing_parser.proto_ next_token lexbuf with

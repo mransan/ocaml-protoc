@@ -25,16 +25,15 @@
 
 (** Compile protobuf typed tree to the OCaml AST.
 
-    This module focuses on the compilation steps which transforms a
-    fully resolved Protobuf message into an OCaml representation.
+    This module focuses on the compilation steps which transforms a fully
+    resolved Protobuf message into an OCaml representation.
 
-    After compilation this module also expose code generation
-    functionality.  *)
+    After compilation this module also expose code generation functionality. *)
 
 module Tt = Pb_typing_type_tree
 module Ot = Pb_codegen_ocaml_type
 
-(** {2 Compilation } *)
+(** {2 Compilation} *)
 
 val compile :
   unsigned_tag:bool ->
@@ -44,9 +43,9 @@ val compile :
 
 (** Internal helpers.
 
-    For now there are no guarantees of stability within this module.
-    It's unlikely that the signatures will change, but the possibility
-    is still there.
+    For now there are no guarantees of stability within this module. It's
+    unlikely that the signatures will change, but the possibility is still
+    there.
 
     @since 2.4 *)
 module Internal : sig

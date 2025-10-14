@@ -25,8 +25,8 @@
 
 (** Type of payload in a given field.
 
-    This is only the wire type, the generated code will have a more precise
-    type in general. *)
+    This is only the wire type, the generated code will have a more precise type
+    in general. *)
 type payload_kind =
   | Varint
   | Bits32
@@ -46,9 +46,9 @@ module Decoder : sig
   (** [of_bytes b] creates a decoder positioned at start of bytes [b]. *)
 
   val of_subbytes : bytes -> int -> int -> t
-  (** [of_subbytes b offset len] creates a decoder positioned at [offset]
-      in bytes [b], reading at most [len] bytes. This is similar
-      to [of_bytes (Bytes.sub b offset len)] but doesn't copy.
+  (** [of_subbytes b offset len] creates a decoder positioned at [offset] in
+      bytes [b], reading at most [len] bytes. This is similar to
+      [of_bytes (Bytes.sub b offset len)] but doesn't copy.
       @since 3.0 *)
 
   val of_string : string -> t
@@ -90,66 +90,57 @@ module Decoder : sig
   (** {2 Decoding Functions} *)
 
   val key : t -> (int * payload_kind) option
-  (** [key d] reads a key and a payload kind from [d].
-      If [d] has exhausted its input when the function is called, returns [None].
-      If [d] has exhausted its input while reading, raises
-      [Failure Incomplete].
-      If the payload kind is unknown, raises [Failure Malformed_field]. *)
+  (** [key d] reads a key and a payload kind from [d]. If [d] has exhausted its
+      input when the function is called, returns [None]. If [d] has exhausted
+      its input while reading, raises [Failure Incomplete]. If the payload kind
+      is unknown, raises [Failure Malformed_field]. *)
 
   val skip : t -> payload_kind -> unit
-  (** [skip d pk] skips the next value of kind [pk] in [d].
-      If skipping the value would exhaust input of [d], raises
-      [Encoding_error Incomplete]. *)
+  (** [skip d pk] skips the next value of kind [pk] in [d]. If skipping the
+      value would exhaust input of [d], raises [Encoding_error Incomplete]. *)
 
   val nested : t -> t
-  (** [nested d] returns a decoder for a message nested in [d].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [nested d] returns a decoder for a message nested in [d]. If reading the
+      message would exhaust input of [d], raises [Failure Incomplete]. *)
 
   val map_entry : t -> decode_key:(t -> 'a) -> decode_value:(t -> 'b) -> 'a * 'b
 
   val empty_nested : t -> unit
-  (** [empty_nested d] skips an empty message of 0 length.
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [empty_nested d] skips an empty message of 0 length. If reading the
+      message would exhaust input of [d], raises [Failure Incomplete]. *)
 
   val packed_fold : ('a -> t -> 'a) -> 'a -> t -> 'a
   (** [packed_fold f e0 d] folds over the a packed encoding with [f acc d] and
-      initial value [e0].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+      initial value [e0]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val int_as_varint : t -> int
-  (** [int_as_varint d] reads an [int] value from [d] with [Varint] encoding.
-      If the integer value read cannot be converted to [int] raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [int_as_varint d] reads an [int] value from [d] with [Varint] encoding. If
+      the integer value read cannot be converted to [int] raises
+      [Failure Overflow ""]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val int_as_zigzag : t -> int
-  (** [int_as_zigzag d] reads an [int] value from [d] with zigzag encoding.
-      If the integer value read cannot be converted to [int] raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [int_as_zigzag d] reads an [int] value from [d] with zigzag encoding. If
+      the integer value read cannot be converted to [int] raises
+      [Failure Overflow ""]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val int32_as_varint : t -> int32
-  (** [int32_as_varint d] reads an [int32] value from [d] with [Varint] encoding.
-      If the integer value read cannot be converted to [int32] raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [int32_as_varint d] reads an [int32] value from [d] with [Varint]
+      encoding. If the integer value read cannot be converted to [int32] raises
+      [Failure Overflow ""]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val int32_as_zigzag : t -> int32
   (** [int32_as_varint d] reads an [int32] value from [d] with zigzag encoding.
       If the integer value read cannot be converted to [int32] raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+      [Failure Overflow ""]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val int64_as_varint : t -> int64
-  (** [int64_as_varint d] reads an [int64] value from [d] with [Varint] encoding.
-      If reading the message would exhaust input of [d], raises
+  (** [int64_as_varint d] reads an [int64] value from [d] with [Varint]
+      encoding. If reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
   val int64_as_zigzag : t -> int64
@@ -177,10 +168,9 @@ module Decoder : sig
   val uint64_as_bits64 : t -> [ `unsigned of int64 ]
 
   val bool : t -> bool
-  (** [bool d] reads a [bool] value from [d] with varing encoding.
-      If the boolean value in [d] is neither 0 or 1 raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
+  (** [bool d] reads a [bool] value from [d] with varing encoding. If the
+      boolean value in [d] is neither 0 or 1 raises [Failure Overflow ""]. If
+      reading the message would exhaust input of [d], raises
       [Failure Incomplete]. *)
 
   val float_as_bits32 : t -> float
@@ -194,28 +184,24 @@ module Decoder : sig
       [Failure Incomplete]. *)
 
   val int_as_bits32 : t -> int
-  (** [int_as_bits32 d] reads a [int] value from [d] with 32 bit encoding.
-      If the integer value read cannot be converted to [int] raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [int_as_bits32 d] reads a [int] value from [d] with 32 bit encoding. If
+      the integer value read cannot be converted to [int] raises
+      [Failure Overflow ""]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val int_as_bits64 : t -> int
-  (** [int_as_bits64 d] reads a [int] value from [d] with 64 bit encoding.
-      If the integer value read cannot be converted to [int] raises
-      [Failure Overflow ""].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [int_as_bits64 d] reads a [int] value from [d] with 64 bit encoding. If
+      the integer value read cannot be converted to [int] raises
+      [Failure Overflow ""]. If reading the message would exhaust input of [d],
+      raises [Failure Incomplete]. *)
 
   val string : t -> string
-  (** [string d] reads a [string] value from [d].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [string d] reads a [string] value from [d]. If reading the message would
+      exhaust input of [d], raises [Failure Incomplete]. *)
 
   val bytes : t -> bytes
-  (** [bytes d] reads a [bytes] value from [d].
-      If reading the message would exhaust input of [d], raises
-      [Failure Incomplete]. *)
+  (** [bytes d] reads a [bytes] value from [d]. If reading the message would
+      exhaust input of [d], raises [Failure Incomplete]. *)
 
   val wrapper_double_value : t -> float option
   val wrapper_float_value : t -> float option
@@ -256,11 +242,11 @@ module Encoder : sig
       @since 2.1 *)
 
   val reset : t -> unit
-  (** Clears the content and resets internal storage
-      to its initial memory consumption.
+  (** Clears the content and resets internal storage to its initial memory
+      consumption.
 
-      This is more costly than {!clear} but
-      can be useful after a very large message was encoded.
+      This is more costly than {!clear} but can be useful after a very large
+      message was encoded.
       @since 2.1 *)
 
   (** {2 Convertion} *)
@@ -269,19 +255,19 @@ module Encoder : sig
   (** Extract the content of the encoder to bytes. *)
 
   val to_string : t -> string
-  (** Extract the content of the encoder to a string. Call this after
-      encoding a message into the encoder. *)
+  (** Extract the content of the encoder to a string. Call this after encoding a
+      message into the encoder. *)
 
   val write_chunks : (bytes -> int -> int -> unit) -> t -> unit
-  (** [write_chunks w e] calls the write function [w]
-      (e.g [output oc] for some output channel [oc]) on every chunk
-      inside [e]. The number of chunks is an implementation detail.
+  (** [write_chunks w e] calls the write function [w] (e.g [output oc] for some
+      output channel [oc]) on every chunk inside [e]. The number of chunks is an
+      implementation detail.
       @since 2.1 *)
 
   (** {2 Encoding Functions}
 
-      These combinators are used by generated code (or user combinators)
-      to encode a OCaml value into the wire representation of protobufs. *)
+      These combinators are used by generated code (or user combinators) to
+      encode a OCaml value into the wire representation of protobufs. *)
 
   val key : int -> payload_kind -> t -> unit
   (** [key k pk e] writes a key and a payload kind to [e]. *)
@@ -340,13 +326,11 @@ module Encoder : sig
   (** [float_as_bits64 f e] encodes [f] in [e] with [Bits64] encoding *)
 
   val int_as_bits32 : int -> t -> unit
-  (** [int_as_bits32 i e] encodes [i] in [e] with [Bits32] encoding
-      TODO : add error handling
-   *)
+  (** [int_as_bits32 i e] encodes [i] in [e] with [Bits32] encoding TODO : add
+      error handling *)
 
   val int_as_bits64 : int -> t -> unit
-  (** [int_as_bits64 i e] encodes [i] in [e] with [Bits64] encoding
-   *)
+  (** [int_as_bits64 i e] encodes [i] in [e] with [Bits64] encoding *)
 
   val string : string -> t -> unit
   (** [string s e] encodes [s] in [e] *)
@@ -365,59 +349,47 @@ end
 
 module List_util : sig
   val rev_iter_with : ('a -> 'b -> unit) -> 'a list -> 'b -> unit
-  (** [iter_rev_with f l st] iterate over the list in reverse order,
-    passing items and [st] to [f]. *)
+  (** [iter_rev_with f l st] iterate over the list in reverse order, passing
+      items and [st] to [f]. *)
 end
 
 (** Optimized representation for repeated fields *)
 module Repeated_field : sig
   type 'a t
-  (** optimized data structure for fast inserts so that decoding
-      of repeated fields can be efficient.
+  (** optimized data structure for fast inserts so that decoding of repeated
+      fields can be efficient.
 
-      Type can be constructed at no cost from an existing array.
-    *)
+      Type can be constructed at no cost from an existing array. *)
 
   val make : 'a -> 'a t
-  (** [make v] create an initial repeated field container [v] is
-      not used but needed to initialize the internal array
-      data structure.
+  (** [make v] create an initial repeated field container [v] is not used but
+      needed to initialize the internal array data structure.
 
-      This design flow is intentional to keep optimal
-      performance.
+      This design flow is intentional to keep optimal performance.
 
-      Therefore [lengh (make 1)] will return [0].
-   *)
+      Therefore [lengh (make 1)] will return [0]. *)
 
   val of_array_no_copy : 'a array -> 'a t
-  (** [of_array_no_copy a] initialized a new repeated field
-      container with [a].
+  (** [of_array_no_copy a] initialized a new repeated field container with [a].
 
-      [a] is not copied into [a] but only referenced so any later
-      modification to any [a] element will affected [a t] container.
-    *)
+      [a] is not copied into [a] but only referenced so any later modification
+      to any [a] element will affected [a t] container. *)
 
   val length : 'a t -> int
-  (** [length c] returns the number of insterted element in [c].
-    *)
+  (** [length c] returns the number of insterted element in [c]. *)
 
   val add : 'a -> 'a t -> unit
   (** [add x c] appends [a] to container [c]
 
-      This operation is not constant time since it might trigger
-      an alocation of an array. However it is optimized for the
-      total insert time of element one by one.
-   *)
+      This operation is not constant time since it might trigger an alocation of
+      an array. However it is optimized for the total insert time of element one
+      by one. *)
 
   val to_array : 'a t -> 'a array
-  (** [to_array c] convert the repeated field container to an
-      array.
-   *)
+  (** [to_array c] convert the repeated field container to an array. *)
 
   val to_list : 'a t -> 'a list
-  (** [to_list c] convert the repeated field container to an
-      list.
-   *)
+  (** [to_list c] convert the repeated field container to an list. *)
 
   val iter : ('a -> unit) -> 'a t -> unit
   (** [iter f c] applies [f] to all element in [c] *)
@@ -432,17 +404,14 @@ module Repeated_field : sig
 
   val map_to_array : ('a -> 'b) -> 'a t -> 'b array
   (** [map_to_array f c] map all [c] element to an array containing [f e_i]
-      element.
-   *)
+      element. *)
 
   val map_to_list : ('a -> 'b) -> 'a t -> 'b list
   (** [map_to_list f c] map all [c] element to a list containing [f e_i]
-      element.
-   *)
+      element. *)
 end
 
-(** Runtime functions for Pretty Printing functionality
- *)
+(** Runtime functions for Pretty Printing functionality *)
 module Pp : sig
   type formatter = Format.formatter
 
@@ -478,8 +447,7 @@ module Pp : sig
 
   val pp_option : (formatter -> 'a -> unit) -> formatter -> 'a option -> unit
   (** [pp_option f fmt o] formats an option value [o] using [f] formatter when
-      [o] is a [Some x] value
-   *)
+      [o] is a [Some x] value *)
 
   val pp_wrapper_float : formatter -> float option -> unit
   val pp_wrapper_bool : formatter -> bool option -> unit
@@ -489,9 +457,8 @@ module Pp : sig
   val pp_wrapper_bytes : formatter -> bytes option -> unit
 
   val pp_list : (formatter -> 'a -> unit) -> formatter -> 'a list -> unit
-  (** [pp_list f fmt l] formats a list value [l] using [f] formatter on each
-      of the elements.
-   *)
+  (** [pp_list f fmt l] formats a list value [l] using [f] formatter on each of
+      the elements. *)
 
   val pp_associative_list :
     (formatter -> 'a -> unit) ->
@@ -514,9 +481,9 @@ module Pp : sig
     formatter ->
     'a ->
     unit
-  (** [pp_record_field label_name fmt field_value] formats a
-      record [field_value] with [label_name] *)
+  (** [pp_record_field label_name fmt field_value] formats a record
+      [field_value] with [label_name] *)
 
   val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit
-  (** [pp_brk fmt r] formats record value [r] with curly brakets.  *)
+  (** [pp_brk fmt r] formats record value [r] with curly brakets. *)
 end

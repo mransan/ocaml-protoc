@@ -30,12 +30,9 @@ module Typing_util = Pb_typing_util
 
 (** [rev_split_by_naming_convention s] will split [s] according to the protobuf
     coding style convention. The rule split are
-    {ul
-    {- character ['_'] is a separator}
-    {- the first uppercase letter after a lower case is a separator
-       (ie FooBar will be split into [ ["Bar";"Foo"] ]}
-    }
-*)
+    - character ['_'] is a separator
+    - the first uppercase letter after a lower case is a separator (ie FooBar
+      will be split into [ ["Bar";"Foo"] ] *)
 let rev_split_by_naming_convention s =
   let is_uppercase c = 64 < Char.code c && Char.code c < 91 in
 
@@ -128,11 +125,10 @@ let wrapper_type_of_type_name = function
     [module_] is the module of the type that this field belong to. If [module_]
     is the same as the type [i] module then it won't be added to the field type
     name. However if the field type belongs to a different module then it will
-    be included. This distinction is necessary as OCaml will fail to compile
-    if the type of a field which is defined within the same module is prefix
-    with the module name. (This is essentially expecting (rightly) a sub module
-    with the same name.
- *)
+    be included. This distinction is necessary as OCaml will fail to compile if
+    the type of a field which is defined within the same module is prefix with
+    the module name. (This is essentially expecting (rightly) a sub module with
+    the same name. *)
 let user_defined_type_of_id ?(empty_as_unit = true) ~(all_types : _ list)
     ~file_name i : Ot.field_type =
   let module_prefix = module_prefix_of_file_name file_name in
@@ -358,15 +354,14 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
 
  *)
 
-(** utility function to return the string value from a sring option
- *)
+(** utility function to return the string value from a sring option *)
 let string_of_string_option message_name = function
   | None -> None
   | Some Pb_option.(Scalar_value (Constant_string s)) -> Some s
   | _ -> E.invalid_ppx_extension_option message_name
 
 (** utility function to implement the priority logic defined in the notes above.
- *)
+*)
 let process_all_types_ppx_extension file_name file_options
     type_level_ppx_extension =
   match type_level_ppx_extension with
@@ -505,7 +500,6 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             in
 
             variants, record_field :: fields
-          (* Message_field *)
           | Tt.Message_oneof_field field ->
             let outer_message_names = message_names @ [ message_name ] in
             let variant =
@@ -544,7 +538,6 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             let fields = record_field :: fields in
 
             variants, fields
-            (* Message_oneof_field *)
           | Tt.Message_map_field mf ->
             let {
               Tt.map_name;
@@ -605,8 +598,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                 }
             in
 
-            variants, record_field :: fields
-          (* Message_map_field *))
+            variants, record_field :: fields)
         ([], []) message_body
     in
 

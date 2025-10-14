@@ -38,8 +38,8 @@ let default_value_of_field_type ?field_name field_type field_default =
     default_value_of_basic_type ?field_name bt field_default
   | Ot.Ft_wrapper_type _ -> "None"
 
-(** This function returns [(field_name, field_default_value, field_type)] for
-   a record field. *)
+(** This function returns [(field_name, field_default_value, field_type)] for a
+    record field. *)
 let record_field_default_info record_field =
   let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in
   let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in

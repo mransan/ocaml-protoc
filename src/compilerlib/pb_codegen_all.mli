@@ -17,5 +17,5 @@ val codegen :
   services:bool ->
   Plugin.t list ->
   ocaml_mod
-(** [codegen types] returns a full code listing for the [.ml]
-    and the [.mli] files. *)
+(** [codegen types] returns a full code listing for the [.ml] and the [.mli]
+    files. *)

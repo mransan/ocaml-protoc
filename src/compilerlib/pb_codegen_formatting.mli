@@ -28,11 +28,10 @@
 (** {2 types} *)
 
 type scope
-(** A scope is a formatting container which can contains line of text as well
-    as other nested scopes
+(** A scope is a formatting container which can contains line of text as well as
+    other nested scopes
 
-    In other word a scope define an indentation section.
- *)
+    In other word a scope define an indentation section. *)
 
 (** {2 Creation} *)
 
@@ -53,9 +52,8 @@ val sub_scope : scope -> (scope -> unit) -> unit
 (** {2 Printing} *)
 
 val to_string : scope -> string
-(** [print scope] returns the formatted scops with a 2 character
-    indentation for each scope.
- *)
+(** [print scope] returns the formatted scops with a 2 character indentation for
+    each scope. *)
 
 val output : out_channel -> scope -> unit
 (** Write to output *)

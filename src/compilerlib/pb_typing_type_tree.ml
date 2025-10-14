@@ -27,8 +27,7 @@ module Pt = Pb_parsing_parse_tree
 
 (** Protobuf typed tree.
 
-    The typetree type is parametrized to allow for 2 phase compilation.
- *)
+    The typetree type is parametrized to allow for 2 phase compilation. *)
 
 type ('a, 'b) field = {
   field_parsed: 'b Pt.field;
@@ -38,10 +37,8 @@ type ('a, 'b) field = {
 }
 (** Field definition.
 
-    {ul
-    {- ['a] is for [unresolved] or [resolved]}
-    {- ['b] is for [field_label] to account for both normal and one of fields.}
-    } *)
+    - ['a] is for [unresolved] or [resolved]
+    - ['b] is for [field_label] to account for both normal and one of fields. *)
 
 type 'a oneof_field = ('a, Pt.oneof_field_label) field
 type 'a message_field = ('a, Pt.message_field_label) field
@@ -68,9 +65,9 @@ type type_scope = {
 }
 (** Type scope
 
-    The scope of a type (message or enum) is defined by the package
-    (defined in the top of the proto file as well as the messages above
-    it since a message definition can be nested *)
+    The scope of a type (message or enum) is defined by the package (defined in
+    the top of the proto file as well as the messages above it since a message
+    definition can be nested *)
 
 (** item for the message body *)
 type 'a message_body_content =

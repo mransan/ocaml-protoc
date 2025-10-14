@@ -24,14 +24,12 @@
 *)
 
 (** [ocaml-protoc] provides the ability to override all the custom
-  
-   protobuf file options defined in
-   [src/include/ocaml-protoc/ocamloptions.proto] as command line arguments.
-  
-   This module implements the bridge functionality between the 2
-   mechanism; command line options are converted to file options and
-   appended there.
- *)
+
+    protobuf file options defined in
+    [src/include/ocaml-protoc/ocamloptions.proto] as command line arguments.
+
+    This module implements the bridge functionality between the 2 mechanism;
+    command line options are converted to file options and appended there. *)
 module File_options = struct
   type t = {
     mutable int32_type: string option;
@@ -52,7 +50,7 @@ module File_options = struct
       ocaml_all_types_ppx = None;
     }
 
-  (** Compute the command line arguments be used with the {!Arg} module.  *)
+  (** Compute the command line arguments be used with the {!Arg} module. *)
   let cmd_line_args t =
     [
       ( "--int32_type",
@@ -75,8 +73,7 @@ module File_options = struct
         " ocaml_all_types_ppx file option" );
     ]
 
-  (** Converts the command line values to Parse Tree file options
-    *)
+  (** Converts the command line values to Parse Tree file options *)
   let to_file_options t : Pb_option.set =
     let { int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx } = t in
 
@@ -118,8 +115,8 @@ module Cmdline = struct
         (** file options override from the cmd line *)
     unsigned_tag: bool ref;
         (** if true, unsigned int32/64s will be generated with a polymorphic
-           variant [`unsigned int32/64], otherwise will be emitted as
-           immediate [int32/int64]. *)
+            variant [`unsigned int32/64], otherwise will be emitted as immediate
+            [int32/int64]. *)
   }
 
   let make () =

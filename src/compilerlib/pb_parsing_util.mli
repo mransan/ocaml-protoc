@@ -25,12 +25,12 @@
 
 (** Parse tree utilities *)
 
-(** This module defines convenient function to create and manipulate
-    the parse tree.  *)
+(** This module defines convenient function to create and manipulate the parse
+    tree. *)
 
 module Pt = Pb_parsing_parse_tree
 
-(** {2 Creators } *)
+(** {2 Creators} *)
 
 val field :
   ?options:Pb_option.set ->
@@ -107,11 +107,11 @@ val proto :
   ?extend:Pt.extend ->
   unit ->
   Pt.proto
-(** [proto ~message ~proto ()] will add [message] to [proto] and return a
-    the updated proto value. *)
+(** [proto ~message ~proto ()] will add [message] to [proto] and return a the
+    updated proto value. *)
 
 val finalize_proto_value : Pt.proto -> Pt.proto
 
-(** {2 Miscellaneous functionality } *)
+(** {2 Miscellaneous functionality} *)
 
 val message_printer : ?level:int -> Pt.message -> unit

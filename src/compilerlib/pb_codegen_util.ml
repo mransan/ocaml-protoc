@@ -76,8 +76,7 @@ let string_of_record_field_type ?module_prefix = function
 
     This pattern is common since a generated function for a type
     (encode/decode/to_string) will call the same generated function for each
-    user defined field type.
- *)
+    user defined field type. *)
 let function_name_of_user_defined ~function_prefix = function
   | { Ot.udt_module_prefix = Some module_prefix; Ot.udt_type_name; _ } ->
     sp "%s.%s_%s" module_prefix function_prefix udt_type_name

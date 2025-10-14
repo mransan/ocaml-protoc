@@ -1,8 +1,7 @@
 (** Plugin architecture.
 
-    OCaml-protoc generates code based on a number of plugins,
-    each of which can contribute code to the output files (.ml and .mli).
-*)
+    OCaml-protoc generates code based on a number of plugins, each of which can
+    contribute code to the output files (.ml and .mli). *)
 
 type codegen_f =
   ?and_:unit ->

@@ -29,9 +29,8 @@ type unresolved = {
   type_path: type_path;
   type_name: string;
   from_root: bool;
-      (** from_root indicates that the scope for the type is
-                         from the root of the type system. (ie starts with '.')
-                      *)
+      (** from_root indicates that the scope for the type is from the root of
+          the type system. (ie starts with '.') *)
 }
 
 type resolved = int

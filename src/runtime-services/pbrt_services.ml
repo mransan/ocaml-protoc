@@ -23,8 +23,8 @@ module Client = struct
     decode_json_res: Yojson.Basic.t -> 'res;
     decode_pb_res: Pbrt.Decoder.t -> 'res;
   }
-  (** A RPC description. You need a transport library
-      that knows where to send the bytes to actually use it. *)
+  (** A RPC description. You need a transport library that knows where to send
+      the bytes to actually use it. *)
 
   let mk_rpc :
       ?package:string list ->
@@ -69,8 +69,8 @@ module Server = struct
     decode_json_req: Yojson.Basic.t -> 'req;
     decode_pb_req: Pbrt.Decoder.t -> 'req;
   }
-  (** A single RPC method, alongside encoders and decoders for
-        input and output types. . *)
+  (** A single RPC method, alongside encoders and decoders for input and output
+      types. . *)
 
   (** A RPC endpoint. *)
   type any_rpc = RPC : ('req, 'req_mode, 'res, 'res_mode) rpc -> any_rpc
@@ -103,7 +103,7 @@ module Server = struct
     service_name: string;  (** Name of the service *)
     package: string list;
         (** The package this belongs in (e.g. "bigco.auth.secretpasswordstash"),
-         split along "." *)
+            split along "." *)
     handlers: 'h list;  (** A list of handlers *)
   }
   (** A service with fixed set of methods, which depends on the concrete RPC

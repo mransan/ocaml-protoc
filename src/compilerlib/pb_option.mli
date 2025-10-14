@@ -32,8 +32,8 @@ val empty : set
 val add : set -> string -> value -> set
 
 val merge : set -> set -> set
-(** [merge s1 s2] adds all the options from [s2] to [s1]. This means
-    than in case of duplicates [s2] options will override [s1] options. *)
+(** [merge s1 s2] adds all the options from [s2] to [s1]. This means than in
+    case of duplicates [s2] options will override [s1] options. *)
 
 val get : set -> string -> value option
 val pp_constant : Format.formatter -> constant -> unit

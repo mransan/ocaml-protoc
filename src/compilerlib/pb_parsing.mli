@@ -25,13 +25,13 @@
 
 (** Parsing compilation step *)
 
-(** This module perform the parsing of the given protobuf file along with
-    all the imported files. *)
+(** This module perform the parsing of the given protobuf file along with all
+    the imported files. *)
 
 type file_loader = string -> string * string
 (** Given a file name return the fully qualified file name along with its
     content *)
 
 val parse_file : file_loader -> string -> Pb_parsing_parse_tree.proto list
-(** [parse_file file_loader file_name] reutrns the protobuf parse tree
-    of the given [file_name] and all its dependent files (ie imports). *)
+(** [parse_file file_loader file_name] reutrns the protobuf parse tree of the
+    given [file_name] and all its dependent files (ie imports). *)

@@ -25,26 +25,23 @@
 
 (** Type resolution.
 
-    This module resolves all the user defined for the protobuf message
-    fields; while built-in types were previously valided in
-    [Pb_typing_validation] module.
+    This module resolves all the user defined for the protobuf message fields;
+    while built-in types were previously valided in [Pb_typing_validation]
+    module.
 
-    After this resolution is complete each user defined field type will
-    be a link to a unique message type identify by its id; in other word
-    the type graph will is complete.
+    After this resolution is complete each user defined field type will be a
+    link to a unique message type identify by its id; in other word the type
+    graph will is complete.
 
-    If the resolution fails then [Pb_exception.Compilation_error] is
-    raised.
-  *)
+    If the resolution fails then [Pb_exception.Compilation_error] is raised. *)
 
 module Tt = Pb_typing_type_tree
 
-(** Custom container for all the types (message or enums) which are
-    organized by their scope. This allow efficient search of a type given
-    its type path
+(** Custom container for all the types (message or enums) which are organized by
+    their scope. This allow efficient search of a type given its type path
 
-    The construction of this container is the first step in the type
-    resolution. *)
+    The construction of this container is the first step in the type resolution.
+*)
 module Types_by_scope : sig
   type t
   (** container type *)
@@ -70,9 +67,8 @@ end
 val resolve_types :
   Pb_field_type.unresolved Tt.proto_type list ->
   Types_by_scope.t * Pb_field_type.resolved Tt.proto_type list
-(** [resolve_types types] resolves all the field types for all the [types].
-    If a field cannot be resolved then [Pb_exception.Compilation_error] is
-    raised. *)
+(** [resolve_types types] resolves all the field types for all the [types]. If a
+    field cannot be resolved then [Pb_exception.Compilation_error] is raised. *)
 
 val resolve_services :
   Types_by_scope.t ->
