@@ -43,7 +43,10 @@
 
 (rule
  (targets test05.ml test05.mli)
- (deps test05.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (deps
+  test05.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google/))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test05.proto)))
 
@@ -159,7 +162,10 @@
 
 (rule
  (targets test15.ml test15.mli)
- (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (deps
+  test15.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google/))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test15.proto)))
