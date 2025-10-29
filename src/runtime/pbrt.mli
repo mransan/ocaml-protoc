@@ -213,6 +213,15 @@ module Decoder : sig
 end
 (* Decoder *)
 
+(** Bitfield used for presence *)
+module Bitfield : sig
+  type t
+
+  val create : int -> t
+  val get : t -> int -> bool
+  val set : t -> int -> unit
+end
+
 (** Encoding protobufs. *)
 module Encoder : sig
   (** {2 Types} *)

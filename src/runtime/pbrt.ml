@@ -33,6 +33,24 @@ let min_int_as_int32, max_int_as_int32 =
 let min_int_as_int64, max_int_as_int64 =
   Int64.of_int min_int, Int64.of_int max_int
 
+module Bitfield = struct
+  type t = bytes
+
+  let[@inline] create n : t = Bytes.make ((n + 7) / 8) '\x00'
+
+  let[@inline] set self idx : unit =
+    let bv_idx = idx lsr 3 in
+    let char_idx = idx land 0b111 in
+    let c = Char.code (Bytes.get self bv_idx) in
+    let new_c = c lor (1 lsl char_idx) in
+    Bytes.unsafe_set self bv_idx (Char.unsafe_chr new_c)
+
+  let[@inline] get self idx : bool =
+    let bv_idx = idx lsr 3 in
+    let char_idx = idx land 0b111 in
+    Char.code (Bytes.get self bv_idx) land (1 lsl char_idx) <> 0
+end
+
 module Decoder = struct
   type error =
     | Incomplete
