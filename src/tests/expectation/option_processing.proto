@@ -32,7 +32,7 @@ message Person {
 
   bytes picture = 5 [(validate.rules).bytes = {not_in: ["foo", "bar", "baz"]}];
 
-  oneof id {
+  oneof id2 {
     option (validate.required) = true;
 
     string x = 6 [(validate.rules).string.prefix = "foo"];
