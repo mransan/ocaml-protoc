@@ -11,7 +11,7 @@ type person_location = {
   lng : float;
 }
 
-type person_id =
+type person_id2 =
   | X of string
   | Y of int32
   | Z of float
@@ -22,7 +22,7 @@ and person = {
   name : string;
   home : person_location option;
   picture : bytes;
-  id : person_id;
+  id2 : person_id2;
 }
 
 let rec default_payment_system () = (Cash:payment_system)
@@ -35,7 +35,7 @@ let rec default_person_location
   lng;
 }
 
-let rec default_person_id () : person_id = X ("")
+let rec default_person_id2 () : person_id2 = X ("")
 
 and default_person 
   ?id:((id:int64) = 0L)
@@ -43,14 +43,14 @@ and default_person
   ?name:((name:string) = "")
   ?home:((home:person_location option) = None)
   ?picture:((picture:bytes) = Bytes.create 0)
-  ?id:((id:person_id) = X (""))
+  ?id2:((id2:person_id2) = X (""))
   () : person  = {
   id;
   email;
   name;
   home;
   picture;
-  id;
+  id2;
 }
 
 [@@@ocaml.warning "-27-30-39"]
@@ -92,7 +92,7 @@ and default_person
 (* ----------------------------------------------------- *)
 (*
   Module Prefix: Option_processing
-  Variant: person_id
+  Variant: person_id2
     Constructor: X
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_string
 
@@ -129,8 +129,8 @@ and default_person
   - Field: picture
     Rft_nolabel (Field Type: Ft_basic_type: Bt_bytes, Encoding: 5, Payload Kind: Pk_bytes)
     Field options: {"validate.rules.bytes": {"not_in": [Constant_string "foo", Constant_string "bar", Constant_string "baz"]}}
-  - Field: id
-    Rft_variant: person_id
+  - Field: id2
+    Rft_variant: person_id2
     Field options: {"validate.required": Constant_bool true}
   Options: {"validate.disabled": Constant_bool true}
 *)
