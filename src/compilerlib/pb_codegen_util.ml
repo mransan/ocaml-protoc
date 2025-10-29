@@ -186,3 +186,9 @@ let collect_modules_of_types ocaml_types =
 (*let module_of_context module_prefix file_suffix = function
   | `Single_file -> ""
   | `Multi_file -> Printf.sprintf "%s_%s." module_prefix file_suffix *)
+
+let presence_set ~bv ~idx () : string =
+  Printf.sprintf "(Pbrt.Bitfield.set %s %d)" bv idx
+
+let presence_get ~bv ~idx () : string =
+  Printf.sprintf "(Pbrt.Bitfield.get %s %d)" bv idx

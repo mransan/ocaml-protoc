@@ -200,16 +200,30 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun record_field ->
-          let { Ot.rf_label; rf_field_type; _ } = record_field in
+          let {
+            Ot.rf_label;
+            rf_field_type;
+            rf_requires_presence;
+            rf_presence_idx = pr_idx;
+            _;
+          } =
+            record_field
+          in
+
+          if rf_requires_presence then
+            F.linep sc "if %s then ("
+              (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx:pr_idx ());
 
           let var_name = sp "v.%s" rf_label in
-          match rf_field_type with
+          (match rf_field_type with
           | Ot.Rft_nolabel x -> gen_rft_nolabel sc var_name x
           | Ot.Rft_required x -> gen_rft_required sc var_name x
           | Ot.Rft_optional x -> gen_rft_optional sc var_name x
           | Ot.Rft_repeated x -> gen_rft_repeated sc var_name x
           | Ot.Rft_variant x -> gen_rft_variant sc var_name x
-          | Ot.Rft_associative x -> gen_rft_associative sc var_name x)
+          | Ot.Rft_associative x -> gen_rft_associative sc var_name x);
+
+          if rf_requires_presence then F.line sc ");")
         r_fields (* List.iter *);
       F.line sc "()")
 (* encode function *)

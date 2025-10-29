@@ -122,6 +122,11 @@ and record_field = {
   rf_label: string;
   rf_field_type: record_field_type;
   rf_mutable: bool;
+  rf_requires_presence: bool;
+      (** Do we need to track the presence of this field using a bitfield? *)
+  rf_presence_idx: int;
+      (** If [rf_requires_presence] is true, this contains the index of this
+          field in the presence bitfield *)
   rf_options: Pb_option.set;
 }
 

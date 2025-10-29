@@ -2,43 +2,47 @@ module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
 open Pb_codegen_util
 
-(** Is this field optional enough that we give it a default value? *)
-let field_is_optional (r_field : Ot.record_field) : bool =
-  match r_field.rf_field_type with
-  | Rft_optional _ -> true
-  | _ -> false
+type default_info = Pb_codegen_default.default_info = {
+  fname: string;
+  ftype: string;
+  default_value: string;
+  requires_presence: bool;
+  presence_idx: int;
+  optional: bool;
+}
 
 (** Obtain information about the fields *)
-let fields_of_record { Ot.r_fields; _ } :
-    (string * string * [ `Optional of _ | `Required ]) list =
+let fields_of_record { Ot.r_fields; _ } : Pb_codegen_default.default_info list =
   List.map
     (fun r_field ->
-      let fname, fdefault, ftype =
-        Pb_codegen_default.record_field_default_info r_field
-      in
-      if field_is_optional r_field then
-        fname, ftype, `Optional fdefault
-      else
-        fname, ftype, `Required)
+      let dinfo = Pb_codegen_default.record_field_default_info r_field in
+      dinfo)
     r_fields
 
 let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
   let fields = fields_of_record r in
+  let n_presence =
+    List.filter (fun d -> d.requires_presence) fields |> List.length
+  in
 
   F.linep sc "%s make_%s " (let_decl_of_and and_) r_name;
 
   F.sub_scope sc (fun sc ->
       List.iter
-        (fun (fname, ftype, d) ->
-          match d with
-          | `Required -> F.linep sc "~(%s:%s)" fname ftype
-          | `Optional fvalue ->
-            F.linep sc "?%s:((%s:%s) = %s)" fname fname ftype fvalue)
+        (fun (d : default_info) ->
+          if d.optional then
+            F.linep sc "~(%s:%s)" d.fname d.ftype
+          else
+            F.linep sc "?(%s:%s option) " d.fname d.ftype)
         fields;
-      F.linep sc "() : %s  = {" r_name);
+      F.linep sc "() : %s  =" r_name);
 
   F.sub_scope sc (fun sc ->
-      List.iter (fun (fname, _, _) -> F.linep sc "%s;" fname) fields);
+      if n_presence > 0 then
+        F.linep sc "let _presence = Bytes.make %d '\\x00' in"
+          ((n_presence + 7) / 8);
+      F.line sc "{";
+      List.iter (fun d -> F.linep sc "%s;" d.fname) fields);
 
   F.line sc "}"
 
@@ -63,10 +67,11 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
 
   F.sub_scope sc (fun sc ->
       List.iter
-        (fun (field_name, field_type, d) ->
-          match d with
-          | `Optional _ -> F.linep sc "?%s:%s ->" field_name field_type
-          | `Required -> F.linep sc "%s:%s ->" field_name field_type)
+        (fun d ->
+          if d.optional then
+            F.linep sc "?%s:%s ->" d.fname d.ftype
+          else
+            F.linep sc "%s:%s" d.fname d.ftype)
         fields;
       F.line sc "unit ->";
       F.line sc r_name);

@@ -425,6 +425,14 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
     ]
   | _ ->
     let variants, fields =
+      let presence_idx = ref 0 in
+
+      let get_next_presence_idx () =
+        let n = !presence_idx in
+        incr presence_idx;
+        n
+      in
+
       List.fold_left
         (fun (variants, fields) -> function
           | Tt.Message_field field ->
@@ -489,6 +497,16 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   (repeated_type, ocaml_field_type, encoding_number, pk, packed)
             in
 
+            let rf_requires_presence =
+              Ot.record_field_type_requires_presence record_field_type
+            in
+            let rf_presence_idx =
+              if rf_requires_presence then
+                get_next_presence_idx ()
+              else
+                -1
+            in
+
             let record_field =
               Ot.
                 {
@@ -496,6 +514,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = mutable_;
                   rf_options = field.field_options;
+                  rf_requires_presence;
+                  rf_presence_idx;
                 }
             in
 
@@ -519,6 +539,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                    *)
                   rf_field_type = Rft_variant variant;
                   rf_options = field.oneof_options;
+                  rf_requires_presence = true;
+                  rf_presence_idx = get_next_presence_idx ();
                 }
             in
 
@@ -595,6 +617,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = is_mutable ~field_name:map_name map_options;
                   rf_options = map_options;
+                  rf_requires_presence = false;
+                  rf_presence_idx = -1;
                 }
             in
 

@@ -46,10 +46,17 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       ""
   in
 
+  let has_presence =
+    List.exists
+      (fun { Ot.rf_requires_presence; _ } -> rf_requires_presence)
+      r_fields
+  in
+
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
+  if has_presence then F.linep sc "  _presence_bv: bytes;";
   F.sub_scope sc (fun sc ->
       List.iter
-        (fun { Ot.rf_label; rf_field_type; rf_mutable; rf_options = _ } ->
+        (fun { Ot.rf_label; rf_field_type; rf_mutable; _ } ->
           let prefix = field_prefix rf_mutable in
           let type_ =
             Pb_codegen_util.string_of_record_field_type rf_field_type
