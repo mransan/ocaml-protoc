@@ -175,7 +175,7 @@ let rec encode_pb_add_req (v:add_req) encoder =
 
 let rec encode_pb_add_all_req (v:add_all_req) encoder = 
   Pbrt.Encoder.nested (fun lst encoder ->
-    Pbrt.List_util.rev_iter_with (fun x encoder -> 
+    Pbrt.List_util.rev_iter_with (fun x encoder ->
       Pbrt.Encoder.int32_as_varint x encoder;
     ) lst encoder;
   ) v.ints encoder;

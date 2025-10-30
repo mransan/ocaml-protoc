@@ -74,7 +74,7 @@ let rec encode_pb_person (v:person) encoder =
     Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
   | None -> ();
   end;
-  Pbrt.List_util.rev_iter_with (fun x encoder -> 
+  Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.string x encoder;
     Pbrt.Encoder.key 4 Pbrt.Bytes encoder; 
   ) v.phone encoder;

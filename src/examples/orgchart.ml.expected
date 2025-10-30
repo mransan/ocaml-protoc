@@ -182,11 +182,11 @@ let rec encode_pb_store (v:store) encoder =
   Pbrt.Encoder.string v.address encoder;
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   );
-  Pbrt.List_util.rev_iter_with (fun x encoder -> 
+  Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.nested encode_pb_person x encoder;
     Pbrt.Encoder.key 2 Pbrt.Bytes encoder; 
   ) v.employees encoder;
-  Pbrt.List_util.rev_iter_with (fun x encoder -> 
+  Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.nested encode_pb_person x encoder;
     Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
   ) v.clients encoder;
@@ -197,11 +197,11 @@ let rec encode_pb_company (v:company) encoder =
   Pbrt.Encoder.string v.name encoder;
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   );
-  Pbrt.List_util.rev_iter_with (fun x encoder -> 
+  Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.nested encode_pb_store x encoder;
     Pbrt.Encoder.key 2 Pbrt.Bytes encoder; 
   ) v.stores encoder;
-  Pbrt.List_util.rev_iter_with (fun x encoder -> 
+  Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.nested encode_pb_company x encoder;
     Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
   ) v.subsidiaries encoder;
