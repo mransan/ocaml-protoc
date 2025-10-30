@@ -217,9 +217,10 @@ end
 module Bitfield : sig
   type t
 
+  val max_bits : int
   val create : int -> t
   val get : t -> int -> bool
-  val set : t -> int -> unit
+  val set : t -> int -> t
 end
 
 (** Encoding protobufs. *)
