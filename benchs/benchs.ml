@@ -557,22 +557,7 @@ let () =
   register @@ "varint-size" @>>> List.map test_varint_size [ 1000; 100_000 ]
 
 module Nested = struct
-  type person = Foo.person = {
-    name: string;
-    age: int64;
-  }
-
-  type store = Foo.store = {
-    address: string;
-    employees: person list;
-    clients: person list;
-  }
-
-  type company = Foo.company = {
-    name: string;
-    stores: store list;
-    subsidiaries: company list;
-  }
+  open Foo
 
   type payload_kind = Pbrt.payload_kind =
     | Varint
@@ -624,33 +609,30 @@ module Nested = struct
 
   (* company, with [n] stores and [2^depth] subsidiaries *)
   let rec mk_company ~n ~depth : company =
-    {
-      name = "bigcorp";
-      subsidiaries =
+    Foo.make_company ~name:"bigcorp"
+      ~subsidiaries:
         (if depth = 0 then
            []
          else (
            let c = mk_company ~n ~depth:(depth - 1) in
            [ c; c ]
-         ));
-      stores =
-        List.init n (fun i ->
-            {
-              address = spf "%d foobar street" i;
-              clients =
-                List.init 2 (fun j ->
-                    {
-                      name = spf "client_%d_%d" i j;
-                      age = Int64.of_int ((j mod 30) + 15);
-                    });
-              employees =
-                List.init 2 (fun j ->
-                    {
-                      name = spf "employee_%d_%d" i j;
-                      age = Int64.of_int ((j mod 30) + 18);
-                    });
-            });
-    }
+         ))
+      ~capital:0L ~overhead:"" ~comment:""
+      ~stores:
+        (List.init n (fun i ->
+             Foo.make_store ~address:(spf "%d foobar street" i)
+               ~clients:
+                 (List.init 2 (fun j ->
+                      Foo.make_person ~name:(spf "client_%d_%d" i j)
+                        ~age:(Int64.of_int ((j mod 30) + 15))
+                        ()))
+               ~employees:
+                 (List.init 2 (fun j ->
+                      Foo.make_person ~name:(spf "employee_%d_%d" i j)
+                        ~age:(Int64.of_int ((j mod 30) + 18))
+                        ()))
+               ()))
+      ()
 
   module type MK_COMPANY = sig
     type t
