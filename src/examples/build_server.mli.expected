@@ -33,6 +33,9 @@ val make_file_path :
   file_path
 (** [make_file_path … ()] is a builder for type [file_path] *)
 
+val has_file_path_path : file_path -> bool
+  (** presence of field "path" in [file_path] *)
+
 
 
 (** {2 Formatters} *)

@@ -52,6 +52,12 @@ val make_person :
   person
 (** [make_person … ()] is a builder for type [person] *)
 
+val has_person_name : person -> bool
+  (** presence of field "name" in [person] *)
+
+val has_person_age : person -> bool
+  (** presence of field "age" in [person] *)
+
 val make_store : 
   ?address:string ->
   employees:person list ->
@@ -60,6 +66,9 @@ val make_store :
   store
 (** [make_store … ()] is a builder for type [store] *)
 
+val has_store_address : store -> bool
+  (** presence of field "address" in [store] *)
+
 val make_company : 
   ?name:string ->
   stores:store list ->
@@ -67,6 +76,9 @@ val make_company :
   unit ->
   company
 (** [make_company … ()] is a builder for type [company] *)
+
+val has_company_name : company -> bool
+  (** presence of field "name" in [company] *)
 
 
 (** {2 Formatters} *)

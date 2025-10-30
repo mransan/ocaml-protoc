@@ -34,6 +34,15 @@ val make_person :
   person
 (** [make_person … ()] is a builder for type [person] *)
 
+val has_person_name : person -> bool
+  (** presence of field "name" in [person] *)
+
+val has_person_id : person -> bool
+  (** presence of field "id" in [person] *)
+
+val has_person_email : person -> bool
+  (** presence of field "email" in [person] *)
+
 
 (** {2 Formatters} *)
 

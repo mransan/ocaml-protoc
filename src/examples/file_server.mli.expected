@@ -65,17 +65,32 @@ val make_file_chunk :
   file_chunk
 (** [make_file_chunk … ()] is a builder for type [file_chunk] *)
 
+val has_file_chunk_path : file_chunk -> bool
+  (** presence of field "path" in [file_chunk] *)
+
+val has_file_chunk_data : file_chunk -> bool
+  (** presence of field "data" in [file_chunk] *)
+
+val has_file_chunk_crc : file_chunk -> bool
+  (** presence of field "crc" in [file_chunk] *)
+
 val make_file_path : 
   ?path:string ->
   unit ->
   file_path
 (** [make_file_path … ()] is a builder for type [file_path] *)
 
+val has_file_path_path : file_path -> bool
+  (** presence of field "path" in [file_path] *)
+
 val make_file_crc : 
   ?crc:int32 ->
   unit ->
   file_crc
 (** [make_file_crc … ()] is a builder for type [file_crc] *)
+
+val has_file_crc_crc : file_crc -> bool
+  (** presence of field "crc" in [file_crc] *)
 
 
 

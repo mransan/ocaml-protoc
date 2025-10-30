@@ -56,12 +56,21 @@ val make_i32 :
   i32
 (** [make_i32 … ()] is a builder for type [i32] *)
 
+val has_i32_value : i32 -> bool
+  (** presence of field "value" in [i32] *)
+
 val make_add_req : 
   ?a:int32 ->
   ?b:int32 ->
   unit ->
   add_req
 (** [make_add_req … ()] is a builder for type [add_req] *)
+
+val has_add_req_a : add_req -> bool
+  (** presence of field "a" in [add_req] *)
+
+val has_add_req_b : add_req -> bool
+  (** presence of field "b" in [add_req] *)
 
 val make_add_all_req : 
   ints:int32 list ->
