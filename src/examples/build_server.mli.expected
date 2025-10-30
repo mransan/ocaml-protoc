@@ -8,7 +8,7 @@
 (** {2 Types} *)
 
 type file_path = {
-  mutable _presence: Pbrt.Bitfield.t;
+  _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
   path : string;
 }

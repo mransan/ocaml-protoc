@@ -1,7 +1,7 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_chunk = {
-  mutable _presence: Pbrt.Bitfield.t;
+  _presence: Pbrt.Bitfield.t;
   (** tracking presence for 3 fields *)
   path : string;
   data : bytes;
@@ -9,13 +9,13 @@ type file_chunk = {
 }
 
 type file_path = {
-  mutable _presence: Pbrt.Bitfield.t;
+  _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
   path : string;
 }
 
 type file_crc = {
-  mutable _presence: Pbrt.Bitfield.t;
+  _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
   crc : int32;
 }
