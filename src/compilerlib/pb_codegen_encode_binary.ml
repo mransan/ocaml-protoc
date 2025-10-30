@@ -200,19 +200,16 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun record_field ->
-          let {
-            Ot.rf_label;
-            rf_field_type;
-            rf_requires_presence;
-            rf_presence_idx = pr_idx;
-            _;
-          } =
-            record_field
-          in
+          let { Ot.rf_label; rf_field_type; rf_presence; _ } = record_field in
 
-          if rf_requires_presence then
-            F.linep sc "if %s then ("
-              (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx:pr_idx ());
+          let in_bitfield =
+            match rf_presence with
+            | Ot.Rfp_bitfield idx ->
+              F.linep sc "if %s then ("
+                (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx ());
+              true
+            | _ -> false
+          in
 
           let var_name = sp "v.%s" rf_label in
           (match rf_field_type with
@@ -223,7 +220,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           | Ot.Rft_variant x -> gen_rft_variant sc var_name x
           | Ot.Rft_associative x -> gen_rft_associative sc var_name x);
 
-          if rf_requires_presence then F.line sc ");")
+          if in_bitfield then F.line sc ");")
         r_fields (* List.iter *);
       F.line sc "()")
 (* encode function *)

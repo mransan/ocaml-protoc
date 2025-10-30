@@ -154,7 +154,10 @@ let codegen (proto : Ot.proto) ~generate_make:gen_make ~proto_file_options
   generate_type_and_default self proto.proto_types;
   if List.exists Pb_codegen_plugin.requires_mutable_records plugins then
     generate_mutable_records self proto.proto_types;
-  if gen_make then generate_make self proto.proto_types;
+
+  (* always generated now *)
+  ignore gen_make;
+  generate_make self proto.proto_types;
   List.iter (generate_plugin self proto.proto_types) plugins;
 
   (* services come last, they need binary and json *)

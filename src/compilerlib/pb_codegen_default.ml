@@ -28,11 +28,11 @@ let default_value_of_basic_type ?field_name basic_type field_default =
 
 (* Generate the string which is the default value for a given field
    type and default information. *)
-let default_value_of_field_type ?field_name field_type field_default =
+let default_value_of_field_type ?field_name field_type field_default : string =
   match field_type with
   | Ot.Ft_user_defined_type udt ->
     let function_prefix = "default" in
-    function_name_of_user_defined ~function_prefix udt ^ " ()"
+    function_name_of_user_defined ~function_prefix udt
   | Ot.Ft_unit -> "()"
   | Ot.Ft_basic_type bt ->
     default_value_of_basic_type ?field_name bt field_default
@@ -41,10 +41,11 @@ let default_value_of_field_type ?field_name field_type field_default =
 type default_info = {
   fname: string;
   ftype: string;
-  default_value: string;  (** Default value if not provided *)
-  requires_presence: bool;
-  presence_idx: int;
-  optional: bool;  (** Can actually skip providing this? *)
+  default_value: string;  (** Code for the default value *)
+  optional: bool;  (** Are we passing an option? *)
+  rfp: Ot.record_field_presence;
+  in_bitfield: bool;
+  bitfield_idx: int;
 }
 
 (** This function returns [(field_name, field_default_value, field_type)] for a
@@ -58,169 +59,146 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
     default_value_of_field_type ~field_name field_type field_default
   in
 
-  let default_value, optional =
-    match rf_field_type with
-    | Ot.Rft_nolabel (field_type, _, _) -> dfvft field_type None, true
+  let default_value_of_field_type = function
+    | Ot.Rft_nolabel (field_type, _, _) -> dfvft field_type None
     | Ot.Rft_required (field_type, _, _, default_value) ->
-      dfvft field_type default_value, false
+      dfvft field_type default_value
     | Ot.Rft_optional (field_type, _, _, default_value) ->
-      let d =
-        match default_value with
-        | None -> "None"
-        | Some _ -> sp "Some (%s)" @@ dfvft field_type default_value
-      in
-      d, true
+      (match default_value with
+      | None -> "None"
+      | Some _ -> sp "Some (%s)" @@ dfvft field_type default_value)
     | Ot.Rft_repeated (rt, field_type, _, _, _) ->
-      let d =
-        match rt with
-        | Ot.Rt_list -> "[]"
-        | Ot.Rt_repeated_field ->
-          sp "Pbrt.Repeated_field.make (%s)" (dfvft field_type None)
-      in
-      d, true
+      (match rt with
+      | Ot.Rt_list -> "[]"
+      | Ot.Rt_repeated_field ->
+        sp "Pbrt.Repeated_field.make (%s)" (dfvft field_type None))
     | Ot.Rft_associative (at, _, _, _) ->
-      let d =
-        match at with
-        | Ot.At_list -> "[]"
-        | Ot.At_hashtable -> "Hashtbl.create 128"
-      in
-      d, true
+      (match at with
+      | Ot.At_list -> "[]"
+      | Ot.At_hashtable -> "Hashtbl.create 128")
     | Ot.Rft_variant { Ot.v_constructors; _ } ->
       (* TODO This initial value could be configurable either via
          the default function or via a protobuf option. *)
-      let d =
-        match v_constructors with
-        | [] -> assert false
-        | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
-          (match vc_field_type with
-          | Ot.Vct_nullary -> vc_constructor
-          | Ot.Vct_non_nullary_constructor field_type ->
-            sp "%s (%s)" vc_constructor (dfvft field_type None))
-      in
-      d, true
+      (match v_constructors with
+      | [] -> assert false
+      | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
+        (match vc_field_type with
+        | Ot.Vct_nullary -> vc_constructor
+        | Ot.Vct_non_nullary_constructor field_type ->
+          sp "%s (%s)" vc_constructor (dfvft field_type None)))
   in
+
+  let default_value, optional =
+    match record_field.rf_presence with
+    | Ot.Rfp_wrapped_option -> "None", true
+    | Ot.Rfp_bitfield _ -> default_value_of_field_type rf_field_type, true
+    | Ot.Rfp_always -> default_value_of_field_type rf_field_type, false
+  in
+
+  let in_bitfield, bitfield_idx =
+    match record_field.rf_presence with
+    | Ot.Rfp_bitfield idx -> true, idx
+    | _ -> false, -1
+  in
+
   {
     fname = field_name;
     default_value;
     ftype = type_string;
     optional;
-    requires_presence = record_field.rf_requires_presence;
-    presence_idx = record_field.rf_presence_idx;
+    rfp = record_field.rf_presence;
+    in_bitfield;
+    bitfield_idx;
   }
 
-(* TODO: also update this *)
 let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
     List.map (fun r_field -> record_field_default_info r_field) r_fields
+  in
+
+  let len_bitfield =
+    List.filter (fun d -> d.in_bitfield) fields_default_info |> List.length
   in
 
   let rn = Pb_codegen_util.mutable_record_name r_name in
   F.linep sc "let default_%s () : %s = {" rn rn;
 
   F.sub_scope sc (fun sc ->
+      if len_bitfield > 0 then
+        F.linep sc "_presence = Pbrt.Bitfield.create %d;" len_bitfield;
       List.iter
         (fun { fname; default_value; _ } ->
           F.linep sc "%s = %s;" fname default_value)
         fields_default_info);
   F.line sc "}"
 
-let gen_record ?and_ { Ot.r_name; r_fields } sc : unit =
+let gen_record { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
     List.map (fun r_field -> record_field_default_info r_field) r_fields
   in
-  let n_presence =
-    List.filter (fun dinfo -> dinfo.requires_presence) fields_default_info
-    |> List.length
+  let len_bitfield =
+    List.filter (fun d -> d.in_bitfield) fields_default_info |> List.length
   in
 
-  F.linep sc "%s default_%s " (let_decl_of_and and_) r_name;
+  F.linep sc "let default_%s: %s = " r_name r_name;
 
   F.sub_scope sc (fun sc ->
-      List.iter
-        (fun d ->
-          if d.optional then
-            F.linep sc "?(%s:%s)" d.fname d.ftype
-          else if d.requires_presence then
-            F.linep sc "?(%s:%s option)" d.fname d.ftype
-          else
-            F.linep sc "?%s:((%s:%s) = %s)" d.fname d.fname d.ftype
-              d.default_value)
-        fields_default_info;
-      F.linep sc "() : %s  =" r_name);
-
-  F.sub_scope sc (fun sc ->
-      if n_presence > 0 then
-        F.linep sc "let _presence=Pbrt.Bitfield.create %d in" n_presence;
       F.linep sc "{";
       (* add bitfield *)
-      if n_presence > 0 then F.line sc "_presence;";
+      if len_bitfield > 0 then
+        F.linep sc "_presence=Pbrt.Bitfield.create %d;" len_bitfield;
       List.iter
         (fun d ->
-          F.linep sc "(* optional=%b, requires_presence=%b *)" d.optional
-            d.requires_presence;
-          if d.requires_presence then (
-            assert d.optional;
-            F.linep sc "%s=(match %s with" d.fname d.fname;
-            F.linep sc "  | None -> %s" d.default_value;
-            F.linep sc "  | Some v -> %s; v);"
-              (Pb_codegen_util.presence_set ~bv:"_presence" ~idx:d.presence_idx
-                 ())
-          ) else if d.optional then (
-            F.linep sc "%s=(match %s with" d.fname d.fname;
-            F.linep sc "  | None -> %s" d.default_value;
-            F.line sc "  | Some v -> v);"
-          ) else
-            F.linep sc "%s;" d.fname)
+          (*F.linep sc "(* optional=%b, in_bitfield=%b *)" d.optional d.in_bitfield;*)
+          F.linep sc "%s=%s;" d.fname d.default_value)
         fields_default_info);
 
   F.line sc "}"
 
-let gen_unit ?and_ { Ot.er_name } sc =
-  F.linep sc "%s default_%s = ()" (let_decl_of_and and_) er_name
+let gen_unit { Ot.er_name } sc =
+  F.linep sc "let default_%s : %s = ()" er_name er_name
 
-let gen_variant ?and_ { Ot.v_name; Ot.v_constructors } sc =
+let gen_variant { Ot.v_name; Ot.v_constructors } sc =
   match v_constructors with
   | [] -> failwith "programmatic TODO error"
   | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
-    let decl = let_decl_of_and and_ in
     (match vc_field_type with
     | Ot.Vct_nullary ->
-      F.linep sc "%s default_%s (): %s = %s" decl v_name v_name vc_constructor
+      F.linep sc "let default_%s: %s = %s" v_name v_name vc_constructor
     | Ot.Vct_non_nullary_constructor field_type ->
       let default_value =
         let field_name = v_name in
         default_value_of_field_type ~field_name field_type None
       in
       (* TODO need to fix the deault value *)
-      F.linep sc "%s default_%s () : %s = %s (%s)" decl v_name v_name
-        vc_constructor default_value)
+      F.linep sc "let default_%s : %s = %s (%s)" v_name v_name vc_constructor
+        default_value)
 
-let gen_const_variant ?and_ { Ot.cv_name; Ot.cv_constructors } sc =
+let gen_const_variant { Ot.cv_name; Ot.cv_constructors } sc =
   let first_constructor_name =
     match cv_constructors with
     | [] -> failwith "programmatic TODO error"
     | { Ot.cvc_name; _ } :: _ -> cvc_name
   in
-  F.linep sc "%s default_%s () = (%s:%s)" (let_decl_of_and and_) cv_name
-    first_constructor_name cv_name
+  F.linep sc "let default_%s = (%s:%s)" cv_name first_constructor_name cv_name
 
-let gen_struct_full ~with_mutable_records ?and_ t sc =
+let gen_struct_full ~with_mutable_records ?and_:_ t sc =
   let { Ot.spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
-      gen_record ?and_ r sc;
+      gen_record r sc;
       if with_mutable_records then gen_record_mutable r sc;
       true
     | Ot.Variant v ->
-      gen_variant ?and_ v sc;
+      gen_variant v sc;
       true
     | Ot.Const_variant v ->
       gen_const_variant v sc;
       true
     | Ot.Unit u ->
-      gen_unit ?and_ u sc;
+      gen_unit u sc;
       true
   in
   has_encoded
@@ -228,32 +206,21 @@ let gen_struct_full ~with_mutable_records ?and_ t sc =
 let gen_struct ?and_ t sc =
   gen_struct_full ?and_ ~with_mutable_records:false t sc
 
-let gen_sig_record sc { Ot.r_name; r_fields } =
-  F.linep sc "val default_%s : " r_name;
-
-  let fields_default_info : _ list =
-    List.map (fun r_field -> record_field_default_info r_field) r_fields
-  in
-
-  F.sub_scope sc (fun sc ->
-      List.iter
-        (fun dinfo -> F.linep sc "?%s:%s ->" dinfo.fname dinfo.ftype)
-        fields_default_info;
-      F.line sc "unit ->";
-      F.line sc r_name);
-  let rn = r_name in
-  F.linep sc "(** [default_%s ()] is the default value for type [%s] *)" rn rn
+let gen_sig_record sc { Ot.r_name; _ } : unit =
+  F.linep sc "val default_%s : %s " r_name r_name;
+  F.linep sc "(** [default_%s] is the default value for type [%s] *)" r_name
+    r_name
 
 let gen_sig_unit sc { Ot.er_name } =
   F.linep sc "val default_%s : unit" er_name;
 
   let rn = er_name in
-  F.linep sc "(** [default_%s ()] is the default value for type [%s] *)" rn rn
+  F.linep sc "(** [default_%s] is the default value for type [%s] *)" rn rn
 
 let gen_sig ?and_:_ t sc =
   let f type_name =
-    F.linep sc "val default_%s : unit -> %s" type_name type_name;
-    F.linep sc "(** [default_%s ()] is the default value for type [%s] *)"
+    F.linep sc "val default_%s : %s" type_name type_name;
+    F.linep sc "(** [default_%s] is the default value for type [%s] *)"
       type_name type_name
   in
 

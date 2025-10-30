@@ -6,9 +6,10 @@ type default_info = Pb_codegen_default.default_info = {
   fname: string;
   ftype: string;
   default_value: string;
-  requires_presence: bool;
-  presence_idx: int;
-  optional: bool;
+  optional: bool;  (** Are we passing an option? *)
+  rfp: Pb_codegen_ocaml_type.record_field_presence;
+  in_bitfield: bool;
+  bitfield_idx: int;
 }
 
 (** Obtain information about the fields *)
@@ -21,9 +22,7 @@ let fields_of_record { Ot.r_fields; _ } : Pb_codegen_default.default_info list =
 
 let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
   let fields = fields_of_record r in
-  let n_presence =
-    List.filter (fun d -> d.requires_presence) fields |> List.length
-  in
+  let n_presence = List.filter (fun d -> d.in_bitfield) fields |> List.length in
 
   F.linep sc "%s make_%s " (let_decl_of_and and_) r_name;
 
@@ -31,18 +30,33 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
       List.iter
         (fun (d : default_info) ->
           if d.optional then
-            F.linep sc "~(%s:%s)" d.fname d.ftype
+            F.linep sc "?(%s:%s option)" d.fname d.ftype
           else
-            F.linep sc "?(%s:%s option) " d.fname d.ftype)
+            F.linep sc "~(%s:%s) " d.fname d.ftype)
         fields;
       F.linep sc "() : %s  =" r_name);
 
   F.sub_scope sc (fun sc ->
       if n_presence > 0 then
-        F.linep sc "let _presence = Bytes.make %d '\\x00' in"
-          ((n_presence + 7) / 8);
+        F.linep sc "let _presence = Pbrt.Bitfield.create %d in" n_presence;
       F.line sc "{";
-      List.iter (fun d -> F.linep sc "%s;" d.fname) fields);
+      if n_presence > 0 then F.line sc "_presence;";
+      List.iter
+        (fun d ->
+          if d.optional then (
+            F.linep sc "%s=(match %s with" d.fname d.fname;
+            if d.in_bitfield then (
+              F.linep sc "| None -> %s" d.default_value;
+              F.linep sc "| Some v -> %s; v);"
+                (Pb_codegen_util.presence_set ~bv:"_presence"
+                   ~idx:d.bitfield_idx ())
+            ) else (
+              F.linep sc "| None -> %s" d.default_value;
+              F.line sc "| Some v -> v);"
+            )
+          ) else
+            F.linep sc "%s;" d.fname)
+        fields);
 
   F.line sc "}"
 
@@ -71,7 +85,7 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
           if d.optional then
             F.linep sc "?%s:%s ->" d.fname d.ftype
           else
-            F.linep sc "%s:%s" d.fname d.ftype)
+            F.linep sc "%s:%s ->" d.fname d.ftype)
         fields;
       F.line sc "unit ->";
       F.line sc r_name);

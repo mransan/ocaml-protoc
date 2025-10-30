@@ -69,8 +69,13 @@ let gen_field_common sc encoding_number payload_kind message_name
   F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
     (sp "Message(%s), field(%i)" message_name encoding_number)
 
-let gen_rft_nolabel sc r_name rf_label (field_type, encoding_number, pk) =
+let gen_rft_nolabel sc ~rf_presence r_name rf_label
+    (field_type, encoding_number, pk) =
   gen_field_common sc encoding_number pk r_name (fun sc ->
+      (match rf_presence with
+      | Ot.Rfp_bitfield idx ->
+        F.linep sc "Pbrt.Bitfield.set v._presence %d;" idx
+      | _ -> ());
       F.linep sc "v.%s <- %s;" rf_label (decode_field_expression field_type pk))
 
 (* return the variable name used for keeping track if a required
@@ -83,9 +88,13 @@ let gen_rft_required sc r_name rf_label (field_type, encoding_number, pk, _) =
         (decode_field_expression field_type pk)
         (is_set_variable_name rf_label))
 
-let gen_rft_optional sc r_name rf_label optional_field =
+let gen_rft_optional sc ~rf_presence r_name rf_label optional_field =
   let field_type, encoding_number, pk, _ = optional_field in
   gen_field_common sc encoding_number pk r_name (fun sc ->
+      (match rf_presence with
+      | Ot.Rfp_bitfield idx ->
+        F.linep sc "Pbrt.Bitfield.set v._presence %d;" idx
+      | _ -> ());
       F.linep sc "v.%s <- Some (%s);" rf_label
         (decode_field_expression field_type pk))
 
@@ -233,11 +242,13 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           (* compare the decoded field with the one defined in the
            * .proto file. Unknown fields are ignored. *)
           List.iter
-            (fun { Ot.rf_label; rf_field_type; _ } ->
+            (fun { Ot.rf_label; rf_field_type; rf_presence; _ } ->
               match rf_field_type with
-              | Ot.Rft_nolabel x -> gen_rft_nolabel sc r_name rf_label x
+              | Ot.Rft_nolabel x ->
+                gen_rft_nolabel sc ~rf_presence r_name rf_label x
               | Ot.Rft_required x -> gen_rft_required sc r_name rf_label x
-              | Ot.Rft_optional x -> gen_rft_optional sc r_name rf_label x
+              | Ot.Rft_optional x ->
+                gen_rft_optional sc ~rf_presence r_name rf_label x
               | Ot.Rft_repeated x -> gen_rft_repeated sc r_name rf_label x
               | Ot.Rft_associative x -> gen_rft_associative sc r_name rf_label x
               | Ot.Rft_variant x -> gen_rft_variant sc r_name rf_label x)
@@ -256,8 +267,16 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
             rf_label)
         all_required_rf_labels;
 
+      let has_presence =
+        List.exists
+          (fun { Ot.rf_presence; _ } -> Ot.rfp_requires_bitfield rf_presence)
+          r_fields
+      in
+
+      (* turn into an immutable value *)
       F.line sc "({";
       F.sub_scope sc (fun sc ->
+          if has_presence then F.line sc "_presence = v._presence;";
           List.iter
             (fun { Ot.rf_label; _ } ->
               F.linep sc "%s = v.%s;" rf_label rf_label)

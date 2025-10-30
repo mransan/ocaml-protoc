@@ -182,9 +182,16 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           F.line sc "| (_, _) -> () (*Unknown fields are ignored*)");
       F.line sc ") assoc;";
 
+      let has_presence =
+        List.exists
+          (fun { Ot.rf_presence; _ } -> Ot.rfp_requires_bitfield rf_presence)
+          r_fields
+      in
+
       (* Transform the mutable record in an immutable one *)
       F.line sc "({";
       F.sub_scope sc (fun sc ->
+          if has_presence then F.line sc "_presence = v._presence;";
           List.iter
             (fun { Ot.rf_label; _ } ->
               F.linep sc "%s = v.%s;" rf_label rf_label)

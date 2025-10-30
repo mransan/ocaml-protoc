@@ -456,6 +456,13 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
             let mutable_ = is_mutable ~field_name field_options in
 
             let record_field_type =
+              let is_message =
+                match ocaml_field_type with
+                | Ot.Ft_user_defined_type { Ot.udt_type = `Message; _ }
+                | Ot.Ft_wrapper_type _ ->
+                  true
+                | _ -> false
+              in
               match Typing_util.field_label field with
               | `Nolabel ->
                 (* From proto3 section on default value:
@@ -470,19 +477,18 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                    we always make such a field an OCaml option. It's the
                    responsability of the application to check for [None] and
                    perform any error handling if required. *)
-                let is_message =
-                  match ocaml_field_type with
-                  | Ot.Ft_user_defined_type { Ot.udt_type = `Message; _ } ->
-                    true
-                  | _ -> false
-                in
                 if is_message then
                   Ot.Rft_optional (ocaml_field_type, encoding_number, pk, None)
                 else
                   Ot.Rft_nolabel (ocaml_field_type, encoding_number, pk)
               | `Required ->
-                Ot.Rft_required
-                  (ocaml_field_type, encoding_number, pk, field_default)
+                if is_message then
+                  (* still wrap in option to avoid cycles, etc. Yep,
+                     can't really have a non-optional required message. *)
+                  Ot.Rft_optional (ocaml_field_type, encoding_number, pk, None)
+                else
+                  Ot.Rft_required
+                    (ocaml_field_type, encoding_number, pk, field_default)
               | `Optional ->
                 Ot.Rft_optional
                   (ocaml_field_type, encoding_number, pk, field_default)
@@ -497,16 +503,23 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   (repeated_type, ocaml_field_type, encoding_number, pk, packed)
             in
 
-            let rf_requires_presence =
-              Ot.record_field_type_requires_presence record_field_type
+            let rf_presence =
+              (* NOTE: we are still not going to be fully compliant with
+                 implicit presence in proto3, because we track presence even
+                 for non-optional nonlabelled fields. Oh well. *)
+              match record_field_type, field_type with
+              | Ot.Rft_nolabel _, `User_defined _ ->
+                (* always wrap other messages/variants in option *)
+                Ot.Rfp_wrapped_option
+              | Ot.Rft_nolabel _, _ ->
+                (* proto3 submessage *)
+                Ot.Rfp_bitfield (get_next_presence_idx ())
+              | Ot.Rft_required _, _ -> Ot.Rfp_always
+              | Ot.Rft_optional _, _ -> Ot.Rfp_wrapped_option
+              | Ot.Rft_variant _, _ ->
+                Ot.Rfp_bitfield (get_next_presence_idx ())
+              | (Ot.Rft_repeated _ | Ot.Rft_associative _), _ -> Ot.Rfp_always
             in
-            let rf_presence_idx =
-              if rf_requires_presence then
-                get_next_presence_idx ()
-              else
-                -1
-            in
-
             let record_field =
               Ot.
                 {
@@ -514,8 +527,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = mutable_;
                   rf_options = field.field_options;
-                  rf_requires_presence;
-                  rf_presence_idx;
+                  rf_presence;
                 }
             in
 
@@ -539,8 +551,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                    *)
                   rf_field_type = Rft_variant variant;
                   rf_options = field.oneof_options;
-                  rf_requires_presence = true;
-                  rf_presence_idx = get_next_presence_idx ();
+                  rf_presence = Ot.Rfp_wrapped_option;
                 }
             in
 
@@ -617,8 +628,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = is_mutable ~field_name:map_name map_options;
                   rf_options = map_options;
-                  rf_requires_presence = false;
-                  rf_presence_idx = -1;
+                  rf_presence = Ot.Rfp_always;
                 }
             in
 
