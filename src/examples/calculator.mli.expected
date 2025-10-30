@@ -10,10 +10,12 @@
 type div_by_zero = unit
 
 type i32 = {
+  _presence: Pbrt.Bitfield.t;
   value : int32;
 }
 
 type add_req = {
+  _presence: Pbrt.Bitfield.t;
   a : int32;
   b : int32;
 }
@@ -28,29 +30,43 @@ type empty = unit
 (** {2 Basic values} *)
 
 val default_div_by_zero : unit
-(** [default_div_by_zero ()] is the default value for type [div_by_zero] *)
+(** [default_div_by_zero] is the default value for type [div_by_zero] *)
 
-val default_i32 : 
+val default_i32 : i32 
+(** [default_i32] is the default value for type [i32] *)
+
+val default_add_req : add_req 
+(** [default_add_req] is the default value for type [add_req] *)
+
+val default_add_all_req : add_all_req 
+(** [default_add_all_req] is the default value for type [add_all_req] *)
+
+val default_empty : unit
+(** [default_empty] is the default value for type [empty] *)
+
+
+(** {2 Make functions} *)
+
+
+val make_i32 : 
   ?value:int32 ->
   unit ->
   i32
-(** [default_i32 ()] is the default value for type [i32] *)
+(** [make_i32 … ()] is a builder for type [i32] *)
 
-val default_add_req : 
+val make_add_req : 
   ?a:int32 ->
   ?b:int32 ->
   unit ->
   add_req
-(** [default_add_req ()] is the default value for type [add_req] *)
+(** [make_add_req … ()] is a builder for type [add_req] *)
 
-val default_add_all_req : 
-  ?ints:int32 list ->
+val make_add_all_req : 
+  ints:int32 list ->
   unit ->
   add_all_req
-(** [default_add_all_req ()] is the default value for type [add_all_req] *)
+(** [make_add_all_req … ()] is a builder for type [add_all_req] *)
 
-val default_empty : unit
-(** [default_empty ()] is the default value for type [empty] *)
 
 
 (** {2 Formatters} *)

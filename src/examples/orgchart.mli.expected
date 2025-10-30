@@ -8,17 +8,20 @@
 (** {2 Types} *)
 
 type person = {
+  _presence: Pbrt.Bitfield.t;
   name : string;
   age : int64;
 }
 
 type store = {
+  _presence: Pbrt.Bitfield.t;
   address : string;
   employees : person list;
   clients : person list;
 }
 
 type company = {
+  _presence: Pbrt.Bitfield.t;
   name : string;
   stores : store list;
   subsidiaries : company list;
@@ -27,28 +30,40 @@ type company = {
 
 (** {2 Basic values} *)
 
-val default_person : 
+val default_person : person 
+(** [default_person] is the default value for type [person] *)
+
+val default_store : store 
+(** [default_store] is the default value for type [store] *)
+
+val default_company : company 
+(** [default_company] is the default value for type [company] *)
+
+
+(** {2 Make functions} *)
+
+val make_person : 
   ?name:string ->
   ?age:int64 ->
   unit ->
   person
-(** [default_person ()] is the default value for type [person] *)
+(** [make_person … ()] is a builder for type [person] *)
 
-val default_store : 
+val make_store : 
   ?address:string ->
-  ?employees:person list ->
-  ?clients:person list ->
+  employees:person list ->
+  clients:person list ->
   unit ->
   store
-(** [default_store ()] is the default value for type [store] *)
+(** [make_store … ()] is a builder for type [store] *)
 
-val default_company : 
+val make_company : 
   ?name:string ->
-  ?stores:store list ->
-  ?subsidiaries:company list ->
+  stores:store list ->
+  subsidiaries:company list ->
   unit ->
   company
-(** [default_company ()] is the default value for type [company] *)
+(** [make_company … ()] is a builder for type [company] *)
 
 
 (** {2 Formatters} *)

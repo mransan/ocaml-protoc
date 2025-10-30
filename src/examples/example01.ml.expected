@@ -1,25 +1,24 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type person = {
+  _presence: Pbrt.Bitfield.t;
   name : string;
   id : int32;
   email : string;
   phone : string list;
 }
 
-let rec default_person 
-  ?name:((name:string) = "")
-  ?id:((id:int32) = 0l)
-  ?email:((email:string) = "")
-  ?phone:((phone:string list) = [])
-  () : person  = {
-  name;
-  id;
-  email;
-  phone;
+let default_person: person = 
+  {
+  _presence=Pbrt.Bitfield.create 3;
+  name="";
+  id=0l;
+  email="";
+  phone=[];
 }
 
 type person_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable name : string;
   mutable id : int32;
   mutable email : string;
@@ -27,10 +26,35 @@ type person_mutable = {
 }
 
 let default_person_mutable () : person_mutable = {
+  _presence = Pbrt.Bitfield.create 3;
   name = "";
   id = 0l;
   email = "";
   phone = [];
+}
+
+
+(** {2 Make functions} *)
+
+let rec make_person 
+  ?(name:string option)
+  ?(id:int32 option)
+  ?(email:string option)
+  ~(phone:string list) 
+  () : person  =
+  let _presence = Pbrt.Bitfield.create 3 in
+  {
+  _presence;
+  name=(match name with
+  | None -> ""
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+  id=(match id with
+  | None -> 0l
+  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
+  email=(match email with
+  | None -> ""
+  | Some v -> (Pbrt.Bitfield.set _presence 2); v);
+  phone;
 }
 
 [@@@ocaml.warning "-27-30-39"]
@@ -51,12 +75,18 @@ let rec pp_person fmt (v:person) =
 (** {2 Protobuf Encoding} *)
 
 let rec encode_pb_person (v:person) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.string v.name encoder;
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  );
+  if (Pbrt.Bitfield.get v._presence 1) then (
   Pbrt.Encoder.int32_as_varint v.id encoder;
   Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
+  );
+  if (Pbrt.Bitfield.get v._presence 2) then (
   Pbrt.Encoder.string v.email encoder;
   Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
+  );
   Pbrt.List_util.rev_iter_with (fun x encoder -> 
     Pbrt.Encoder.string x encoder;
     Pbrt.Encoder.key 4 Pbrt.Bytes encoder; 
@@ -76,16 +106,19 @@ let rec decode_pb_person d =
       v.phone <- List.rev v.phone;
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.name <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
+      Pbrt.Bitfield.set v._presence 1;
       v.id <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
     | Some (3, Pbrt.Bytes) -> begin
+      Pbrt.Bitfield.set v._presence 2;
       v.email <- Pbrt.Decoder.string d;
     end
     | Some (3, pk) -> 
@@ -98,6 +131,7 @@ let rec decode_pb_person d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     name = v.name;
     id = v.id;
     email = v.email;

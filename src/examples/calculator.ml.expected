@@ -3,10 +3,12 @@
 type div_by_zero = unit
 
 type i32 = {
+  _presence: Pbrt.Bitfield.t;
   value : int32;
 }
 
 type add_req = {
+  _presence: Pbrt.Bitfield.t;
   a : int32;
   b : int32;
 }
@@ -17,44 +19,46 @@ type add_all_req = {
 
 type empty = unit
 
-let rec default_div_by_zero = ()
+let default_div_by_zero : div_by_zero = ()
 
-let rec default_i32 
-  ?value:((value:int32) = 0l)
-  () : i32  = {
-  value;
+let default_i32: i32 = 
+  {
+  _presence=Pbrt.Bitfield.create 1;
+  value=0l;
 }
 
-let rec default_add_req 
-  ?a:((a:int32) = 0l)
-  ?b:((b:int32) = 0l)
-  () : add_req  = {
-  a;
-  b;
+let default_add_req: add_req = 
+  {
+  _presence=Pbrt.Bitfield.create 2;
+  a=0l;
+  b=0l;
 }
 
-let rec default_add_all_req 
-  ?ints:((ints:int32 list) = [])
-  () : add_all_req  = {
-  ints;
+let default_add_all_req: add_all_req = 
+  {
+  ints=[];
 }
 
-let rec default_empty = ()
+let default_empty : empty = ()
 
 type i32_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable value : int32;
 }
 
 let default_i32_mutable () : i32_mutable = {
+  _presence = Pbrt.Bitfield.create 1;
   value = 0l;
 }
 
 type add_req_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable a : int32;
   mutable b : int32;
 }
 
 let default_add_req_mutable () : add_req_mutable = {
+  _presence = Pbrt.Bitfield.create 2;
   a = 0l;
   b = 0l;
 }
@@ -66,6 +70,44 @@ type add_all_req_mutable = {
 let default_add_all_req_mutable () : add_all_req_mutable = {
   ints = [];
 }
+
+
+(** {2 Make functions} *)
+
+
+let rec make_i32 
+  ?(value:int32 option)
+  () : i32  =
+  let _presence = Pbrt.Bitfield.create 1 in
+  {
+  _presence;
+  value=(match value with
+  | None -> 0l
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+}
+
+let rec make_add_req 
+  ?(a:int32 option)
+  ?(b:int32 option)
+  () : add_req  =
+  let _presence = Pbrt.Bitfield.create 2 in
+  {
+  _presence;
+  a=(match a with
+  | None -> 0l
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+  b=(match b with
+  | None -> 0l
+  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
+}
+
+let rec make_add_all_req 
+  ~(ints:int32 list) 
+  () : add_all_req  =
+  {
+  ints;
+}
+
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -110,15 +152,21 @@ let rec encode_pb_div_by_zero (v:div_by_zero) encoder =
 ()
 
 let rec encode_pb_i32 (v:i32) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.int32_as_varint v.value encoder;
   Pbrt.Encoder.key 0 Pbrt.Varint encoder; 
+  );
   ()
 
 let rec encode_pb_add_req (v:add_req) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.int32_as_varint v.a encoder;
   Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
+  );
+  if (Pbrt.Bitfield.get v._presence 1) then (
   Pbrt.Encoder.int32_as_varint v.b encoder;
   Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
+  );
   ()
 
 let rec encode_pb_add_all_req (v:add_all_req) encoder = 
@@ -151,6 +199,7 @@ let rec decode_pb_i32 d =
     | None -> (
     ); continue__ := false
     | Some (0, Pbrt.Varint) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.value <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (0, pk) -> 
@@ -158,6 +207,7 @@ let rec decode_pb_i32 d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     value = v.value;
   } : i32)
 
@@ -169,11 +219,13 @@ let rec decode_pb_add_req d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Varint) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.a <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_req), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
+      Pbrt.Bitfield.set v._presence 1;
       v.b <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (2, pk) -> 
@@ -181,6 +233,7 @@ let rec decode_pb_add_req d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     a = v.a;
     b = v.b;
   } : add_req)
@@ -259,6 +312,7 @@ let rec decode_json_i32 d =
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
   ({
+    _presence = v._presence;
     value = v.value;
   } : i32)
 
@@ -277,6 +331,7 @@ let rec decode_json_add_req d =
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
   ({
+    _presence = v._presence;
     a = v.a;
     b = v.b;
   } : add_req)

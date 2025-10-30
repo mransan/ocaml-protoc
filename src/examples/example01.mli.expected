@@ -8,6 +8,7 @@
 (** {2 Types} *)
 
 type person = {
+  _presence: Pbrt.Bitfield.t;
   name : string;
   id : int32;
   email : string;
@@ -17,14 +18,20 @@ type person = {
 
 (** {2 Basic values} *)
 
-val default_person : 
+val default_person : person 
+(** [default_person] is the default value for type [person] *)
+
+
+(** {2 Make functions} *)
+
+val make_person : 
   ?name:string ->
   ?id:int32 ->
   ?email:string ->
-  ?phone:string list ->
+  phone:string list ->
   unit ->
   person
-(** [default_person ()] is the default value for type [person] *)
+(** [make_person … ()] is a builder for type [person] *)
 
 
 (** {2 Formatters} *)

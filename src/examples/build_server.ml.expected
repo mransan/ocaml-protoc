@@ -1,26 +1,44 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_path = {
+  _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
 type empty = unit
 
-let rec default_file_path 
-  ?path:((path:string) = "")
-  () : file_path  = {
-  path;
+let default_file_path: file_path = 
+  {
+  _presence=Pbrt.Bitfield.create 1;
+  path="";
 }
 
-let rec default_empty = ()
+let default_empty : empty = ()
 
 type file_path_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable path : string;
 }
 
 let default_file_path_mutable () : file_path_mutable = {
+  _presence = Pbrt.Bitfield.create 1;
   path = "";
 }
+
+
+(** {2 Make functions} *)
+
+let rec make_file_path 
+  ?(path:string option)
+  () : file_path  =
+  let _presence = Pbrt.Bitfield.create 1 in
+  {
+  _presence;
+  path=(match path with
+  | None -> ""
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+}
+
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -43,8 +61,10 @@ let rec pp_empty fmt (v:empty) =
 (** {2 Protobuf Encoding} *)
 
 let rec encode_pb_file_path (v:file_path) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.string v.path encoder;
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  );
   ()
 
 let rec encode_pb_empty (v:empty) encoder = 
@@ -62,6 +82,7 @@ let rec decode_pb_file_path d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.path <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
@@ -69,6 +90,7 @@ let rec decode_pb_file_path d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     path = v.path;
   } : file_path)
 
@@ -107,6 +129,7 @@ let rec decode_json_file_path d =
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
   ({
+    _presence = v._presence;
     path = v.path;
   } : file_path)
 

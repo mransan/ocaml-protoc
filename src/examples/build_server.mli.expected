@@ -8,6 +8,7 @@
 (** {2 Types} *)
 
 type file_path = {
+  _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
@@ -16,14 +17,21 @@ type empty = unit
 
 (** {2 Basic values} *)
 
-val default_file_path : 
+val default_file_path : file_path 
+(** [default_file_path] is the default value for type [file_path] *)
+
+val default_empty : unit
+(** [default_empty] is the default value for type [empty] *)
+
+
+(** {2 Make functions} *)
+
+val make_file_path : 
   ?path:string ->
   unit ->
   file_path
-(** [default_file_path ()] is the default value for type [file_path] *)
+(** [make_file_path … ()] is a builder for type [file_path] *)
 
-val default_empty : unit
-(** [default_empty ()] is the default value for type [empty] *)
 
 
 (** {2 Formatters} *)

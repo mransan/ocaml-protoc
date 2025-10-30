@@ -8,16 +8,19 @@
 (** {2 Types} *)
 
 type file_chunk = {
+  _presence: Pbrt.Bitfield.t;
   path : string;
   data : bytes;
   crc : int32;
 }
 
 type file_path = {
+  _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
 type file_crc = {
+  _presence: Pbrt.Bitfield.t;
   crc : int32;
 }
 
@@ -30,34 +33,49 @@ type pong = unit
 
 (** {2 Basic values} *)
 
-val default_file_chunk : 
+val default_file_chunk : file_chunk 
+(** [default_file_chunk] is the default value for type [file_chunk] *)
+
+val default_file_path : file_path 
+(** [default_file_path] is the default value for type [file_path] *)
+
+val default_file_crc : file_crc 
+(** [default_file_crc] is the default value for type [file_crc] *)
+
+val default_empty : unit
+(** [default_empty] is the default value for type [empty] *)
+
+val default_ping : unit
+(** [default_ping] is the default value for type [ping] *)
+
+val default_pong : unit
+(** [default_pong] is the default value for type [pong] *)
+
+
+(** {2 Make functions} *)
+
+val make_file_chunk : 
   ?path:string ->
   ?data:bytes ->
   ?crc:int32 ->
   unit ->
   file_chunk
-(** [default_file_chunk ()] is the default value for type [file_chunk] *)
+(** [make_file_chunk … ()] is a builder for type [file_chunk] *)
 
-val default_file_path : 
+val make_file_path : 
   ?path:string ->
   unit ->
   file_path
-(** [default_file_path ()] is the default value for type [file_path] *)
+(** [make_file_path … ()] is a builder for type [file_path] *)
 
-val default_file_crc : 
+val make_file_crc : 
   ?crc:int32 ->
   unit ->
   file_crc
-(** [default_file_crc ()] is the default value for type [file_crc] *)
+(** [make_file_crc … ()] is a builder for type [file_crc] *)
 
-val default_empty : unit
-(** [default_empty ()] is the default value for type [empty] *)
 
-val default_ping : unit
-(** [default_ping ()] is the default value for type [ping] *)
 
-val default_pong : unit
-(** [default_pong ()] is the default value for type [pong] *)
 
 
 (** {2 Formatters} *)

@@ -11,7 +11,7 @@ type int_list_nil = unit
 
 type int_list_cons = {
   value : int;
-  next : int_list;
+  next : int_list option;
 }
 
 and int_list =
@@ -22,17 +22,25 @@ and int_list =
 (** {2 Basic values} *)
 
 val default_int_list_nil : unit
-(** [default_int_list_nil ()] is the default value for type [int_list_nil] *)
+(** [default_int_list_nil] is the default value for type [int_list_nil] *)
 
-val default_int_list_cons : 
-  ?value:int ->
-  ?next:int_list ->
+val default_int_list_cons : int_list_cons 
+(** [default_int_list_cons] is the default value for type [int_list_cons] *)
+
+val default_int_list : int_list
+(** [default_int_list] is the default value for type [int_list] *)
+
+
+(** {2 Make functions} *)
+
+
+val make_int_list_cons : 
+  value:int ->
+  ?next:int_list option ->
   unit ->
   int_list_cons
-(** [default_int_list_cons ()] is the default value for type [int_list_cons] *)
+(** [make_int_list_cons … ()] is a builder for type [int_list_cons] *)
 
-val default_int_list : unit -> int_list
-(** [default_int_list ()] is the default value for type [int_list] *)
 
 
 (** {2 Formatters} *)

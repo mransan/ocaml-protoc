@@ -1,13 +1,8 @@
 let () =
   (* Create OCaml value of generated type *)
   let person =
-    Example01.
-      {
-        name = "John Doe";
-        id = 1234l;
-        email = "jdoe@example.com";
-        phone = [ "123-456-7890" ];
-      }
+    Example01.make_person ~name:"John Doe" ~id:1234l ~email:"jdoe@example.com"
+      ~phone:[ "123-456-7890" ] ()
   in
 
   print_endline @@ Format.asprintf "person: %a" Example01.pp_person person;

@@ -8,18 +8,13 @@ type person = {
   details : (string, string) Hashtbl.t;
 }
 
-let rec default_person 
-  ?name:((name:string) = "")
-  ?id:((id:int32) = 0l)
-  ?email:((email:string option) = None)
-  ?phone:((phone:string list) = [])
-  ?details:((details:(string, string) Hashtbl.t) = Hashtbl.create 128)
-  () : person  = {
-  name;
-  id;
-  email;
-  phone;
-  details;
+let default_person: person = 
+  {
+  name="";
+  id=0l;
+  email=None;
+  phone=[];
+  details=Hashtbl.create 128;
 }
 
 type person_mutable = {
@@ -36,6 +31,26 @@ let default_person_mutable () : person_mutable = {
   email = None;
   phone = [];
   details = Hashtbl.create 128;
+}
+
+
+(** {2 Make functions} *)
+
+let rec make_person 
+  ~(name:string) 
+  ~(id:int32) 
+  ?(email:string option option)
+  ~(phone:string list) 
+  ~(details:(string, string) Hashtbl.t) 
+  () : person  =
+  {
+  name;
+  id;
+  email=(match email with
+  | None -> None
+  | Some v -> v);
+  phone;
+  details;
 }
 
 [@@@ocaml.warning "-27-30-39"]

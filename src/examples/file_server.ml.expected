@@ -1,16 +1,19 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_chunk = {
+  _presence: Pbrt.Bitfield.t;
   path : string;
   data : bytes;
   crc : int32;
 }
 
 type file_path = {
+  _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
 type file_crc = {
+  _presence: Pbrt.Bitfield.t;
   crc : int32;
 }
 
@@ -20,61 +23,112 @@ type ping = unit
 
 type pong = unit
 
-let rec default_file_chunk 
-  ?path:((path:string) = "")
-  ?data:((data:bytes) = Bytes.create 0)
-  ?crc:((crc:int32) = 0l)
-  () : file_chunk  = {
-  path;
-  data;
-  crc;
+let default_file_chunk: file_chunk = 
+  {
+  _presence=Pbrt.Bitfield.create 3;
+  path="";
+  data=Bytes.create 0;
+  crc=0l;
 }
 
-let rec default_file_path 
-  ?path:((path:string) = "")
-  () : file_path  = {
-  path;
+let default_file_path: file_path = 
+  {
+  _presence=Pbrt.Bitfield.create 1;
+  path="";
 }
 
-let rec default_file_crc 
-  ?crc:((crc:int32) = 0l)
-  () : file_crc  = {
-  crc;
+let default_file_crc: file_crc = 
+  {
+  _presence=Pbrt.Bitfield.create 1;
+  crc=0l;
 }
 
-let rec default_empty = ()
+let default_empty : empty = ()
 
-let rec default_ping = ()
+let default_ping : ping = ()
 
-let rec default_pong = ()
+let default_pong : pong = ()
 
 type file_chunk_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable path : string;
   mutable data : bytes;
   mutable crc : int32;
 }
 
 let default_file_chunk_mutable () : file_chunk_mutable = {
+  _presence = Pbrt.Bitfield.create 3;
   path = "";
   data = Bytes.create 0;
   crc = 0l;
 }
 
 type file_path_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable path : string;
 }
 
 let default_file_path_mutable () : file_path_mutable = {
+  _presence = Pbrt.Bitfield.create 1;
   path = "";
 }
 
 type file_crc_mutable = {
+  _presence: Pbrt.Bitfield.t;
   mutable crc : int32;
 }
 
 let default_file_crc_mutable () : file_crc_mutable = {
+  _presence = Pbrt.Bitfield.create 1;
   crc = 0l;
 }
+
+
+(** {2 Make functions} *)
+
+let rec make_file_chunk 
+  ?(path:string option)
+  ?(data:bytes option)
+  ?(crc:int32 option)
+  () : file_chunk  =
+  let _presence = Pbrt.Bitfield.create 3 in
+  {
+  _presence;
+  path=(match path with
+  | None -> ""
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+  data=(match data with
+  | None -> Bytes.create 0
+  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
+  crc=(match crc with
+  | None -> 0l
+  | Some v -> (Pbrt.Bitfield.set _presence 2); v);
+}
+
+let rec make_file_path 
+  ?(path:string option)
+  () : file_path  =
+  let _presence = Pbrt.Bitfield.create 1 in
+  {
+  _presence;
+  path=(match path with
+  | None -> ""
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+}
+
+let rec make_file_crc 
+  ?(crc:int32 option)
+  () : file_crc  =
+  let _presence = Pbrt.Bitfield.create 1 in
+  {
+  _presence;
+  crc=(match crc with
+  | None -> 0l
+  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
+}
+
+
+
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -123,22 +177,32 @@ let rec pp_pong fmt (v:pong) =
 (** {2 Protobuf Encoding} *)
 
 let rec encode_pb_file_chunk (v:file_chunk) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.string v.path encoder;
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  );
+  if (Pbrt.Bitfield.get v._presence 1) then (
   Pbrt.Encoder.bytes v.data encoder;
   Pbrt.Encoder.key 2 Pbrt.Bytes encoder; 
+  );
+  if (Pbrt.Bitfield.get v._presence 2) then (
   Pbrt.Encoder.int32_as_varint v.crc encoder;
   Pbrt.Encoder.key 3 Pbrt.Varint encoder; 
+  );
   ()
 
 let rec encode_pb_file_path (v:file_path) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.string v.path encoder;
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+  );
   ()
 
 let rec encode_pb_file_crc (v:file_crc) encoder = 
+  if (Pbrt.Bitfield.get v._presence 0) then (
   Pbrt.Encoder.int32_as_varint v.crc encoder;
   Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
+  );
   ()
 
 let rec encode_pb_empty (v:empty) encoder = 
@@ -162,16 +226,19 @@ let rec decode_pb_file_chunk d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.path <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(1)" pk
     | Some (2, Pbrt.Bytes) -> begin
+      Pbrt.Bitfield.set v._presence 1;
       v.data <- Pbrt.Decoder.bytes d;
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(2)" pk
     | Some (3, Pbrt.Varint) -> begin
+      Pbrt.Bitfield.set v._presence 2;
       v.crc <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (3, pk) -> 
@@ -179,6 +246,7 @@ let rec decode_pb_file_chunk d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     path = v.path;
     data = v.data;
     crc = v.crc;
@@ -192,6 +260,7 @@ let rec decode_pb_file_path d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.path <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
@@ -199,6 +268,7 @@ let rec decode_pb_file_path d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     path = v.path;
   } : file_path)
 
@@ -210,6 +280,7 @@ let rec decode_pb_file_crc d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Varint) -> begin
+      Pbrt.Bitfield.set v._presence 0;
       v.crc <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (1, pk) -> 
@@ -217,6 +288,7 @@ let rec decode_pb_file_crc d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
+    _presence = v._presence;
     crc = v.crc;
   } : file_crc)
 
@@ -289,6 +361,7 @@ let rec decode_json_file_chunk d =
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
   ({
+    _presence = v._presence;
     path = v.path;
     data = v.data;
     crc = v.crc;
@@ -307,6 +380,7 @@ let rec decode_json_file_path d =
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
   ({
+    _presence = v._presence;
     path = v.path;
   } : file_path)
 
@@ -323,6 +397,7 @@ let rec decode_json_file_crc d =
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
   ({
+    _presence = v._presence;
     crc = v.crc;
   } : file_crc)
 

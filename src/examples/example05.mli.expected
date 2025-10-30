@@ -18,15 +18,21 @@ type person = {
 
 (** {2 Basic values} *)
 
-val default_person : 
-  ?name:string ->
-  ?id:int32 ->
+val default_person : person 
+(** [default_person] is the default value for type [person] *)
+
+
+(** {2 Make functions} *)
+
+val make_person : 
+  name:string ->
+  id:int32 ->
   ?email:string option ->
-  ?phone:string list ->
-  ?details:(string, string) Hashtbl.t ->
+  phone:string list ->
+  details:(string, string) Hashtbl.t ->
   unit ->
   person
-(** [default_person ()] is the default value for type [person] *)
+(** [make_person … ()] is a builder for type [person] *)
 
 
 (** {2 Formatters} *)
