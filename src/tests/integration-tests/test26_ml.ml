@@ -7,15 +7,15 @@ let round32 v =
 let decode_pb_ref_data () =
   T.
     {
-      double_value = Some 1.23;
-      float_value = Some (round32 1.23);
-      int32_value = Some (-123l);
-      uint32_value = Some 123l;
-      int64_value = Some (-123L);
-      uint64_value = Some 123L;
-      bool_value = Some true;
-      string_value = Some "abc";
-      bytes_value = Some (Bytes.of_string "abc");
+      double_value = Some (Some 1.23);
+      float_value = Some (Some (round32 1.23));
+      int32_value = Some (Some (-123l));
+      uint32_value = Some (Some 123l);
+      int64_value = Some (Some (-123L));
+      uint64_value = Some (Some 123L);
+      bool_value = Some (Some true);
+      string_value = Some (Some "abc");
+      bytes_value = Some (Some (Bytes.of_string "abc"));
     }
 
 let () =

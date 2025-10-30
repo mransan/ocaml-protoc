@@ -3,8 +3,9 @@ syntax = "proto3";
 package foo.bar;  
 
 enum Gender {
-    Male = 0;
-    Female = 1; 
+    Unset = 0; // yes we need this kind of stuff with implicit presence fields
+    Male = 1;
+    Female = 2; 
 }
 
 message Person {

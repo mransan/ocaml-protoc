@@ -67,6 +67,8 @@ let rec make_person_location
   | None -> 0.
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
   { _presence= !_presence;lat;lng }
+let[@inline] has_person_location_lat (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] has_person_location_lng (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 1)
 
 
 let rec make_person 
@@ -97,6 +99,10 @@ let rec make_person
   | None -> None
   | Some v -> Some v) in
   { _presence= !_presence;id;email;name;home;picture;id2 }
+let[@inline] has_person_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] has_person_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] has_person_name (self:person) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] has_person_picture (self:person) : bool = (Pbrt.Bitfield.get self._presence 3)
 
 [@@@ocaml.warning "-27-30-39"]
 

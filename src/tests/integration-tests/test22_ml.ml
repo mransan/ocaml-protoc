@@ -42,7 +42,9 @@ let () =
         tel_number = None;
         employment = None;
         marital_status = Single;
-        gender = Male;
+        gender = Unset;
       }
   in
+  Format.printf "expected: %a@." T.pp_person expected_default_person;
+  Format.printf "actual default: %a@." T.pp_person T.default_person;
   assert (expected_default_person = T.default_person)
