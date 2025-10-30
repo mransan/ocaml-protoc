@@ -5,6 +5,7 @@ open Pb_codegen_util
 type default_info = Pb_codegen_default.default_info = {
   fname: string;
   ftype: string;
+  ftype_underlying: string;
   default_value: string;
   optional: bool;  (** Are we passing an option? *)
   rfp: Pb_codegen_ocaml_type.record_field_presence;
@@ -29,8 +30,10 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun (d : default_info) ->
-          if d.optional then
+          if d.in_bitfield then
             F.linep sc "?(%s:%s option)" d.fname d.ftype
+          else if d.optional then
+            F.linep sc "?(%s:%s)" d.fname d.ftype
           else
             F.linep sc "~(%s:%s) " d.fname d.ftype)
         fields;
@@ -49,8 +52,8 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
                 (Pb_codegen_util.presence_set ~bv:"!_presence"
                    ~idx:d.bitfield_idx ())
             ) else (
-              F.linep sc "| None -> %s" d.default_value;
-              F.line sc "| Some v -> v) in"
+              F.linep sc "| None -> None";
+              F.line sc "| Some v -> Some v) in"
             )
           ) else
             ())
@@ -84,7 +87,7 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
       List.iter
         (fun d ->
           if d.optional then
-            F.linep sc "?%s:%s ->" d.fname d.ftype
+            F.linep sc "?%s:%s ->" d.fname d.ftype_underlying
           else
             F.linep sc "%s:%s ->" d.fname d.ftype)
         fields;

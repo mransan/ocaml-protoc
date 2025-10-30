@@ -48,11 +48,15 @@ let string_of_associative_type = function
   | Ot.At_list -> "list"
   | Ot.At_hashtable -> "Hashtbl.t"
 
-let string_of_record_field_type ?module_prefix = function
+let string_of_record_field_type ~with_option ?module_prefix = function
   | Ot.Rft_nolabel (field_type, _, _) | Ot.Rft_required (field_type, _, _, _) ->
     string_of_field_type ?module_prefix field_type
   | Ot.Rft_optional (field_type, _, _, _) ->
-    string_of_field_type ?module_prefix field_type ^ " option"
+    let ty = string_of_field_type ?module_prefix field_type in
+    if with_option then
+      ty ^ " option"
+    else
+      ty
   | Ot.Rft_repeated (rt, field_type, _, _, _) ->
     string_of_field_type ?module_prefix field_type
     ^ " " ^ string_of_repeated_type rt
@@ -72,7 +76,10 @@ let string_of_record_field_type ?module_prefix = function
       | None -> v_name
       | Some module_prefix -> module_prefix ^ "." ^ v_name
     in
-    Printf.sprintf "%s option" ty
+    if with_option then
+      Printf.sprintf "%s option" ty
+    else
+      ty
 
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`.

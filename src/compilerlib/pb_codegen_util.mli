@@ -8,7 +8,14 @@ val let_decl_of_and : 'a option -> string
     is [None]), ["and"] otherwise. *)
 
 val string_of_record_field_type :
-  ?module_prefix:string -> Pb_codegen_ocaml_type.record_field_type -> string
+  with_option:bool ->
+  ?module_prefix:string ->
+  Pb_codegen_ocaml_type.record_field_type ->
+  string
+(** Type of the field.
+    @param with_option
+      if true, wrap optional fields with [_ option], otherwise return the
+      underlying type *)
 
 val string_of_basic_type :
   ?for_pp:bool -> Pb_codegen_ocaml_type.basic_type -> string

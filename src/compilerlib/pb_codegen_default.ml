@@ -41,6 +41,8 @@ let default_value_of_field_type ?field_name field_type field_default : string =
 type default_info = {
   fname: string;
   ftype: string;
+  ftype_underlying: string;
+      (** Type of the field without [option] around for optionals *)
   default_value: string;  (** Code for the default value *)
   optional: bool;  (** Are we passing an option? *)
   rfp: Ot.record_field_presence;
@@ -52,7 +54,12 @@ type default_info = {
     record field. *)
 let record_field_default_info (record_field : Ot.record_field) : default_info =
   let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in
-  let type_string = Pb_codegen_util.string_of_record_field_type rf_field_type in
+  let type_string =
+    Pb_codegen_util.string_of_record_field_type ~with_option:true rf_field_type
+  in
+  let type_string_underlying =
+    Pb_codegen_util.string_of_record_field_type ~with_option:false rf_field_type
+  in
   let field_name = rf_label in
 
   let dfvft field_type field_default =
@@ -105,6 +112,7 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
     fname = field_name;
     default_value;
     ftype = type_string;
+    ftype_underlying = type_string_underlying;
     optional;
     rfp = record_field.rf_presence;
     in_bitfield;

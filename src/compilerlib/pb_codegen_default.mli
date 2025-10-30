@@ -4,7 +4,9 @@ include Pb_codegen_plugin.S
 
 type default_info = {
   fname: string;
-  ftype: string;
+  ftype: string;  (** Type of the field *)
+  ftype_underlying: string;
+      (** Type of the field without [option] around for optionals *)
   default_value: string;  (** Default value if not provided *)
   optional: bool;  (** Are we passing an option? *)
   rfp: Pb_codegen_ocaml_type.record_field_presence;
