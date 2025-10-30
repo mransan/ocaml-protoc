@@ -62,7 +62,19 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
       let strrec = ref "" in
       if n_presence > 0 then strrec := !strrec ^ "_presence= !_presence;";
       strrec := !strrec ^ String.concat ";" (List.map (fun d -> d.fname) fields);
-      F.linep sc "{ %s }" !strrec)
+      F.linep sc "{ %s }" !strrec);
+
+  (* also generate [has_field] accessors *)
+  List.iter
+    (fun (d : default_info) ->
+      if d.in_bitfield then
+        F.linep sc "let[@inline] has_%s_%s (self:%s) : bool = %s" r_name d.fname
+          r_name
+          (Pb_codegen_util.presence_get ~bv:"self._presence" ~idx:d.bitfield_idx
+             ()))
+    fields;
+
+  ()
 
 let gen_struct ?and_ t sc =
   let { Ot.spec; _ } = t in
@@ -94,7 +106,18 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
       F.line sc "unit ->";
       F.line sc r_name);
   let rn = r_name in
-  F.linep sc "(** [make_%s … ()] is a builder for type [%s] *)" rn rn
+  F.linep sc "(** [make_%s … ()] is a builder for type [%s] *)" rn rn;
+
+  List.iter
+    (fun (d : default_info) ->
+      if d.in_bitfield then (
+        F.line sc "";
+        F.linep sc "val has_%s_%s : %s -> bool" r_name d.fname r_name;
+        F.linep sc "  (** presence of field %S in [%s] *)" d.fname r_name
+      ))
+    fields;
+
+  ()
 
 let gen_sig ?and_:_ t sc =
   let { Ot.spec; _ } = t in
