@@ -23,15 +23,20 @@ let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
     else
       "mutable "
   in
-  let insert_bitfield =
-    List.exists Ot.record_field_requires_bitfield r_fields
+
+  let len_bitfield =
+    List.filter Ot.record_field_requires_bitfield r_fields |> List.length
   in
+  let insert_bitfield = len_bitfield > 0 in
 
   let r_name = Pb_codegen_util.mutable_record_name r_name in
 
   F.linep sc "type %s = {" r_name;
   F.sub_scope sc (fun sc ->
-      if insert_bitfield then F.line sc "mutable _presence: Pbrt.Bitfield.t;";
+      if insert_bitfield then (
+        F.linep sc "(** tracking presence for %d fields *)" len_bitfield;
+        F.line sc "mutable _presence: Pbrt.Bitfield.t;"
+      );
       List.iter
         (fun { Ot.rf_label; rf_field_type; _ } ->
           let prefix = field_prefix rf_field_type in
@@ -50,13 +55,17 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       ""
   in
 
-  let insert_bitfield =
-    List.exists Ot.record_field_requires_bitfield r_fields
+  let len_bitfield =
+    List.filter Ot.record_field_requires_bitfield r_fields |> List.length
   in
+  let insert_bitfield = len_bitfield > 0 in
 
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
   F.sub_scope sc (fun sc ->
-      if insert_bitfield then F.linep sc "mutable _presence: Pbrt.Bitfield.t;";
+      if insert_bitfield then (
+        F.linep sc "(** tracking presence for %d fields *)" len_bitfield;
+        F.linep sc "mutable _presence: Pbrt.Bitfield.t;"
+      );
       List.iter
         (fun { Ot.rf_label; rf_field_type; rf_mutable; _ } ->
           let prefix = field_prefix rf_mutable in

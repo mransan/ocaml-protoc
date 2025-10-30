@@ -22,10 +22,22 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           List.iteri
             (fun i record_field ->
               let first = i = 0 in
-              let { Ot.rf_label; rf_field_type; _ } = record_field in
+              let { Ot.rf_label; rf_field_type; rf_presence; _ } =
+                record_field
+              in
+
+              let in_bitfield =
+                match rf_presence with
+                | Rfp_bitfield idx ->
+                  F.linep sc "if %s then ("
+                    (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx ());
+
+                  true
+                | _ -> false
+              in
 
               let var_name = sp "v.%s" rf_label in
-              match rf_field_type with
+              (match rf_field_type with
               | Ot.Rft_nolabel (field_type, _, _)
               | Ot.Rft_required (field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
@@ -84,7 +96,9 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                      "Pbrt.Pp.pp_record_field ~first:%b \"%s\" (Pbrt.Pp.%s %s \
                       %s) fmt %s;"
                      first rf_label pp_runtime_function pp_key pp_value var_name
-              (* Associative_list *))
+                (* Associative_list *));
+
+              if in_bitfield then F.line sc ");")
             r_fields);
       F.line sc "in";
       F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
