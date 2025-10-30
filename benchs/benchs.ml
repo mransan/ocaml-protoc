@@ -617,7 +617,7 @@ module Nested = struct
            let c = mk_company ~n ~depth:(depth - 1) in
            [ c; c ]
          ))
-      ~capital:0L ~overhead:"" ~comment:""
+        (*~capital:0L ~overhead:"" ~comment:""*)
       ~stores:
         (List.init n (fun i ->
              Foo.make_store ~address:(spf "%d foobar street" i)
