@@ -44,19 +44,13 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
         F.linep sc "let _presence = ref Pbrt.Bitfield.empty in";
       List.iter
         (fun d ->
-          if d.optional then (
+          if d.in_bitfield then (
             F.linep sc "let %s=(match %s with" d.fname d.fname;
-            if d.in_bitfield then (
-              F.linep sc "| None -> %s" d.default_value;
-              F.linep sc "| Some v -> _presence := %s; v) in"
-                (Pb_codegen_util.presence_set ~bv:"!_presence"
-                   ~idx:d.bitfield_idx ())
-            ) else (
-              F.linep sc "| None -> None";
-              F.line sc "| Some v -> Some v) in"
-            )
-          ) else
-            ())
+            F.linep sc "| None -> %s" d.default_value;
+            F.linep sc "| Some v -> _presence := %s; v) in"
+              (Pb_codegen_util.presence_set ~bv:"!_presence" ~idx:d.bitfield_idx
+                 ())
+          ))
         fields;
 
       let strrec = ref "" in
