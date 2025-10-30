@@ -29,9 +29,6 @@ let rec make_int_list_cons
   ~(value:int) 
   ?(next:int_list option)
   () : int_list_cons  =
-  let next=(match next with
-  | None -> None
-  | Some v -> Some v) in
   { value;next }
 
 

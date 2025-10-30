@@ -43,9 +43,6 @@ let rec make_person
   ~(phone:string list) 
   ~(details:(string, string) Hashtbl.t) 
   () : person  =
-  let email=(match email with
-  | None -> None
-  | Some v -> Some v) in
   { name;id;email;phone;details }
 
 [@@@ocaml.warning "-27-30-39"]

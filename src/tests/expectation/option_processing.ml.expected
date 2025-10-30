@@ -89,15 +89,9 @@ let rec make_person
   let name=(match name with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 2); v) in
-  let home=(match home with
-  | None -> None
-  | Some v -> Some v) in
   let picture=(match picture with
   | None -> Bytes.create 0
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 3); v) in
-  let id2=(match id2 with
-  | None -> None
-  | Some v -> Some v) in
   { _presence= !_presence;id;email;name;home;picture;id2 }
 let[@inline] has_person_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] has_person_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
