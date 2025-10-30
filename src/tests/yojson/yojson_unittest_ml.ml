@@ -2,7 +2,7 @@ let test =
   let open Yojson_unittest in
   let all_basic_types =
     {
-      _presence = Pbrt.Bitfield.create 0;
+      _presence = Pbrt.Bitfield.empty;
       field01 = 1.2000001;
       field02 = 1.2;
       field03 = 0xEFFFFFFFl;
@@ -32,7 +32,7 @@ let test =
 
   let small_message =
     {
-      _presence = Pbrt.Bitfield.create 0;
+      _presence = Pbrt.Bitfield.empty;
       sm_string = "This \"IS\" a small string";
     }
   in
@@ -60,6 +60,7 @@ let test =
   let basic0 : abasic_message = make_abasic_message ~name:"basic0" () in
 
   {
+    _presence = Pbrt.Bitfield.empty;
     all_basic_types = Some all_basic_types;
     test_enum0;
     test_enum1;

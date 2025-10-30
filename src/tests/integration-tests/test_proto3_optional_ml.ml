@@ -1,6 +1,6 @@
 open Test_proto3_optional
 
-let foo1 : foo = { x = 1l; y = None; name = Some "hello" }
+let foo1 : foo = make_foo ~x:1l ~name:"hello" ()
 
 let () =
   let enc = Pbrt.Encoder.create () in
