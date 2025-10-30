@@ -9,7 +9,7 @@ type empty = unit
 
 let default_file_path: file_path = 
 {
-  _presence=Pbrt.Bitfield.create 1;
+  _presence=Pbrt.Bitfield.empty;
   path="";
 }
 
@@ -21,7 +21,7 @@ type file_path_mutable = {
 }
 
 let default_file_path_mutable () : file_path_mutable = {
-  _presence = Pbrt.Bitfield.create 1;
+  _presence = Pbrt.Bitfield.empty;
   path = "";
 }
 
@@ -31,7 +31,7 @@ let default_file_path_mutable () : file_path_mutable = {
 let rec make_file_path 
   ?(path:string option)
   () : file_path  =
-  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let path=(match path with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in

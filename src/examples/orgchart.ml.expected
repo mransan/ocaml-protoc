@@ -22,14 +22,14 @@ type company = {
 
 let default_person: person = 
 {
-  _presence=Pbrt.Bitfield.create 2;
+  _presence=Pbrt.Bitfield.empty;
   name="";
   age=0L;
 }
 
 let default_store: store = 
 {
-  _presence=Pbrt.Bitfield.create 1;
+  _presence=Pbrt.Bitfield.empty;
   address="";
   employees=[];
   clients=[];
@@ -37,7 +37,7 @@ let default_store: store =
 
 let default_company: company = 
 {
-  _presence=Pbrt.Bitfield.create 1;
+  _presence=Pbrt.Bitfield.empty;
   name="";
   stores=[];
   subsidiaries=[];
@@ -50,7 +50,7 @@ type person_mutable = {
 }
 
 let default_person_mutable () : person_mutable = {
-  _presence = Pbrt.Bitfield.create 2;
+  _presence = Pbrt.Bitfield.empty;
   name = "";
   age = 0L;
 }
@@ -63,7 +63,7 @@ type store_mutable = {
 }
 
 let default_store_mutable () : store_mutable = {
-  _presence = Pbrt.Bitfield.create 1;
+  _presence = Pbrt.Bitfield.empty;
   address = "";
   employees = [];
   clients = [];
@@ -77,7 +77,7 @@ type company_mutable = {
 }
 
 let default_company_mutable () : company_mutable = {
-  _presence = Pbrt.Bitfield.create 1;
+  _presence = Pbrt.Bitfield.empty;
   name = "";
   stores = [];
   subsidiaries = [];
@@ -90,7 +90,7 @@ let rec make_person
   ?(name:string option)
   ?(age:int64 option)
   () : person  =
-  let _presence = ref (Pbrt.Bitfield.create 2) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let name=(match name with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
@@ -104,7 +104,7 @@ let rec make_store
   ~(employees:person list) 
   ~(clients:person list) 
   () : store  =
-  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let address=(match address with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
@@ -115,7 +115,7 @@ let rec make_company
   ~(stores:store list) 
   ~(subsidiaries:company list) 
   () : company  =
-  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let name=(match name with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in

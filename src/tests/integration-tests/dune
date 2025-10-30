@@ -311,7 +311,7 @@
  (targets test27.ml test27.mli)
  (deps test27.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc --binary --pp --ml_out ./ test27.proto)))
+  (run ocaml-protoc --binary --make --pp --ml_out ./ test27.proto)))
 
 (executable
  (name test27_ml)

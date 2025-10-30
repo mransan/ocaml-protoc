@@ -10,7 +10,7 @@ type person = {
 
 let default_person: person = 
 {
-  _presence=Pbrt.Bitfield.create 3;
+  _presence=Pbrt.Bitfield.empty;
   name="";
   id=0l;
   email="";
@@ -26,7 +26,7 @@ type person_mutable = {
 }
 
 let default_person_mutable () : person_mutable = {
-  _presence = Pbrt.Bitfield.create 3;
+  _presence = Pbrt.Bitfield.empty;
   name = "";
   id = 0l;
   email = "";
@@ -42,7 +42,7 @@ let rec make_person
   ?(email:string option)
   ~(phone:string list) 
   () : person  =
-  let _presence = ref (Pbrt.Bitfield.create 3) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let name=(match name with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in

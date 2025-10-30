@@ -25,7 +25,7 @@ type pong = unit
 
 let default_file_chunk: file_chunk = 
 {
-  _presence=Pbrt.Bitfield.create 3;
+  _presence=Pbrt.Bitfield.empty;
   path="";
   data=Bytes.create 0;
   crc=0l;
@@ -33,13 +33,13 @@ let default_file_chunk: file_chunk =
 
 let default_file_path: file_path = 
 {
-  _presence=Pbrt.Bitfield.create 1;
+  _presence=Pbrt.Bitfield.empty;
   path="";
 }
 
 let default_file_crc: file_crc = 
 {
-  _presence=Pbrt.Bitfield.create 1;
+  _presence=Pbrt.Bitfield.empty;
   crc=0l;
 }
 
@@ -57,7 +57,7 @@ type file_chunk_mutable = {
 }
 
 let default_file_chunk_mutable () : file_chunk_mutable = {
-  _presence = Pbrt.Bitfield.create 3;
+  _presence = Pbrt.Bitfield.empty;
   path = "";
   data = Bytes.create 0;
   crc = 0l;
@@ -69,7 +69,7 @@ type file_path_mutable = {
 }
 
 let default_file_path_mutable () : file_path_mutable = {
-  _presence = Pbrt.Bitfield.create 1;
+  _presence = Pbrt.Bitfield.empty;
   path = "";
 }
 
@@ -79,7 +79,7 @@ type file_crc_mutable = {
 }
 
 let default_file_crc_mutable () : file_crc_mutable = {
-  _presence = Pbrt.Bitfield.create 1;
+  _presence = Pbrt.Bitfield.empty;
   crc = 0l;
 }
 
@@ -91,7 +91,7 @@ let rec make_file_chunk
   ?(data:bytes option)
   ?(crc:int32 option)
   () : file_chunk  =
-  let _presence = ref (Pbrt.Bitfield.create 3) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let path=(match path with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
@@ -106,7 +106,7 @@ let rec make_file_chunk
 let rec make_file_path 
   ?(path:string option)
   () : file_path  =
-  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let path=(match path with
   | None -> ""
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
@@ -115,7 +115,7 @@ let rec make_file_path
 let rec make_file_crc 
   ?(crc:int32 option)
   () : file_crc  =
-  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let crc=(match crc with
   | None -> 0l
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in

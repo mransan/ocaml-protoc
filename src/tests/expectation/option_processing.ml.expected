@@ -31,7 +31,7 @@ let default_payment_system = (Cash:payment_system)
 
 let default_person_location: person_location = 
 {
-  _presence=Pbrt.Bitfield.create 2;
+  _presence=Pbrt.Bitfield.empty;
   lat=0.;
   lng=0.;
 }
@@ -40,7 +40,7 @@ let default_person_id2 : person_id2 = X ("")
 
 let default_person: person = 
 {
-  _presence=Pbrt.Bitfield.create 4;
+  _presence=Pbrt.Bitfield.empty;
   id=0L;
   email="";
   name="";
@@ -57,7 +57,7 @@ let rec make_person_location
   ?(lat:float option)
   ?(lng:float option)
   () : person_location  =
-  let _presence = ref (Pbrt.Bitfield.create 2) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let lat=(match lat with
   | None -> 0.
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
@@ -75,7 +75,7 @@ let rec make_person
   ?(picture:bytes option)
   ?(id2:person_id2 option option)
   () : person  =
-  let _presence = ref (Pbrt.Bitfield.create 4) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let id=(match id with
   | None -> 0L
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in

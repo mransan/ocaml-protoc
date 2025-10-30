@@ -4,25 +4,27 @@ let decode_ref_data () =
   T.
     {
       p1 =
-        {
-          first_name = "John";
-          last_name = "Doe";
-          date_of_birth = 19820429l;
-          tel_number = None;
-          employment = Employed_by "Google";
-          marital_status = None;
-          gender = Some Male;
-        };
+        Some
+          {
+            first_name = "John";
+            last_name = "Doe";
+            date_of_birth = 19820429l;
+            tel_number = None;
+            employment = Some (Employed_by "Google");
+            marital_status = None;
+            gender = Some Male;
+          };
       p2 =
-        {
-          first_name = "Marie";
-          last_name = "Dupont";
-          date_of_birth = 19820306l;
-          tel_number = Some { area_code = 917l; number = 1111111l };
-          employment = Employed_by "INRIA";
-          marital_status = None;
-          gender = Some Female;
-        };
+        Some
+          {
+            first_name = "Marie";
+            last_name = "Dupont";
+            date_of_birth = 19820306l;
+            tel_number = Some { area_code = 917l; number = 1111111l };
+            employment = Some (Employed_by "INRIA");
+            marital_status = None;
+            gender = Some Female;
+          };
       contact_numbers =
         [
           { area_code = 917l; number = 123450l };
@@ -52,9 +54,9 @@ let () =
         last_name = "Ransan";
         date_of_birth = 19820429l;
         tel_number = None;
-        employment = Self_employed 0l;
+        employment = Some (Self_employed 0l);
         marital_status = None;
         gender = None;
       }
   in
-  assert (expected_default_person = T.default_person ())
+  assert (expected_default_person = T.default_person)

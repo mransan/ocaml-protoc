@@ -23,13 +23,13 @@ let default_div_by_zero : div_by_zero = ()
 
 let default_i32: i32 = 
 {
-  _presence=Pbrt.Bitfield.create 1;
+  _presence=Pbrt.Bitfield.empty;
   value=0l;
 }
 
 let default_add_req: add_req = 
 {
-  _presence=Pbrt.Bitfield.create 2;
+  _presence=Pbrt.Bitfield.empty;
   a=0l;
   b=0l;
 }
@@ -47,7 +47,7 @@ type i32_mutable = {
 }
 
 let default_i32_mutable () : i32_mutable = {
-  _presence = Pbrt.Bitfield.create 1;
+  _presence = Pbrt.Bitfield.empty;
   value = 0l;
 }
 
@@ -58,7 +58,7 @@ type add_req_mutable = {
 }
 
 let default_add_req_mutable () : add_req_mutable = {
-  _presence = Pbrt.Bitfield.create 2;
+  _presence = Pbrt.Bitfield.empty;
   a = 0l;
   b = 0l;
 }
@@ -78,7 +78,7 @@ let default_add_all_req_mutable () : add_all_req_mutable = {
 let rec make_i32 
   ?(value:int32 option)
   () : i32  =
-  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let value=(match value with
   | None -> 0l
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
@@ -88,7 +88,7 @@ let rec make_add_req
   ?(a:int32 option)
   ?(b:int32 option)
   () : add_req  =
-  let _presence = ref (Pbrt.Bitfield.create 2) in
+  let _presence = ref Pbrt.Bitfield.empty in
   let a=(match a with
   | None -> 0l
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
