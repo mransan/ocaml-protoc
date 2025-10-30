@@ -1,22 +1,22 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_chunk = {
-  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 3 fields *)
   path : string;
   data : bytes;
   crc : int32;
 }
 
 type file_path = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   path : string;
 }
 
 type file_crc = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   crc : int32;
 }
 
@@ -53,8 +53,8 @@ let default_ping : ping = ()
 let default_pong : pong = ()
 
 type file_chunk_mutable = {
-  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 3 fields *)
   mutable path : string;
   mutable data : bytes;
   mutable crc : int32;
@@ -68,8 +68,8 @@ let default_file_chunk_mutable () : file_chunk_mutable = {
 }
 
 type file_path_mutable = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   mutable path : string;
 }
 
@@ -79,8 +79,8 @@ let default_file_path_mutable () : file_path_mutable = {
 }
 
 type file_crc_mutable = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   mutable crc : int32;
 }
 

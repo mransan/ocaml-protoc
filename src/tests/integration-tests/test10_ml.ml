@@ -1,6 +1,6 @@
 module T = Test10
 
-let decode_pb_ref_data () = { T.m10_f1 = { Test09.int32_f1 = 1l } }
+let decode_pb_ref_data () = { T.m10_f1 = Some { Test09.int32_f1 = 1l } }
 
 let () =
   let mode = Test_util.parse_args () in

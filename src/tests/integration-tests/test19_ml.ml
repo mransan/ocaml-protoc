@@ -6,7 +6,7 @@ let decode_pb_ref_data () =
   Hashtbl.add hash "two" "2";
   Hashtbl.add hash "three" "3";
 
-  let m = T.default_hash () in
+  let m = T.default_hash in
   m.T.t <- hash;
   m
 

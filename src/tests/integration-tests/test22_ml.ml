@@ -1,37 +1,24 @@
 module T = Test22
 
 let decode_pb_ref_data () =
-  T.
-    {
-      p1 =
-        Some
-          {
-            first_name = "John";
-            last_name = "Doe";
-            date_of_birth = 19820429l;
-            tel_number = None;
-            employment = Employed_by "Google";
-            marital_status = Single;
-            gender = Male;
-          };
-      p2 =
-        Some
-          {
-            first_name = "Marie";
-            last_name = "Dupont";
-            date_of_birth = 19820306l;
-            tel_number = Some { area_code = 917l; number = 1111111l };
-            employment = Employed_by "INRIA";
-            marital_status = Married;
-            gender = Female;
-          };
-      contact_numbers =
-        [
-          { area_code = 917l; number = 123450l };
-          { area_code = 917l; number = 123451l };
-        ];
-      number_of_children = 0l;
-    }
+  T.make_couple
+    ~p1:
+      (T.make_person ~first_name:"John" ~last_name:"Doe"
+         ~date_of_birth:19820429l ~employment:(Employed_by "Google")
+         ~gender:Male ())
+    ~p2:
+      (T.make_person ~first_name:"Marie" ~last_name:"Dupont"
+         ~date_of_birth:19820306l
+         ~tel_number:
+           (T.make_person_tel_number ~area_code:917l ~number:1111111l ())
+         ~employment:(Employed_by "INRIA") ~marital_status:Married
+         ~gender:Female ())
+    ~contact_numbers:
+      [
+        T.make_person_tel_number ~area_code:917l ~number:123450l ();
+        T.make_person_tel_number ~area_code:917l ~number:123451l ();
+      ]
+    ()
 
 let () =
   let mode = Test_util.parse_args () in
@@ -48,13 +35,14 @@ let () =
   let expected_default_person =
     T.
       {
+        _presence = Pbrt.Bitfield.empty;
         first_name = "";
         last_name = "";
         date_of_birth = 0l;
         tel_number = None;
-        employment = Self_employed 0l;
+        employment = None;
         marital_status = Single;
         gender = Male;
       }
   in
-  assert (expected_default_person = T.default_person ())
+  assert (expected_default_person = T.default_person)

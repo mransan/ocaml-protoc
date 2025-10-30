@@ -30,7 +30,7 @@ let decode_ref_data () =
           { area_code = 917l; number = 123450l };
           { area_code = 917l; number = 123451l };
         ];
-      number_of_children = Some 0l;
+      number_of_children = None;
     }
 
 let () =
@@ -54,9 +54,11 @@ let () =
         last_name = "Ransan";
         date_of_birth = 19820429l;
         tel_number = None;
-        employment = Some (Self_employed 0l);
+        employment = None;
         marital_status = None;
         gender = None;
       }
   in
+  Format.printf "expected: %a@." T.pp_person expected_default_person;
+  Format.printf "default: %a@." T.pp_person T.default_person;
   assert (expected_default_person = T.default_person)

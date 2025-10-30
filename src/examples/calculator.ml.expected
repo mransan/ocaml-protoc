@@ -3,14 +3,14 @@
 type div_by_zero = unit
 
 type i32 = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   value : int32;
 }
 
 type add_req = {
-  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 2 fields *)
   a : int32;
   b : int32;
 }
@@ -44,8 +44,8 @@ let default_add_all_req: add_all_req =
 let default_empty : empty = ()
 
 type i32_mutable = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   mutable value : int32;
 }
 
@@ -55,8 +55,8 @@ let default_i32_mutable () : i32_mutable = {
 }
 
 type add_req_mutable = {
-  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 2 fields *)
   mutable a : int32;
   mutable b : int32;
 }

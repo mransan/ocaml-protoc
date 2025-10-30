@@ -7,8 +7,8 @@ type payment_system =
   | App 
 
 type person_location = {
-  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 2 fields *)
   lat : float;
   lng : float;
 }
@@ -19,8 +19,8 @@ type person_id2 =
   | Z of float
 
 and person = {
-  (** tracking presence for 4 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 4 fields *)
   id : int64;
   email : string;
   name : string;
@@ -73,9 +73,9 @@ let rec make_person
   ?(id:int64 option)
   ?(email:string option)
   ?(name:string option)
-  ?(home:person_location option option)
+  ?(home:person_location option)
   ?(picture:bytes option)
-  ?(id2:person_id2 option option)
+  ?(id2:person_id2 option)
   () : person  =
   let _presence = ref Pbrt.Bitfield.empty in
   let id=(match id with
@@ -89,13 +89,13 @@ let rec make_person
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 2); v) in
   let home=(match home with
   | None -> None
-  | Some v -> v) in
+  | Some v -> Some v) in
   let picture=(match picture with
   | None -> Bytes.create 0
   | Some v -> _presence := (Pbrt.Bitfield.set !_presence 3); v) in
   let id2=(match id2 with
   | None -> None
-  | Some v -> v) in
+  | Some v -> Some v) in
   { _presence= !_presence;id;email;name;home;picture;id2 }
 
 [@@@ocaml.warning "-27-30-39"]

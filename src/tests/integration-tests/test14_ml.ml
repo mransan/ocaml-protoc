@@ -3,13 +3,14 @@ module T = Test14
 let decode_pb_ref_data () =
   T.
     {
-      da = { aa = [ 1l; 2l; 3l; 4l ] };
-      db = Ba { aa = [ 1l; 2l; 3l; 4l ] };
+      da = Some { aa = [ 1l; 2l; 3l; 4l ] };
+      db = Some (Ba { aa = [ 1l; 2l; 3l; 4l ] });
       dc =
-        {
-          sub = Ca { aa = [ 1l; 2l; 3l; 4l ] };
-          cc = Some { aa = [ 1l; 2l; 3l; 4l ] };
-        };
+        Some
+          {
+            sub = Some (Ca { aa = [ 1l; 2l; 3l; 4l ] });
+            cc = Some { aa = [ 1l; 2l; 3l; 4l ] };
+          };
     }
 
 let mode = Test_util.parse_args ()

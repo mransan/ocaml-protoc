@@ -1,8 +1,8 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type person = {
-  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 3 fields *)
   name : string;
   id : int32;
   email : string;
@@ -19,8 +19,8 @@ let default_person: person =
 }
 
 type person_mutable = {
-  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 3 fields *)
   mutable name : string;
   mutable id : int32;
   mutable email : string;

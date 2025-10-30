@@ -39,13 +39,13 @@ let default_person_mutable () : person_mutable = {
 let rec make_person 
   ~(name:string) 
   ~(id:int32) 
-  ?(email:string option option)
+  ?(email:string option)
   ~(phone:string list) 
   ~(details:(string, string) Hashtbl.t) 
   () : person  =
   let email=(match email with
   | None -> None
-  | Some v -> v) in
+  | Some v -> Some v) in
   { name;id;email;phone;details }
 
 [@@@ocaml.warning "-27-30-39"]

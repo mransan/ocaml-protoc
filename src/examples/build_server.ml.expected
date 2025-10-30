@@ -1,8 +1,8 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_path = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   path : string;
 }
 
@@ -17,8 +17,8 @@ let default_file_path: file_path =
 let default_empty : empty = ()
 
 type file_path_mutable = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   mutable path : string;
 }
 

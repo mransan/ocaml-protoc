@@ -27,11 +27,11 @@ let default_int_list : int_list = Cons (default_int_list_cons)
 
 let rec make_int_list_cons 
   ~(value:int) 
-  ?(next:int_list option option)
+  ?(next:int_list option)
   () : int_list_cons  =
   let next=(match next with
   | None -> None
-  | Some v -> v) in
+  | Some v -> Some v) in
   { value;next }
 
 

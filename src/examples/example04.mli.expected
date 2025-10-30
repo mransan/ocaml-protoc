@@ -36,7 +36,7 @@ val default_int_list : int_list
 
 val make_int_list_cons : 
   value:int ->
-  ?next:int_list option ->
+  ?next:int_list ->
   unit ->
   int_list_cons
 (** [make_int_list_cons … ()] is a builder for type [int_list_cons] *)

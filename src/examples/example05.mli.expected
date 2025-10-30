@@ -27,7 +27,7 @@ val default_person : person
 val make_person : 
   name:string ->
   id:int32 ->
-  ?email:string option ->
+  ?email:string ->
   phone:string list ->
   details:(string, string) Hashtbl.t ->
   unit ->

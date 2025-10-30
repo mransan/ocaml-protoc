@@ -1,23 +1,23 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type person = {
-  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 2 fields *)
   name : string;
   age : int64;
 }
 
 type store = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   address : string;
   employees : person list;
   clients : person list;
 }
 
 type company = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   name : string;
   stores : store list;
   subsidiaries : company list;
@@ -47,8 +47,8 @@ let default_company: company =
 }
 
 type person_mutable = {
-  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 2 fields *)
   mutable name : string;
   mutable age : int64;
 }
@@ -60,8 +60,8 @@ let default_person_mutable () : person_mutable = {
 }
 
 type store_mutable = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   mutable address : string;
   mutable employees : person list;
   mutable clients : person list;
@@ -75,8 +75,8 @@ let default_store_mutable () : store_mutable = {
 }
 
 type company_mutable = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   mutable name : string;
   mutable stores : store list;
   mutable subsidiaries : company list;

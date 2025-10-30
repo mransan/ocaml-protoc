@@ -10,14 +10,14 @@
 type div_by_zero = unit
 
 type i32 = {
-  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 1 fields *)
   value : int32;
 }
 
 type add_req = {
-  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
+  (** tracking presence for 2 fields *)
   a : int32;
   b : int32;
 }
