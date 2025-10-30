@@ -124,8 +124,7 @@ let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
   F.linep sc "let default_%s () : %s = {" rn rn;
 
   F.sub_scope sc (fun sc ->
-      if len_bitfield > 0 then
-        F.linep sc "_presence = Pbrt.Bitfield.create %d;" len_bitfield;
+      if len_bitfield > 0 then F.linep sc "_presence = Pbrt.Bitfield.empty;";
       List.iter
         (fun { fname; default_value; _ } ->
           F.linep sc "%s = %s;" fname default_value)
@@ -145,8 +144,7 @@ let gen_record { Ot.r_name; r_fields } sc : unit =
   F.linep sc "{";
   F.sub_scope sc (fun sc ->
       (* add bitfield *)
-      if len_bitfield > 0 then
-        F.linep sc "_presence=Pbrt.Bitfield.create %d;" len_bitfield;
+      if len_bitfield > 0 then F.linep sc "_presence=Pbrt.Bitfield.empty;";
       List.iter
         (fun d ->
           (*F.linep sc "(* optional=%b, in_bitfield=%b *)" d.optional d.in_bitfield;*)

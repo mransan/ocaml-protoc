@@ -37,12 +37,12 @@ module Bitfield = struct
   type t = int
 
   let max_bits = Sys.int_size - 1
+  let empty : t = 0
 
-  let[@inline] create _n : t =
-    assert (_n <= max_bits);
-    0
+  let[@inline] set self idx : t =
+    assert (idx < max_bits);
+    self lor (1 lsl idx)
 
-  let[@inline] set self idx : t = self lor (1 lsl idx)
   let[@inline] get self idx : bool = self land (1 lsl idx) <> 0
 end
 

@@ -215,10 +215,10 @@ end
 
 (** Bitfield used for presence *)
 module Bitfield : sig
-  type t
+  type t = private int
 
   val max_bits : int
-  val create : int -> t
+  val empty : t
   val get : t -> int -> bool
   val set : t -> int -> t
 end

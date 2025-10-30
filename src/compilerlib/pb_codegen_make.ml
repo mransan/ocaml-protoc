@@ -38,7 +38,7 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
 
   F.sub_scope sc (fun sc ->
       if n_presence > 0 then
-        F.linep sc "let _presence = ref (Pbrt.Bitfield.create %d) in" n_presence;
+        F.linep sc "let _presence = ref Pbrt.Bitfield.empty in";
       List.iter
         (fun d ->
           if d.optional then (
