@@ -14,7 +14,7 @@ and int_list =
 let default_int_list_nil : int_list_nil = ()
 
 let default_int_list_cons: int_list_cons = 
-  {
+{
   value=0;
   next=None;
 }
@@ -29,12 +29,10 @@ let rec make_int_list_cons
   ~(value:int) 
   ?(next:int_list option option)
   () : int_list_cons  =
-  {
-  value;
-  next=(match next with
+  let next=(match next with
   | None -> None
-  | Some v -> v);
-}
+  | Some v -> v) in
+  { value;next }
 
 
 [@@@ocaml.warning "-27-30-39"]

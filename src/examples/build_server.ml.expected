@@ -1,14 +1,14 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_path = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
 type empty = unit
 
 let default_file_path: file_path = 
-  {
+{
   _presence=Pbrt.Bitfield.create 1;
   path="";
 }
@@ -16,7 +16,7 @@ let default_file_path: file_path =
 let default_empty : empty = ()
 
 type file_path_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable path : string;
 }
 
@@ -31,13 +31,11 @@ let default_file_path_mutable () : file_path_mutable = {
 let rec make_file_path 
   ?(path:string option)
   () : file_path  =
-  let _presence = Pbrt.Bitfield.create 1 in
-  {
-  _presence;
-  path=(match path with
+  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let path=(match path with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  { _presence= !_presence;path }
 
 
 [@@@ocaml.warning "-27-30-39"]
@@ -82,7 +80,7 @@ let rec decode_pb_file_path d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.path <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 

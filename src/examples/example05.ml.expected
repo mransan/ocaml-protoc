@@ -9,7 +9,7 @@ type person = {
 }
 
 let default_person: person = 
-  {
+{
   name="";
   id=0l;
   email=None;
@@ -43,15 +43,10 @@ let rec make_person
   ~(phone:string list) 
   ~(details:(string, string) Hashtbl.t) 
   () : person  =
-  {
-  name;
-  id;
-  email=(match email with
+  let email=(match email with
   | None -> None
-  | Some v -> v);
-  phone;
-  details;
-}
+  | Some v -> v) in
+  { name;id;email;phone;details }
 
 [@@@ocaml.warning "-27-30-39"]
 

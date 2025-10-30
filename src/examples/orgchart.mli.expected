@@ -8,20 +8,20 @@
 (** {2 Types} *)
 
 type person = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   name : string;
   age : int64;
 }
 
 type store = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   address : string;
   employees : person list;
   clients : person list;
 }
 
 type company = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   name : string;
   stores : store list;
   subsidiaries : company list;

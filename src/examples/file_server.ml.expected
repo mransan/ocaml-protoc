@@ -1,19 +1,19 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type file_chunk = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   path : string;
   data : bytes;
   crc : int32;
 }
 
 type file_path = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
 type file_crc = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   crc : int32;
 }
 
@@ -24,7 +24,7 @@ type ping = unit
 type pong = unit
 
 let default_file_chunk: file_chunk = 
-  {
+{
   _presence=Pbrt.Bitfield.create 3;
   path="";
   data=Bytes.create 0;
@@ -32,13 +32,13 @@ let default_file_chunk: file_chunk =
 }
 
 let default_file_path: file_path = 
-  {
+{
   _presence=Pbrt.Bitfield.create 1;
   path="";
 }
 
 let default_file_crc: file_crc = 
-  {
+{
   _presence=Pbrt.Bitfield.create 1;
   crc=0l;
 }
@@ -50,7 +50,7 @@ let default_ping : ping = ()
 let default_pong : pong = ()
 
 type file_chunk_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable path : string;
   mutable data : bytes;
   mutable crc : int32;
@@ -64,7 +64,7 @@ let default_file_chunk_mutable () : file_chunk_mutable = {
 }
 
 type file_path_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable path : string;
 }
 
@@ -74,7 +74,7 @@ let default_file_path_mutable () : file_path_mutable = {
 }
 
 type file_crc_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable crc : int32;
 }
 
@@ -91,41 +91,35 @@ let rec make_file_chunk
   ?(data:bytes option)
   ?(crc:int32 option)
   () : file_chunk  =
-  let _presence = Pbrt.Bitfield.create 3 in
-  {
-  _presence;
-  path=(match path with
+  let _presence = ref (Pbrt.Bitfield.create 3) in
+  let path=(match path with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-  data=(match data with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  let data=(match data with
   | None -> Bytes.create 0
-  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
-  crc=(match crc with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
+  let crc=(match crc with
   | None -> 0l
-  | Some v -> (Pbrt.Bitfield.set _presence 2); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 2); v) in
+  { _presence= !_presence;path;data;crc }
 
 let rec make_file_path 
   ?(path:string option)
   () : file_path  =
-  let _presence = Pbrt.Bitfield.create 1 in
-  {
-  _presence;
-  path=(match path with
+  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let path=(match path with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  { _presence= !_presence;path }
 
 let rec make_file_crc 
   ?(crc:int32 option)
   () : file_crc  =
-  let _presence = Pbrt.Bitfield.create 1 in
-  {
-  _presence;
-  crc=(match crc with
+  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let crc=(match crc with
   | None -> 0l
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  { _presence= !_presence;crc }
 
 
 
@@ -226,19 +220,19 @@ let rec decode_pb_file_chunk d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.path <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(1)" pk
     | Some (2, Pbrt.Bytes) -> begin
-      Pbrt.Bitfield.set v._presence 1;
+      v._presence <- Pbrt.Bitfield.set v._presence 1;
       v.data <- Pbrt.Decoder.bytes d;
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(file_chunk), field(2)" pk
     | Some (3, Pbrt.Varint) -> begin
-      Pbrt.Bitfield.set v._presence 2;
+      v._presence <- Pbrt.Bitfield.set v._presence 2;
       v.crc <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (3, pk) -> 
@@ -260,7 +254,7 @@ let rec decode_pb_file_path d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.path <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
@@ -280,7 +274,7 @@ let rec decode_pb_file_crc d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Varint) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.crc <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (1, pk) -> 

@@ -2,6 +2,7 @@ let test =
   let open Yojson_unittest in
   let all_basic_types =
     {
+      _presence = Pbrt.Bitfield.create 0;
       field01 = 1.2000001;
       field02 = 1.2;
       field03 = 0xEFFFFFFFl;
@@ -29,7 +30,12 @@ let test =
     }
   in
 
-  let small_message = { sm_string = "This \"IS\" a small string" } in
+  let small_message =
+    {
+      _presence = Pbrt.Bitfield.create 0;
+      sm_string = "This \"IS\" a small string";
+    }
+  in
 
   let test_enum0 = Value0 in
   let test_enum1 = Value1 in
@@ -51,7 +57,7 @@ let test =
     Recursive_value single_one_of_small_message
   in
 
-  let basic0 : abasic_message = { name = "basic0" } in
+  let basic0 : abasic_message = make_abasic_message ~name:"basic0" () in
 
   {
     all_basic_types = Some all_basic_types;

@@ -3,12 +3,12 @@
 type div_by_zero = unit
 
 type i32 = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   value : int32;
 }
 
 type add_req = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   a : int32;
   b : int32;
 }
@@ -22,27 +22,27 @@ type empty = unit
 let default_div_by_zero : div_by_zero = ()
 
 let default_i32: i32 = 
-  {
+{
   _presence=Pbrt.Bitfield.create 1;
   value=0l;
 }
 
 let default_add_req: add_req = 
-  {
+{
   _presence=Pbrt.Bitfield.create 2;
   a=0l;
   b=0l;
 }
 
 let default_add_all_req: add_all_req = 
-  {
+{
   ints=[];
 }
 
 let default_empty : empty = ()
 
 type i32_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable value : int32;
 }
 
@@ -52,7 +52,7 @@ let default_i32_mutable () : i32_mutable = {
 }
 
 type add_req_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable a : int32;
   mutable b : int32;
 }
@@ -78,35 +78,29 @@ let default_add_all_req_mutable () : add_all_req_mutable = {
 let rec make_i32 
   ?(value:int32 option)
   () : i32  =
-  let _presence = Pbrt.Bitfield.create 1 in
-  {
-  _presence;
-  value=(match value with
+  let _presence = ref (Pbrt.Bitfield.create 1) in
+  let value=(match value with
   | None -> 0l
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  { _presence= !_presence;value }
 
 let rec make_add_req 
   ?(a:int32 option)
   ?(b:int32 option)
   () : add_req  =
-  let _presence = Pbrt.Bitfield.create 2 in
-  {
-  _presence;
-  a=(match a with
+  let _presence = ref (Pbrt.Bitfield.create 2) in
+  let a=(match a with
   | None -> 0l
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-  b=(match b with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  let b=(match b with
   | None -> 0l
-  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
+  { _presence= !_presence;a;b }
 
 let rec make_add_all_req 
   ~(ints:int32 list) 
   () : add_all_req  =
-  {
-  ints;
-}
+  { ints }
 
 
 [@@@ocaml.warning "-27-30-39"]
@@ -199,7 +193,7 @@ let rec decode_pb_i32 d =
     | None -> (
     ); continue__ := false
     | Some (0, Pbrt.Varint) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.value <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (0, pk) -> 
@@ -219,13 +213,13 @@ let rec decode_pb_add_req d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Varint) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.a <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_req), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      Pbrt.Bitfield.set v._presence 1;
+      v._presence <- Pbrt.Bitfield.set v._presence 1;
       v.b <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (2, pk) -> 

@@ -9,4 +9,4 @@
   (:file yojson_unittest.proto))
  (action
   (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe %{file} --yojson
-    --pp --ml_out=.)))
+    --dump_type_repr --pp --ml_out=.)))

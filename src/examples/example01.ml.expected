@@ -1,7 +1,7 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type person = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   name : string;
   id : int32;
   email : string;
@@ -9,7 +9,7 @@ type person = {
 }
 
 let default_person: person = 
-  {
+{
   _presence=Pbrt.Bitfield.create 3;
   name="";
   id=0l;
@@ -18,7 +18,7 @@ let default_person: person =
 }
 
 type person_mutable = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   mutable name : string;
   mutable id : int32;
   mutable email : string;
@@ -42,20 +42,17 @@ let rec make_person
   ?(email:string option)
   ~(phone:string list) 
   () : person  =
-  let _presence = Pbrt.Bitfield.create 3 in
-  {
-  _presence;
-  name=(match name with
+  let _presence = ref (Pbrt.Bitfield.create 3) in
+  let name=(match name with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-  id=(match id with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  let id=(match id with
   | None -> 0l
-  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
-  email=(match email with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
+  let email=(match email with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 2); v);
-  phone;
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 2); v) in
+  { _presence= !_presence;name;id;email;phone }
 
 [@@@ocaml.warning "-27-30-39"]
 
@@ -106,19 +103,19 @@ let rec decode_pb_person d =
       v.phone <- List.rev v.phone;
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      Pbrt.Bitfield.set v._presence 0;
+      v._presence <- Pbrt.Bitfield.set v._presence 0;
       v.name <- Pbrt.Decoder.string d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      Pbrt.Bitfield.set v._presence 1;
+      v._presence <- Pbrt.Bitfield.set v._presence 1;
       v.id <- Pbrt.Decoder.int32_as_varint d;
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
     | Some (3, Pbrt.Bytes) -> begin
-      Pbrt.Bitfield.set v._presence 2;
+      v._presence <- Pbrt.Bitfield.set v._presence 2;
       v.email <- Pbrt.Decoder.string d;
     end
     | Some (3, pk) -> 

@@ -7,7 +7,7 @@ type payment_system =
   | App 
 
 type person_location = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   lat : float;
   lng : float;
 }
@@ -18,19 +18,19 @@ type person_id2 =
   | Z of float
 
 and person = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   id : int64;
   email : string;
   name : string;
   home : person_location option;
   picture : bytes;
-  id2 : person_id2;
+  id2 : person_id2 option;
 }
 
 let default_payment_system = (Cash:payment_system)
 
 let default_person_location: person_location = 
-  {
+{
   _presence=Pbrt.Bitfield.create 2;
   lat=0.;
   lng=0.;
@@ -39,7 +39,7 @@ let default_person_location: person_location =
 let default_person_id2 : person_id2 = X ("")
 
 let default_person: person = 
-  {
+{
   _presence=Pbrt.Bitfield.create 4;
   id=0L;
   email="";
@@ -57,16 +57,14 @@ let rec make_person_location
   ?(lat:float option)
   ?(lng:float option)
   () : person_location  =
-  let _presence = Pbrt.Bitfield.create 2 in
-  {
-  _presence;
-  lat=(match lat with
+  let _presence = ref (Pbrt.Bitfield.create 2) in
+  let lat=(match lat with
   | None -> 0.
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-  lng=(match lng with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  let lng=(match lng with
   | None -> 0.
-  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
-}
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
+  { _presence= !_presence;lat;lng }
 
 
 let rec make_person 
@@ -75,30 +73,28 @@ let rec make_person
   ?(name:string option)
   ?(home:person_location option option)
   ?(picture:bytes option)
-  ?(id2:person_id2 option)
+  ?(id2:person_id2 option option)
   () : person  =
-  let _presence = Pbrt.Bitfield.create 4 in
-  {
-  _presence;
-  id=(match id with
+  let _presence = ref (Pbrt.Bitfield.create 4) in
+  let id=(match id with
   | None -> 0L
-  | Some v -> (Pbrt.Bitfield.set _presence 0); v);
-  email=(match email with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
+  let email=(match email with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 1); v);
-  name=(match name with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
+  let name=(match name with
   | None -> ""
-  | Some v -> (Pbrt.Bitfield.set _presence 2); v);
-  home=(match home with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 2); v) in
+  let home=(match home with
   | None -> None
-  | Some v -> v);
-  picture=(match picture with
+  | Some v -> v) in
+  let picture=(match picture with
   | None -> Bytes.create 0
-  | Some v -> (Pbrt.Bitfield.set _presence 3); v);
-  id2=(match id2 with
+  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 3); v) in
+  let id2=(match id2 with
   | None -> None
-  | Some v -> v);
-}
+  | Some v -> v) in
+  { _presence= !_presence;id;email;name;home;picture;id2 }
 
 [@@@ocaml.warning "-27-30-39"]
 

@@ -8,7 +8,7 @@
 (** {2 Types} *)
 
 type person = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   name : string;
   id : int32;
   email : string;

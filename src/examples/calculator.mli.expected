@@ -10,12 +10,12 @@
 type div_by_zero = unit
 
 type i32 = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   value : int32;
 }
 
 type add_req = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   a : int32;
   b : int32;
 }

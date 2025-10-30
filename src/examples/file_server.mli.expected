@@ -8,19 +8,19 @@
 (** {2 Types} *)
 
 type file_chunk = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   path : string;
   data : bytes;
   crc : int32;
 }
 
 type file_path = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   path : string;
 }
 
 type file_crc = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   crc : int32;
 }
 
