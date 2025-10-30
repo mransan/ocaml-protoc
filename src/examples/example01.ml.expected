@@ -1,6 +1,7 @@
 [@@@ocaml.warning "-27-30-39-44"]
 
 type person = {
+  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   name : string;
   id : int32;
@@ -18,6 +19,7 @@ let default_person: person =
 }
 
 type person_mutable = {
+  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   mutable name : string;
   mutable id : int32;
@@ -60,9 +62,15 @@ let rec make_person
 
 let rec pp_person fmt (v:person) = 
   let pp_i fmt () =
+    if (Pbrt.Bitfield.get v._presence 0) then (
     Pbrt.Pp.pp_record_field ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
+    );
+    if (Pbrt.Bitfield.get v._presence 1) then (
     Pbrt.Pp.pp_record_field ~first:false "id" Pbrt.Pp.pp_int32 fmt v.id;
+    );
+    if (Pbrt.Bitfield.get v._presence 2) then (
     Pbrt.Pp.pp_record_field ~first:false "email" Pbrt.Pp.pp_string fmt v.email;
+    );
     Pbrt.Pp.pp_record_field ~first:false "phone" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.phone;
   in
   Pbrt.Pp.pp_brk pp_i fmt ()

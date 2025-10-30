@@ -8,6 +8,7 @@
 (** {2 Types} *)
 
 type person = {
+  (** tracking presence for 3 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   name : string;
   id : int32;

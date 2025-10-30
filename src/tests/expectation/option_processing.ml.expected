@@ -7,6 +7,7 @@ type payment_system =
   | App 
 
 type person_location = {
+  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   lat : float;
   lng : float;
@@ -18,6 +19,7 @@ type person_id2 =
   | Z of float
 
 and person = {
+  (** tracking presence for 4 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   id : int64;
   email : string;

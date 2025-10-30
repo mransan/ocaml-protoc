@@ -8,12 +8,14 @@
 (** {2 Types} *)
 
 type person = {
+  (** tracking presence for 2 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   name : string;
   age : int64;
 }
 
 type store = {
+  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   address : string;
   employees : person list;
@@ -21,6 +23,7 @@ type store = {
 }
 
 type company = {
+  (** tracking presence for 1 fields *)
   mutable _presence: Pbrt.Bitfield.t;
   name : string;
   stores : store list;
