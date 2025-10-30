@@ -18,4 +18,4 @@
    pb_parsing_parse_tree pb_parsing_util pb_typing_graph pb_typing
    pb_typing_recursion pb_typing_resolution pb_typing_type_tree
    pb_typing_util pb_typing_validation pb_util pb_format_util)
- (libraries stdlib-shims))
+ (libraries stdlib-shims pbrt))

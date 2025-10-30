@@ -142,8 +142,8 @@ let gen_record { Ot.r_name; r_fields } sc : unit =
 
   F.linep sc "let default_%s: %s = " r_name r_name;
 
+  F.linep sc "{";
   F.sub_scope sc (fun sc ->
-      F.linep sc "{";
       (* add bitfield *)
       if len_bitfield > 0 then
         F.linep sc "_presence=Pbrt.Bitfield.create %d;" len_bitfield;

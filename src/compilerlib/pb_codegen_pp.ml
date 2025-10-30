@@ -66,7 +66,9 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                  * requirement is indeed comming from the imposed Protobuf format)
                  *)
                 F.line sc
-                @@ sp "Pbrt.Pp.pp_record_field ~first:%b \"%s\" %s fmt %s;"
+                @@ sp
+                     "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                      (Pbrt.Pp.pp_option %s) fmt %s;"
                      first rf_label ("pp_" ^ v_name) var_name
                 (* Rft_variant_field *)
               | Ot.Rft_associative (at, _, (key_type, _), (value_type, _)) ->

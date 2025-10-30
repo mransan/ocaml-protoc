@@ -74,7 +74,7 @@ let gen_rft_nolabel sc ~rf_presence r_name rf_label
   gen_field_common sc encoding_number pk r_name (fun sc ->
       (match rf_presence with
       | Ot.Rfp_bitfield idx ->
-        F.linep sc "Pbrt.Bitfield.set v._presence %d;" idx
+        F.linep sc "v._presence <- Pbrt.Bitfield.set v._presence %d;" idx
       | _ -> ());
       F.linep sc "v.%s <- %s;" rf_label (decode_field_expression field_type pk))
 
@@ -93,7 +93,7 @@ let gen_rft_optional sc ~rf_presence r_name rf_label optional_field =
   gen_field_common sc encoding_number pk r_name (fun sc ->
       (match rf_presence with
       | Ot.Rfp_bitfield idx ->
-        F.linep sc "Pbrt.Bitfield.set v._presence %d;" idx
+        F.linep sc "v._presence <- Pbrt.Bitfield.set v._presence %d;" idx
       | _ -> ());
       F.linep sc "v.%s <- Some (%s);" rf_label
         (decode_field_expression field_type pk))
@@ -179,9 +179,9 @@ let gen_rft_variant sc r_name rf_label { Ot.v_constructors; _ } =
           match vc_field_type with
           | Ot.Vct_nullary ->
             F.line sc "Pbrt.Decoder.empty_nested d;";
-            F.linep sc "v.%s <- %s;" rf_label vc_constructor
+            F.linep sc "v.%s <- Some %s;" rf_label vc_constructor
           | Ot.Vct_non_nullary_constructor field_type ->
-            F.linep sc "v.%s <- %s (%s);" rf_label vc_constructor
+            F.linep sc "v.%s <- Some (%s (%s));" rf_label vc_constructor
               (decode_field_expression field_type pk)))
     v_constructors
 

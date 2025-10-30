@@ -38,27 +38,28 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
 
   F.sub_scope sc (fun sc ->
       if n_presence > 0 then
-        F.linep sc "let _presence = Pbrt.Bitfield.create %d in" n_presence;
-      F.line sc "{";
-      if n_presence > 0 then F.line sc "_presence;";
+        F.linep sc "let _presence = ref (Pbrt.Bitfield.create %d) in" n_presence;
       List.iter
         (fun d ->
           if d.optional then (
-            F.linep sc "%s=(match %s with" d.fname d.fname;
+            F.linep sc "let %s=(match %s with" d.fname d.fname;
             if d.in_bitfield then (
               F.linep sc "| None -> %s" d.default_value;
-              F.linep sc "| Some v -> %s; v);"
-                (Pb_codegen_util.presence_set ~bv:"_presence"
+              F.linep sc "| Some v -> _presence := %s; v) in"
+                (Pb_codegen_util.presence_set ~bv:"!_presence"
                    ~idx:d.bitfield_idx ())
             ) else (
               F.linep sc "| None -> %s" d.default_value;
-              F.line sc "| Some v -> v);"
+              F.line sc "| Some v -> v) in"
             )
           ) else
-            F.linep sc "%s;" d.fname)
-        fields);
+            ())
+        fields;
 
-  F.line sc "}"
+      let strrec = ref "" in
+      if n_presence > 0 then strrec := !strrec ^ "_presence= !_presence;";
+      strrec := !strrec ^ String.concat ";" (List.map (fun d -> d.fname) fields);
+      F.linep sc "{ %s }" !strrec)
 
 let gen_struct ?and_ t sc =
   let { Ot.spec; _ } = t in

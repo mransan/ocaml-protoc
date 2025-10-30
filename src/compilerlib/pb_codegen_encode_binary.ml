@@ -132,6 +132,7 @@ let gen_rft_repeated sc var_name repeated_field =
 
 let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
   F.linep sc "begin match %s with" var_name;
+  F.line sc "| None -> ()";
   List.iter
     (fun constructor ->
       let {
@@ -146,12 +147,12 @@ let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| %s ->" vc_constructor;
+        F.linep sc "| Some %s ->" vc_constructor;
         F.sub_scope sc (fun sc ->
             F.line sc "Pbrt.Encoder.empty_nested encoder;";
             gen_encode_field_key sc vc_encoding_number vc_payload_kind false)
       | Ot.Vct_non_nullary_constructor field_type ->
-        F.linep sc "| %s x ->" vc_constructor;
+        F.linep sc "| Some (%s x) ->" vc_constructor;
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc ~with_key:true "x" vc_encoding_number
               vc_payload_kind false field_type))

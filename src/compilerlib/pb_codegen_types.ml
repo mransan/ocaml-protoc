@@ -31,7 +31,7 @@ let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
 
   F.linep sc "type %s = {" r_name;
   F.sub_scope sc (fun sc ->
-      if insert_bitfield then F.line sc "_presence: Pbrt.Bitfield.t;";
+      if insert_bitfield then F.line sc "mutable _presence: Pbrt.Bitfield.t;";
       List.iter
         (fun { Ot.rf_label; rf_field_type; _ } ->
           let prefix = field_prefix rf_field_type in
@@ -56,7 +56,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
   F.sub_scope sc (fun sc ->
-      if insert_bitfield then F.linep sc "_presence: Pbrt.Bitfield.t;";
+      if insert_bitfield then F.linep sc "mutable _presence: Pbrt.Bitfield.t;";
       List.iter
         (fun { Ot.rf_label; rf_field_type; rf_mutable; _ } ->
           let prefix = field_prefix rf_mutable in

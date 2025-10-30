@@ -127,6 +127,7 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
   F.linep sc "let assoc = match v.%s with" rf_label;
 
   F.sub_scope sc (fun sc ->
+      F.line sc "  | None -> assoc";
       List.iter
         (fun { Ot.vc_constructor; vc_field_type; vc_payload_kind; _ } ->
           let var_name = "v" in
@@ -136,17 +137,17 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
           F.sub_scope sc (fun sc ->
               match vc_field_type with
               | Ot.Vct_nullary ->
-                F.linep sc "| %s -> (\"%s\", `Null) :: assoc" vc_constructor
-                  json_label
+                F.linep sc "| Some %s -> (\"%s\", `Null) :: assoc"
+                  vc_constructor json_label
               | Ot.Vct_non_nullary_constructor field_type ->
                 (match
                    gen_field var_name json_label field_type vc_payload_kind
                  with
                 | None ->
-                  F.linep sc "| %s -> (\"%s\", `Null) :: assoc" vc_constructor
-                    json_label
+                  F.linep sc "| Some %s -> (\"%s\", `Null) :: assoc"
+                    vc_constructor json_label
                 | Some exp ->
-                  F.linep sc "| %s v -> %s :: assoc" vc_constructor exp)))
+                  F.linep sc "| Some (%s v) -> %s :: assoc" vc_constructor exp)))
         v_constructors);
 
   F.linep sc "in (* match v.%s *)" rf_label

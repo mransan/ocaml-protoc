@@ -427,10 +427,14 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
     let variants, fields =
       let presence_idx = ref 0 in
 
-      let get_next_presence_idx () =
+      let generate_bitfield_or_fallback_on_optional () =
         let n = !presence_idx in
-        incr presence_idx;
-        n
+        if n >= Pbrt.Bitfield.max_bits then
+          Ot.Rfp_wrapped_option
+        else (
+          incr presence_idx;
+          Ot.Rfp_bitfield n
+        )
       in
 
       List.fold_left
@@ -455,14 +459,15 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
 
             let mutable_ = is_mutable ~field_name field_options in
 
+            let is_message =
+              match ocaml_field_type with
+              | Ot.Ft_user_defined_type { Ot.udt_type = `Message; _ }
+              | Ot.Ft_wrapper_type _ ->
+                true
+              | _ -> false
+            in
+
             let record_field_type =
-              let is_message =
-                match ocaml_field_type with
-                | Ot.Ft_user_defined_type { Ot.udt_type = `Message; _ }
-                | Ot.Ft_wrapper_type _ ->
-                  true
-                | _ -> false
-              in
               match Typing_util.field_label field with
               | `Nolabel ->
                 (* From proto3 section on default value:
@@ -507,18 +512,17 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
               (* NOTE: we are still not going to be fully compliant with
                  implicit presence in proto3, because we track presence even
                  for non-optional nonlabelled fields. Oh well. *)
-              match record_field_type, field_type with
-              | Ot.Rft_nolabel _, `User_defined _ ->
+              match record_field_type with
+              | Ot.Rft_nolabel _ when is_message ->
                 (* always wrap other messages/variants in option *)
                 Ot.Rfp_wrapped_option
-              | Ot.Rft_nolabel _, _ ->
+              | Ot.Rft_nolabel _ ->
                 (* proto3 submessage *)
-                Ot.Rfp_bitfield (get_next_presence_idx ())
-              | Ot.Rft_required _, _ -> Ot.Rfp_always
-              | Ot.Rft_optional _, _ -> Ot.Rfp_wrapped_option
-              | Ot.Rft_variant _, _ ->
-                Ot.Rfp_bitfield (get_next_presence_idx ())
-              | (Ot.Rft_repeated _ | Ot.Rft_associative _), _ -> Ot.Rfp_always
+                generate_bitfield_or_fallback_on_optional ()
+              | Ot.Rft_required _ -> Ot.Rfp_always
+              | Ot.Rft_optional _ -> Ot.Rfp_wrapped_option
+              | Ot.Rft_variant _ -> generate_bitfield_or_fallback_on_optional ()
+              | Ot.Rft_repeated _ | Ot.Rft_associative _ -> Ot.Rfp_always
             in
             let record_field =
               Ot.
