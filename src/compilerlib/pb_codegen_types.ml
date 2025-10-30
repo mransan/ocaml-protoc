@@ -64,7 +64,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   F.linep sc "%s %s = {" (type_decl_of_and and_) r_name;
   F.sub_scope sc (fun sc ->
       if insert_bitfield then (
-        F.linep sc "mutable _presence: Pbrt.Bitfield.t;";
+        F.linep sc "_presence: Pbrt.Bitfield.t;";
         F.linep sc "(** tracking presence for %d fields *)" len_bitfield
       );
       List.iter
