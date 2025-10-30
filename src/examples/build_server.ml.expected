@@ -107,9 +107,11 @@ let rec decode_pb_empty d =
 (** {2 Protobuf YoJson Encoding} *)
 
 let rec encode_json_file_path (v:file_path) = 
-  let assoc = [] in 
-  let assoc = ("path", Pbrt_yojson.make_string v.path) :: assoc in
-  `Assoc assoc
+  let assoc = ref [] in
+  if (Pbrt.Bitfield.get v._presence 0) then (
+  assoc := ("path", Pbrt_yojson.make_string v.path) :: !assoc;
+  );
+  `Assoc !assoc
 
 let rec encode_json_empty (v:empty) = 
 Pbrt_yojson.make_unit v

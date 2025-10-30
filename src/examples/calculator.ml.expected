@@ -275,23 +275,29 @@ let rec encode_json_div_by_zero (v:div_by_zero) =
 Pbrt_yojson.make_unit v
 
 let rec encode_json_i32 (v:i32) = 
-  let assoc = [] in 
-  let assoc = ("value", Pbrt_yojson.make_int (Int32.to_int v.value)) :: assoc in
-  `Assoc assoc
+  let assoc = ref [] in
+  if (Pbrt.Bitfield.get v._presence 0) then (
+  assoc := ("value", Pbrt_yojson.make_int (Int32.to_int v.value)) :: !assoc;
+  );
+  `Assoc !assoc
 
 let rec encode_json_add_req (v:add_req) = 
-  let assoc = [] in 
-  let assoc = ("a", Pbrt_yojson.make_int (Int32.to_int v.a)) :: assoc in
-  let assoc = ("b", Pbrt_yojson.make_int (Int32.to_int v.b)) :: assoc in
-  `Assoc assoc
+  let assoc = ref [] in
+  if (Pbrt.Bitfield.get v._presence 0) then (
+  assoc := ("a", Pbrt_yojson.make_int (Int32.to_int v.a)) :: !assoc;
+  );
+  if (Pbrt.Bitfield.get v._presence 1) then (
+  assoc := ("b", Pbrt_yojson.make_int (Int32.to_int v.b)) :: !assoc;
+  );
+  `Assoc !assoc
 
 let rec encode_json_add_all_req (v:add_all_req) = 
-  let assoc = [] in 
-  let assoc =
+  let assoc = ref [] in
+  assoc := (
     let l = v.ints |> List.map Int32.to_int |> List.map Pbrt_yojson.make_int in 
-    ("ints", `List l) :: assoc 
-  in
-  `Assoc assoc
+    ("ints", `List l) :: !assoc 
+  );
+  `Assoc !assoc
 
 let rec encode_json_empty (v:empty) = 
 Pbrt_yojson.make_unit v

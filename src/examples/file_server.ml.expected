@@ -325,21 +325,31 @@ let rec decode_pb_pong d =
 (** {2 Protobuf YoJson Encoding} *)
 
 let rec encode_json_file_chunk (v:file_chunk) = 
-  let assoc = [] in 
-  let assoc = ("path", Pbrt_yojson.make_string v.path) :: assoc in
-  let assoc = ("data", Pbrt_yojson.make_bytes v.data) :: assoc in
-  let assoc = ("crc", Pbrt_yojson.make_int (Int32.to_int v.crc)) :: assoc in
-  `Assoc assoc
+  let assoc = ref [] in
+  if (Pbrt.Bitfield.get v._presence 0) then (
+  assoc := ("path", Pbrt_yojson.make_string v.path) :: !assoc;
+  );
+  if (Pbrt.Bitfield.get v._presence 1) then (
+  assoc := ("data", Pbrt_yojson.make_bytes v.data) :: !assoc;
+  );
+  if (Pbrt.Bitfield.get v._presence 2) then (
+  assoc := ("crc", Pbrt_yojson.make_int (Int32.to_int v.crc)) :: !assoc;
+  );
+  `Assoc !assoc
 
 let rec encode_json_file_path (v:file_path) = 
-  let assoc = [] in 
-  let assoc = ("path", Pbrt_yojson.make_string v.path) :: assoc in
-  `Assoc assoc
+  let assoc = ref [] in
+  if (Pbrt.Bitfield.get v._presence 0) then (
+  assoc := ("path", Pbrt_yojson.make_string v.path) :: !assoc;
+  );
+  `Assoc !assoc
 
 let rec encode_json_file_crc (v:file_crc) = 
-  let assoc = [] in 
-  let assoc = ("crc", Pbrt_yojson.make_int (Int32.to_int v.crc)) :: assoc in
-  `Assoc assoc
+  let assoc = ref [] in
+  if (Pbrt.Bitfield.get v._presence 0) then (
+  assoc := ("crc", Pbrt_yojson.make_int (Int32.to_int v.crc)) :: !assoc;
+  );
+  `Assoc !assoc
 
 let rec encode_json_empty (v:empty) = 
 Pbrt_yojson.make_unit v
