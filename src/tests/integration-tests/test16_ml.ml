@@ -6,9 +6,9 @@ let of_list e0 l =
   f
 
 let decode_pb_ref_data () =
-  let v = T.{ f1 = 1l; f2 = 2l; f3 = 3l; f4 = of_list 0l [ 1l; 2l ] } in
-  v.T.f3 <- 4l;
-  v.T.f4 <- of_list 0l [ 3l; 4l ];
+  let v = T.make_m ~f1:1l ~f2:2l ~f3:3l ~f4:(of_list 0l [ 1l; 2l ]) () in
+  T.set_m_f3 v 4l;
+  T.set_m_f4 v @@ of_list 0l [ 3l; 4l ];
   v
 
 let mode = Test_util.parse_args ()

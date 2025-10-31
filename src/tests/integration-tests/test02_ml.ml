@@ -1,23 +1,12 @@
 module T = Test02
 
 let decode_ref_data () =
-  {
-    T.o01 = 1.0;
-    T.o02 = 2.0;
-    T.o03 = -123l;
-    T.o04 = 456L;
-    T.o05 = 123l;
-    T.o06 = 456L;
-    T.o07 = -123l;
-    T.o08 = -456L;
-    T.o09 = 0xFFFFFFFFl;
-    T.o10 = 0xFFFFFFFFFFFFFFFFL;
-    T.o11 = 0xFFFFFFFFl;
-    T.o12 = 0xFFFFFFFFFFFFFFFFL;
-    T.o13 = true;
-    T.o14 = "Iam a test string";
-    T.o15 = Bytes.of_string "Iam a test byte";
-  }
+  T.make_all_basics_types ~o01:1.0 ~o02:2.0 ~o03:(-123l) ~o04:456L ~o05:123l
+    ~o06:456L ~o07:(-123l) ~o08:(-456L) ~o09:0xFFFFFFFFl
+    ~o10:0xFFFFFFFFFFFFFFFFL ~o11:0xFFFFFFFFl ~o12:0xFFFFFFFFFFFFFFFFL ~o13:true
+    ~o14:"Iam a test string"
+    ~o15:(Bytes.of_string "Iam a test byte")
+    ()
 
 let () =
   let mode = Test_util.parse_args () in

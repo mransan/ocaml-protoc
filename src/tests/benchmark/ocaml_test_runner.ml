@@ -44,15 +44,12 @@ module Make (T : T_sig) : Runner_sig = struct
       let t3 = Unix.gettimeofday () in
 
       let encode_data =
-        Benchmark.
-          {
-            creation_time = t1 -. t0;
-            encode_time = t2 -. t1;
-            to_file_time = t3 -. t2;
-          }
+        Benchmark.make_encode_data ~creation_time:(t1 -. t0)
+          ~encode_time:(t2 -. t1) ~to_file_time:(t3 -. t2) ()
       in
 
-      Benchmark.{ difficulty_size; test_id; data = Some (Encode encode_data) }
+      Benchmark.make_test_response ~difficulty_size ~test_id
+        ~data:(Encode encode_data) ()
     | Some Benchmark.Decode ->
       let t0 = Unix.gettimeofday () in
       let ic = open_in file_name in
@@ -63,17 +60,12 @@ module Make (T : T_sig) : Runner_sig = struct
       let t1 = Unix.gettimeofday () in
       let v = T.decode (Pbrt.Decoder.of_bytes payload) in
       let t2 = Unix.gettimeofday () in
-      Benchmark.
-        {
-          difficulty_size = T.difficulty_size v;
-          test_id;
-          data =
-            Some
-              (Decode
-                 {
-                   Benchmark.from_file_time = t1 -. t0;
-                   Benchmark.decode_time = t2 -. t1;
-                 });
-        }
+      Benchmark.make_test_response ~difficulty_size:(T.difficulty_size v)
+        ~test_id
+        ~data:
+          (Decode
+             (Benchmark.make_decode_data ~from_file_time:(t1 -. t0)
+                ~decode_time:(t2 -. t1) ()))
+        ()
 end
 (* Make *)

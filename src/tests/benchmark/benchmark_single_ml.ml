@@ -46,9 +46,12 @@ let make_test_requests ~number_of_sample test_ids =
         Printf.sprintf "test_%s_%i.data" (string_of_test_id test_id) difficulty
       in
       let encode =
-        Bench_t.{ type_ = Some (Encode difficulty); file_name; test_id }
+        Bench_t.make_test_request ~type_:(Encode difficulty) ~file_name ~test_id
+          ()
       in
-      let decode = Bench_t.{ type_ = Some Decode; file_name; test_id } in
+      let decode =
+        Bench_t.make_test_request ~type_:Decode ~file_name ~test_id ()
+      in
 
       let init_cases, test_cases = acc in
       let test_cases = Util.append_n test_cases encode number_of_sample in

@@ -1,17 +1,15 @@
 module T = Test14
 
 let decode_pb_ref_data () =
-  T.
-    {
-      da = Some { aa = [ 1l; 2l; 3l; 4l ] };
-      db = Some (Ba { aa = [ 1l; 2l; 3l; 4l ] });
-      dc =
-        Some
-          {
-            sub = Some (Ca { aa = [ 1l; 2l; 3l; 4l ] });
-            cc = Some { aa = [ 1l; 2l; 3l; 4l ] };
-          };
-    }
+  T.make_d
+    ~da:(T.make_a ~aa:[ 1l; 2l; 3l; 4l ] ())
+    ~db:(Ba (T.make_a ~aa:[ 1l; 2l; 3l; 4l ] ()))
+    ~dc:
+      (T.make_c
+         ~sub:(Ca (T.make_a ~aa:[ 1l; 2l; 3l; 4l ] ()))
+         ~cc:(T.make_a ~aa:[ 1l; 2l; 3l; 4l ] ())
+         ())
+    ()
 
 let mode = Test_util.parse_args ()
 

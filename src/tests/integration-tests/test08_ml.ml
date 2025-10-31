@@ -2,25 +2,14 @@ module T = Test08
 
 let decode_ref_data () =
   T.Node
-    {
-      T.value = 1l;
-      T.left =
-        Some
-          (T.Node
-             {
-               T.value = 2l;
-               T.left = Some (T.Empty 0l);
-               right = Some (T.Empty 0l);
-             });
-      T.right =
-        Some
-          (T.Node
-             {
-               T.value = 3l;
-               T.left = Some (T.Empty 0l);
-               right = Some (T.Empty 0l);
-             });
-    }
+    (T.make_node ~value:1l
+       ~left:
+         (T.Node
+            (T.make_node ~value:2l ~left:(T.Empty 0l) ~right:(T.Empty 0l) ()))
+       ~right:
+         (T.Node
+            (T.make_node ~value:3l ~left:(T.Empty 0l) ~right:(T.Empty 0l) ()))
+       ())
 
 let () =
   let mode = Test_util.parse_args () in

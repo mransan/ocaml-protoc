@@ -1,6 +1,6 @@
 module T = Test12
 
-let decode_pb_ref_data () = T.{ to_ = 1l; type_ = 1l }
+let decode_pb_ref_data () = T.make_m ~to_:1l ~type_:1l ()
 
 let () =
   let mode = Test_util.parse_args () in

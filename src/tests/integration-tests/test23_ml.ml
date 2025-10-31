@@ -1,6 +1,6 @@
 module T = Test23
 
-let decode_pb_ref_data () = { T.i = Int64.(shift_left 3L 56) }
+let decode_pb_ref_data () = T.make_int64_t ~i:Int64.(shift_left 3L 56) ()
 
 let () =
   let mode = Test_util.parse_args () in

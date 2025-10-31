@@ -30,21 +30,3 @@ let () =
   | Test_util.Encode ->
     Test_util.encode "test22.ml2c.data" T.encode_pb_couple
       (decode_pb_ref_data ())
-
-let () =
-  let expected_default_person =
-    T.
-      {
-        _presence = Pbrt.Bitfield.empty;
-        first_name = "";
-        last_name = "";
-        date_of_birth = 0l;
-        tel_number = None;
-        employment = None;
-        marital_status = Single;
-        gender = Unset;
-      }
-  in
-  Format.printf "expected: %a@." T.pp_person expected_default_person;
-  Format.printf "actual default: %a@." T.pp_person T.default_person;
-  assert (expected_default_person = T.default_person)

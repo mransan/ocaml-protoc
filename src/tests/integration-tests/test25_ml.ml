@@ -1,6 +1,6 @@
 module T = Test25
 
-let decode_pb_ref_data () = T.{ f1 = [ 1l; 2l; 3l; 4l ] }
+let decode_pb_ref_data () = T.make_m ~f1:[ 1l; 2l; 3l; 4l ] ()
 let mode = Test_util.parse_args ()
 
 let () =

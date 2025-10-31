@@ -1,6 +1,6 @@
 module T = Test06
 
-let decode_ref_data () = { T.teste_field = T.Test_e_value1 }
+let decode_ref_data () = T.make_test_m ~teste_field:T.Test_e_value1 ()
 
 let () =
   let mode = Test_util.parse_args () in

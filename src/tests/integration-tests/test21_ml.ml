@@ -1,7 +1,7 @@
 module T = Test21
 
 let decode_pb_ref_data () =
-  { T.f1 = 1l; f2 = Some { T.sub_f1 = 2l }; f3 = T.Eone }
+  T.make_m ~f1:1l ~f2:(T.make_m_sub ~sub_f1:2l ()) ~f3:T.Eone ()
 
 let () =
   Printf.printf "Show is working: %s\n" @@ T.show_m (decode_pb_ref_data ())

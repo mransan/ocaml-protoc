@@ -1,11 +1,10 @@
 module T = Test13
 
 let decode_pb_ref_data () =
-  T.
-    {
-      p2 = Some { empty = (); sub = Some Sub_empty };
-      p1 = Some { l = [ Empty; Int 1l; Empty; Int 2l ] };
-    }
+  T.make_t
+    ~p2:(T.make_contains_empty ~empty:() ~sub:Sub_empty ())
+    ~p1:(T.make_empty_or_int_list ~l:[ Empty; Int 1l; Empty; Int 2l ] ())
+    ()
 
 let mode = Test_util.parse_args ()
 
