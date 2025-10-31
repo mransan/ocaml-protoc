@@ -35,7 +35,7 @@ jobs:
     - run: opam exec -- dune build @install
 
     - name: tests
-      run: make all-tests
+      run: opam exec -- make all-tests
 
   format:
     name: format
