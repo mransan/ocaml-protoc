@@ -33,7 +33,6 @@ jobs:
     - run: opam depext -yt ocaml-protoc
     - run: opam install -t . --deps-only
     - run: opam exec -- dune build @install
-    - run: opam exec -- dune runtest
 
     - name: tests
       run: make all-tests
