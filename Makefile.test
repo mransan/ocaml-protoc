@@ -90,6 +90,7 @@ integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 YOJSON_DIR=src/tests/yojson
 OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
 build-test-data-yojson:
+	echo "building yojson test data"
 	$(PROTOC) \
 		--cpp_out $(YOJSON_DIR) \
 		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
@@ -108,5 +109,5 @@ OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
 test-yojson: build-test-data-yojson
 	dune runtest $(YOJSON_DIR)
 
-.PHONY: all-tests
+.PHONY: all-tests build-test-data-yojson
 all-tests: build-test-data tests test-yojson integration

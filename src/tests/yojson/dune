@@ -1,6 +1,8 @@
 (test
  (name yojson_unittest_ml)
  (package ocaml-protoc)
+ (deps
+  (:json yojson.data))
  (libraries pbrt pbrt_yojson))
 
 (rule
