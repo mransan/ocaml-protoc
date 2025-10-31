@@ -46,7 +46,7 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
     field_pattern_match ~r_name ~rf_label field_type
   in
   F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-  F.linep sc "  v.%s <- %s" rf_label exp
+  F.linep sc "  set_%s_%s v (%s)" r_name rf_label exp
 
 (* Generate all the pattern matches for a repeated field *)
 let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
@@ -57,7 +57,7 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
   F.linep sc "| (\"%s\", `List l) -> begin" json_label;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "v.%s <- List.map (function" rf_label;
+      F.linep sc "set_%s_%s v @@ List.map (function" r_name rf_label;
       let match_variable_name, exp =
         field_pattern_match ~r_name ~rf_label field_type
       in
@@ -76,7 +76,7 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
   in
 
   F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-  F.linep sc "  v.%s <- Some (%s)" rf_label exp
+  F.linep sc "  set_%s_%s v %s" r_name rf_label exp
 
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
@@ -88,14 +88,14 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| (\"%s\", _) -> v.%s <- Some %s" json_label rf_label
+        F.linep sc "| (\"%s\", _) -> set_%s_%s v %s" json_label r_name rf_label
           vc_constructor
       | Ot.Vct_non_nullary_constructor field_type ->
         let match_variable_name, exp =
           field_pattern_match ~r_name ~rf_label field_type
         in
         F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-        F.linep sc "  v.%s <- Some (%s (%s))" rf_label vc_constructor exp)
+        F.linep sc "  set_%s_%s v (%s (%s))" r_name rf_label vc_constructor exp)
     v_constructors
 
 let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
@@ -135,19 +135,17 @@ let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
       let assoc_exp =
         match assoc_type with
         | Ot.At_hashtable -> "assoc"
-        | Ot.At_list -> "assoc |> Hashtbl.to_seq |> List.of_seq"
+        | Ot.At_list -> "(assoc |> Hashtbl.to_seq |> List.of_seq)"
       in
-      F.linep sc "v.%s <- %s" rf_label assoc_exp)
+      F.linep sc "set_%s_%s v %s" r_name rf_label assoc_exp)
 
 (* Generate decode function for a record *)
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
-  let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
-
   F.line sc
   @@ sp "%s decode_json_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "let v = default_%s () in" mutable_record_name;
+      F.linep sc "let v = default_%s () in" r_name;
       F.line sc @@ "let assoc = match d with";
       F.line sc @@ "  | `Assoc assoc -> assoc";
       F.line sc @@ "  | _ -> assert(false)";
@@ -310,13 +308,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "JSON Decoding"
-let requires_mutable_records = true
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

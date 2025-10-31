@@ -32,7 +32,8 @@ let default_value_of_field_type ?field_name field_type field_default : string =
   match field_type with
   | Ot.Ft_user_defined_type udt ->
     let function_prefix = "default" in
-    function_name_of_user_defined ~function_prefix udt
+    let f = function_name_of_user_defined ~function_prefix udt in
+    Printf.sprintf "%s ()" f
   | Ot.Ft_unit -> "()"
   | Ot.Ft_basic_type bt ->
     default_value_of_basic_type ?field_name bt field_default
@@ -119,26 +120,6 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
     bitfield_idx;
   }
 
-let gen_record_mutable { Ot.r_name; r_fields } sc : unit =
-  let fields_default_info =
-    List.map (fun r_field -> record_field_default_info r_field) r_fields
-  in
-
-  let len_bitfield =
-    List.filter (fun d -> d.in_bitfield) fields_default_info |> List.length
-  in
-
-  let rn = Pb_codegen_util.mutable_record_name r_name in
-  F.linep sc "let default_%s () : %s = {" rn rn;
-
-  F.sub_scope sc (fun sc ->
-      if len_bitfield > 0 then F.linep sc "_presence = Pbrt.Bitfield.empty;";
-      List.iter
-        (fun { fname; default_value; _ } ->
-          F.linep sc "%s = %s;" fname default_value)
-        fields_default_info);
-  F.line sc "}"
-
 let gen_record { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
     List.map (fun r_field -> record_field_default_info r_field) r_fields
@@ -147,7 +128,7 @@ let gen_record { Ot.r_name; r_fields } sc : unit =
     List.filter (fun d -> d.in_bitfield) fields_default_info |> List.length
   in
 
-  F.linep sc "let default_%s: %s = " r_name r_name;
+  F.linep sc "let default_%s (): %s = " r_name r_name;
 
   F.linep sc "{";
   F.sub_scope sc (fun sc ->
@@ -170,14 +151,14 @@ let gen_variant { Ot.v_name; Ot.v_constructors } sc =
   | { Ot.vc_constructor; vc_field_type; _ } :: _ ->
     (match vc_field_type with
     | Ot.Vct_nullary ->
-      F.linep sc "let default_%s: %s = %s" v_name v_name vc_constructor
+      F.linep sc "let default_%s (): %s = %s" v_name v_name vc_constructor
     | Ot.Vct_non_nullary_constructor field_type ->
       let default_value =
         let field_name = v_name in
         default_value_of_field_type ~field_name field_type None
       in
-      (* TODO need to fix the deault value *)
-      F.linep sc "let default_%s : %s = %s (%s)" v_name v_name vc_constructor
+      (* TODO need to fix the default value *)
+      F.linep sc "let default_%s (): %s = %s (%s)" v_name v_name vc_constructor
         default_value)
 
 let gen_const_variant { Ot.cv_name; Ot.cv_constructors } sc =
@@ -186,16 +167,16 @@ let gen_const_variant { Ot.cv_name; Ot.cv_constructors } sc =
     | [] -> failwith "programmatic TODO error"
     | { Ot.cvc_name; _ } :: _ -> cvc_name
   in
-  F.linep sc "let default_%s = (%s:%s)" cv_name first_constructor_name cv_name
+  F.linep sc "let default_%s () = (%s:%s)" cv_name first_constructor_name
+    cv_name
 
-let gen_struct_full ~with_mutable_records ?and_:_ t sc =
+let gen_struct_full ?and_:_ t sc =
   let { Ot.spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
       gen_record r sc;
-      if with_mutable_records then gen_record_mutable r sc;
       true
     | Ot.Variant v ->
       gen_variant v sc;
@@ -209,12 +190,11 @@ let gen_struct_full ~with_mutable_records ?and_:_ t sc =
   in
   has_encoded
 
-let gen_struct ?and_ t sc =
-  gen_struct_full ?and_ ~with_mutable_records:false t sc
+let gen_struct ?and_ t sc = gen_struct_full ?and_ t sc
 
 let gen_sig_record sc { Ot.r_name; _ } : unit =
-  F.linep sc "val default_%s : %s " r_name r_name;
-  F.linep sc "(** [default_%s] is the default value for type [%s] *)" r_name
+  F.linep sc "val default_%s : unit -> %s " r_name r_name;
+  F.linep sc "(** [default_%s ()] is a new empty value for type [%s] *)" r_name
     r_name
 
 let gen_sig_unit sc { Ot.er_name } =
@@ -224,9 +204,9 @@ let gen_sig_unit sc { Ot.er_name } =
   F.linep sc "(** [default_%s] is the default value for type [%s] *)" rn rn
 
 let gen_sig ?and_:_ t sc =
-  let f type_name =
-    F.linep sc "val default_%s : %s" type_name type_name;
-    F.linep sc "(** [default_%s] is the default value for type [%s] *)"
+  let gen_default_fun_ type_name =
+    F.linep sc "val default_%s : unit -> %s" type_name type_name;
+    F.linep sc "(** [default_%s ()] is a new empty value for type [%s] *)"
       type_name type_name
   in
 
@@ -238,10 +218,10 @@ let gen_sig ?and_:_ t sc =
       gen_sig_record sc r;
       true
     | Ot.Variant v ->
-      f v.Ot.v_name;
+      gen_default_fun_ v.Ot.v_name;
       true
     | Ot.Const_variant { Ot.cv_name; _ } ->
-      f cv_name;
+      gen_default_fun_ cv_name;
       true
     | Ot.Unit u ->
       gen_sig_unit sc u;
@@ -251,4 +231,3 @@ let gen_sig ?and_:_ t sc =
   has_encoded
 
 let ocamldoc_title = "Basic values"
-let requires_mutable_records = false

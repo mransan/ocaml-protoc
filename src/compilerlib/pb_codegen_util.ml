@@ -115,8 +115,6 @@ let caml_file_name_of_proto_file_name ~proto_file_name =
   else
     String.concat "_" @@ List.rev @@ List.tl splitted
 
-let mutable_record_name s = s ^ "_mutable"
-
 let string_of_payload_kind ?capitalize payload_kind packed =
   let s =
     match payload_kind, packed with

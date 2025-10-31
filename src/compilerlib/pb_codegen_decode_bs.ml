@@ -104,12 +104,10 @@ let gen_rft_variant sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
 (* Generate decode function for a record *)
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
-  let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
-
   F.linep sc "%s decode_%s json =" (Pb_codegen_util.let_decl_of_and and_) r_name;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "let v = default_%s () in" mutable_record_name;
+      F.linep sc "let v = default_%s () in" r_name;
       F.line sc "let keys = Js.Dict.keys json in";
       F.line sc "let last_key_index = Array.length keys - 1 in";
 
@@ -269,13 +267,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "BS Decoding"
-let requires_mutable_records = true
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

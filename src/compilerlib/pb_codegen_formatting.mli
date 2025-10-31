@@ -49,6 +49,10 @@ val empty_line : scope -> unit
 val sub_scope : scope -> (scope -> unit) -> unit
 (** [sub_scope scope f] adds a sub scope and apply [f] to it. *)
 
+val sub_scope_if : bool -> scope -> (scope -> unit) -> unit
+(** [sub_scope_if b scope f] adds a sub scope if [b] is true, and calls [f] with
+    the current scope or the sub scope. *)
+
 (** {2 Printing} *)
 
 val to_string : scope -> string

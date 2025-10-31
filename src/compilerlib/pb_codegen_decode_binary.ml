@@ -69,14 +69,10 @@ let gen_field_common sc encoding_number payload_kind message_name
   F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
     (sp "Message(%s), field(%i)" message_name encoding_number)
 
-let gen_rft_nolabel sc ~rf_presence r_name rf_label
-    (field_type, encoding_number, pk) =
+let gen_rft_nolabel sc r_name rf_label (field_type, encoding_number, pk) =
   gen_field_common sc encoding_number pk r_name (fun sc ->
-      (match rf_presence with
-      | Ot.Rfp_bitfield idx ->
-        F.linep sc "v._presence <- Pbrt.Bitfield.set v._presence %d;" idx
-      | _ -> ());
-      F.linep sc "v.%s <- %s;" rf_label (decode_field_expression field_type pk))
+      F.linep sc "set_%s_%s v (%s);" r_name rf_label
+        (decode_field_expression field_type pk))
 
 (* return the variable name used for keeping track if a required
  * field has been set during decoding. *)
@@ -84,18 +80,14 @@ let is_set_variable_name rf_label = sp "%s_is_set" rf_label
 
 let gen_rft_required sc r_name rf_label (field_type, encoding_number, pk, _) =
   gen_field_common sc encoding_number pk r_name (fun sc ->
-      F.linep sc "v.%s <- %s; %s := true;" rf_label
+      F.linep sc "set_%s_%s v (%s); %s := true;" r_name rf_label
         (decode_field_expression field_type pk)
         (is_set_variable_name rf_label))
 
-let gen_rft_optional sc ~rf_presence r_name rf_label optional_field =
+let gen_rft_optional sc r_name rf_label optional_field =
   let field_type, encoding_number, pk, _ = optional_field in
   gen_field_common sc encoding_number pk r_name (fun sc ->
-      (match rf_presence with
-      | Ot.Rfp_bitfield idx ->
-        F.linep sc "v._presence <- Pbrt.Bitfield.set v._presence %d;" idx
-      | _ -> ());
-      F.linep sc "v.%s <- Some (%s);" rf_label
+      F.linep sc "set_%s_%s v (%s);" r_name rf_label
         (decode_field_expression field_type pk))
 
 let gen_rft_repeated sc r_name rf_label repeated_field =
@@ -103,7 +95,7 @@ let gen_rft_repeated sc r_name rf_label repeated_field =
   match rt, is_packed with
   | Ot.Rt_list, false ->
     gen_field_common sc encoding_number pk r_name ~is_packed (fun sc ->
-        F.linep sc "v.%s <- (%s) :: v.%s;" rf_label
+        F.linep sc "set_%s_%s v ((%s) :: v.%s);" r_name rf_label
           (decode_field_expression field_type pk)
           rf_label)
   | Ot.Rt_repeated_field, false ->
@@ -113,8 +105,9 @@ let gen_rft_repeated sc r_name rf_label repeated_field =
           rf_label)
   | Ot.Rt_list, true ->
     gen_field_common sc encoding_number pk r_name ~is_packed (fun sc ->
-        F.linep sc "v.%s <- Pbrt.Decoder.packed_fold (fun l d -> (%s)::l) [] d;"
-          rf_label
+        F.linep sc
+          "set_%s_%s v @@ Pbrt.Decoder.packed_fold (fun l d -> (%s)::l) [] d;"
+          r_name rf_label
           (decode_field_expression field_type pk))
   | Ot.Rt_repeated_field, true ->
     gen_field_common sc encoding_number pk r_name ~is_packed (fun sc ->
@@ -154,7 +147,7 @@ let gen_rft_associative sc r_name rf_label associative_field =
 
       match at with
       | Ot.At_list ->
-        F.linep sc "v.%s <- (" rf_label;
+        F.linep sc "set_%s_%s v (" r_name rf_label;
         F.sub_scope sc (fun sc ->
             F.linep sc "%s::v.%s;" decode_expression rf_label);
         F.line sc ");"
@@ -179,9 +172,9 @@ let gen_rft_variant sc r_name rf_label { Ot.v_constructors; _ } =
           match vc_field_type with
           | Ot.Vct_nullary ->
             F.line sc "Pbrt.Decoder.empty_nested d;";
-            F.linep sc "v.%s <- Some %s;" rf_label vc_constructor
+            F.linep sc "set_%s_%s v %s;" r_name rf_label vc_constructor
           | Ot.Vct_non_nullary_constructor field_type ->
-            F.linep sc "v.%s <- Some (%s (%s));" rf_label vc_constructor
+            F.linep sc "set_%s_%s v (%s (%s));" r_name rf_label vc_constructor
               (decode_field_expression field_type pk)))
     v_constructors
 
@@ -209,11 +202,9 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       [] r_fields
   in
 
-  let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
-
   F.linep sc "%s decode_pb_%s d =" (Pb_codegen_util.let_decl_of_and and_) r_name;
   F.sub_scope sc (fun sc ->
-      F.linep sc "let v = default_%s () in" mutable_record_name;
+      F.linep sc "let v = default_%s () in" r_name;
       F.line sc "let continue__= ref true in";
 
       (* Add the is_set_<field_name> boolean variable which keeps track
@@ -233,22 +224,23 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           (* termination condition *)
           F.line sc "| None -> (";
           F.sub_scope sc (fun sc ->
+              if all_lists <> [] then
+                F.line sc "(* put lists in the correct order *)";
               List.iter
                 (fun field_name ->
-                  F.linep sc "v.%s <- List.rev v.%s;" field_name field_name)
+                  F.linep sc "set_%s_%s v (List.rev v.%s);" r_name field_name
+                    field_name)
                 all_lists);
           F.line sc "); continue__ := false";
 
           (* compare the decoded field with the one defined in the
            * .proto file. Unknown fields are ignored. *)
           List.iter
-            (fun { Ot.rf_label; rf_field_type; rf_presence; _ } ->
+            (fun { Ot.rf_label; rf_field_type; _ } ->
               match rf_field_type with
-              | Ot.Rft_nolabel x ->
-                gen_rft_nolabel sc ~rf_presence r_name rf_label x
+              | Ot.Rft_nolabel x -> gen_rft_nolabel sc r_name rf_label x
               | Ot.Rft_required x -> gen_rft_required sc r_name rf_label x
-              | Ot.Rft_optional x ->
-                gen_rft_optional sc ~rf_presence r_name rf_label x
+              | Ot.Rft_optional x -> gen_rft_optional sc r_name rf_label x
               | Ot.Rft_repeated x -> gen_rft_repeated sc r_name rf_label x
               | Ot.Rft_associative x -> gen_rft_associative sc r_name rf_label x
               | Ot.Rft_variant x -> gen_rft_variant sc r_name rf_label x)
@@ -267,21 +259,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
             rf_label)
         all_required_rf_labels;
 
-      let has_presence =
-        List.exists
-          (fun { Ot.rf_presence; _ } -> Ot.rfp_requires_bitfield rf_presence)
-          r_fields
-      in
-
-      (* turn into an immutable value *)
-      F.line sc "({";
-      F.sub_scope sc (fun sc ->
-          if has_presence then F.line sc "_presence = v._presence;";
-          List.iter
-            (fun { Ot.rf_label; _ } ->
-              F.linep sc "%s = v.%s;" rf_label rf_label)
-            r_fields);
-      F.linep sc "} : %s)" r_name)
+      F.linep sc "(v : %s)" r_name)
 
 let gen_unit ?and_ { Ot.er_name } sc =
   F.linep sc "%s decode_pb_%s d ="
@@ -407,13 +385,11 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Protobuf Decoding"
-let requires_mutable_records = true
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

@@ -1,6 +1,5 @@
 module Ot = Pb_codegen_ocaml_type
 module F = Pb_codegen_formatting
-open Pb_codegen_util
 
 type default_info = Pb_codegen_default.default_info = {
   fname: string;
@@ -21,12 +20,45 @@ let fields_of_record { Ot.r_fields; _ } : Pb_codegen_default.default_info list =
       dinfo)
     r_fields
 
-let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
+let gen_record ({ Ot.r_name; _ } as r) sc : unit =
   let fields = fields_of_record r in
-  let n_presence = List.filter (fun d -> d.in_bitfield) fields |> List.length in
 
-  F.linep sc "%s make_%s " (let_decl_of_and and_) r_name;
+  (* generate [has_field] accessors *)
+  List.iter
+    (fun (d : default_info) ->
+      if d.in_bitfield then
+        F.linep sc "let[@inline] has_%s_%s (self:%s) : bool = %s" r_name d.fname
+          r_name
+          (Pb_codegen_util.presence_get ~bv:"self._presence" ~idx:d.bitfield_idx
+             ()))
+    fields;
+  F.line sc "";
 
+  (* generate [set_field] accessors *)
+  List.iter
+    (fun (d : default_info) ->
+      F.linep sc "let[@inline] set_%s_%s (self:%s) (x:%s) : unit =" r_name
+        d.fname r_name d.ftype_underlying;
+      F.sub_scope sc (fun sc ->
+          if d.in_bitfield then
+            F.linep sc "self._presence <- %s; self.%s <- x"
+              (Pb_codegen_util.presence_set ~bv:"self._presence"
+                 ~idx:d.bitfield_idx ())
+              d.fname
+          else if d.optional then
+            F.linep sc "self.%s <- Some x" d.fname
+          else
+            F.linep sc "self.%s <- x" d.fname))
+    fields;
+  F.line sc "";
+
+  F.linep sc "let copy_%s (self:%s) : %s =" r_name r_name r_name;
+  F.sub_scope sc (fun sc ->
+      let field0 = List.hd fields in
+      F.linep sc "{ self with %s = self.%s }" field0.fname field0.fname);
+  F.line sc "";
+
+  F.linep sc "let make_%s " r_name;
   F.sub_scope sc (fun sc ->
       List.iter
         (fun (d : default_info) ->
@@ -38,45 +70,28 @@ let gen_record ?and_ ({ Ot.r_name; _ } as r) sc : unit =
             F.linep sc "~(%s:%s) " d.fname d.ftype)
         fields;
       F.linep sc "() : %s  =" r_name);
-
   F.sub_scope sc (fun sc ->
-      if n_presence > 0 then
-        F.linep sc "let _presence = ref Pbrt.Bitfield.empty in";
+      F.linep sc "let _res = default_%s () in" r_name;
       List.iter
         (fun d ->
-          if d.in_bitfield then (
-            F.linep sc "let %s=(match %s with" d.fname d.fname;
-            F.linep sc "| None -> %s" d.default_value;
-            F.linep sc "| Some v -> _presence := %s; v) in"
-              (Pb_codegen_util.presence_set ~bv:"!_presence" ~idx:d.bitfield_idx
-                 ())
-          ))
+          if d.optional then (
+            F.linep sc "(match %s with" d.fname;
+            F.linep sc "| None -> ()";
+            F.linep sc "| Some v -> set_%s_%s _res v);" r_name d.fname
+          ) else
+            F.linep sc "set_%s_%s _res %s;" r_name d.fname d.fname)
         fields;
-
-      let strrec = ref "" in
-      if n_presence > 0 then strrec := !strrec ^ "_presence= !_presence;";
-      strrec := !strrec ^ String.concat ";" (List.map (fun d -> d.fname) fields);
-      F.linep sc "{ %s }" !strrec);
-
-  (* also generate [has_field] accessors *)
-  List.iter
-    (fun (d : default_info) ->
-      if d.in_bitfield then
-        F.linep sc "let[@inline] has_%s_%s (self:%s) : bool = %s" r_name d.fname
-          r_name
-          (Pb_codegen_util.presence_get ~bv:"self._presence" ~idx:d.bitfield_idx
-             ()))
-    fields;
+      F.line sc "_res");
 
   ()
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_:_ t sc =
   let { Ot.spec; _ } = t in
 
   let has_encoded =
     match spec with
     | Ot.Record r ->
-      gen_record ?and_ r sc;
+      gen_record r sc;
       true
     | Ot.Const_variant _ | Ot.Variant _ | Ot.Unit _ ->
       (* nothing for variants *)
@@ -85,10 +100,9 @@ let gen_struct ?and_ t sc =
   has_encoded
 
 let gen_sig_record sc ({ Ot.r_name; _ } as r) =
-  F.linep sc "val make_%s : " r_name;
-
   let fields : _ list = fields_of_record r in
 
+  F.linep sc "val make_%s : " r_name;
   F.sub_scope sc (fun sc ->
       List.iter
         (fun d ->
@@ -102,13 +116,21 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
   let rn = r_name in
   F.linep sc "(** [make_%s … ()] is a builder for type [%s] *)" rn rn;
 
+  F.line sc "";
+  F.linep sc "val copy_%s : %s -> %s" r_name r_name r_name;
+
   List.iter
     (fun (d : default_info) ->
       if d.in_bitfield then (
         F.line sc "";
         F.linep sc "val has_%s_%s : %s -> bool" r_name d.fname r_name;
         F.linep sc "  (** presence of field %S in [%s] *)" d.fname r_name
-      ))
+      );
+
+      F.line sc "";
+      F.linep sc "val set_%s_%s : %s -> %s -> unit" r_name d.fname r_name
+        d.ftype_underlying;
+      F.linep sc "  (** set field %s in %s *)" d.fname r_name)
     fields;
 
   ()
@@ -127,4 +149,3 @@ let gen_sig ?and_:_ t sc =
   has_encoded
 
 let ocamldoc_title = "Make functions"
-let requires_mutable_records = false

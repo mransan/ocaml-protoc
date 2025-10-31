@@ -48,11 +48,6 @@ val caml_file_name_of_proto_file_name : proto_file_name:string -> string
 (** [caml_file_name_of_proto_file_name filename] returns the OCaml file name
     from the protobuf file name *)
 
-val mutable_record_name : string -> string
-(** [mutable_record_name record_name] returns the type name of the `mutable`
-    type name. We use mutable types when decoding for better performance, this
-    function encapsulate the nameing convention for this additional type. *)
-
 val string_of_payload_kind :
   ?capitalize:unit -> Pb_codegen_ocaml_type.payload_kind -> bool -> string
 (** [string_of_payload_kind ~capitalize:() payload_kind packed] will return the

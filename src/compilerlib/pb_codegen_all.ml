@@ -48,7 +48,7 @@ let new_ocaml_mod ~proto_file_options ~proto_file_name () : ocaml_mod =
   in
 
   (* write preludes *)
-  F.line self.ml "[@@@ocaml.warning \"-27-30-39-44\"]";
+  F.line self.ml "[@@@ocaml.warning \"-23-27-30-39-44\"]";
   F.empty_line self.ml;
   print_ppx self.ml;
   F.empty_line self.mli;
@@ -100,7 +100,7 @@ let generate_for_all_services (services : Ot.service list) (sc : F.scope)
 
   List.iter (fun (service : Ot.service) -> f service sc) services
 
-let generate_type_and_default (self : ocaml_mod) ocaml_types : unit =
+let generate_type (self : ocaml_mod) ocaml_types : unit =
   generate_for_all_types ocaml_types self.ml Pb_codegen_types.gen_struct None;
   generate_for_all_types ocaml_types self.ml Pb_codegen_default.gen_struct None;
   generate_for_all_types ocaml_types self.mli Pb_codegen_types.gen_sig
@@ -109,24 +109,11 @@ let generate_type_and_default (self : ocaml_mod) ocaml_types : unit =
     (Some Pb_codegen_default.ocamldoc_title);
   ()
 
-let generate_make (self : ocaml_mod) ocaml_types : unit =
+let generate_make_and_accessors (self : ocaml_mod) ocaml_types : unit =
   generate_for_all_types ocaml_types self.ml Pb_codegen_make.gen_struct
     (Some Pb_codegen_make.ocamldoc_title);
   generate_for_all_types ocaml_types self.mli Pb_codegen_make.gen_sig
     (Some Pb_codegen_make.ocamldoc_title)
-
-let generate_mutable_records (self : ocaml_mod) ocaml_types : unit =
-  let ocaml_types = List.flatten ocaml_types in
-  List.iter
-    (fun { Ot.spec; _ } ->
-      match spec with
-      | Ot.Record r ->
-        Pb_codegen_types.gen_record_mutable r self.ml;
-        F.empty_line self.ml;
-        Pb_codegen_default.gen_record_mutable r self.ml;
-        F.empty_line self.ml
-      | _ -> ())
-    ocaml_types
 
 let generate_service_struct (service : Ot.service) sc : unit =
   Pb_logger.log "Generating code for service %s\n" service.service_name;
@@ -142,22 +129,17 @@ let generate_services (self : ocaml_mod) services : unit =
 
 let generate_plugin (self : ocaml_mod) ocaml_types (p : Plugin.t) : unit =
   let (module P) = p in
-  F.line self.ml "[@@@ocaml.warning \"-27-30-39\"]";
+  F.line self.ml "[@@@ocaml.warning \"-23-27-30-39\"]";
   generate_for_all_types ocaml_types self.ml P.gen_struct
     (Some P.ocamldoc_title);
   generate_for_all_types ocaml_types self.mli P.gen_sig (Some P.ocamldoc_title);
   ()
 
-let codegen (proto : Ot.proto) ~generate_make:gen_make ~proto_file_options
-    ~proto_file_name ~services (plugins : Plugin.t list) : ocaml_mod =
+let codegen (proto : Ot.proto) ~proto_file_options ~proto_file_name ~services
+    (plugins : Plugin.t list) : ocaml_mod =
   let self = new_ocaml_mod ~proto_file_options ~proto_file_name () in
-  generate_type_and_default self proto.proto_types;
-  if List.exists Pb_codegen_plugin.requires_mutable_records plugins then
-    generate_mutable_records self proto.proto_types;
-
-  (* always generated now *)
-  ignore gen_make;
-  generate_make self proto.proto_types;
+  generate_type self proto.proto_types;
+  generate_make_and_accessors self proto.proto_types;
   List.iter (generate_plugin self proto.proto_types) plugins;
 
   (* services come last, they need binary and json *)

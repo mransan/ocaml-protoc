@@ -229,20 +229,22 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
             | _ -> false
           in
 
-          (match rf_field_type with
-          | Ot.Rft_nolabel nolabel_field ->
-            gen_rft_nolabel sc rf_label nolabel_field
-          | Ot.Rft_repeated repeated_field ->
-            gen_rft_repeated sc rf_label repeated_field
-          | Ot.Rft_variant variant_field ->
-            gen_rft_variant sc rf_label variant_field
-          | Ot.Rft_optional optional_field ->
-            gen_rft_optional sc rf_label optional_field
-          | Ot.Rft_required _ ->
-            Printf.eprintf "Only proto3 syntax supported in JSON encoding";
-            exit 1
-          | Ot.Rft_associative (assoc_type, _, (key_type, _), value_field) ->
-            gen_rft_assoc sc ~rf_label ~assoc_type ~key_type ~value_field);
+          F.sub_scope_if in_bitfield sc (fun sc ->
+              match rf_field_type with
+              | Ot.Rft_nolabel nolabel_field ->
+                gen_rft_nolabel sc rf_label nolabel_field
+              | Ot.Rft_repeated repeated_field ->
+                gen_rft_repeated sc rf_label repeated_field
+              | Ot.Rft_variant variant_field ->
+                gen_rft_variant sc rf_label variant_field
+              | Ot.Rft_optional optional_field ->
+                gen_rft_optional sc rf_label optional_field
+              | Ot.Rft_required _ ->
+                Printf.eprintf "Only proto3 syntax supported in JSON encoding";
+                exit 1
+              | Ot.Rft_associative (assoc_type, _, (key_type, _), value_field)
+                ->
+                gen_rft_assoc sc ~rf_label ~assoc_type ~key_type ~value_field);
 
           if in_bitfield then F.line sc ");")
         r_fields (* List.iter *);
@@ -336,13 +338,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "Protobuf YoJson Encoding"
-let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

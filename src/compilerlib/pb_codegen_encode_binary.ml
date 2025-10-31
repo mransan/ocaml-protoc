@@ -212,14 +212,15 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
             | _ -> false
           in
 
-          let var_name = sp "v.%s" rf_label in
-          (match rf_field_type with
-          | Ot.Rft_nolabel x -> gen_rft_nolabel sc var_name x
-          | Ot.Rft_required x -> gen_rft_required sc var_name x
-          | Ot.Rft_optional x -> gen_rft_optional sc var_name x
-          | Ot.Rft_repeated x -> gen_rft_repeated sc var_name x
-          | Ot.Rft_variant x -> gen_rft_variant sc var_name x
-          | Ot.Rft_associative x -> gen_rft_associative sc var_name x);
+          F.sub_scope_if in_bitfield sc (fun sc ->
+              let var_name = sp "v.%s" rf_label in
+              match rf_field_type with
+              | Ot.Rft_nolabel x -> gen_rft_nolabel sc var_name x
+              | Ot.Rft_required x -> gen_rft_required sc var_name x
+              | Ot.Rft_optional x -> gen_rft_optional sc var_name x
+              | Ot.Rft_repeated x -> gen_rft_repeated sc var_name x
+              | Ot.Rft_variant x -> gen_rft_variant sc var_name x
+              | Ot.Rft_associative x -> gen_rft_associative sc var_name x);
 
           if in_bitfield then F.line sc ");")
         r_fields (* List.iter *);
@@ -332,13 +333,11 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Protobuf Encoding"
-let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)
