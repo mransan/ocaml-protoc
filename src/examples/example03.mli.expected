@@ -19,8 +19,8 @@ type string_some =
 val default_string_some_none : unit
 (** [default_string_some_none] is the default value for type [string_some_none] *)
 
-val default_string_some : string_some
-(** [default_string_some] is the default value for type [string_some] *)
+val default_string_some : unit -> string_some
+(** [default_string_some ()] is a new empty value for type [string_some] *)
 
 
 (** {2 Make functions} *)

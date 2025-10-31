@@ -1,4 +1,4 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type string_some_none = unit
 
@@ -8,14 +8,14 @@ type string_some =
 
 let default_string_some_none : string_some_none = ()
 
-let default_string_some: string_some = None
+let default_string_some (): string_some = None
 
 
 (** {2 Make functions} *)
 
 
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)
 

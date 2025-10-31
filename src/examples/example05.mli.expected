@@ -7,19 +7,19 @@
 
 (** {2 Types} *)
 
-type person = {
-  name : string;
-  id : int32;
-  email : string option;
-  phone : string list;
-  details : (string, string) Hashtbl.t;
+type person = private {
+  mutable name : string;
+  mutable id : int32;
+  mutable email : string option;
+  mutable phone : string list;
+  mutable details : (string, string) Hashtbl.t;
 }
 
 
 (** {2 Basic values} *)
 
-val default_person : person 
-(** [default_person] is the default value for type [person] *)
+val default_person : unit -> person 
+(** [default_person ()] is a new empty value for type [person] *)
 
 
 (** {2 Make functions} *)
@@ -33,6 +33,23 @@ val make_person :
   unit ->
   person
 (** [make_person … ()] is a builder for type [person] *)
+
+val copy_person : person -> person
+
+val set_person_name : person -> string -> unit
+  (** set field name in person *)
+
+val set_person_id : person -> int32 -> unit
+  (** set field id in person *)
+
+val set_person_email : person -> string -> unit
+  (** set field email in person *)
+
+val set_person_phone : person -> string list -> unit
+  (** set field phone in person *)
+
+val set_person_details : person -> (string, string) Hashtbl.t -> unit
+  (** set field details in person *)
 
 
 (** {2 Formatters} *)

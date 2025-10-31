@@ -7,10 +7,10 @@
 
 (** {2 Types} *)
 
-type file_path = {
-  _presence: Pbrt.Bitfield.t;
+type file_path = private {
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
-  path : string;
+  mutable path : string;
 }
 
 type empty = unit
@@ -18,8 +18,8 @@ type empty = unit
 
 (** {2 Basic values} *)
 
-val default_file_path : file_path 
-(** [default_file_path] is the default value for type [file_path] *)
+val default_file_path : unit -> file_path 
+(** [default_file_path ()] is a new empty value for type [file_path] *)
 
 val default_empty : unit
 (** [default_empty] is the default value for type [empty] *)
@@ -33,8 +33,13 @@ val make_file_path :
   file_path
 (** [make_file_path … ()] is a builder for type [file_path] *)
 
+val copy_file_path : file_path -> file_path
+
 val has_file_path_path : file_path -> bool
   (** presence of field "path" in [file_path] *)
+
+val set_file_path_path : file_path -> string -> unit
+  (** set field path in file_path *)
 
 
 

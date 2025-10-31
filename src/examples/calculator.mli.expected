@@ -9,21 +9,21 @@
 
 type div_by_zero = unit
 
-type i32 = {
-  _presence: Pbrt.Bitfield.t;
+type i32 = private {
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
-  value : int32;
+  mutable value : int32;
 }
 
-type add_req = {
-  _presence: Pbrt.Bitfield.t;
+type add_req = private {
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 2 fields *)
-  a : int32;
-  b : int32;
+  mutable a : int32;
+  mutable b : int32;
 }
 
-type add_all_req = {
-  ints : int32 list;
+type add_all_req = private {
+  mutable ints : int32 list;
 }
 
 type empty = unit
@@ -34,14 +34,14 @@ type empty = unit
 val default_div_by_zero : unit
 (** [default_div_by_zero] is the default value for type [div_by_zero] *)
 
-val default_i32 : i32 
-(** [default_i32] is the default value for type [i32] *)
+val default_i32 : unit -> i32 
+(** [default_i32 ()] is a new empty value for type [i32] *)
 
-val default_add_req : add_req 
-(** [default_add_req] is the default value for type [add_req] *)
+val default_add_req : unit -> add_req 
+(** [default_add_req ()] is a new empty value for type [add_req] *)
 
-val default_add_all_req : add_all_req 
-(** [default_add_all_req] is the default value for type [add_all_req] *)
+val default_add_all_req : unit -> add_all_req 
+(** [default_add_all_req ()] is a new empty value for type [add_all_req] *)
 
 val default_empty : unit
 (** [default_empty] is the default value for type [empty] *)
@@ -56,8 +56,13 @@ val make_i32 :
   i32
 (** [make_i32 … ()] is a builder for type [i32] *)
 
+val copy_i32 : i32 -> i32
+
 val has_i32_value : i32 -> bool
   (** presence of field "value" in [i32] *)
+
+val set_i32_value : i32 -> int32 -> unit
+  (** set field value in i32 *)
 
 val make_add_req : 
   ?a:int32 ->
@@ -66,17 +71,30 @@ val make_add_req :
   add_req
 (** [make_add_req … ()] is a builder for type [add_req] *)
 
+val copy_add_req : add_req -> add_req
+
 val has_add_req_a : add_req -> bool
   (** presence of field "a" in [add_req] *)
 
+val set_add_req_a : add_req -> int32 -> unit
+  (** set field a in add_req *)
+
 val has_add_req_b : add_req -> bool
   (** presence of field "b" in [add_req] *)
+
+val set_add_req_b : add_req -> int32 -> unit
+  (** set field b in add_req *)
 
 val make_add_all_req : 
   ints:int32 list ->
   unit ->
   add_all_req
 (** [make_add_all_req … ()] is a builder for type [add_all_req] *)
+
+val copy_add_all_req : add_all_req -> add_all_req
+
+val set_add_all_req_ints : add_all_req -> int32 list -> unit
+  (** set field ints in add_all_req *)
 
 
 

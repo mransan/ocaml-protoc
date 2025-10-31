@@ -110,7 +110,9 @@ module Cmdline = struct
     dump_type_repr: bool ref;
         (** whether comments with debug ocaml type representation are added *)
     services: bool ref;  (** whether services code generation is enabled *)
-    make: bool ref;  (** whether to generate "make" functions *)
+    make: bool ref;
+        (** whether to generate "make" functions. DEPRECATED this is not used
+            anymore *)
     mutable cmd_line_file_options: File_options.t;
         (** file options override from the cmd line *)
     unsigned_tag: bool ref;

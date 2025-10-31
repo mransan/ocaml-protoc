@@ -1,65 +1,13 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type person = {
-  _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 2 fields *)
-  name : string;
-  age : int64;
-}
-
-type store = {
-  _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
-  address : string;
-  employees : person list;
-  clients : person list;
-}
-
-type company = {
-  _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
-  name : string;
-  stores : store list;
-  subsidiaries : company list;
-}
-
-let default_person: person = 
-{
-  _presence=Pbrt.Bitfield.empty;
-  name="";
-  age=0L;
-}
-
-let default_store: store = 
-{
-  _presence=Pbrt.Bitfield.empty;
-  address="";
-  employees=[];
-  clients=[];
-}
-
-let default_company: company = 
-{
-  _presence=Pbrt.Bitfield.empty;
-  name="";
-  stores=[];
-  subsidiaries=[];
-}
-
-type person_mutable = {
   mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 2 fields *)
   mutable name : string;
   mutable age : int64;
 }
 
-let default_person_mutable () : person_mutable = {
-  _presence = Pbrt.Bitfield.empty;
-  name = "";
-  age = 0L;
-}
-
-type store_mutable = {
+type store = {
   mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
   mutable address : string;
@@ -67,14 +15,7 @@ type store_mutable = {
   mutable clients : person list;
 }
 
-let default_store_mutable () : store_mutable = {
-  _presence = Pbrt.Bitfield.empty;
-  address = "";
-  employees = [];
-  clients = [];
-}
-
-type company_mutable = {
+type company = {
   mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
   mutable name : string;
@@ -82,56 +23,107 @@ type company_mutable = {
   mutable subsidiaries : company list;
 }
 
-let default_company_mutable () : company_mutable = {
-  _presence = Pbrt.Bitfield.empty;
-  name = "";
-  stores = [];
-  subsidiaries = [];
+let default_person (): person = 
+{
+  _presence=Pbrt.Bitfield.empty;
+  name="";
+  age=0L;
+}
+
+let default_store (): store = 
+{
+  _presence=Pbrt.Bitfield.empty;
+  address="";
+  employees=[];
+  clients=[];
+}
+
+let default_company (): company = 
+{
+  _presence=Pbrt.Bitfield.empty;
+  name="";
+  stores=[];
+  subsidiaries=[];
 }
 
 
 (** {2 Make functions} *)
 
-let rec make_person 
-  ?(name:string option)
-  ?(age:int64 option)
-  () : person  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let name=(match name with
-  | None -> ""
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  let age=(match age with
-  | None -> 0L
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
-  { _presence= !_presence;name;age }
 let[@inline] has_person_name (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] has_person_age (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
 
-let rec make_store 
+let[@inline] set_person_name (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.name <- x
+let[@inline] set_person_age (self:person) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.age <- x
+
+let copy_person (self:person) : person =
+  { self with name = self.name }
+
+let make_person 
+  ?(name:string option)
+  ?(age:int64 option)
+  () : person  =
+  let _res = default_person () in
+  (match name with
+  | None -> ()
+  | Some v -> set_person_name _res v);
+  (match age with
+  | None -> ()
+  | Some v -> set_person_age _res v);
+  _res
+
+let[@inline] has_store_address (self:store) : bool = (Pbrt.Bitfield.get self._presence 0)
+
+let[@inline] set_store_address (self:store) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.address <- x
+let[@inline] set_store_employees (self:store) (x:person list) : unit =
+  self.employees <- x
+let[@inline] set_store_clients (self:store) (x:person list) : unit =
+  self.clients <- x
+
+let copy_store (self:store) : store =
+  { self with address = self.address }
+
+let make_store 
   ?(address:string option)
   ~(employees:person list) 
   ~(clients:person list) 
   () : store  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let address=(match address with
-  | None -> ""
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  { _presence= !_presence;address;employees;clients }
-let[@inline] has_store_address (self:store) : bool = (Pbrt.Bitfield.get self._presence 0)
+  let _res = default_store () in
+  (match address with
+  | None -> ()
+  | Some v -> set_store_address _res v);
+  set_store_employees _res employees;
+  set_store_clients _res clients;
+  _res
 
-let rec make_company 
+let[@inline] has_company_name (self:company) : bool = (Pbrt.Bitfield.get self._presence 0)
+
+let[@inline] set_company_name (self:company) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.name <- x
+let[@inline] set_company_stores (self:company) (x:store list) : unit =
+  self.stores <- x
+let[@inline] set_company_subsidiaries (self:company) (x:company list) : unit =
+  self.subsidiaries <- x
+
+let copy_company (self:company) : company =
+  { self with name = self.name }
+
+let make_company 
   ?(name:string option)
   ~(stores:store list) 
   ~(subsidiaries:company list) 
   () : company  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let name=(match name with
-  | None -> ""
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  { _presence= !_presence;name;stores;subsidiaries }
-let[@inline] has_company_name (self:company) : bool = (Pbrt.Bitfield.get self._presence 0)
+  let _res = default_company () in
+  (match name with
+  | None -> ()
+  | Some v -> set_company_name _res v);
+  set_company_stores _res stores;
+  set_company_subsidiaries _res subsidiaries;
+  _res
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)
 
@@ -162,25 +154,25 @@ let rec pp_company fmt (v:company) =
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf Encoding} *)
 
 let rec encode_pb_person (v:person) encoder = 
   if (Pbrt.Bitfield.get v._presence 0) then (
-  Pbrt.Encoder.string v.name encoder;
-  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+    Pbrt.Encoder.string v.name encoder;
+    Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   );
   if (Pbrt.Bitfield.get v._presence 1) then (
-  Pbrt.Encoder.int64_as_zigzag v.age encoder;
-  Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
+    Pbrt.Encoder.int64_as_zigzag v.age encoder;
+    Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
   );
   ()
 
 let rec encode_pb_store (v:store) encoder = 
   if (Pbrt.Bitfield.get v._presence 0) then (
-  Pbrt.Encoder.string v.address encoder;
-  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+    Pbrt.Encoder.string v.address encoder;
+    Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   );
   Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.nested encode_pb_person x encoder;
@@ -194,8 +186,8 @@ let rec encode_pb_store (v:store) encoder =
 
 let rec encode_pb_company (v:company) encoder = 
   if (Pbrt.Bitfield.get v._presence 0) then (
-  Pbrt.Encoder.string v.name encoder;
-  Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
+    Pbrt.Encoder.string v.name encoder;
+    Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   );
   Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.nested encode_pb_store x encoder;
@@ -207,101 +199,85 @@ let rec encode_pb_company (v:company) encoder =
   ) v.subsidiaries encoder;
   ()
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf Decoding} *)
 
 let rec decode_pb_person d =
-  let v = default_person_mutable () in
+  let v = default_person () in
   let continue__= ref true in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 0;
-      v.name <- Pbrt.Decoder.string d;
+      set_person_name v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 1;
-      v.age <- Pbrt.Decoder.int64_as_zigzag d;
+      set_person_age v (Pbrt.Decoder.int64_as_zigzag d);
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ({
-    _presence = v._presence;
-    name = v.name;
-    age = v.age;
-  } : person)
+  (v : person)
 
 let rec decode_pb_store d =
-  let v = default_store_mutable () in
+  let v = default_store () in
   let continue__= ref true in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
-      v.clients <- List.rev v.clients;
-      v.employees <- List.rev v.employees;
+      (* put lists in the correct order *)
+      set_store_clients v (List.rev v.clients);
+      set_store_employees v (List.rev v.employees);
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 0;
-      v.address <- Pbrt.Decoder.string d;
+      set_store_address v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(store), field(1)" pk
     | Some (2, Pbrt.Bytes) -> begin
-      v.employees <- (decode_pb_person (Pbrt.Decoder.nested d)) :: v.employees;
+      set_store_employees v ((decode_pb_person (Pbrt.Decoder.nested d)) :: v.employees);
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(store), field(2)" pk
     | Some (3, Pbrt.Bytes) -> begin
-      v.clients <- (decode_pb_person (Pbrt.Decoder.nested d)) :: v.clients;
+      set_store_clients v ((decode_pb_person (Pbrt.Decoder.nested d)) :: v.clients);
     end
     | Some (3, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(store), field(3)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ({
-    _presence = v._presence;
-    address = v.address;
-    employees = v.employees;
-    clients = v.clients;
-  } : store)
+  (v : store)
 
 let rec decode_pb_company d =
-  let v = default_company_mutable () in
+  let v = default_company () in
   let continue__= ref true in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
-      v.subsidiaries <- List.rev v.subsidiaries;
-      v.stores <- List.rev v.stores;
+      (* put lists in the correct order *)
+      set_company_subsidiaries v (List.rev v.subsidiaries);
+      set_company_stores v (List.rev v.stores);
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 0;
-      v.name <- Pbrt.Decoder.string d;
+      set_company_name v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(company), field(1)" pk
     | Some (2, Pbrt.Bytes) -> begin
-      v.stores <- (decode_pb_store (Pbrt.Decoder.nested d)) :: v.stores;
+      set_company_stores v ((decode_pb_store (Pbrt.Decoder.nested d)) :: v.stores);
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(company), field(2)" pk
     | Some (3, Pbrt.Bytes) -> begin
-      v.subsidiaries <- (decode_pb_company (Pbrt.Decoder.nested d)) :: v.subsidiaries;
+      set_company_subsidiaries v ((decode_pb_company (Pbrt.Decoder.nested d)) :: v.subsidiaries);
     end
     | Some (3, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(company), field(3)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ({
-    _presence = v._presence;
-    name = v.name;
-    stores = v.stores;
-    subsidiaries = v.subsidiaries;
-  } : company)
+  (v : company)

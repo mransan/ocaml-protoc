@@ -1,116 +1,109 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type div_by_zero = unit
 
 type i32 = {
-  _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
-  value : int32;
-}
-
-type add_req = {
-  _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 2 fields *)
-  a : int32;
-  b : int32;
-}
-
-type add_all_req = {
-  ints : int32 list;
-}
-
-type empty = unit
-
-let default_div_by_zero : div_by_zero = ()
-
-let default_i32: i32 = 
-{
-  _presence=Pbrt.Bitfield.empty;
-  value=0l;
-}
-
-let default_add_req: add_req = 
-{
-  _presence=Pbrt.Bitfield.empty;
-  a=0l;
-  b=0l;
-}
-
-let default_add_all_req: add_all_req = 
-{
-  ints=[];
-}
-
-let default_empty : empty = ()
-
-type i32_mutable = {
   mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
   mutable value : int32;
 }
 
-let default_i32_mutable () : i32_mutable = {
-  _presence = Pbrt.Bitfield.empty;
-  value = 0l;
-}
-
-type add_req_mutable = {
+type add_req = {
   mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 2 fields *)
   mutable a : int32;
   mutable b : int32;
 }
 
-let default_add_req_mutable () : add_req_mutable = {
-  _presence = Pbrt.Bitfield.empty;
-  a = 0l;
-  b = 0l;
-}
-
-type add_all_req_mutable = {
+type add_all_req = {
   mutable ints : int32 list;
 }
 
-let default_add_all_req_mutable () : add_all_req_mutable = {
-  ints = [];
+type empty = unit
+
+let default_div_by_zero : div_by_zero = ()
+
+let default_i32 (): i32 = 
+{
+  _presence=Pbrt.Bitfield.empty;
+  value=0l;
 }
+
+let default_add_req (): add_req = 
+{
+  _presence=Pbrt.Bitfield.empty;
+  a=0l;
+  b=0l;
+}
+
+let default_add_all_req (): add_all_req = 
+{
+  ints=[];
+}
+
+let default_empty : empty = ()
 
 
 (** {2 Make functions} *)
 
 
-let rec make_i32 
-  ?(value:int32 option)
-  () : i32  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let value=(match value with
-  | None -> 0l
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  { _presence= !_presence;value }
 let[@inline] has_i32_value (self:i32) : bool = (Pbrt.Bitfield.get self._presence 0)
 
-let rec make_add_req 
-  ?(a:int32 option)
-  ?(b:int32 option)
-  () : add_req  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let a=(match a with
-  | None -> 0l
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  let b=(match b with
-  | None -> 0l
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
-  { _presence= !_presence;a;b }
+let[@inline] set_i32_value (self:i32) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.value <- x
+
+let copy_i32 (self:i32) : i32 =
+  { self with value = self.value }
+
+let make_i32 
+  ?(value:int32 option)
+  () : i32  =
+  let _res = default_i32 () in
+  (match value with
+  | None -> ()
+  | Some v -> set_i32_value _res v);
+  _res
+
 let[@inline] has_add_req_a (self:add_req) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] has_add_req_b (self:add_req) : bool = (Pbrt.Bitfield.get self._presence 1)
 
-let rec make_add_all_req 
+let[@inline] set_add_req_a (self:add_req) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.a <- x
+let[@inline] set_add_req_b (self:add_req) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.b <- x
+
+let copy_add_req (self:add_req) : add_req =
+  { self with a = self.a }
+
+let make_add_req 
+  ?(a:int32 option)
+  ?(b:int32 option)
+  () : add_req  =
+  let _res = default_add_req () in
+  (match a with
+  | None -> ()
+  | Some v -> set_add_req_a _res v);
+  (match b with
+  | None -> ()
+  | Some v -> set_add_req_b _res v);
+  _res
+
+
+let[@inline] set_add_all_req_ints (self:add_all_req) (x:int32 list) : unit =
+  self.ints <- x
+
+let copy_add_all_req (self:add_all_req) : add_all_req =
+  { self with ints = self.ints }
+
+let make_add_all_req 
   ~(ints:int32 list) 
   () : add_all_req  =
-  { ints }
+  let _res = default_add_all_req () in
+  set_add_all_req_ints _res ints;
+  _res
 
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)
 
@@ -148,7 +141,7 @@ let rec pp_empty fmt (v:empty) =
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf Encoding} *)
 
@@ -157,19 +150,19 @@ let rec encode_pb_div_by_zero (v:div_by_zero) encoder =
 
 let rec encode_pb_i32 (v:i32) encoder = 
   if (Pbrt.Bitfield.get v._presence 0) then (
-  Pbrt.Encoder.int32_as_varint v.value encoder;
-  Pbrt.Encoder.key 0 Pbrt.Varint encoder; 
+    Pbrt.Encoder.int32_as_varint v.value encoder;
+    Pbrt.Encoder.key 0 Pbrt.Varint encoder; 
   );
   ()
 
 let rec encode_pb_add_req (v:add_req) encoder = 
   if (Pbrt.Bitfield.get v._presence 0) then (
-  Pbrt.Encoder.int32_as_varint v.a encoder;
-  Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
+    Pbrt.Encoder.int32_as_varint v.a encoder;
+    Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
   );
   if (Pbrt.Bitfield.get v._presence 1) then (
-  Pbrt.Encoder.int32_as_varint v.b encoder;
-  Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
+    Pbrt.Encoder.int32_as_varint v.b encoder;
+    Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
   );
   ()
 
@@ -185,7 +178,7 @@ let rec encode_pb_add_all_req (v:add_all_req) encoder =
 let rec encode_pb_empty (v:empty) encoder = 
 ()
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf Decoding} *)
 
@@ -196,70 +189,59 @@ let rec decode_pb_div_by_zero d =
     Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(div_by_zero)" pk
 
 let rec decode_pb_i32 d =
-  let v = default_i32_mutable () in
+  let v = default_i32 () in
   let continue__= ref true in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
     ); continue__ := false
     | Some (0, Pbrt.Varint) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 0;
-      v.value <- Pbrt.Decoder.int32_as_varint d;
+      set_i32_value v (Pbrt.Decoder.int32_as_varint d);
     end
     | Some (0, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(i32), field(0)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ({
-    _presence = v._presence;
-    value = v.value;
-  } : i32)
+  (v : i32)
 
 let rec decode_pb_add_req d =
-  let v = default_add_req_mutable () in
+  let v = default_add_req () in
   let continue__= ref true in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Varint) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 0;
-      v.a <- Pbrt.Decoder.int32_as_varint d;
+      set_add_req_a v (Pbrt.Decoder.int32_as_varint d);
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_req), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      v._presence <- Pbrt.Bitfield.set v._presence 1;
-      v.b <- Pbrt.Decoder.int32_as_varint d;
+      set_add_req_b v (Pbrt.Decoder.int32_as_varint d);
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_req), field(2)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ({
-    _presence = v._presence;
-    a = v.a;
-    b = v.b;
-  } : add_req)
+  (v : add_req)
 
 let rec decode_pb_add_all_req d =
-  let v = default_add_all_req_mutable () in
+  let v = default_add_all_req () in
   let continue__= ref true in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
-      v.ints <- List.rev v.ints;
+      (* put lists in the correct order *)
+      set_add_all_req_ints v (List.rev v.ints);
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      v.ints <- Pbrt.Decoder.packed_fold (fun l d -> (Pbrt.Decoder.int32_as_varint d)::l) [] d;
+      set_add_all_req_ints v @@ Pbrt.Decoder.packed_fold (fun l d -> (Pbrt.Decoder.int32_as_varint d)::l) [] d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_all_req), field(1)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ({
-    ints = v.ints;
-  } : add_all_req)
+  (v : add_all_req)
 
 let rec decode_pb_empty d =
   match Pbrt.Decoder.key d with
@@ -267,7 +249,7 @@ let rec decode_pb_empty d =
   | Some (_, pk) -> 
     Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf YoJson Encoding} *)
 
@@ -277,17 +259,17 @@ Pbrt_yojson.make_unit v
 let rec encode_json_i32 (v:i32) = 
   let assoc = ref [] in
   if (Pbrt.Bitfield.get v._presence 0) then (
-  assoc := ("value", Pbrt_yojson.make_int (Int32.to_int v.value)) :: !assoc;
+    assoc := ("value", Pbrt_yojson.make_int (Int32.to_int v.value)) :: !assoc;
   );
   `Assoc !assoc
 
 let rec encode_json_add_req (v:add_req) = 
   let assoc = ref [] in
   if (Pbrt.Bitfield.get v._presence 0) then (
-  assoc := ("a", Pbrt_yojson.make_int (Int32.to_int v.a)) :: !assoc;
+    assoc := ("a", Pbrt_yojson.make_int (Int32.to_int v.a)) :: !assoc;
   );
   if (Pbrt.Bitfield.get v._presence 1) then (
-  assoc := ("b", Pbrt_yojson.make_int (Int32.to_int v.b)) :: !assoc;
+    assoc := ("b", Pbrt_yojson.make_int (Int32.to_int v.b)) :: !assoc;
   );
   `Assoc !assoc
 
@@ -302,7 +284,7 @@ let rec encode_json_add_all_req (v:add_all_req) =
 let rec encode_json_empty (v:empty) = 
 Pbrt_yojson.make_unit v
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 JSON Decoding} *)
 
@@ -310,14 +292,14 @@ let rec decode_json_div_by_zero d =
 Pbrt_yojson.unit d "div_by_zero" "empty record"
 
 let rec decode_json_i32 d =
-  let v = default_i32_mutable () in
+  let v = default_i32 () in
   let assoc = match d with
     | `Assoc assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("value", json_value) -> 
-      v.value <- Pbrt_yojson.int32 json_value "i32" "value"
+      set_i32_value v (Pbrt_yojson.int32 json_value "i32" "value")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -327,16 +309,16 @@ let rec decode_json_i32 d =
   } : i32)
 
 let rec decode_json_add_req d =
-  let v = default_add_req_mutable () in
+  let v = default_add_req () in
   let assoc = match d with
     | `Assoc assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("a", json_value) -> 
-      v.a <- Pbrt_yojson.int32 json_value "add_req" "a"
+      set_add_req_a v (Pbrt_yojson.int32 json_value "add_req" "a")
     | ("b", json_value) -> 
-      v.b <- Pbrt_yojson.int32 json_value "add_req" "b"
+      set_add_req_b v (Pbrt_yojson.int32 json_value "add_req" "b")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -347,14 +329,14 @@ let rec decode_json_add_req d =
   } : add_req)
 
 let rec decode_json_add_all_req d =
-  let v = default_add_all_req_mutable () in
+  let v = default_add_all_req () in
   let assoc = match d with
     | `Assoc assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("ints", `List l) -> begin
-      v.ints <- List.map (function
+      set_add_all_req_ints v @@ List.map (function
         | json_value -> Pbrt_yojson.int32 json_value "add_all_req" "ints"
       ) l;
     end

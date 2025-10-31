@@ -7,24 +7,24 @@
 
 (** {2 Types} *)
 
-type file_chunk = {
-  _presence: Pbrt.Bitfield.t;
+type file_chunk = private {
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 3 fields *)
-  path : string;
-  data : bytes;
-  crc : int32;
+  mutable path : string;
+  mutable data : bytes;
+  mutable crc : int32;
 }
 
-type file_path = {
-  _presence: Pbrt.Bitfield.t;
+type file_path = private {
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
-  path : string;
+  mutable path : string;
 }
 
-type file_crc = {
-  _presence: Pbrt.Bitfield.t;
+type file_crc = private {
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 1 fields *)
-  crc : int32;
+  mutable crc : int32;
 }
 
 type empty = unit
@@ -36,14 +36,14 @@ type pong = unit
 
 (** {2 Basic values} *)
 
-val default_file_chunk : file_chunk 
-(** [default_file_chunk] is the default value for type [file_chunk] *)
+val default_file_chunk : unit -> file_chunk 
+(** [default_file_chunk ()] is a new empty value for type [file_chunk] *)
 
-val default_file_path : file_path 
-(** [default_file_path] is the default value for type [file_path] *)
+val default_file_path : unit -> file_path 
+(** [default_file_path ()] is a new empty value for type [file_path] *)
 
-val default_file_crc : file_crc 
-(** [default_file_crc] is the default value for type [file_crc] *)
+val default_file_crc : unit -> file_crc 
+(** [default_file_crc ()] is a new empty value for type [file_crc] *)
 
 val default_empty : unit
 (** [default_empty] is the default value for type [empty] *)
@@ -65,14 +65,25 @@ val make_file_chunk :
   file_chunk
 (** [make_file_chunk … ()] is a builder for type [file_chunk] *)
 
+val copy_file_chunk : file_chunk -> file_chunk
+
 val has_file_chunk_path : file_chunk -> bool
   (** presence of field "path" in [file_chunk] *)
+
+val set_file_chunk_path : file_chunk -> string -> unit
+  (** set field path in file_chunk *)
 
 val has_file_chunk_data : file_chunk -> bool
   (** presence of field "data" in [file_chunk] *)
 
+val set_file_chunk_data : file_chunk -> bytes -> unit
+  (** set field data in file_chunk *)
+
 val has_file_chunk_crc : file_chunk -> bool
   (** presence of field "crc" in [file_chunk] *)
+
+val set_file_chunk_crc : file_chunk -> int32 -> unit
+  (** set field crc in file_chunk *)
 
 val make_file_path : 
   ?path:string ->
@@ -80,8 +91,13 @@ val make_file_path :
   file_path
 (** [make_file_path … ()] is a builder for type [file_path] *)
 
+val copy_file_path : file_path -> file_path
+
 val has_file_path_path : file_path -> bool
   (** presence of field "path" in [file_path] *)
+
+val set_file_path_path : file_path -> string -> unit
+  (** set field path in file_path *)
 
 val make_file_crc : 
   ?crc:int32 ->
@@ -89,8 +105,13 @@ val make_file_crc :
   file_crc
 (** [make_file_crc … ()] is a builder for type [file_crc] *)
 
+val copy_file_crc : file_crc -> file_crc
+
 val has_file_crc_crc : file_crc -> bool
   (** presence of field "crc" in [file_crc] *)
+
+val set_file_crc_crc : file_crc -> int32 -> unit
+  (** set field crc in file_crc *)
 
 
 

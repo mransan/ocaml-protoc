@@ -1,4 +1,4 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type payment_system =
   | Cash 
@@ -7,10 +7,10 @@ type payment_system =
   | App 
 
 type person_location = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 2 fields *)
-  lat : float;
-  lng : float;
+  mutable lat : float;
+  mutable lng : float;
 }
 
 type person_id2 =
@@ -19,28 +19,28 @@ type person_id2 =
   | Z of float
 
 and person = {
-  _presence: Pbrt.Bitfield.t;
+  mutable _presence: Pbrt.Bitfield.t;
   (** tracking presence for 4 fields *)
-  id : int64;
-  email : string;
-  name : string;
-  home : person_location option;
-  picture : bytes;
-  id2 : person_id2 option;
+  mutable id : int64;
+  mutable email : string;
+  mutable name : string;
+  mutable home : person_location option;
+  mutable picture : bytes;
+  mutable id2 : person_id2 option;
 }
 
-let default_payment_system = (Cash:payment_system)
+let default_payment_system () = (Cash:payment_system)
 
-let default_person_location: person_location = 
+let default_person_location (): person_location = 
 {
   _presence=Pbrt.Bitfield.empty;
   lat=0.;
   lng=0.;
 }
 
-let default_person_id2 : person_id2 = X ("")
+let default_person_id2 (): person_id2 = X ("")
 
-let default_person: person = 
+let default_person (): person = 
 {
   _presence=Pbrt.Bitfield.empty;
   id=0L;
@@ -55,23 +55,53 @@ let default_person: person =
 (** {2 Make functions} *)
 
 
-let rec make_person_location 
-  ?(lat:float option)
-  ?(lng:float option)
-  () : person_location  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let lat=(match lat with
-  | None -> 0.
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  let lng=(match lng with
-  | None -> 0.
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
-  { _presence= !_presence;lat;lng }
 let[@inline] has_person_location_lat (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] has_person_location_lng (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 1)
 
+let[@inline] set_person_location_lat (self:person_location) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.lat <- x
+let[@inline] set_person_location_lng (self:person_location) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lng <- x
 
-let rec make_person 
+let copy_person_location (self:person_location) : person_location =
+  { self with lat = self.lat }
+
+let make_person_location 
+  ?(lat:float option)
+  ?(lng:float option)
+  () : person_location  =
+  let _res = default_person_location () in
+  (match lat with
+  | None -> ()
+  | Some v -> set_person_location_lat _res v);
+  (match lng with
+  | None -> ()
+  | Some v -> set_person_location_lng _res v);
+  _res
+
+
+let[@inline] has_person_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] has_person_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] has_person_name (self:person) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] has_person_picture (self:person) : bool = (Pbrt.Bitfield.get self._presence 3)
+
+let[@inline] set_person_id (self:person) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.id <- x
+let[@inline] set_person_email (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.email <- x
+let[@inline] set_person_name (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.name <- x
+let[@inline] set_person_home (self:person) (x:person_location) : unit =
+  self.home <- Some x
+let[@inline] set_person_picture (self:person) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.picture <- x
+let[@inline] set_person_id2 (self:person) (x:person_id2) : unit =
+  self.id2 <- Some x
+
+let copy_person (self:person) : person =
+  { self with id = self.id }
+
+let make_person 
   ?(id:int64 option)
   ?(email:string option)
   ?(name:string option)
@@ -79,26 +109,28 @@ let rec make_person
   ?(picture:bytes option)
   ?(id2:person_id2 option)
   () : person  =
-  let _presence = ref Pbrt.Bitfield.empty in
-  let id=(match id with
-  | None -> 0L
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 0); v) in
-  let email=(match email with
-  | None -> ""
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 1); v) in
-  let name=(match name with
-  | None -> ""
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 2); v) in
-  let picture=(match picture with
-  | None -> Bytes.create 0
-  | Some v -> _presence := (Pbrt.Bitfield.set !_presence 3); v) in
-  { _presence= !_presence;id;email;name;home;picture;id2 }
-let[@inline] has_person_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
-let[@inline] has_person_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
-let[@inline] has_person_name (self:person) : bool = (Pbrt.Bitfield.get self._presence 2)
-let[@inline] has_person_picture (self:person) : bool = (Pbrt.Bitfield.get self._presence 3)
+  let _res = default_person () in
+  (match id with
+  | None -> ()
+  | Some v -> set_person_id _res v);
+  (match email with
+  | None -> ()
+  | Some v -> set_person_email _res v);
+  (match name with
+  | None -> ()
+  | Some v -> set_person_name _res v);
+  (match home with
+  | None -> ()
+  | Some v -> set_person_home _res v);
+  (match picture with
+  | None -> ()
+  | Some v -> set_person_picture _res v);
+  (match id2 with
+  | None -> ()
+  | Some v -> set_person_id2 _res v);
+  _res
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Dump of internal representation for generated OCaml types} *)
 

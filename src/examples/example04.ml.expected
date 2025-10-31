@@ -1,10 +1,10 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type int_list_nil = unit
 
 type int_list_cons = {
-  value : int;
-  next : int_list option;
+  mutable value : int;
+  mutable next : int_list option;
 }
 
 and int_list =
@@ -13,26 +13,40 @@ and int_list =
 
 let default_int_list_nil : int_list_nil = ()
 
-let default_int_list_cons: int_list_cons = 
+let default_int_list_cons (): int_list_cons = 
 {
   value=0;
   next=None;
 }
 
-let default_int_list : int_list = Cons (default_int_list_cons)
+let default_int_list (): int_list = Cons (default_int_list_cons ())
 
 
 (** {2 Make functions} *)
 
 
-let rec make_int_list_cons 
+
+let[@inline] set_int_list_cons_value (self:int_list_cons) (x:int) : unit =
+  self.value <- x
+let[@inline] set_int_list_cons_next (self:int_list_cons) (x:int_list) : unit =
+  self.next <- Some x
+
+let copy_int_list_cons (self:int_list_cons) : int_list_cons =
+  { self with value = self.value }
+
+let make_int_list_cons 
   ~(value:int) 
   ?(next:int_list option)
   () : int_list_cons  =
-  { value;next }
+  let _res = default_int_list_cons () in
+  set_int_list_cons_value _res value;
+  (match next with
+  | None -> ()
+  | Some v -> set_int_list_cons_next _res v);
+  _res
 
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)
 

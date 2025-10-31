@@ -1,14 +1,14 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type person = {
-  name : string;
-  id : int32;
-  email : string option;
-  phone : string list;
-  details : (string, string) Hashtbl.t;
+  mutable name : string;
+  mutable id : int32;
+  mutable email : string option;
+  mutable phone : string list;
+  mutable details : (string, string) Hashtbl.t;
 }
 
-let default_person: person = 
+let default_person (): person = 
 {
   name="";
   id=0l;
@@ -17,35 +17,42 @@ let default_person: person =
   details=Hashtbl.create 128;
 }
 
-type person_mutable = {
-  mutable name : string;
-  mutable id : int32;
-  mutable email : string option;
-  mutable phone : string list;
-  details : (string, string) Hashtbl.t;
-}
-
-let default_person_mutable () : person_mutable = {
-  name = "";
-  id = 0l;
-  email = None;
-  phone = [];
-  details = Hashtbl.create 128;
-}
-
 
 (** {2 Make functions} *)
 
-let rec make_person 
+
+let[@inline] set_person_name (self:person) (x:string) : unit =
+  self.name <- x
+let[@inline] set_person_id (self:person) (x:int32) : unit =
+  self.id <- x
+let[@inline] set_person_email (self:person) (x:string) : unit =
+  self.email <- Some x
+let[@inline] set_person_phone (self:person) (x:string list) : unit =
+  self.phone <- x
+let[@inline] set_person_details (self:person) (x:(string, string) Hashtbl.t) : unit =
+  self.details <- x
+
+let copy_person (self:person) : person =
+  { self with name = self.name }
+
+let make_person 
   ~(name:string) 
   ~(id:int32) 
   ?(email:string option)
   ~(phone:string list) 
   ~(details:(string, string) Hashtbl.t) 
   () : person  =
-  { name;id;email;phone;details }
+  let _res = default_person () in
+  set_person_name _res name;
+  set_person_id _res id;
+  (match email with
+  | None -> ()
+  | Some v -> set_person_email _res v);
+  set_person_phone _res phone;
+  set_person_details _res details;
+  _res
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)
 
@@ -59,7 +66,7 @@ let rec pp_person fmt (v:person) =
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf Encoding} *)
 
@@ -89,37 +96,38 @@ let rec encode_pb_person (v:person) encoder =
   ) v.details;
   ()
 
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Protobuf Decoding} *)
 
 let rec decode_pb_person d =
-  let v = default_person_mutable () in
+  let v = default_person () in
   let continue__= ref true in
   let id_is_set = ref false in
   let name_is_set = ref false in
   while !continue__ do
     match Pbrt.Decoder.key d with
     | None -> (
-      v.phone <- List.rev v.phone;
+      (* put lists in the correct order *)
+      set_person_phone v (List.rev v.phone);
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      v.name <- Pbrt.Decoder.string d; name_is_set := true;
+      set_person_name v (Pbrt.Decoder.string d); name_is_set := true;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      v.id <- Pbrt.Decoder.int32_as_varint d; id_is_set := true;
+      set_person_id v (Pbrt.Decoder.int32_as_varint d); id_is_set := true;
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
     | Some (3, Pbrt.Bytes) -> begin
-      v.email <- Some (Pbrt.Decoder.string d);
+      set_person_email v (Pbrt.Decoder.string d);
     end
     | Some (3, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(3)" pk
     | Some (4, Pbrt.Bytes) -> begin
-      v.phone <- (Pbrt.Decoder.string d) :: v.phone;
+      set_person_phone v ((Pbrt.Decoder.string d) :: v.phone);
     end
     | Some (4, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(4)" pk
@@ -136,10 +144,4 @@ let rec decode_pb_person d =
   done;
   begin if not !id_is_set then Pbrt.Decoder.missing_field "id" end;
   begin if not !name_is_set then Pbrt.Decoder.missing_field "name" end;
-  ({
-    name = v.name;
-    id = v.id;
-    email = v.email;
-    phone = v.phone;
-    details = v.details;
-  } : person)
+  (v : person)
