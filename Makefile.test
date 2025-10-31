@@ -38,6 +38,8 @@ PROTOC     = $(PB_INSTALL)/bin/protoc
 
 export LD_LIBRARY_PATH=$(PB_LINC)
 
+build-test-data: build-test-data-yojson
+
 $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
 	cd $(OCAMLOPTIONS_HINC) && \
 		$(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
@@ -87,7 +89,7 @@ integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 
 YOJSON_DIR=src/tests/yojson
 OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
-test-yojson:
+build-test-data-yojson:
 	$(PROTOC) \
 		--cpp_out $(YOJSON_DIR) \
 		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
@@ -100,7 +102,11 @@ test-yojson:
 		-l protobuf \
 		-o $(YOJSON_DIR)/yojson.exe
 	cd $(YOJSON_DIR) && ./yojson.exe
+
+YOJSON_DIR=src/tests/yojson
+OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
+test-yojson: build-test-data-yojson
 	dune runtest $(YOJSON_DIR)
 
 .PHONY: all-tests
-all-tests: tests test-yojson integration
+all-tests: build-test-data tests test-yojson integration
