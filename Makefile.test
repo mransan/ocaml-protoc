@@ -87,23 +87,20 @@ integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 
 YOJSON_DIR=src/tests/yojson
 OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
-yojson:
-	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
+test-yojson:
 	$(PROTOC) \
 		--cpp_out $(YOJSON_DIR) \
 		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
 		$(YOJSON_DIR)/yojson_unittest.proto
-	$(OCB) $(OCB_YOJSON) -I $(YOJSON_DIR) yojson_unittest_ml.byte
 	$(CXX) \
 		$(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
 		$(YOJSON_DIR)/yojson_unittest_cpp.cpp $(YOJSON_DIR)/yojson_unittest.pb.cc \
 		-L $(PB_LINC) \
 		-l protobuf \
-		-o $@
-	@# Rename cpp executable to something clearer (ie yojson-cpp)
-	./yojson
-	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
+		-o $(YOJSON_DIR)/yojson.exe
+	cd $(YOJSON_DIR) && ./yojson.exe
+	dune runtest $(YOJSON_DIR)
 
 .PHONY: all-tests
-all-tests: tests yojson integration
+all-tests: tests test-yojson integration
