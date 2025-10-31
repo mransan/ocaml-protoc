@@ -16,6 +16,7 @@
     (pbrt (= :version))
     (pbrt_yojson (and (= :version) :with-test))
     (pbrt_services (and (= :version) :with-test))
+    (ppx_deriving :with-test)
     (ocaml (>= 4.08)))
   (tags (protoc protobuf codegen)))
 
