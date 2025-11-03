@@ -8,7 +8,6 @@ type default_info = Pb_codegen_default.default_info = {
   default_value: string;
   optional: bool;  (** Are we passing an option? *)
   rfp: Pb_codegen_ocaml_type.record_field_presence;
-  in_bitfield: bool;
   bitfield_idx: int;
 }
 
@@ -26,11 +25,13 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
   (* generate [has_field] accessors *)
   List.iter
     (fun (d : default_info) ->
-      if d.in_bitfield then
+      match d.rfp with
+      | Rfp_bitfield _ ->
         F.linep sc "let[@inline] has_%s_%s (self:%s) : bool = %s" r_name d.fname
           r_name
           (Pb_codegen_util.presence_get ~bv:"self._presence" ~idx:d.bitfield_idx
-             ()))
+             ())
+      | _ -> ())
     fields;
   F.line sc "";
 
@@ -40,15 +41,13 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
       F.linep sc "let[@inline] set_%s_%s (self:%s) (x:%s) : unit =" r_name
         d.fname r_name d.ftype_underlying;
       F.sub_scope sc (fun sc ->
-          if d.in_bitfield then
+          match d.rfp with
+          | Rfp_bitfield idx ->
             F.linep sc "self._presence <- %s; self.%s <- x"
-              (Pb_codegen_util.presence_set ~bv:"self._presence"
-                 ~idx:d.bitfield_idx ())
+              (Pb_codegen_util.presence_set ~bv:"self._presence" ~idx ())
               d.fname
-          else if d.optional then
-            F.linep sc "self.%s <- Some x" d.fname
-          else
-            F.linep sc "self.%s <- x" d.fname))
+          | Rfp_wrapped_option -> F.linep sc "self.%s <- Some x" d.fname
+          | Rfp_list | Rfp_always -> F.linep sc "self.%s <- x" d.fname))
     fields;
   F.line sc "";
 
@@ -62,12 +61,11 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun (d : default_info) ->
-          if d.in_bitfield then
-            F.linep sc "?(%s:%s option)" d.fname d.ftype
-          else if d.optional then
-            F.linep sc "?(%s:%s)" d.fname d.ftype
-          else
-            F.linep sc "~(%s:%s) " d.fname d.ftype)
+          match d.rfp with
+          | Rfp_bitfield _ -> F.linep sc "?(%s:%s option)" d.fname d.ftype
+          | Rfp_wrapped_option -> F.linep sc "?(%s:%s)" d.fname d.ftype
+          | Rfp_list -> F.linep sc "?(%s=[])" d.fname
+          | Rfp_always -> F.linep sc "~(%s:%s) " d.fname d.ftype)
         fields;
       F.linep sc "() : %s  =" r_name);
   F.sub_scope sc (fun sc ->
@@ -106,10 +104,10 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun d ->
-          if d.optional then
+          match d.rfp with
+          | Rfp_bitfield _ | Rfp_wrapped_option | Rfp_list ->
             F.linep sc "?%s:%s ->" d.fname d.ftype_underlying
-          else
-            F.linep sc "%s:%s ->" d.fname d.ftype)
+          | Rfp_always -> F.linep sc "%s:%s ->" d.fname d.ftype)
         fields;
       F.line sc "unit ->";
       F.line sc r_name);
@@ -121,11 +119,12 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
 
   List.iter
     (fun (d : default_info) ->
-      if d.in_bitfield then (
+      (match d.rfp with
+      | Rfp_bitfield _ ->
         F.line sc "";
         F.linep sc "val has_%s_%s : %s -> bool" r_name d.fname r_name;
         F.linep sc "  (** presence of field %S in [%s] *)" d.fname r_name
-      );
+      | _ -> ());
 
       F.line sc "";
       F.linep sc "val set_%s_%s : %s -> %s -> unit" r_name d.fname r_name

@@ -10,7 +10,6 @@ type default_info = {
   default_value: string;  (** Default value if not provided *)
   optional: bool;  (** Are we passing an option? *)
   rfp: Pb_codegen_ocaml_type.record_field_presence;
-  in_bitfield: bool;
   bitfield_idx: int;
 }
 

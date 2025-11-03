@@ -47,7 +47,6 @@ type default_info = {
   default_value: string;  (** Code for the default value *)
   optional: bool;  (** Are we passing an option? *)
   rfp: Ot.record_field_presence;
-  in_bitfield: bool;
   bitfield_idx: int;
 }
 
@@ -101,12 +100,13 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
     | Ot.Rfp_wrapped_option -> "None", true
     | Ot.Rfp_bitfield _ -> default_value_of_field_type rf_field_type, true
     | Ot.Rfp_always -> default_value_of_field_type rf_field_type, false
+    | Ot.Rfp_list -> default_value_of_field_type rf_field_type, false
   in
 
-  let in_bitfield, bitfield_idx =
+  let bitfield_idx =
     match record_field.rf_presence with
-    | Ot.Rfp_bitfield idx -> true, idx
-    | _ -> false, -1
+    | Ot.Rfp_bitfield idx -> idx
+    | _ -> -1
   in
 
   {
@@ -116,16 +116,20 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
     ftype_underlying = type_string_underlying;
     optional;
     rfp = record_field.rf_presence;
-    in_bitfield;
     bitfield_idx;
   }
+
+let in_bitfield (d : default_info) : bool =
+  match d.rfp with
+  | Rfp_bitfield _ -> true
+  | _ -> false
 
 let gen_record { Ot.r_name; r_fields } sc : unit =
   let fields_default_info =
     List.map (fun r_field -> record_field_default_info r_field) r_fields
   in
   let len_bitfield =
-    List.filter (fun d -> d.in_bitfield) fields_default_info |> List.length
+    List.filter in_bitfield fields_default_info |> List.length
   in
 
   F.linep sc "let default_%s (): %s = " r_name r_name;

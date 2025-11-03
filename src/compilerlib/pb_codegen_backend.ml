@@ -522,6 +522,9 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
               | Ot.Rft_required _ -> Ot.Rfp_always
               | Ot.Rft_optional _ -> Ot.Rfp_wrapped_option
               | Ot.Rft_variant _ -> generate_bitfield_or_fallback_on_optional ()
+              | Ot.Rft_associative (Ot.At_list, _, _, _)
+              | Ot.Rft_repeated (Ot.Rt_list, _, _, _, _) ->
+                Ot.Rfp_list
               | Ot.Rft_repeated _ | Ot.Rft_associative _ -> Ot.Rfp_always
             in
             let record_field =

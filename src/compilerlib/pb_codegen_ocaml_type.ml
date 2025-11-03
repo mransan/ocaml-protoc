@@ -104,8 +104,11 @@ type record_field_type =
 (** How do we wrap the field in the generated code? *)
 and record_field_presence =
   | Rfp_always
-  | Rfp_bitfield of int  (** Index in the bitfield *)
-  | Rfp_wrapped_option
+  | Rfp_bitfield of int
+      (** A field with a bitfield slot for presence (argument is the bitfield
+          offset) *)
+  | Rfp_wrapped_option  (** A field wrapped in option *)
+  | Rfp_list  (** A list of items *)
 
 and variant_constructor = {
   vc_constructor: string;
@@ -196,6 +199,6 @@ type proto = {
 
 let rfp_requires_bitfield = function
   | Rfp_bitfield _ -> true
-  | Rfp_always | Rfp_wrapped_option -> false
+  | Rfp_always | Rfp_wrapped_option | Rfp_list -> false
 
 let record_field_requires_bitfield r = rfp_requires_bitfield r.rf_presence
