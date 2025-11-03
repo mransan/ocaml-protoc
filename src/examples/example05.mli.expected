@@ -29,7 +29,7 @@ val make_person :
   id:int32 ->
   ?email:string ->
   ?phone:string list ->
-  details:(string, string) Hashtbl.t ->
+  ?details:(string, string) Hashtbl.t ->
   unit ->
   person
 (** [make_person … ()] is a builder for type [person] *)
