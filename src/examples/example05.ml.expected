@@ -39,7 +39,7 @@ let make_person
   ~(name:string) 
   ~(id:int32) 
   ?(email:string option)
-  ~(phone:string list) 
+  ?(phone=[])
   ~(details:(string, string) Hashtbl.t) 
   () : person  =
   let _res = default_person () in

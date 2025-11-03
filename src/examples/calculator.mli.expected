@@ -86,7 +86,7 @@ val set_add_req_b : add_req -> int32 -> unit
   (** set field b in add_req *)
 
 val make_add_all_req : 
-  ints:int32 list ->
+  ?ints:int32 list ->
   unit ->
   add_all_req
 (** [make_add_all_req … ()] is a builder for type [add_all_req] *)

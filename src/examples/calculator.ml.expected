@@ -96,7 +96,7 @@ let copy_add_all_req (self:add_all_req) : add_all_req =
   { self with ints = self.ints }
 
 let make_add_all_req 
-  ~(ints:int32 list) 
+  ?(ints=[])
   () : add_all_req  =
   let _res = default_add_all_req () in
   set_add_all_req_ints _res ints;

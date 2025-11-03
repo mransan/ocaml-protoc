@@ -87,8 +87,8 @@ let copy_store (self:store) : store =
 
 let make_store 
   ?(address:string option)
-  ~(employees:person list) 
-  ~(clients:person list) 
+  ?(employees=[])
+  ?(clients=[])
   () : store  =
   let _res = default_store () in
   (match address with
@@ -112,8 +112,8 @@ let copy_company (self:company) : company =
 
 let make_company 
   ?(name:string option)
-  ~(stores:store list) 
-  ~(subsidiaries:company list) 
+  ?(stores=[])
+  ?(subsidiaries=[])
   () : company  =
   let _res = default_company () in
   (match name with

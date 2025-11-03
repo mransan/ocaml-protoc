@@ -41,7 +41,7 @@ let make_person
   ?(name:string option)
   ?(id:int32 option)
   ?(email:string option)
-  ~(phone:string list) 
+  ?(phone=[])
   () : person  =
   let _res = default_person () in
   (match name with

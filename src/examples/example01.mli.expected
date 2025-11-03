@@ -29,7 +29,7 @@ val make_person :
   ?name:string ->
   ?id:int32 ->
   ?email:string ->
-  phone:string list ->
+  ?phone:string list ->
   unit ->
   person
 (** [make_person … ()] is a builder for type [person] *)

@@ -28,7 +28,7 @@ val make_person :
   name:string ->
   id:int32 ->
   ?email:string ->
-  phone:string list ->
+  ?phone:string list ->
   details:(string, string) Hashtbl.t ->
   unit ->
   person

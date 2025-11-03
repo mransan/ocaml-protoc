@@ -68,8 +68,8 @@ val set_person_age : person -> int64 -> unit
 
 val make_store : 
   ?address:string ->
-  employees:person list ->
-  clients:person list ->
+  ?employees:person list ->
+  ?clients:person list ->
   unit ->
   store
 (** [make_store … ()] is a builder for type [store] *)
@@ -90,8 +90,8 @@ val set_store_clients : store -> person list -> unit
 
 val make_company : 
   ?name:string ->
-  stores:store list ->
-  subsidiaries:company list ->
+  ?stores:store list ->
+  ?subsidiaries:company list ->
   unit ->
   company
 (** [make_company … ()] is a builder for type [company] *)
