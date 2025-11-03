@@ -632,7 +632,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = is_mutable ~field_name:map_name map_options;
                   rf_options = map_options;
-                  rf_presence = Ot.Rfp_always;
+                  rf_presence = Ot.Rfp_repeated;
                 }
             in
 
