@@ -23,7 +23,7 @@ type ping = unit
 
 type pong = unit
 
-let default_file_chunk (): file_chunk = 
+let default_file_chunk (): file_chunk =
 {
   _presence=Pbrt.Bitfield.empty;
   path="";
@@ -31,13 +31,13 @@ let default_file_chunk (): file_chunk =
   crc=0l;
 }
 
-let default_file_path (): file_path = 
+let default_file_path (): file_path =
 {
   _presence=Pbrt.Bitfield.empty;
   path="";
 }
 
-let default_file_crc (): file_crc = 
+let default_file_crc (): file_crc =
 {
   _presence=Pbrt.Bitfield.empty;
   crc=0l;

@@ -21,20 +21,20 @@ type empty = unit
 
 let default_div_by_zero : div_by_zero = ()
 
-let default_i32 (): i32 = 
+let default_i32 (): i32 =
 {
   _presence=Pbrt.Bitfield.empty;
   value=0l;
 }
 
-let default_add_req (): add_req = 
+let default_add_req (): add_req =
 {
   _presence=Pbrt.Bitfield.empty;
   a=0l;
   b=0l;
 }
 
-let default_add_all_req (): add_all_req = 
+let default_add_all_req (): add_all_req =
 {
   ints=[];
 }

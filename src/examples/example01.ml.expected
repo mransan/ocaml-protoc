@@ -8,7 +8,7 @@ type person = {
   mutable phone : string list;
 }
 
-let default_person (): person = 
+let default_person (): person =
 {
   _presence=Pbrt.Bitfield.empty;
   name="";

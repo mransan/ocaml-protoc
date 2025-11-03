@@ -29,7 +29,7 @@ and person = {
 
 let default_payment_system () = (Cash:payment_system)
 
-let default_person_location (): person_location = 
+let default_person_location (): person_location =
 {
   _presence=Pbrt.Bitfield.empty;
   lat=0.;
@@ -38,7 +38,7 @@ let default_person_location (): person_location =
 
 let default_person_id2 (): person_id2 = X ("")
 
-let default_person (): person = 
+let default_person (): person =
 {
   _presence=Pbrt.Bitfield.empty;
   id=0L;

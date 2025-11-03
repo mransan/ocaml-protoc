@@ -8,7 +8,7 @@ type person = {
   mutable details : (string, string) Hashtbl.t;
 }
 
-let default_person (): person = 
+let default_person (): person =
 {
   name="";
   id=0l;

@@ -20,14 +20,14 @@ type company = {
   mutable subsidiaries : company list;
 }
 
-let default_person (): person = 
+let default_person (): person =
 {
   _presence=Pbrt.Bitfield.empty;
   name="";
   age=0L;
 }
 
-let default_store (): store = 
+let default_store (): store =
 {
   _presence=Pbrt.Bitfield.empty;
   address="";
@@ -35,7 +35,7 @@ let default_store (): store =
   clients=[];
 }
 
-let default_company (): company = 
+let default_company (): company =
 {
   _presence=Pbrt.Bitfield.empty;
   name="";

@@ -132,7 +132,7 @@ let gen_record { Ot.r_name; r_fields } sc : unit =
     List.filter in_bitfield fields_default_info |> List.length
   in
 
-  F.linep sc "let default_%s (): %s = " r_name r_name;
+  F.linep sc "let default_%s (): %s =" r_name r_name;
 
   F.linep sc "{";
   F.sub_scope sc (fun sc ->
