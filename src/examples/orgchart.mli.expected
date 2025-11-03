@@ -8,23 +8,20 @@
 (** {2 Types} *)
 
 type person = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 2 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable name : string;
   mutable age : int64;
 }
 
 type store = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable address : string;
   mutable employees : person list;
   mutable clients : person list;
 }
 
 type company = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable stores : store list;
   mutable subsidiaries : company list;

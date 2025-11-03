@@ -1,8 +1,7 @@
 [@@@ocaml.warning "-23-27-30-39-44"]
 
 type person = {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 3 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 3 fields *)
   mutable name : string;
   mutable id : int32;
   mutable email : string;

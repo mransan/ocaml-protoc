@@ -8,8 +8,7 @@
 (** {2 Types} *)
 
 type file_path = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable path : string;
 }
 

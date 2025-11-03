@@ -20,10 +20,10 @@ let gen_record ?and_ ~as_private { Ot.r_name; r_fields } sc =
 
   F.linep sc "%s %s = %s{" (type_decl_of_and and_) r_name priv_qualifier;
   F.sub_scope sc (fun sc ->
-      if insert_bitfield then (
-        F.linep sc "mutable _presence: Pbrt.Bitfield.t;";
-        F.linep sc "(** tracking presence for %d fields *)" len_bitfield
-      );
+      if insert_bitfield then
+        F.linep sc
+          "mutable _presence: Pbrt.Bitfield.t; (** presence for %d fields *)"
+          len_bitfield;
       List.iter
         (fun { Ot.rf_label; rf_field_type; _ } ->
           let type_ =

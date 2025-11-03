@@ -1,8 +1,7 @@
 [@@@ocaml.warning "-23-27-30-39-44"]
 
 type file_path = {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable path : string;
 }
 

@@ -8,22 +8,19 @@
 (** {2 Types} *)
 
 type file_chunk = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 3 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 3 fields *)
   mutable path : string;
   mutable data : bytes;
   mutable crc : int32;
 }
 
 type file_path = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable path : string;
 }
 
 type file_crc = private {
-  mutable _presence: Pbrt.Bitfield.t;
-  (** tracking presence for 1 fields *)
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable crc : int32;
 }
 
