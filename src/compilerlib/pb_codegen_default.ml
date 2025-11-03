@@ -82,7 +82,7 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
     | Ot.Rft_associative (at, _, _, _) ->
       (match at with
       | Ot.At_list -> "[]"
-      | Ot.At_hashtable -> "Hashtbl.create 128")
+      | Ot.At_hashtable -> "Hashtbl.create 8")
     | Ot.Rft_variant { Ot.v_constructors; _ } ->
       (* TODO This initial value could be configurable either via
          the default function or via a protobuf option. *)

@@ -14,7 +14,7 @@ let default_person (): person =
   id=0l;
   email=None;
   phone=[];
-  details=Hashtbl.create 128;
+  details=Hashtbl.create 8;
 }
 
 
@@ -40,7 +40,7 @@ let make_person
   ~(id:int32) 
   ?(email:string option)
   ?(phone=[])
-  ?(details=Hashtbl.create 128)
+  ?(details=Hashtbl.create 8)
   () : person  =
   let _res = default_person () in
   set_person_name _res name;
