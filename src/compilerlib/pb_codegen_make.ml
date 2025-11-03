@@ -47,7 +47,7 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
               (Pb_codegen_util.presence_set ~bv:"self._presence" ~idx ())
               d.fname
           | Rfp_wrapped_option -> F.linep sc "self.%s <- Some x" d.fname
-          | Rfp_list | Rfp_always -> F.linep sc "self.%s <- x" d.fname))
+          | Rfp_repeated | Rfp_always -> F.linep sc "self.%s <- x" d.fname))
     fields;
   F.line sc "";
 
@@ -64,7 +64,7 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
           match d.rfp with
           | Rfp_bitfield _ -> F.linep sc "?(%s:%s option)" d.fname d.ftype
           | Rfp_wrapped_option -> F.linep sc "?(%s:%s)" d.fname d.ftype
-          | Rfp_list -> F.linep sc "?(%s=[])" d.fname
+          | Rfp_repeated -> F.linep sc "?(%s=%s)" d.fname d.default_value
           | Rfp_always -> F.linep sc "~(%s:%s) " d.fname d.ftype)
         fields;
       F.linep sc "() : %s  =" r_name);
@@ -105,7 +105,7 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
       List.iter
         (fun d ->
           match d.rfp with
-          | Rfp_bitfield _ | Rfp_wrapped_option | Rfp_list ->
+          | Rfp_bitfield _ | Rfp_wrapped_option | Rfp_repeated ->
             F.linep sc "?%s:%s ->" d.fname d.ftype_underlying
           | Rfp_always -> F.linep sc "%s:%s ->" d.fname d.ftype)
         fields;

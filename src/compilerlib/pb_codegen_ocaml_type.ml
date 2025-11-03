@@ -108,7 +108,9 @@ and record_field_presence =
       (** A field with a bitfield slot for presence (argument is the bitfield
           offset) *)
   | Rfp_wrapped_option  (** A field wrapped in option *)
-  | Rfp_list  (** A list of items *)
+  | Rfp_repeated
+      (** Repeated field or map, no need to track presence but also we have a
+          good default *)
 
 and variant_constructor = {
   vc_constructor: string;
@@ -199,6 +201,6 @@ type proto = {
 
 let rfp_requires_bitfield = function
   | Rfp_bitfield _ -> true
-  | Rfp_always | Rfp_wrapped_option | Rfp_list -> false
+  | Rfp_always | Rfp_wrapped_option | Rfp_repeated -> false
 
 let record_field_requires_bitfield r = rfp_requires_bitfield r.rf_presence
