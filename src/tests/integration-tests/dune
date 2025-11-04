@@ -343,3 +343,16 @@
  (name test_make)
  (libraries pbrt)
  (modules test_make))
+
+(executable
+ (name perfetto_trace_ml)
+ (modules perfetto_trace_ml perfetto_trace)
+ (libraries test_util unix))
+
+(rule
+ (targets perfetto_trace.ml perfetto_trace.mli)
+ (deps
+  (:proto perfetto_trace.proto)
+  ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc --binary --pp --ml_out ./ %{proto})))
