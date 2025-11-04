@@ -504,8 +504,12 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   Ot.Rft_required
                     (ocaml_field_type, encoding_number, pk, field_default)
               | `Optional ->
-                Ot.Rft_optional
-                  (ocaml_field_type, encoding_number, pk, field_default)
+                if is_message then
+                  Ot.Rft_optional
+                    (ocaml_field_type, encoding_number, pk, field_default)
+                else
+                  Ot.Rft_nolabel (ocaml_field_type, encoding_number, pk)
+                (* use the bitfield! *)
               | `Repeated ->
                 let repeated_type =
                   match ocaml_container field_options with
@@ -526,10 +530,16 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                 (* always wrap other messages/variants in option *)
                 Ot.Rfp_wrapped_option
               | Ot.Rft_nolabel _ ->
-                (* proto3 submessage *)
+                (* proto3 non labelled field, or proto2 optional with immediate type *)
                 generate_bitfield_or_fallback_on_optional ()
               | Ot.Rft_required _ -> Ot.Rfp_always
-              | Ot.Rft_optional _ -> Ot.Rfp_wrapped_option
+              | Ot.Rft_optional (field_type, _, _, _) ->
+                (match field_type with
+                | Ot.Ft_unit | Ot.Ft_basic_type _ ->
+                  (* we have a bitfield, we can avoid the option *)
+                  generate_bitfield_or_fallback_on_optional ()
+                | Ot.Ft_user_defined_type _ | Ot.Ft_wrapper_type _ ->
+                  Ot.Rfp_wrapped_option)
               | Ot.Rft_variant _ -> generate_bitfield_or_fallback_on_optional ()
               | Ot.Rft_associative _ | Ot.Rft_repeated _ -> Ot.Rfp_repeated
             in
