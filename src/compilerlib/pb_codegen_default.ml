@@ -149,7 +149,7 @@ let gen_record { Ot.r_name; r_fields } sc : unit =
 let gen_unit { Ot.er_name } sc =
   F.linep sc "let default_%s : %s = ()" er_name er_name
 
-let gen_variant { Ot.v_name; Ot.v_constructors } sc =
+let gen_variant { Ot.v_name; Ot.v_constructors; v_use_polyvariant = _ } sc =
   match v_constructors with
   | [] -> failwith "programmatic TODO error"
   | { Ot.vc_constructor; vc_field_type; _ } :: _ ->

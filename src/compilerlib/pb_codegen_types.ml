@@ -35,9 +35,16 @@ let gen_record ?and_ ~as_private { Ot.r_name; r_fields } sc =
   F.line sc "}"
 
 let gen_variant ?and_ variant sc =
-  let { Ot.v_name; v_constructors } = variant in
+  let { Ot.v_name; v_constructors; v_use_polyvariant } = variant in
 
-  F.linep sc "%s %s =" (type_decl_of_and and_) v_name;
+  let openbrace =
+    if v_use_polyvariant then (
+      F.line sc "(* NOTE: too many constructors for a regular sum type *)";
+      " ["
+    ) else
+      ""
+  in
+  F.linep sc "%s %s =%s" (type_decl_of_and and_) v_name openbrace;
 
   F.sub_scope sc (fun sc ->
       List.iter
@@ -47,7 +54,9 @@ let gen_variant ?and_ variant sc =
           | Ot.Vct_non_nullary_constructor field_type ->
             let type_string = string_of_field_type field_type in
             F.linep sc "| %s of %s" vc_constructor type_string)
-        v_constructors)
+        v_constructors);
+  if v_use_polyvariant then F.line sc "]";
+  ()
 
 let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
   F.linep sc "%s %s =" (type_decl_of_and and_) cv_name;

@@ -127,6 +127,8 @@ and variant_constructor_type =
 and variant = {
   v_name: string;
   v_constructors: variant_constructor list;
+  v_use_polyvariant: bool;
+      (** We use a polymorphic variant, eg for large sum types *)
 }
 
 and record_field = {

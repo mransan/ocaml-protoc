@@ -300,6 +300,9 @@ let ocaml_container field_options =
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
     ~all_types file_options file_name oneof_field : Ot.variant =
+  (* OCaml has a limit of 244 non constant constructors *)
+  let v_use_polyvariant = List.length oneof_field.Tt.oneof_fields >= 244 in
+
   let v_constructors =
     List.map
       (fun field ->
@@ -315,6 +318,12 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
         in
 
         let vc_constructor = constructor_name (Typing_util.field_name field) in
+        let vc_constructor =
+          if v_use_polyvariant then
+            "`" ^ vc_constructor
+          else
+            vc_constructor
+        in
 
         Ot.
           {
@@ -335,7 +344,7 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
     | None -> type_name outer_message_names ""
     | Some () -> type_name outer_message_names oneof_field.Tt.oneof_name
   in
-  Ot.{ v_name; v_constructors }
+  Ot.{ v_name; v_constructors; v_use_polyvariant }
 
 (*
    Notes on type level PPX extension handling.
