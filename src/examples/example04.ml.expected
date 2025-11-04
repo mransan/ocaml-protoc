@@ -26,9 +26,9 @@ let default_int_list (): int_list = Cons (default_int_list_cons ())
 
 
 
-let[@inline] set_int_list_cons_value (self:int_list_cons) (x:int) : unit =
+let[@inline] int_list_cons_set_value (self:int_list_cons) (x:int) : unit =
   self.value <- x
-let[@inline] set_int_list_cons_next (self:int_list_cons) (x:int_list) : unit =
+let[@inline] int_list_cons_set_next (self:int_list_cons) (x:int_list) : unit =
   self.next <- Some x
 
 let copy_int_list_cons (self:int_list_cons) : int_list_cons =
@@ -39,10 +39,10 @@ let make_int_list_cons
   ?(next:int_list option)
   () : int_list_cons  =
   let _res = default_int_list_cons () in
-  set_int_list_cons_value _res value;
+  int_list_cons_set_value _res value;
   (match next with
   | None -> ()
-  | Some v -> set_int_list_cons_next _res v);
+  | Some v -> int_list_cons_set_next _res v);
   _res
 
 

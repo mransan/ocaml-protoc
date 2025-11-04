@@ -51,16 +51,16 @@ val make_person :
 
 val copy_person : person -> person
 
-val has_person_name : person -> bool
+val person_has_name : person -> bool
   (** presence of field "name" in [person] *)
 
-val set_person_name : person -> string -> unit
+val person_set_name : person -> string -> unit
   (** set field name in person *)
 
-val has_person_age : person -> bool
+val person_has_age : person -> bool
   (** presence of field "age" in [person] *)
 
-val set_person_age : person -> int64 -> unit
+val person_set_age : person -> int64 -> unit
   (** set field age in person *)
 
 val make_store : 
@@ -73,16 +73,16 @@ val make_store :
 
 val copy_store : store -> store
 
-val has_store_address : store -> bool
+val store_has_address : store -> bool
   (** presence of field "address" in [store] *)
 
-val set_store_address : store -> string -> unit
+val store_set_address : store -> string -> unit
   (** set field address in store *)
 
-val set_store_employees : store -> person list -> unit
+val store_set_employees : store -> person list -> unit
   (** set field employees in store *)
 
-val set_store_clients : store -> person list -> unit
+val store_set_clients : store -> person list -> unit
   (** set field clients in store *)
 
 val make_company : 
@@ -95,16 +95,16 @@ val make_company :
 
 val copy_company : company -> company
 
-val has_company_name : company -> bool
+val company_has_name : company -> bool
   (** presence of field "name" in [company] *)
 
-val set_company_name : company -> string -> unit
+val company_set_name : company -> string -> unit
   (** set field name in company *)
 
-val set_company_stores : company -> store list -> unit
+val company_set_stores : company -> store list -> unit
   (** set field stores in company *)
 
-val set_company_subsidiaries : company -> company list -> unit
+val company_set_subsidiaries : company -> company list -> unit
   (** set field subsidiaries in company *)
 
 

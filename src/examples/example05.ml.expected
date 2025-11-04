@@ -21,15 +21,15 @@ let default_person (): person =
 (** {2 Make functions} *)
 
 
-let[@inline] set_person_name (self:person) (x:string) : unit =
+let[@inline] person_set_name (self:person) (x:string) : unit =
   self.name <- x
-let[@inline] set_person_id (self:person) (x:int32) : unit =
+let[@inline] person_set_id (self:person) (x:int32) : unit =
   self.id <- x
-let[@inline] set_person_email (self:person) (x:string) : unit =
+let[@inline] person_set_email (self:person) (x:string) : unit =
   self.email <- Some x
-let[@inline] set_person_phone (self:person) (x:string list) : unit =
+let[@inline] person_set_phone (self:person) (x:string list) : unit =
   self.phone <- x
-let[@inline] set_person_details (self:person) (x:(string, string) Hashtbl.t) : unit =
+let[@inline] person_set_details (self:person) (x:(string, string) Hashtbl.t) : unit =
   self.details <- x
 
 let copy_person (self:person) : person =
@@ -43,13 +43,13 @@ let make_person
   ?(details=Hashtbl.create 8)
   () : person  =
   let _res = default_person () in
-  set_person_name _res name;
-  set_person_id _res id;
+  person_set_name _res name;
+  person_set_id _res id;
   (match email with
   | None -> ()
-  | Some v -> set_person_email _res v);
-  set_person_phone _res phone;
-  set_person_details _res details;
+  | Some v -> person_set_email _res v);
+  person_set_phone _res phone;
+  person_set_details _res details;
   _res
 
 [@@@ocaml.warning "-23-27-30-39"]
@@ -109,25 +109,25 @@ let rec decode_pb_person d =
     match Pbrt.Decoder.key d with
     | None -> (
       (* put lists in the correct order *)
-      set_person_phone v (List.rev v.phone);
+      person_set_phone v (List.rev v.phone);
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      set_person_name v (Pbrt.Decoder.string d); name_is_set := true;
+      person_set_name v (Pbrt.Decoder.string d); name_is_set := true;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      set_person_id v (Pbrt.Decoder.int32_as_varint d); id_is_set := true;
+      person_set_id v (Pbrt.Decoder.int32_as_varint d); id_is_set := true;
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
     | Some (3, Pbrt.Bytes) -> begin
-      set_person_email v (Pbrt.Decoder.string d);
+      person_set_email v (Pbrt.Decoder.string d);
     end
     | Some (3, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(3)" pk
     | Some (4, Pbrt.Bytes) -> begin
-      set_person_phone v ((Pbrt.Decoder.string d) :: v.phone);
+      person_set_phone v ((Pbrt.Decoder.string d) :: v.phone);
     end
     | Some (4, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(person), field(4)" pk

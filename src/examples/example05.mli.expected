@@ -36,19 +36,19 @@ val make_person :
 
 val copy_person : person -> person
 
-val set_person_name : person -> string -> unit
+val person_set_name : person -> string -> unit
   (** set field name in person *)
 
-val set_person_id : person -> int32 -> unit
+val person_set_id : person -> int32 -> unit
   (** set field id in person *)
 
-val set_person_email : person -> string -> unit
+val person_set_email : person -> string -> unit
   (** set field email in person *)
 
-val set_person_phone : person -> string list -> unit
+val person_set_phone : person -> string list -> unit
   (** set field phone in person *)
 
-val set_person_details : person -> (string, string) Hashtbl.t -> unit
+val person_set_details : person -> (string, string) Hashtbl.t -> unit
   (** set field details in person *)
 
 

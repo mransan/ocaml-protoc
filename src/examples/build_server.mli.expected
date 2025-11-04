@@ -34,10 +34,10 @@ val make_file_path :
 
 val copy_file_path : file_path -> file_path
 
-val has_file_path_path : file_path -> bool
+val file_path_has_path : file_path -> bool
   (** presence of field "path" in [file_path] *)
 
-val set_file_path_path : file_path -> string -> unit
+val file_path_set_path : file_path -> string -> unit
   (** set field path in file_path *)
 
 

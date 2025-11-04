@@ -56,10 +56,10 @@ val make_i32 :
 
 val copy_i32 : i32 -> i32
 
-val has_i32_value : i32 -> bool
+val i32_has_value : i32 -> bool
   (** presence of field "value" in [i32] *)
 
-val set_i32_value : i32 -> int32 -> unit
+val i32_set_value : i32 -> int32 -> unit
   (** set field value in i32 *)
 
 val make_add_req : 
@@ -71,16 +71,16 @@ val make_add_req :
 
 val copy_add_req : add_req -> add_req
 
-val has_add_req_a : add_req -> bool
+val add_req_has_a : add_req -> bool
   (** presence of field "a" in [add_req] *)
 
-val set_add_req_a : add_req -> int32 -> unit
+val add_req_set_a : add_req -> int32 -> unit
   (** set field a in add_req *)
 
-val has_add_req_b : add_req -> bool
+val add_req_has_b : add_req -> bool
   (** presence of field "b" in [add_req] *)
 
-val set_add_req_b : add_req -> int32 -> unit
+val add_req_set_b : add_req -> int32 -> unit
   (** set field b in add_req *)
 
 val make_add_all_req : 
@@ -91,7 +91,7 @@ val make_add_all_req :
 
 val copy_add_all_req : add_all_req -> add_all_req
 
-val set_add_all_req_ints : add_all_req -> int32 list -> unit
+val add_all_req_set_ints : add_all_req -> int32 list -> unit
   (** set field ints in add_all_req *)
 
 

@@ -18,9 +18,9 @@ let default_empty : empty = ()
 
 (** {2 Make functions} *)
 
-let[@inline] has_file_path_path (self:file_path) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] file_path_has_path (self:file_path) : bool = (Pbrt.Bitfield.get self._presence 0)
 
-let[@inline] set_file_path_path (self:file_path) (x:string) : unit =
+let[@inline] file_path_set_path (self:file_path) (x:string) : unit =
   self._presence <- (Pbrt.Bitfield.set self._presence 0); self.path <- x
 
 let copy_file_path (self:file_path) : file_path =
@@ -32,7 +32,7 @@ let make_file_path
   let _res = default_file_path () in
   (match path with
   | None -> ()
-  | Some v -> set_file_path_path _res v);
+  | Some v -> file_path_set_path _res v);
   _res
 
 
@@ -43,7 +43,7 @@ let make_file_path
 let rec pp_file_path fmt (v:file_path) = 
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "path" Pbrt.Pp.pp_string fmt v.path;
-    if not (Pbrt.Bitfield.get v._presence 0) then Format.pp_print_string fmt "(* absent *)";
+    if not (file_path_has_path v) then Format.pp_print_string fmt "(* absent *)";
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
@@ -58,7 +58,7 @@ let rec pp_empty fmt (v:empty) =
 (** {2 Protobuf Encoding} *)
 
 let rec encode_pb_file_path (v:file_path) encoder = 
-  if (Pbrt.Bitfield.get v._presence 0) then (
+  if file_path_has_path v then (
     Pbrt.Encoder.string v.path encoder;
     Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   );
@@ -79,7 +79,7 @@ let rec decode_pb_file_path d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      set_file_path_path v (Pbrt.Decoder.string d);
+      file_path_set_path v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(file_path), field(1)" pk
@@ -99,7 +99,7 @@ let rec decode_pb_empty d =
 
 let rec encode_json_file_path (v:file_path) = 
   let assoc = ref [] in
-  if (Pbrt.Bitfield.get v._presence 0) then (
+  if file_path_has_path v then (
     assoc := ("path", Pbrt_yojson.make_string v.path) :: !assoc;
   );
   `Assoc !assoc
@@ -119,7 +119,7 @@ let rec decode_json_file_path d =
   in
   List.iter (function 
     | ("path", json_value) -> 
-      set_file_path_path v (Pbrt_yojson.string json_value "file_path" "path")
+      file_path_set_path v (Pbrt_yojson.string json_value "file_path" "path")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;

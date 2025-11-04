@@ -45,9 +45,9 @@ let default_empty : empty = ()
 (** {2 Make functions} *)
 
 
-let[@inline] has_i32_value (self:i32) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] i32_has_value (self:i32) : bool = (Pbrt.Bitfield.get self._presence 0)
 
-let[@inline] set_i32_value (self:i32) (x:int32) : unit =
+let[@inline] i32_set_value (self:i32) (x:int32) : unit =
   self._presence <- (Pbrt.Bitfield.set self._presence 0); self.value <- x
 
 let copy_i32 (self:i32) : i32 =
@@ -59,15 +59,15 @@ let make_i32
   let _res = default_i32 () in
   (match value with
   | None -> ()
-  | Some v -> set_i32_value _res v);
+  | Some v -> i32_set_value _res v);
   _res
 
-let[@inline] has_add_req_a (self:add_req) : bool = (Pbrt.Bitfield.get self._presence 0)
-let[@inline] has_add_req_b (self:add_req) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] add_req_has_a (self:add_req) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] add_req_has_b (self:add_req) : bool = (Pbrt.Bitfield.get self._presence 1)
 
-let[@inline] set_add_req_a (self:add_req) (x:int32) : unit =
+let[@inline] add_req_set_a (self:add_req) (x:int32) : unit =
   self._presence <- (Pbrt.Bitfield.set self._presence 0); self.a <- x
-let[@inline] set_add_req_b (self:add_req) (x:int32) : unit =
+let[@inline] add_req_set_b (self:add_req) (x:int32) : unit =
   self._presence <- (Pbrt.Bitfield.set self._presence 1); self.b <- x
 
 let copy_add_req (self:add_req) : add_req =
@@ -80,14 +80,14 @@ let make_add_req
   let _res = default_add_req () in
   (match a with
   | None -> ()
-  | Some v -> set_add_req_a _res v);
+  | Some v -> add_req_set_a _res v);
   (match b with
   | None -> ()
-  | Some v -> set_add_req_b _res v);
+  | Some v -> add_req_set_b _res v);
   _res
 
 
-let[@inline] set_add_all_req_ints (self:add_all_req) (x:int32 list) : unit =
+let[@inline] add_all_req_set_ints (self:add_all_req) (x:int32 list) : unit =
   self.ints <- x
 
 let copy_add_all_req (self:add_all_req) : add_all_req =
@@ -97,7 +97,7 @@ let make_add_all_req
   ?(ints=[])
   () : add_all_req  =
   let _res = default_add_all_req () in
-  set_add_all_req_ints _res ints;
+  add_all_req_set_ints _res ints;
   _res
 
 
@@ -114,16 +114,16 @@ let rec pp_div_by_zero fmt (v:div_by_zero) =
 let rec pp_i32 fmt (v:i32) = 
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "value" Pbrt.Pp.pp_int32 fmt v.value;
-    if not (Pbrt.Bitfield.get v._presence 0) then Format.pp_print_string fmt "(* absent *)";
+    if not (i32_has_value v) then Format.pp_print_string fmt "(* absent *)";
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_add_req fmt (v:add_req) = 
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "a" Pbrt.Pp.pp_int32 fmt v.a;
-    if not (Pbrt.Bitfield.get v._presence 0) then Format.pp_print_string fmt "(* absent *)";
+    if not (add_req_has_a v) then Format.pp_print_string fmt "(* absent *)";
     Pbrt.Pp.pp_record_field ~first:false "b" Pbrt.Pp.pp_int32 fmt v.b;
-    if not (Pbrt.Bitfield.get v._presence 1) then Format.pp_print_string fmt "(* absent *)";
+    if not (add_req_has_b v) then Format.pp_print_string fmt "(* absent *)";
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
@@ -147,18 +147,18 @@ let rec encode_pb_div_by_zero (v:div_by_zero) encoder =
 ()
 
 let rec encode_pb_i32 (v:i32) encoder = 
-  if (Pbrt.Bitfield.get v._presence 0) then (
+  if i32_has_value v then (
     Pbrt.Encoder.int32_as_varint v.value encoder;
     Pbrt.Encoder.key 0 Pbrt.Varint encoder; 
   );
   ()
 
 let rec encode_pb_add_req (v:add_req) encoder = 
-  if (Pbrt.Bitfield.get v._presence 0) then (
+  if add_req_has_a v then (
     Pbrt.Encoder.int32_as_varint v.a encoder;
     Pbrt.Encoder.key 1 Pbrt.Varint encoder; 
   );
-  if (Pbrt.Bitfield.get v._presence 1) then (
+  if add_req_has_b v then (
     Pbrt.Encoder.int32_as_varint v.b encoder;
     Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
   );
@@ -194,7 +194,7 @@ let rec decode_pb_i32 d =
     | None -> (
     ); continue__ := false
     | Some (0, Pbrt.Varint) -> begin
-      set_i32_value v (Pbrt.Decoder.int32_as_varint d);
+      i32_set_value v (Pbrt.Decoder.int32_as_varint d);
     end
     | Some (0, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(i32), field(0)" pk
@@ -210,12 +210,12 @@ let rec decode_pb_add_req d =
     | None -> (
     ); continue__ := false
     | Some (1, Pbrt.Varint) -> begin
-      set_add_req_a v (Pbrt.Decoder.int32_as_varint d);
+      add_req_set_a v (Pbrt.Decoder.int32_as_varint d);
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_req), field(1)" pk
     | Some (2, Pbrt.Varint) -> begin
-      set_add_req_b v (Pbrt.Decoder.int32_as_varint d);
+      add_req_set_b v (Pbrt.Decoder.int32_as_varint d);
     end
     | Some (2, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_req), field(2)" pk
@@ -230,10 +230,10 @@ let rec decode_pb_add_all_req d =
     match Pbrt.Decoder.key d with
     | None -> (
       (* put lists in the correct order *)
-      set_add_all_req_ints v (List.rev v.ints);
+      add_all_req_set_ints v (List.rev v.ints);
     ); continue__ := false
     | Some (1, Pbrt.Bytes) -> begin
-      set_add_all_req_ints v @@ Pbrt.Decoder.packed_fold (fun l d -> (Pbrt.Decoder.int32_as_varint d)::l) [] d;
+      add_all_req_set_ints v @@ Pbrt.Decoder.packed_fold (fun l d -> (Pbrt.Decoder.int32_as_varint d)::l) [] d;
     end
     | Some (1, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(add_all_req), field(1)" pk
@@ -256,17 +256,17 @@ Pbrt_yojson.make_unit v
 
 let rec encode_json_i32 (v:i32) = 
   let assoc = ref [] in
-  if (Pbrt.Bitfield.get v._presence 0) then (
+  if i32_has_value v then (
     assoc := ("value", Pbrt_yojson.make_int (Int32.to_int v.value)) :: !assoc;
   );
   `Assoc !assoc
 
 let rec encode_json_add_req (v:add_req) = 
   let assoc = ref [] in
-  if (Pbrt.Bitfield.get v._presence 0) then (
+  if add_req_has_a v then (
     assoc := ("a", Pbrt_yojson.make_int (Int32.to_int v.a)) :: !assoc;
   );
-  if (Pbrt.Bitfield.get v._presence 1) then (
+  if add_req_has_b v then (
     assoc := ("b", Pbrt_yojson.make_int (Int32.to_int v.b)) :: !assoc;
   );
   `Assoc !assoc
@@ -297,7 +297,7 @@ let rec decode_json_i32 d =
   in
   List.iter (function 
     | ("value", json_value) -> 
-      set_i32_value v (Pbrt_yojson.int32 json_value "i32" "value")
+      i32_set_value v (Pbrt_yojson.int32 json_value "i32" "value")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -314,9 +314,9 @@ let rec decode_json_add_req d =
   in
   List.iter (function 
     | ("a", json_value) -> 
-      set_add_req_a v (Pbrt_yojson.int32 json_value "add_req" "a")
+      add_req_set_a v (Pbrt_yojson.int32 json_value "add_req" "a")
     | ("b", json_value) -> 
-      set_add_req_b v (Pbrt_yojson.int32 json_value "add_req" "b")
+      add_req_set_b v (Pbrt_yojson.int32 json_value "add_req" "b")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -334,7 +334,7 @@ let rec decode_json_add_all_req d =
   in
   List.iter (function 
     | ("ints", `List l) -> begin
-      set_add_all_req_ints v @@ List.map (function
+      add_all_req_set_ints v @@ List.map (function
         | json_value -> Pbrt_yojson.int32 json_value "add_all_req" "ints"
       ) l;
     end

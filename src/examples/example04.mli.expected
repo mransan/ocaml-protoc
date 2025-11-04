@@ -43,10 +43,10 @@ val make_int_list_cons :
 
 val copy_int_list_cons : int_list_cons -> int_list_cons
 
-val set_int_list_cons_value : int_list_cons -> int -> unit
+val int_list_cons_set_value : int_list_cons -> int -> unit
   (** set field value in int_list_cons *)
 
-val set_int_list_cons_next : int_list_cons -> int_list -> unit
+val int_list_cons_set_next : int_list_cons -> int_list -> unit
   (** set field next in int_list_cons *)
 
 
