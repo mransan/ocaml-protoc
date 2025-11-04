@@ -150,7 +150,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       F.linep sc "} : %s)" r_name)
 
 (* Generate decode function for a variant type *)
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   (* helper function for each constructor case *)
   let process_v_constructor sc { Ot.vc_constructor; vc_field_type; _ } =
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in

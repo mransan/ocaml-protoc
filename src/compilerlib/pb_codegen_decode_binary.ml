@@ -71,7 +71,7 @@ let gen_field_common sc encoding_number payload_kind message_name
 
 let gen_rft_nolabel sc r_name rf_label (field_type, encoding_number, pk) =
   gen_field_common sc encoding_number pk r_name (fun sc ->
-      F.linep sc "set_%s_%s v (%s);" r_name rf_label
+      F.linep sc "%s_set_%s v (%s);" r_name rf_label
         (decode_field_expression field_type pk))
 
 (* return the variable name used for keeping track if a required
@@ -80,14 +80,14 @@ let is_set_variable_name rf_label = sp "%s_is_set" rf_label
 
 let gen_rft_required sc r_name rf_label (field_type, encoding_number, pk, _) =
   gen_field_common sc encoding_number pk r_name (fun sc ->
-      F.linep sc "set_%s_%s v (%s); %s := true;" r_name rf_label
+      F.linep sc "%s_set_%s v (%s); %s := true;" r_name rf_label
         (decode_field_expression field_type pk)
         (is_set_variable_name rf_label))
 
 let gen_rft_optional sc r_name rf_label optional_field =
   let field_type, encoding_number, pk, _ = optional_field in
   gen_field_common sc encoding_number pk r_name (fun sc ->
-      F.linep sc "set_%s_%s v (%s);" r_name rf_label
+      F.linep sc "%s_set_%s v (%s);" r_name rf_label
         (decode_field_expression field_type pk))
 
 let gen_rft_repeated sc r_name rf_label repeated_field =
@@ -95,7 +95,7 @@ let gen_rft_repeated sc r_name rf_label repeated_field =
   match rt, is_packed with
   | Ot.Rt_list, false ->
     gen_field_common sc encoding_number pk r_name ~is_packed (fun sc ->
-        F.linep sc "set_%s_%s v ((%s) :: v.%s);" r_name rf_label
+        F.linep sc "%s_set_%s v ((%s) :: v.%s);" r_name rf_label
           (decode_field_expression field_type pk)
           rf_label)
   | Ot.Rt_repeated_field, false ->
@@ -106,7 +106,7 @@ let gen_rft_repeated sc r_name rf_label repeated_field =
   | Ot.Rt_list, true ->
     gen_field_common sc encoding_number pk r_name ~is_packed (fun sc ->
         F.linep sc
-          "set_%s_%s v @@ Pbrt.Decoder.packed_fold (fun l d -> (%s)::l) [] d;"
+          "%s_set_%s v @@ Pbrt.Decoder.packed_fold (fun l d -> (%s)::l) [] d;"
           r_name rf_label
           (decode_field_expression field_type pk))
   | Ot.Rt_repeated_field, true ->
@@ -147,7 +147,7 @@ let gen_rft_associative sc r_name rf_label associative_field =
 
       match at with
       | Ot.At_list ->
-        F.linep sc "set_%s_%s v (" r_name rf_label;
+        F.linep sc "%s_set_%s v (" r_name rf_label;
         F.sub_scope sc (fun sc ->
             F.linep sc "%s::v.%s;" decode_expression rf_label);
         F.line sc ");"
@@ -172,9 +172,9 @@ let gen_rft_variant sc r_name rf_label { Ot.v_constructors; _ } =
           match vc_field_type with
           | Ot.Vct_nullary ->
             F.line sc "Pbrt.Decoder.empty_nested d;";
-            F.linep sc "set_%s_%s v %s;" r_name rf_label vc_constructor
+            F.linep sc "%s_set_%s v %s;" r_name rf_label vc_constructor
           | Ot.Vct_non_nullary_constructor field_type ->
-            F.linep sc "set_%s_%s v (%s (%s));" r_name rf_label vc_constructor
+            F.linep sc "%s_set_%s v (%s (%s));" r_name rf_label vc_constructor
               (decode_field_expression field_type pk)))
     v_constructors
 
@@ -228,7 +228,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 F.line sc "(* put lists in the correct order *)";
               List.iter
                 (fun field_name ->
-                  F.linep sc "set_%s_%s v (List.rev v.%s);" r_name field_name
+                  F.linep sc "%s_set_%s v (List.rev v.%s);" r_name field_name
                     field_name)
                 all_lists);
           F.line sc "); continue__ := false";
@@ -272,7 +272,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
       F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
         (sp "Unexpected fields in empty message(%s)" er_name))
 
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   let process_ctor sc variant_constructor =
     let {
       Ot.vc_constructor;

@@ -205,9 +205,8 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 
           let in_bitfield =
             match rf_presence with
-            | Ot.Rfp_bitfield idx ->
-              F.linep sc "if %s then ("
-                (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx ());
+            | Ot.Rfp_bitfield _idx ->
+              F.linep sc "if %s_has_%s v then (" r_name rf_label;
               true
             | _ -> false
           in
@@ -235,7 +234,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
   F.line sc "()"
 
 let gen_variant ?and_ variant sc =
-  let { Ot.v_name; Ot.v_constructors } = variant in
+  let { Ot.v_name; Ot.v_constructors; v_use_polyvariant = _ } = variant in
   let vn = v_name in
   F.linep sc "%s encode_pb_%s (v:%s) encoder = "
     (Pb_codegen_util.let_decl_of_and and_)

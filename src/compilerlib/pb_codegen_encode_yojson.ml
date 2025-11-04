@@ -222,9 +222,8 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
 
           let in_bitfield =
             match rf_presence with
-            | Ot.Rfp_bitfield idx ->
-              F.linep sc "if %s then ("
-                (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx ());
+            | Ot.Rfp_bitfield _ ->
+              F.linep sc "if %s_has_%s v then (" r_name rf_label;
               true
             | _ -> false
           in
@@ -257,7 +256,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
     rn rn;
   F.line sc (sp "Pbrt_yojson.%s %s" "make_unit" "v")
 
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   let process_v_constructor sc v_constructor =
     let { Ot.vc_constructor; Ot.vc_field_type; Ot.vc_payload_kind; _ } =
       v_constructor

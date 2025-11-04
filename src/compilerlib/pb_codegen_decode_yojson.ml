@@ -46,7 +46,7 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
     field_pattern_match ~r_name ~rf_label field_type
   in
   F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-  F.linep sc "  set_%s_%s v (%s)" r_name rf_label exp
+  F.linep sc "  %s_set_%s v (%s)" r_name rf_label exp
 
 (* Generate all the pattern matches for a repeated field *)
 let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
@@ -57,7 +57,7 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
   F.linep sc "| (\"%s\", `List l) -> begin" json_label;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "set_%s_%s v @@ List.map (function" r_name rf_label;
+      F.linep sc "%s_set_%s v @@ List.map (function" r_name rf_label;
       let match_variable_name, exp =
         field_pattern_match ~r_name ~rf_label field_type
       in
@@ -76,7 +76,7 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
   in
 
   F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-  F.linep sc "  set_%s_%s v %s" r_name rf_label exp
+  F.linep sc "  %s_set_%s v %s" r_name rf_label exp
 
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
@@ -88,14 +88,14 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| (\"%s\", _) -> set_%s_%s v %s" json_label r_name rf_label
+        F.linep sc "| (\"%s\", _) -> %s_set_%s v %s" json_label r_name rf_label
           vc_constructor
       | Ot.Vct_non_nullary_constructor field_type ->
         let match_variable_name, exp =
           field_pattern_match ~r_name ~rf_label field_type
         in
         F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
-        F.linep sc "  set_%s_%s v (%s (%s))" r_name rf_label vc_constructor exp)
+        F.linep sc "  %s_set_%s v (%s (%s))" r_name rf_label vc_constructor exp)
     v_constructors
 
 let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
@@ -137,7 +137,7 @@ let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
         | Ot.At_hashtable -> "assoc"
         | Ot.At_list -> "(assoc |> Hashtbl.to_seq |> List.of_seq)"
       in
-      F.linep sc "set_%s_%s v %s" r_name rf_label assoc_exp)
+      F.linep sc "%s_set_%s v %s" r_name rf_label assoc_exp)
 
 (* Generate decode function for a record *)
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
@@ -203,7 +203,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
   F.line sc (sp "Pbrt_yojson.unit d \"%s\" \"%s\"" er_name "empty record")
 
 (* Generate decode function for a variant type *)
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   (* helper function for each constructor case *)
   let process_v_constructor sc { Ot.vc_constructor; vc_field_type; _ } =
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in

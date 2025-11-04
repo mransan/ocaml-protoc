@@ -202,7 +202,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
         r_fields (* List.iter *);
       F.line sc "json")
 
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   let process_v_constructor sc v_constructor =
     let { Ot.vc_constructor; Ot.vc_field_type; Ot.vc_payload_kind; _ } =
       v_constructor

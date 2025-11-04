@@ -27,7 +27,7 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
     (fun (d : default_info) ->
       match d.rfp with
       | Rfp_bitfield _ ->
-        F.linep sc "let[@inline] has_%s_%s (self:%s) : bool = %s" r_name d.fname
+        F.linep sc "let[@inline] %s_has_%s (self:%s) : bool = %s" r_name d.fname
           r_name
           (Pb_codegen_util.presence_get ~bv:"self._presence" ~idx:d.bitfield_idx
              ())
@@ -38,7 +38,7 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
   (* generate [set_field] accessors *)
   List.iter
     (fun (d : default_info) ->
-      F.linep sc "let[@inline] set_%s_%s (self:%s) (x:%s) : unit =" r_name
+      F.linep sc "let[@inline] %s_set_%s (self:%s) (x:%s) : unit =" r_name
         d.fname r_name d.ftype_underlying;
       F.sub_scope sc (fun sc ->
           match d.rfp with
@@ -75,9 +75,9 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
           if d.optional then (
             F.linep sc "(match %s with" d.fname;
             F.linep sc "| None -> ()";
-            F.linep sc "| Some v -> set_%s_%s _res v);" r_name d.fname
+            F.linep sc "| Some v -> %s_set_%s _res v);" r_name d.fname
           ) else
-            F.linep sc "set_%s_%s _res %s;" r_name d.fname d.fname)
+            F.linep sc "%s_set_%s _res %s;" r_name d.fname d.fname)
         fields;
       F.line sc "_res");
 
@@ -122,12 +122,12 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
       (match d.rfp with
       | Rfp_bitfield _ ->
         F.line sc "";
-        F.linep sc "val has_%s_%s : %s -> bool" r_name d.fname r_name;
+        F.linep sc "val %s_has_%s : %s -> bool" r_name d.fname r_name;
         F.linep sc "  (** presence of field %S in [%s] *)" d.fname r_name
       | _ -> ());
 
       F.line sc "";
-      F.linep sc "val set_%s_%s : %s -> %s -> unit" r_name d.fname r_name
+      F.linep sc "val %s_set_%s : %s -> %s -> unit" r_name d.fname r_name
         d.ftype_underlying;
       F.linep sc "  (** set field %s in %s *)" d.fname r_name)
     fields;

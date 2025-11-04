@@ -60,7 +60,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                         %s);"
                        first rf_label field_string_of var_name)
                 (* Rft_repeated_field *)
-              | Ot.Rft_variant { Ot.v_name; v_constructors = _ } ->
+              | Ot.Rft_variant { Ot.v_name; _ } ->
                 (* constructors are ignored because the pretty printing is completely
                  * delegated to the pretty print function associated with that variant.
                  * This is indeed different from the [decode]/[encode] functions which
@@ -89,10 +89,10 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 (* Associative_list *));
 
               (match rf_presence with
-              | Rfp_bitfield idx ->
+              | Rfp_bitfield _ ->
                 F.linep sc
-                  {|if not %s then Format.pp_print_string fmt "(* absent *)";|}
-                  (Pb_codegen_util.presence_get ~bv:"v._presence" ~idx ())
+                  {|if not (%s_has_%s v) then Format.pp_print_string fmt "(* absent *)";|}
+                  r_name rf_label
               | _ -> ());
               ())
             r_fields);
@@ -108,7 +108,8 @@ let gen_unit ?and_ { Ot.er_name } sc : unit =
       F.line sc "in";
       F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
 
-let gen_variant ?and_ { Ot.v_name; Ot.v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; Ot.v_constructors; v_use_polyvariant = _ } sc
+    =
   F.line sc @@ sp "%s pp_%s fmt (v:%s) =" (let_decl_of_and and_) v_name v_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match v with";
