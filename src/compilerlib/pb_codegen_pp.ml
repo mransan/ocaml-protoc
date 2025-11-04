@@ -26,22 +26,29 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 record_field
               in
 
+              let absent =
+                match rf_presence with
+                | Rfp_bitfield _ ->
+                  Printf.sprintf "~absent:(not (%s_has_%s v)) " r_name rf_label
+                | _ -> ""
+              in
+
               let var_name = sp "v.%s" rf_label in
               (match rf_field_type with
               | Ot.Rft_nolabel (field_type, _, _)
               | Ot.Rft_required (field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
                 F.line sc
-                @@ sp "Pbrt.Pp.pp_record_field ~first:%b \"%s\" %s fmt %s;"
-                     first rf_label field_string_of var_name
+                @@ sp "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" %s fmt %s;"
+                     absent first rf_label field_string_of var_name
                 (* Rft_required *)
               | Ot.Rft_optional (field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
                 F.line sc
                 @@ sp
-                     "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                       (Pbrt.Pp.pp_option %s) fmt %s;"
-                     first rf_label field_string_of var_name
+                     absent first rf_label field_string_of var_name
                 (* Rft_optional *)
               | Ot.Rft_repeated (rt, field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
@@ -49,16 +56,16 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 | Ot.Rt_list ->
                   F.line sc
                   @@ sp
-                       "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                       "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                         (Pbrt.Pp.pp_list %s) fmt %s;"
-                       first rf_label field_string_of var_name
+                       absent first rf_label field_string_of var_name
                 | Ot.Rt_repeated_field ->
                   F.line sc
                   @@ sp
-                       "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                       "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                         (Pbrt.Pp.pp_list %s) fmt (Pbrt.Repeated_field.to_list \
                         %s);"
-                       first rf_label field_string_of var_name)
+                       absent first rf_label field_string_of var_name)
                 (* Rft_repeated_field *)
               | Ot.Rft_variant { Ot.v_name; _ } ->
                 (* constructors are ignored because the pretty printing is completely
@@ -69,9 +76,9 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                  *)
                 F.line sc
                 @@ sp
-                     "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                       (Pbrt.Pp.pp_option %s) fmt %s;"
-                     first rf_label ("pp_" ^ v_name) var_name
+                     absent first rf_label ("pp_" ^ v_name) var_name
                 (* Rft_variant_field *)
               | Ot.Rft_associative (at, _, (key_type, _), (value_type, _)) ->
                 let pp_runtime_function =
@@ -83,17 +90,12 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 let pp_value = gen_field value_type in
                 F.line sc
                 @@ sp
-                     "Pbrt.Pp.pp_record_field ~first:%b \"%s\" (Pbrt.Pp.%s %s \
-                      %s) fmt %s;"
-                     first rf_label pp_runtime_function pp_key pp_value var_name
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" (Pbrt.Pp.%s \
+                      %s %s) fmt %s;"
+                     absent first rf_label pp_runtime_function pp_key pp_value
+                     var_name
                 (* Associative_list *));
 
-              (match rf_presence with
-              | Rfp_bitfield _ ->
-                F.linep sc
-                  {|if not (%s_has_%s v) then Format.pp_print_string fmt "(* absent *)";|}
-                  r_name rf_label
-              | _ -> ());
               ())
             r_fields);
       F.line sc "in";

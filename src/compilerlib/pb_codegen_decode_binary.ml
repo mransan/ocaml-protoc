@@ -66,8 +66,8 @@ let gen_field_common sc encoding_number payload_kind message_name
   F.sub_scope sc f;
   F.line sc "end";
   F.linep sc "| Some (%i, pk) -> " encoding_number;
-  F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
-    (sp "Message(%s), field(%i)" message_name encoding_number)
+  F.linep sc "  Pbrt.Decoder.unexpected_payload_message \"%s\" %d pk"
+    message_name encoding_number
 
 let gen_rft_nolabel sc r_name rf_label (field_type, encoding_number, pk) =
   gen_field_common sc encoding_number pk r_name (fun sc ->
@@ -321,14 +321,14 @@ let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
       F.line sc "loop ()")
 
 let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
-  F.linep sc "%s decode_pb_%s d = "
+  F.linep sc "%s decode_pb_%s d : %s = "
     (Pb_codegen_util.let_decl_of_and and_)
-    cv_name;
+    cv_name cv_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match Pbrt.Decoder.int_as_varint d with";
       List.iter
         (fun { Ot.cvc_name; cvc_binary_value; _ } ->
-          F.linep sc "| %i -> (%s:%s)" cvc_binary_value cvc_name cv_name)
+          F.linep sc "| %i -> %s" cvc_binary_value cvc_name)
         cv_constructors;
       F.linep sc "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name)
 
