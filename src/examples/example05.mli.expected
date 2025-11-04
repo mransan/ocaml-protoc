@@ -8,9 +8,10 @@
 (** {2 Types} *)
 
 type person = private {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable id : int32;
-  mutable email : string option;
+  mutable email : string;
   mutable phone : string list;
   mutable details : (string, string) Hashtbl.t;
 }
@@ -41,6 +42,9 @@ val person_set_name : person -> string -> unit
 
 val person_set_id : person -> int32 -> unit
   (** set field id in person *)
+
+val person_has_email : person -> bool
+  (** presence of field "email" in [person] *)
 
 val person_set_email : person -> string -> unit
   (** set field email in person *)

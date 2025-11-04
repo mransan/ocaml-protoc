@@ -38,6 +38,7 @@ module Bitfield = struct
 
   let max_bits = Sys.int_size - 1
   let empty : t = 0
+  let pp out (self : t) = Format.fprintf out "<bitfield 0x%x>" self
 
   let[@inline] set self idx : t =
     assert (idx < max_bits);

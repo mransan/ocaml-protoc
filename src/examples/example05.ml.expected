@@ -1,18 +1,20 @@
 [@@@ocaml.warning "-23-27-30-39-44"]
 
 type person = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable id : int32;
-  mutable email : string option;
+  mutable email : string;
   mutable phone : string list;
   mutable details : (string, string) Hashtbl.t;
 }
 
 let default_person (): person =
 {
+  _presence=Pbrt.Bitfield.empty;
   name="";
   id=0l;
-  email=None;
+  email="";
   phone=[];
   details=Hashtbl.create 8;
 }
@@ -20,13 +22,14 @@ let default_person (): person =
 
 (** {2 Make functions} *)
 
+let[@inline] person_has_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
 
 let[@inline] person_set_name (self:person) (x:string) : unit =
   self.name <- x
 let[@inline] person_set_id (self:person) (x:int32) : unit =
   self.id <- x
 let[@inline] person_set_email (self:person) (x:string) : unit =
-  self.email <- Some x
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.email <- x
 let[@inline] person_set_phone (self:person) (x:string list) : unit =
   self.phone <- x
 let[@inline] person_set_details (self:person) (x:(string, string) Hashtbl.t) : unit =
@@ -60,7 +63,8 @@ let rec pp_person fmt (v:person) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
     Pbrt.Pp.pp_record_field ~first:false "id" Pbrt.Pp.pp_int32 fmt v.id;
-    Pbrt.Pp.pp_record_field ~first:false "email" (Pbrt.Pp.pp_option Pbrt.Pp.pp_string) fmt v.email;
+    Pbrt.Pp.pp_record_field ~first:false "email" Pbrt.Pp.pp_string fmt v.email;
+    if not (person_has_email v) then Format.pp_print_string fmt "(* absent *)";
     Pbrt.Pp.pp_record_field ~first:false "phone" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.phone;
     Pbrt.Pp.pp_record_field ~first:false "details" (Pbrt.Pp.pp_hastable Pbrt.Pp.pp_string Pbrt.Pp.pp_string) fmt v.details;
   in
@@ -75,12 +79,10 @@ let rec encode_pb_person (v:person) encoder =
   Pbrt.Encoder.key 1 Pbrt.Bytes encoder; 
   Pbrt.Encoder.int32_as_varint v.id encoder;
   Pbrt.Encoder.key 2 Pbrt.Varint encoder; 
-  begin match v.email with
-  | Some x -> 
-    Pbrt.Encoder.string x encoder;
+  if person_has_email v then (
+    Pbrt.Encoder.string v.email encoder;
     Pbrt.Encoder.key 3 Pbrt.Bytes encoder; 
-  | None -> ();
-  end;
+  );
   Pbrt.List_util.rev_iter_with (fun x encoder ->
     Pbrt.Encoder.string x encoder;
     Pbrt.Encoder.key 4 Pbrt.Bytes encoder; 

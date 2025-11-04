@@ -221,6 +221,7 @@ module Bitfield : sig
   val empty : t
   val get : t -> int -> bool
   val set : t -> int -> t
+  val pp : Format.formatter -> t -> unit
 end
 
 (** Encoding protobufs. *)
