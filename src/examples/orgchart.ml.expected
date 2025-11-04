@@ -126,17 +126,14 @@ let make_company
 
 let rec pp_person fmt (v:person) = 
   let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
-    if not (person_has_name v) then Format.pp_print_string fmt "(* absent *)";
-    Pbrt.Pp.pp_record_field ~first:false "age" Pbrt.Pp.pp_int64 fmt v.age;
-    if not (person_has_age v) then Format.pp_print_string fmt "(* absent *)";
+    Pbrt.Pp.pp_record_field ~absent:(not (person_has_name v)) ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
+    Pbrt.Pp.pp_record_field ~absent:(not (person_has_age v)) ~first:false "age" Pbrt.Pp.pp_int64 fmt v.age;
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
 let rec pp_store fmt (v:store) = 
   let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "address" Pbrt.Pp.pp_string fmt v.address;
-    if not (store_has_address v) then Format.pp_print_string fmt "(* absent *)";
+    Pbrt.Pp.pp_record_field ~absent:(not (store_has_address v)) ~first:true "address" Pbrt.Pp.pp_string fmt v.address;
     Pbrt.Pp.pp_record_field ~first:false "employees" (Pbrt.Pp.pp_list pp_person) fmt v.employees;
     Pbrt.Pp.pp_record_field ~first:false "clients" (Pbrt.Pp.pp_list pp_person) fmt v.clients;
   in
@@ -144,8 +141,7 @@ let rec pp_store fmt (v:store) =
 
 let rec pp_company fmt (v:company) = 
   let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
-    if not (company_has_name v) then Format.pp_print_string fmt "(* absent *)";
+    Pbrt.Pp.pp_record_field ~absent:(not (company_has_name v)) ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
     Pbrt.Pp.pp_record_field ~first:false "stores" (Pbrt.Pp.pp_list pp_store) fmt v.stores;
     Pbrt.Pp.pp_record_field ~first:false "subsidiaries" (Pbrt.Pp.pp_list pp_company) fmt v.subsidiaries;
   in
@@ -211,12 +207,12 @@ let rec decode_pb_person d =
       person_set_name v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 1 pk
     | Some (2, Pbrt.Varint) -> begin
       person_set_age v (Pbrt.Decoder.int64_as_zigzag d);
     end
     | Some (2, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 2 pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   (v : person)
@@ -235,17 +231,17 @@ let rec decode_pb_store d =
       store_set_address v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(store), field(1)" pk
+      Pbrt.Decoder.unexpected_payload_message "store" 1 pk
     | Some (2, Pbrt.Bytes) -> begin
       store_set_employees v ((decode_pb_person (Pbrt.Decoder.nested d)) :: v.employees);
     end
     | Some (2, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(store), field(2)" pk
+      Pbrt.Decoder.unexpected_payload_message "store" 2 pk
     | Some (3, Pbrt.Bytes) -> begin
       store_set_clients v ((decode_pb_person (Pbrt.Decoder.nested d)) :: v.clients);
     end
     | Some (3, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(store), field(3)" pk
+      Pbrt.Decoder.unexpected_payload_message "store" 3 pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   (v : store)
@@ -264,17 +260,17 @@ let rec decode_pb_company d =
       company_set_name v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(company), field(1)" pk
+      Pbrt.Decoder.unexpected_payload_message "company" 1 pk
     | Some (2, Pbrt.Bytes) -> begin
       company_set_stores v ((decode_pb_store (Pbrt.Decoder.nested d)) :: v.stores);
     end
     | Some (2, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(company), field(2)" pk
+      Pbrt.Decoder.unexpected_payload_message "company" 2 pk
     | Some (3, Pbrt.Bytes) -> begin
       company_set_subsidiaries v ((decode_pb_company (Pbrt.Decoder.nested d)) :: v.subsidiaries);
     end
     | Some (3, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(company), field(3)" pk
+      Pbrt.Decoder.unexpected_payload_message "company" 3 pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   (v : company)

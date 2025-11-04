@@ -63,8 +63,7 @@ let rec pp_person fmt (v:person) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "name" Pbrt.Pp.pp_string fmt v.name;
     Pbrt.Pp.pp_record_field ~first:false "id" Pbrt.Pp.pp_int32 fmt v.id;
-    Pbrt.Pp.pp_record_field ~first:false "email" Pbrt.Pp.pp_string fmt v.email;
-    if not (person_has_email v) then Format.pp_print_string fmt "(* absent *)";
+    Pbrt.Pp.pp_record_field ~absent:(not (person_has_email v)) ~first:false "email" Pbrt.Pp.pp_string fmt v.email;
     Pbrt.Pp.pp_record_field ~first:false "phone" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.phone;
     Pbrt.Pp.pp_record_field ~first:false "details" (Pbrt.Pp.pp_hastable Pbrt.Pp.pp_string Pbrt.Pp.pp_string) fmt v.details;
   in
@@ -117,22 +116,22 @@ let rec decode_pb_person d =
       person_set_name v (Pbrt.Decoder.string d); name_is_set := true;
     end
     | Some (1, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(1)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 1 pk
     | Some (2, Pbrt.Varint) -> begin
       person_set_id v (Pbrt.Decoder.int32_as_varint d); id_is_set := true;
     end
     | Some (2, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(2)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 2 pk
     | Some (3, Pbrt.Bytes) -> begin
       person_set_email v (Pbrt.Decoder.string d);
     end
     | Some (3, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(3)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 3 pk
     | Some (4, Pbrt.Bytes) -> begin
       person_set_phone v ((Pbrt.Decoder.string d) :: v.phone);
     end
     | Some (4, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(4)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 4 pk
     | Some (5, Pbrt.Bytes) -> begin
       let decode_value = (fun d ->
         Pbrt.Decoder.string d
@@ -141,7 +140,7 @@ let rec decode_pb_person d =
       Hashtbl.add v.details a b;
     end
     | Some (5, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(person), field(5)" pk
+      Pbrt.Decoder.unexpected_payload_message "person" 5 pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   begin if not !id_is_set then Pbrt.Decoder.missing_field "id" end;

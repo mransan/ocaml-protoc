@@ -41,8 +41,7 @@ let make_file_path
 
 let rec pp_file_path fmt (v:file_path) = 
   let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "path" Pbrt.Pp.pp_string fmt v.path;
-    if not (file_path_has_path v) then Format.pp_print_string fmt "(* absent *)";
+    Pbrt.Pp.pp_record_field ~absent:(not (file_path_has_path v)) ~first:true "path" Pbrt.Pp.pp_string fmt v.path;
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
@@ -81,7 +80,7 @@ let rec decode_pb_file_path d =
       file_path_set_path v (Pbrt.Decoder.string d);
     end
     | Some (1, pk) -> 
-      Pbrt.Decoder.unexpected_payload "Message(file_path), field(1)" pk
+      Pbrt.Decoder.unexpected_payload_message "file_path" 1 pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   (v : file_path)
