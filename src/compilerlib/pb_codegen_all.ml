@@ -83,7 +83,7 @@ let generate_for_all_types (ocaml_types : Ot.type_ list list)
               else
                 f ~and_:() ~mode type_ sc
             in
-            F.empty_line sc;
+            if has_encoded then F.empty_line sc;
             first && not has_encoded)
           true types
       in
