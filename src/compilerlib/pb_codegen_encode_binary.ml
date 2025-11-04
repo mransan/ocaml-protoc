@@ -285,7 +285,9 @@ let gen_const_variant ?and_ cv sc =
                  cvc_binary_value))
         cv_constructors)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let { Ot.spec; _ } = t in
   let has_encoded =
     match spec with
@@ -304,7 +306,9 @@ let gen_struct ?and_ t sc =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =

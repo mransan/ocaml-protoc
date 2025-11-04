@@ -194,7 +194,7 @@ let gen_struct_full ?and_:_ t sc =
   in
   has_encoded
 
-let gen_struct ?and_ t sc = gen_struct_full ?and_ t sc
+let gen_struct ?and_ ~mode:_ t sc = gen_struct_full ?and_ t sc
 
 let gen_sig_record sc { Ot.r_name; _ } : unit =
   F.linep sc "val default_%s : unit -> %s " r_name r_name;
@@ -207,7 +207,7 @@ let gen_sig_unit sc { Ot.er_name } =
   let rn = er_name in
   F.linep sc "(** [default_%s] is the default value for type [%s] *)" rn rn
 
-let gen_sig ?and_:_ t sc =
+let gen_sig ?and_:_ ~mode:_ t sc =
   let gen_default_fun_ type_name =
     F.linep sc "val default_%s : unit -> %s" type_name type_name;
     F.linep sc "(** [default_%s ()] is a new empty value for type [%s] *)"

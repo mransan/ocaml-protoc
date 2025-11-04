@@ -221,7 +221,7 @@ module PP = struct
     | None -> ()
 end
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode:_ t sc =
   (match and_ with
   | Some _ -> ()
   | None ->
@@ -231,7 +231,7 @@ let gen_struct ?and_ t sc =
   F.line sc "*)";
   true
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode:_ t sc =
   ignore and_;
   ignore t;
   ignore sc;

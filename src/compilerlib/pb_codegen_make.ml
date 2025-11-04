@@ -83,7 +83,7 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
 
   ()
 
-let gen_struct ?and_:_ t sc =
+let gen_struct ?and_:_ ~mode:_ t sc =
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -134,7 +134,7 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
 
   ()
 
-let gen_sig ?and_:_ t sc =
+let gen_sig ?and_:_ ~mode:_ t sc =
   let { Ot.spec; _ } = t in
 
   let has_encoded =

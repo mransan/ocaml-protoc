@@ -136,7 +136,7 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
           F.line sc @@ sp "| %s -> Format.fprintf fmt \"%s\"" cvc_name cvc_name)
         cv_constructors)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode:_ t sc =
   let { Ot.spec; _ } = t in
   (match spec with
   | Ot.Record r -> gen_record ?and_ r sc
@@ -145,7 +145,7 @@ let gen_struct ?and_ t sc =
   | Ot.Unit u -> gen_unit ?and_ u sc);
   true
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode:_ t sc =
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =

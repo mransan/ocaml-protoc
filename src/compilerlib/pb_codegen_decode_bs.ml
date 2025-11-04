@@ -218,7 +218,9 @@ let gen_unit ?and_ { Ot.er_name } sc =
   @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
   F.line sc (sp "failwith \"support for empty messages not implemented\"")
 
-let gen_struct ?and_ t sc : bool =
+let gen_struct ?and_ ~mode t sc : bool =
+  Pb_codegen_mode.do_decode mode
+  &&
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -238,7 +240,9 @@ let gen_struct ?and_ t sc : bool =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let _ = and_ in
 
   let { Ot.spec; _ } = t in

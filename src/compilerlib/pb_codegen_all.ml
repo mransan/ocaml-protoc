@@ -62,8 +62,9 @@ let new_ocaml_mod ~proto_file_options ~proto_file_name () : ocaml_mod =
 
   self
 
-let generate_for_all_types (ocaml_types : Ot.type_ list list) (sc : F.scope)
-    (f : codegen_f) ocamldoc_title : unit =
+let generate_for_all_types (ocaml_types : Ot.type_ list list)
+    ~(mode : Pb_codegen_mode.t) (sc : F.scope) (f : codegen_f) ocamldoc_title :
+    unit =
   (match ocamldoc_title with
   | None -> ()
   | Some ocamldoc_title ->
@@ -78,9 +79,9 @@ let generate_for_all_types (ocaml_types : Ot.type_ list list) (sc : F.scope)
           (fun first type_ ->
             let has_encoded =
               if first then
-                f type_ sc
+                f ~mode type_ sc
               else
-                f ~and_:() type_ sc
+                f ~and_:() ~mode type_ sc
             in
             F.empty_line sc;
             first && not has_encoded)
@@ -100,19 +101,22 @@ let generate_for_all_services (services : Ot.service list) (sc : F.scope)
 
   List.iter (fun (service : Ot.service) -> f service sc) services
 
-let generate_type (self : ocaml_mod) ocaml_types : unit =
-  generate_for_all_types ocaml_types self.ml Pb_codegen_types.gen_struct None;
-  generate_for_all_types ocaml_types self.ml Pb_codegen_default.gen_struct None;
-  generate_for_all_types ocaml_types self.mli Pb_codegen_types.gen_sig
+let generate_type (self : ocaml_mod) ~(mode : Pb_codegen_mode.t) ocaml_types :
+    unit =
+  generate_for_all_types ocaml_types self.ml ~mode Pb_codegen_types.gen_struct
+    None;
+  generate_for_all_types ocaml_types self.ml ~mode Pb_codegen_default.gen_struct
+    None;
+  generate_for_all_types ocaml_types self.mli ~mode Pb_codegen_types.gen_sig
     (Some Pb_codegen_types.ocamldoc_title);
-  generate_for_all_types ocaml_types self.mli Pb_codegen_default.gen_sig
+  generate_for_all_types ocaml_types self.mli ~mode Pb_codegen_default.gen_sig
     (Some Pb_codegen_default.ocamldoc_title);
   ()
 
-let generate_make_and_accessors (self : ocaml_mod) ocaml_types : unit =
-  generate_for_all_types ocaml_types self.ml Pb_codegen_make.gen_struct
+let generate_make_and_accessors (self : ocaml_mod) ~mode ocaml_types : unit =
+  generate_for_all_types ocaml_types self.ml ~mode Pb_codegen_make.gen_struct
     (Some Pb_codegen_make.ocamldoc_title);
-  generate_for_all_types ocaml_types self.mli Pb_codegen_make.gen_sig
+  generate_for_all_types ocaml_types self.mli ~mode Pb_codegen_make.gen_sig
     (Some Pb_codegen_make.ocamldoc_title)
 
 let generate_service_struct (service : Ot.service) sc : unit =
@@ -127,20 +131,22 @@ let generate_services (self : ocaml_mod) services : unit =
   generate_for_all_services services self.mli generate_service_sig
     (Some "Services")
 
-let generate_plugin (self : ocaml_mod) ocaml_types (p : Plugin.t) : unit =
+let generate_plugin (self : ocaml_mod) ~(mode : Pb_codegen_mode.t) ocaml_types
+    (p : Plugin.t) : unit =
   let (module P) = p in
   F.line self.ml "[@@@ocaml.warning \"-23-27-30-39\"]";
-  generate_for_all_types ocaml_types self.ml P.gen_struct
+  generate_for_all_types ocaml_types ~mode self.ml P.gen_struct
     (Some P.ocamldoc_title);
-  generate_for_all_types ocaml_types self.mli P.gen_sig (Some P.ocamldoc_title);
+  generate_for_all_types ocaml_types ~mode self.mli P.gen_sig
+    (Some P.ocamldoc_title);
   ()
 
-let codegen (proto : Ot.proto) ~proto_file_options ~proto_file_name ~services
-    (plugins : Plugin.t list) : ocaml_mod =
+let codegen (proto : Ot.proto) ~(mode : Pb_codegen_mode.t) ~proto_file_options
+    ~proto_file_name ~services (plugins : Plugin.t list) : ocaml_mod =
   let self = new_ocaml_mod ~proto_file_options ~proto_file_name () in
-  generate_type self proto.proto_types;
-  generate_make_and_accessors self proto.proto_types;
-  List.iter (generate_plugin self proto.proto_types) plugins;
+  generate_type self ~mode proto.proto_types;
+  generate_make_and_accessors self ~mode proto.proto_types;
+  List.iter (generate_plugin self ~mode proto.proto_types) plugins;
 
   (* services come last, they need binary and json *)
   if services then generate_services self proto.proto_services;

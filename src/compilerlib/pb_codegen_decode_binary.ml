@@ -332,7 +332,9 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
         cv_constructors;
       F.linep sc "| _ -> Pbrt.Decoder.malformed_variant \"%s\"" cv_name)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -350,10 +352,11 @@ let gen_struct ?and_ t sc =
       gen_unit ?and_ u sc;
       true
   in
-
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let _ = and_ in
 
   let { Ot.spec; _ } = t in

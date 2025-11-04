@@ -110,6 +110,8 @@ module Cmdline = struct
     dump_type_repr: bool ref;
         (** whether comments with debug ocaml type representation are added *)
     services: bool ref;  (** whether services code generation is enabled *)
+    encode_only: bool ref;  (** If true, skip decoders *)
+    decode_only: bool ref;  (** If true, skip encoders *)
     make: bool ref;
         (** whether to generate "make" functions. DEPRECATED this is not used
             anymore *)
@@ -130,6 +132,8 @@ module Cmdline = struct
       yojson = ref false;
       bs = ref false;
       pp = ref false;
+      encode_only = ref false;
+      decode_only = ref false;
       dump_type_repr = ref false;
       services = ref false;
       make = ref false;
@@ -153,6 +157,12 @@ module Cmdline = struct
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
         " include directories" );
+      ( "--encode-only",
+        Arg.Set t.encode_only,
+        " only generate encoders, not decoders" );
+      ( "--decode-only",
+        Arg.Set t.decode_only,
+        " only generate decoders, not encoders" );
       "--ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
       ( "--debug",
         Arg.Unit (fun () -> Pb_logger.setup_from_out_channel stderr),
@@ -180,6 +190,9 @@ module Cmdline = struct
       t.binary := true;
       t.yojson := true
     );
+
+    if !(t.encode_only) && !(t.decode_only) then
+      failwith "only one of --encode-only/--decode-only, make up your mind!";
 
     if t.proto_file_name = "" then
       failwith "Missing proto file name from command line argument";

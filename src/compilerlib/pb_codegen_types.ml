@@ -84,9 +84,9 @@ let gen_struct_full ?and_ t scope =
 
   true
 
-let gen_struct ?and_ t sc = gen_struct_full ?and_ t sc
+let gen_struct ?and_ ~mode:_ t sc = gen_struct_full ?and_ t sc
 
-let gen_sig ?and_ t scope =
+let gen_sig ?and_ ~mode:_ t scope =
   let { Ot.spec; _ } = t in
   (match spec with
   | Ot.Record r -> gen_record ?and_ ~as_private:true r scope

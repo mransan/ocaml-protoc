@@ -262,7 +262,9 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
         cv_constructors;
       F.linep sc "| _ -> Pbrt_yojson.E.malformed_variant \"%s\"" cv_name)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let { Ot.spec; _ } = t in
   let has_encoded =
     match spec with
@@ -281,7 +283,9 @@ let gen_struct ?and_ t sc =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let _ = and_ in
   let { Ot.spec; _ } = t in
 

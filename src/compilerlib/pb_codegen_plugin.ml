@@ -5,6 +5,7 @@
 
 type codegen_f =
   ?and_:unit ->
+  mode:Pb_codegen_mode.t ->
   Pb_codegen_ocaml_type.type_ ->
   Pb_codegen_formatting.scope ->
   bool
