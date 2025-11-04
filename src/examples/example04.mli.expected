@@ -33,7 +33,6 @@ val default_int_list : unit -> int_list
 
 (** {2 Make functions} *)
 
-
 val make_int_list_cons : 
   value:int ->
   ?next:int_list ->
@@ -48,7 +47,6 @@ val int_list_cons_set_value : int_list_cons -> int -> unit
 
 val int_list_cons_set_next : int_list_cons -> int_list -> unit
   (** set field next in int_list_cons *)
-
 
 
 (** {2 Formatters} *)

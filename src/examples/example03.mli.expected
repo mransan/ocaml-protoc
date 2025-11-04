@@ -26,8 +26,6 @@ val default_string_some : unit -> string_some
 (** {2 Make functions} *)
 
 
-
-
 (** {2 Formatters} *)
 
 val pp_string_some_none : Format.formatter -> string_some_none -> unit 

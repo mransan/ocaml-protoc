@@ -13,8 +13,6 @@ let default_string_some (): string_some = None
 
 (** {2 Make functions} *)
 
-
-
 [@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)

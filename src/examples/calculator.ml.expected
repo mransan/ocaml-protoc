@@ -44,7 +44,6 @@ let default_empty : empty = ()
 
 (** {2 Make functions} *)
 
-
 let[@inline] i32_has_value (self:i32) : bool = (Pbrt.Bitfield.get self._presence 0)
 
 let[@inline] i32_set_value (self:i32) (x:int32) : unit =
@@ -99,7 +98,6 @@ let make_add_all_req
   let _res = default_add_all_req () in
   add_all_req_set_ints _res ints;
   _res
-
 
 [@@@ocaml.warning "-23-27-30-39"]
 

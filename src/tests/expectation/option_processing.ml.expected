@@ -52,7 +52,6 @@ let default_person (): person =
 
 (** {2 Make functions} *)
 
-
 let[@inline] person_location_has_lat (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] person_location_has_lng (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 1)
 
@@ -76,7 +75,6 @@ let make_person_location
   | None -> ()
   | Some v -> person_location_set_lng _res v);
   _res
-
 
 let[@inline] person_has_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] person_has_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)

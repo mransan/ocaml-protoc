@@ -35,7 +35,6 @@ let make_file_path
   | Some v -> file_path_set_path _res v);
   _res
 
-
 [@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)

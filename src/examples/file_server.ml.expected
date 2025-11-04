@@ -117,9 +117,6 @@ let make_file_crc
   | Some v -> file_crc_set_crc _res v);
   _res
 
-
-
-
 [@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Formatters} *)

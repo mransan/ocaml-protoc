@@ -25,7 +25,6 @@ let default_int_list (): int_list = Cons (default_int_list_cons ())
 (** {2 Make functions} *)
 
 
-
 let[@inline] int_list_cons_set_value (self:int_list_cons) (x:int) : unit =
   self.value <- x
 let[@inline] int_list_cons_set_next (self:int_list_cons) (x:int_list) : unit =
@@ -44,7 +43,6 @@ let make_int_list_cons
   | None -> ()
   | Some v -> int_list_cons_set_next _res v);
   _res
-
 
 [@@@ocaml.warning "-23-27-30-39"]
 

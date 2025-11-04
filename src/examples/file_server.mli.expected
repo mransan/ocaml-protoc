@@ -111,9 +111,6 @@ val file_crc_set_crc : file_crc -> int32 -> unit
   (** set field crc in file_crc *)
 
 
-
-
-
 (** {2 Formatters} *)
 
 val pp_file_chunk : Format.formatter -> file_chunk -> unit 
