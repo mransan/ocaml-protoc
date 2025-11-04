@@ -390,6 +390,7 @@ enum:
 
 enum_values:
   |                                { [] }
+  | reserved enum_values { $2 }
   | enum_body_content enum_values  { $1::$2 }
 
 enum_body_content :
