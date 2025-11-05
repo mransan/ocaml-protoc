@@ -1,4 +1,4 @@
-[@@@ocaml.warning "-27-30-39"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type payment_system =
   | Cash 
@@ -7,8 +7,9 @@ type payment_system =
   | App 
 
 type person_location = {
-  lat : float;
-  lng : float;
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
+  mutable lat : float;
+  mutable lng : float;
 }
 
 type person_xyz =
@@ -17,47 +18,119 @@ type person_xyz =
   | Z of float
 
 and person = {
-  id : int64;
-  email : string;
-  name : string;
-  home : person_location option;
-  picture : bytes;
-  xyz : person_xyz option;
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 4 fields *)
+  mutable id : int64;
+  mutable email : string;
+  mutable name : string;
+  mutable home : person_location option;
+  mutable picture : bytes;
+  mutable xyz : person_xyz option;
 }
 
 type destructured_options = unit
 
-let rec default_payment_system () = (Cash:payment_system)
+let default_payment_system () = (Cash:payment_system)
 
-let rec default_person_location 
-  ?lat:((lat:float) = 0.)
-  ?lng:((lng:float) = 0.)
-  () : person_location  = {
-  lat;
-  lng;
+let default_person_location (): person_location =
+{
+  _presence=Pbrt.Bitfield.empty;
+  lat=0.;
+  lng=0.;
 }
 
-let rec default_person_xyz () : person_xyz = X ("")
+let default_person_xyz (): person_xyz = X ("")
 
-and default_person 
-  ?id:((id:int64) = 0L)
-  ?email:((email:string) = "")
-  ?name:((name:string) = "")
-  ?home:((home:person_location option) = None)
-  ?picture:((picture:bytes) = Bytes.create 0)
-  ?xyz:((xyz:person_xyz option) = None)
-  () : person  = {
-  id;
-  email;
-  name;
-  home;
-  picture;
-  xyz;
+let default_person (): person =
+{
+  _presence=Pbrt.Bitfield.empty;
+  id=0L;
+  email="";
+  name="";
+  home=None;
+  picture=Bytes.create 0;
+  xyz=None;
 }
 
-let rec default_destructured_options = ()
+let default_destructured_options : destructured_options = ()
 
-[@@@ocaml.warning "-27-30-39"]
+
+(** {2 Make functions} *)
+
+let[@inline] person_location_has_lat (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] person_location_has_lng (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 1)
+
+let[@inline] person_location_set_lat (self:person_location) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.lat <- x
+let[@inline] person_location_set_lng (self:person_location) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lng <- x
+
+let copy_person_location (self:person_location) : person_location =
+  { self with lat = self.lat }
+
+let make_person_location 
+  ?(lat:float option)
+  ?(lng:float option)
+  () : person_location  =
+  let _res = default_person_location () in
+  (match lat with
+  | None -> ()
+  | Some v -> person_location_set_lat _res v);
+  (match lng with
+  | None -> ()
+  | Some v -> person_location_set_lng _res v);
+  _res
+
+let[@inline] person_has_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] person_has_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] person_has_name (self:person) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] person_has_picture (self:person) : bool = (Pbrt.Bitfield.get self._presence 3)
+
+let[@inline] person_set_id (self:person) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.id <- x
+let[@inline] person_set_email (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.email <- x
+let[@inline] person_set_name (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.name <- x
+let[@inline] person_set_home (self:person) (x:person_location) : unit =
+  self.home <- Some x
+let[@inline] person_set_picture (self:person) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.picture <- x
+let[@inline] person_set_xyz (self:person) (x:person_xyz) : unit =
+  self.xyz <- Some x
+
+let copy_person (self:person) : person =
+  { self with id = self.id }
+
+let make_person 
+  ?(id:int64 option)
+  ?(email:string option)
+  ?(name:string option)
+  ?(home:person_location option)
+  ?(picture:bytes option)
+  ?(xyz:person_xyz option)
+  () : person  =
+  let _res = default_person () in
+  (match id with
+  | None -> ()
+  | Some v -> person_set_id _res v);
+  (match email with
+  | None -> ()
+  | Some v -> person_set_email _res v);
+  (match name with
+  | None -> ()
+  | Some v -> person_set_name _res v);
+  (match home with
+  | None -> ()
+  | Some v -> person_set_home _res v);
+  (match picture with
+  | None -> ()
+  | Some v -> person_set_picture _res v);
+  (match xyz with
+  | None -> ()
+  | Some v -> person_set_xyz _res v);
+  _res
+
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Dump of internal representation for generated OCaml types} *)
 

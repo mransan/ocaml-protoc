@@ -5,7 +5,18 @@
 ===================== </OPTIONS> ======================
 ======================= <PARSED> =======================
 { message = None;
-  type_ = Some(Uint64({ const = None; lt = None; lte = None; gt = Some(999); gte = None; in_ = []; not_in = []; ignore_empty = None; }));
+  type_ =
+    Some(
+      Uint64(
+        { const = 0 (* absent *);
+          lt = 0 (* absent *);
+          lte = 0 (* absent *);
+          gt = 999;
+          gte = 0 (* absent *);
+          in_ = [];
+          not_in = [];
+          ignore_empty = false (* absent *);
+        }));
 }
 ====================== </PARSED> =======================
 
@@ -20,23 +31,23 @@
   type_ =
     Some(
       String(
-        { const = None;
-          len = None;
-          min_len = None;
-          max_len = None;
-          len_bytes = None;
-          min_bytes = None;
-          max_bytes = None;
-          pattern = None;
-          prefix = None;
-          suffix = None;
-          contains = None;
-          not_contains = None;
+        { const = "" (* absent *);
+          len = 0 (* absent *);
+          min_len = 0 (* absent *);
+          max_len = 0 (* absent *);
+          len_bytes = 0 (* absent *);
+          min_bytes = 0 (* absent *);
+          max_bytes = 0 (* absent *);
+          pattern = "" (* absent *);
+          prefix = "" (* absent *);
+          suffix = "" (* absent *);
+          contains = "" (* absent *);
+          not_contains = "" (* absent *);
           in_ = [];
           not_in = [];
           well_known = Some(Email(true));
-          strict = Some(true);
-          ignore_empty = None;
+          strict = false (* absent *);
+          ignore_empty = false (* absent *);
         }));
 }
 ====================== </PARSED> =======================
@@ -53,23 +64,23 @@
   type_ =
     Some(
       String(
-        { const = None;
-          len = None;
-          min_len = None;
-          max_len = None;
-          len_bytes = None;
-          min_bytes = None;
-          max_bytes = Some(256);
-          pattern = Some("^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$");
-          prefix = None;
-          suffix = None;
-          contains = None;
-          not_contains = None;
+        { const = "" (* absent *);
+          len = 0 (* absent *);
+          min_len = 0 (* absent *);
+          max_len = 0 (* absent *);
+          len_bytes = 0 (* absent *);
+          min_bytes = 0 (* absent *);
+          max_bytes = 256;
+          pattern = "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$";
+          prefix = "" (* absent *);
+          suffix = "" (* absent *);
+          contains = "" (* absent *);
+          not_contains = "" (* absent *);
           in_ = [];
           not_in = [];
           well_known = None;
-          strict = Some(true);
-          ignore_empty = None;
+          strict = false (* absent *);
+          ignore_empty = false (* absent *);
         }));
 }
 ====================== </PARSED> =======================
@@ -81,7 +92,7 @@
    }]
 ===================== </OPTIONS> ======================
 ======================= <PARSED> =======================
-{ message = Some({ skip = None; required = Some(true); }); type_ = None; }
+{ message = Some({ skip = false (* absent *); required = true; }); type_ = None; }
 ====================== </PARSED> =======================
 
 
