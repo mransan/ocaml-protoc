@@ -66,44 +66,44 @@ val add : set -> option_name -> Pb_option.value -> set
 val add_or_replace : set -> option_name -> Pb_option.value -> set
 
 val merge : set -> set -> set
-(** [merge s1 s2] adds all the options from [s2] to [s1]. This means
-    than in case of duplicates [s2] options will override [s1] options. *)
+(** [merge s1 s2] adds all the options from [s2] to [s1]. This means than in
+    case of duplicates [s2] options will override [s1] options. *)
 
 val get : set -> option_name -> Pb_option.value option
 val get_ext : set -> string -> Pb_option.value option
 val get_simple : set -> string -> Pb_option.value option
 
 val group_list_values : set -> set
-(** [group_list_values set] groups options with the same name into Pb_option.List_literal
+(** [group_list_values set] groups options with the same name into
+    Pb_option.List_literal
 
-The following set of options:
+    The following set of options:
 
-{[
-  option (google.api.http).additional_bindings = {
-      get: "/foo/bar/baz/{id}"
-  };
-  option (google.api.http).additional_bindings = {
-      post: "/foo/bar/baz/"
-      body: "*"
-  };
-]}
+    {[
+      option (google.api.http).additional_bindings = {
+          get: "/foo/bar/baz/{id}"
+      };
+      option (google.api.http).additional_bindings = {
+          post: "/foo/bar/baz/"
+          body: "*"
+      };
+    ]}
 
-Is equivalent to the below non-destructured version:
+    Is equivalent to the below non-destructured version:
 
-{[
-  option (google.api.http) = {
-      additional_bindings: [
-        {
-            get: "/foo/bar/baz/{id}"
-        },
-        {
-            post: "/foo/bar/baz/"
-            body: "*"
-        }
-      ]
-  };
-]}
-*)
+    {[
+      option (google.api.http) = {
+          additional_bindings: [
+            {
+                get: "/foo/bar/baz/{id}"
+            },
+            {
+                post: "/foo/bar/baz/"
+                body: "*"
+            }
+          ]
+      };
+    ]} *)
 
 val pp_t : Format.formatter -> t -> unit
 val pp_set : Format.formatter -> set -> unit

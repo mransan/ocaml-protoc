@@ -57,7 +57,7 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
     field_pattern_match ~r_name ~rf_label field_type
   in
   F.linep sc "| (\"%s\", %s) -> " pb_options_label match_variable_name;
-  F.linep sc "  v.%s <- %s" rf_label exp
+  F.linep sc "  %s_set_%s v (%s)" r_name rf_label exp
 
 (* Generate all the pattern matches for a repeated field *)
 let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
@@ -70,7 +70,7 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
     pb_options_label;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "v.%s <- List.map (function" rf_label;
+      F.linep sc "%s_set_%s v @@ List.map (function" r_name rf_label;
       let match_variable_name, exp =
         field_pattern_match ~r_name ~rf_label field_type
       in
@@ -89,7 +89,7 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
   in
 
   F.linep sc "| (\"%s\", %s) -> " pb_options_label match_variable_name;
-  F.linep sc "  v.%s <- Some (%s)" rf_label exp
+  F.linep sc "  %s_set_%s v (%s)" r_name rf_label exp
 
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
@@ -101,14 +101,14 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| (\"%s\", _) -> v.%s <- Some %s" pb_options_label rf_label
-          vc_constructor
+        F.linep sc "| (\"%s\", _) -> %s_set_%s v (%s)" pb_options_label r_name
+          rf_label vc_constructor
       | Ot.Vct_non_nullary_constructor field_type ->
         let match_variable_name, exp =
           field_pattern_match ~r_name ~rf_label field_type
         in
         F.linep sc "| (\"%s\", %s) -> " pb_options_label match_variable_name;
-        F.linep sc "  v.%s <- Some (%s (%s))" rf_label vc_constructor exp)
+        F.linep sc "  %s_set_%s v (%s (%s))" r_name rf_label vc_constructor exp)
     v_constructors
 
 let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
@@ -152,19 +152,17 @@ let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
         | Ot.At_hashtable -> "assoc"
         | Ot.At_list -> "assoc |> Hashtbl.to_seq |> List.of_seq"
       in
-      F.linep sc "v.%s <- %s" rf_label assoc_exp)
+      F.linep sc "%s_set_%s v (%s)" r_name rf_label assoc_exp)
 
 (* Generate decode function for a record *)
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
-  let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
-
   F.line sc
   @@ sp "%s decode_pb_options_%s d ="
        (Pb_codegen_util.let_decl_of_and and_)
        r_name;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "let v = default_%s () in" mutable_record_name;
+      F.linep sc "let v = default_%s () in" r_name;
       F.line sc @@ "let assoc = match d with";
       F.line sc
       @@ "  | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> \
@@ -201,15 +199,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           F.empty_line sc;
           F.line sc "| (_, _) -> () (*Unknown fields are ignored*)");
       F.line sc ") assoc;";
-
-      (* Transform the mutable record in an immutable one *)
-      F.line sc "({";
-      F.sub_scope sc (fun sc ->
-          List.iter
-            (fun { Ot.rf_label; _ } ->
-              F.linep sc "%s = v.%s;" rf_label rf_label)
-            r_fields);
-      F.linep sc "} : %s)" r_name)
+      F.linep sc "(v : %s)" r_name)
 
 (* Generate decode function for an empty record *)
 let gen_unit ?and_ { Ot.er_name } sc =
@@ -220,7 +210,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
   F.line sc (sp "Pbrt_pb_options.unit d \"%s\" \"%s\"" er_name "empty record")
 
 (* Generate decode function for a variant type *)
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   (* helper function for each constructor case *)
   let process_v_constructor sc { Ot.vc_constructor; vc_field_type; _ } =
     let pb_options_label =
@@ -285,7 +275,9 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
         cv_constructors;
       F.linep sc "| _ -> Pbrt_pb_options.E.malformed_variant \"%s\"" cv_name)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let { Ot.spec; _ } = t in
   let has_encoded =
     match spec with
@@ -304,7 +296,9 @@ let gen_struct ?and_ t sc =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let _ = and_ in
   let { Ot.spec; _ } = t in
 
@@ -334,13 +328,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "Pb_option.set Decoding"
-let requires_mutable_records = true
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)
