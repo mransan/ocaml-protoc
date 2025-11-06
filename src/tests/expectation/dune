@@ -28,7 +28,7 @@
  (targets option_processing.ml option_processing.mli)
  (deps option_processing.proto)
  (action
-  (run ocaml-protoc --dump_type_repr --make --ml_out ./ %{deps})))
+  (run ocaml-protoc --dump_type_repr --pb_options --make --ml_out ./ %{deps})))
 
 (rule
  (alias runtest)

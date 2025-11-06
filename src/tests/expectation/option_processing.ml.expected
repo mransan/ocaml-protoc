@@ -261,3 +261,80 @@ let make_person
                                                  {"get": "/foo/bar/baz/{id}"}]}
    }]
 *)
+
+[@@@ocaml.warning "-23-27-30-39"]
+
+(** {2 Pb_option.set Decoding} *)
+
+let rec decode_pb_options_payment_system pb_options =
+  match pb_options with
+  | Pbrt_options.Scalar_value (Constant_literal "CASH") -> (Cash : payment_system)
+  | Pbrt_options.Scalar_value (Constant_literal "CREDIT_CARD") -> (Credit_card : payment_system)
+  | Pbrt_options.Scalar_value (Constant_literal "DEBIT_CARD") -> (Debit_card : payment_system)
+  | Pbrt_options.Scalar_value (Constant_literal "APP") -> (App : payment_system)
+  | _ -> Pbrt_options.E.malformed_variant "payment_system"
+
+let rec decode_pb_options_person_location d =
+  let v = default_person_location () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("lat", pb_options_value) -> 
+      person_location_set_lat v (Pbrt_options.float pb_options_value "person_location" "lat")
+    | ("lng", pb_options_value) -> 
+      person_location_set_lng v (Pbrt_options.float pb_options_value "person_location" "lng")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : person_location)
+
+let rec decode_pb_options_person_xyz pb_options =
+  let assoc = match pb_options with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_options.E.malformed_variant "person_xyz"
+    | ("x", pb_options_value)::_ -> 
+      (X (Pbrt_options.string pb_options_value "person_xyz" "X") : person_xyz)
+    | ("y", pb_options_value)::_ -> 
+      (Y (Pbrt_options.int32 pb_options_value "person_xyz" "Y") : person_xyz)
+    | ("z", pb_options_value)::_ -> 
+      (Z (Pbrt_options.float pb_options_value "person_xyz" "Z") : person_xyz)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_person d =
+  let v = default_person () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("id", pb_options_value) -> 
+      person_set_id v (Pbrt_options.int64 pb_options_value "person" "id")
+    | ("email", pb_options_value) -> 
+      person_set_email v (Pbrt_options.string pb_options_value "person" "email")
+    | ("name", pb_options_value) -> 
+      person_set_name v (Pbrt_options.string pb_options_value "person" "name")
+    | ("home", pb_options_value) -> 
+      person_set_home v ((decode_pb_options_person_location pb_options_value))
+    | ("picture", pb_options_value) -> 
+      person_set_picture v (Pbrt_options.bytes pb_options_value "person" "picture")
+    | ("x", pb_options_value) -> 
+      person_set_xyz v (X (Pbrt_options.string pb_options_value "person" "xyz"))
+    | ("y", pb_options_value) -> 
+      person_set_xyz v (Y (Pbrt_options.int32 pb_options_value "person" "xyz"))
+    | ("z", pb_options_value) -> 
+      person_set_xyz v (Z (Pbrt_options.float pb_options_value "person" "xyz"))
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : person)
+
+let rec decode_pb_options_destructured_options d =
+Pbrt_options.unit d "destructured_options" "empty record"
