@@ -14,8 +14,8 @@
 
 (test
  (name it_compiles)
- (modules It_compiles Option_processing)
- (libraries pbrt ocaml-protoc.compiler-lib)
+ (modules It_compiles Option_processing validate)
+ (libraries pbrt ocaml-protoc.rt-pb-options ocaml-protoc.compiler-lib)
  (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))
 
