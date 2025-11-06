@@ -25,7 +25,20 @@ module E = struct
         | _ -> None)
 end
 
-open Ocaml_protoc_compiler_lib
+type constant =
+  | Constant_string of string
+  | Constant_bool of bool
+  | Constant_int of int
+  | Constant_float of float
+  | Constant_literal of string
+
+type message_literal = (string * value) list
+and list_literal = value list
+
+and value =
+  | Scalar_value of constant
+  | Message_literal of message_literal
+  | List_literal of list_literal
 
 let unescape_string str =
   let buffer = Buffer.create (String.length str) in
@@ -106,36 +119,36 @@ let unescape_string str =
 
 let int32 v record_name field_name =
   match v with
-  | Pb_option.Scalar_value (Constant_float v) -> Int32.of_float v
-  | Pb_option.Scalar_value (Constant_int v) -> Int32.of_int v
+  | Scalar_value (Constant_float v) -> Int32.of_float v
+  | Scalar_value (Constant_int v) -> Int32.of_int v
   | _ -> E.unexpected_option_type record_name field_name
 
 let float v record_name field_name =
   match v with
-  | Pb_option.Scalar_value (Constant_float v) -> v
-  | Pb_option.Scalar_value (Constant_int v) -> float_of_int v
+  | Scalar_value (Constant_float v) -> v
+  | Scalar_value (Constant_int v) -> float_of_int v
   | _ -> E.unexpected_option_type record_name field_name
 
 let int64 v record_name field_name =
   match v with
-  | Pb_option.Scalar_value (Constant_float v) -> Int64.of_float v
-  | Pb_option.Scalar_value (Constant_int v) -> Int64.of_int v
+  | Scalar_value (Constant_float v) -> Int64.of_float v
+  | Scalar_value (Constant_int v) -> Int64.of_int v
   | _ -> E.unexpected_option_type record_name field_name
 
 let int v record_name field_name =
   match v with
-  | Pb_option.Scalar_value (Constant_float v) -> int_of_float v
-  | Pb_option.Scalar_value (Constant_int v) -> v
+  | Scalar_value (Constant_float v) -> int_of_float v
+  | Scalar_value (Constant_int v) -> v
   | _ -> E.unexpected_option_type record_name field_name
 
 let string v record_name field_name =
   match v with
-  | Pb_option.Scalar_value (Constant_string v) -> unescape_string v
+  | Scalar_value (Constant_string v) -> unescape_string v
   | _ -> E.unexpected_option_type record_name field_name
 
 let bool v record_name field_name =
   match v with
-  | Pb_option.Scalar_value (Constant_bool v) -> v
+  | Scalar_value (Constant_bool v) -> v
   | _ -> E.unexpected_option_type record_name field_name
 
 let bytes v record_name field_name =
@@ -143,5 +156,5 @@ let bytes v record_name field_name =
 
 let unit v record_name field_name =
   match v with
-  | Pb_option.Message_literal [] -> ()
+  | Message_literal [] -> ()
   | _ -> E.unexpected_option_type record_name field_name

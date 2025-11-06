@@ -73,7 +73,7 @@
 (** Protobuf constant
 
     As defined in: {{:https://goo.gl/FzpQY2} Protobuf Language Spec}. *)
-type constant =
+type constant = Pbrt_options.constant =
   | Constant_string of string
   | Constant_bool of bool
   | Constant_int of int
@@ -83,7 +83,7 @@ type constant =
 type message_literal = (string * value) list
 and list_literal = value list
 
-and value =
+and value = Pbrt_options.value =
   | Scalar_value of constant
   | Message_literal of message_literal
   | List_literal of list_literal

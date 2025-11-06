@@ -7,7 +7,7 @@ let field_pattern_match ~r_name ~rf_label field_type =
   match field_type with
   | Ot.Ft_basic_type bt ->
     let decode runtime_f =
-      sp "Pbrt_pb_options.%s pb_options_value \"%s\" \"%s\"" runtime_f r_name
+      sp "Pbrt_options.%s pb_options_value \"%s\" \"%s\"" runtime_f r_name
         rf_label
     in
     let exp =
@@ -25,7 +25,7 @@ let field_pattern_match ~r_name ~rf_label field_type =
     "pb_options_value", exp
   | Ot.Ft_unit ->
     ( "pb_options_value",
-      sp "Pbrt_pb_options.unit pb_options_value \"%s\" \"%s\"" r_name rf_label )
+      sp "Pbrt_options.unit pb_options_value \"%s\" \"%s\"" r_name rf_label )
   | Ot.Ft_user_defined_type udt ->
     let f_name =
       let function_prefix = "decode_pb_options" in
@@ -65,9 +65,7 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   let pb_options_label = pb_options_label_of_field_label rf_label in
 
-  F.linep sc
-    "| (\"%s\", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin"
-    pb_options_label;
+  F.linep sc "| (\"%s\", Pbrt_options.List_literal l) -> begin" pb_options_label;
 
   F.sub_scope sc (fun sc ->
       F.linep sc "%s_set_%s v @@ List.map (function" r_name rf_label;
@@ -113,8 +111,7 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
 let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
   let pb_options_label = pb_options_label_of_field_label rf_label in
-  F.linep sc
-    "| (\"%s\", Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc) ->"
+  F.linep sc "| (\"%s\", Pbrt_options.Message_literal assoc) ->"
     pb_options_label;
   F.sub_scope sc (fun sc ->
       let value_name, value_exp =
@@ -164,9 +161,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   F.sub_scope sc (fun sc ->
       F.linep sc "let v = default_%s () in" r_name;
       F.line sc @@ "let assoc = match d with";
-      F.line sc
-      @@ "  | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> \
-          assoc";
+      F.line sc @@ "  | Pbrt_options.Message_literal assoc -> assoc";
       F.line sc @@ "  | _ -> assert(false)";
       (* TODO raise E *)
       F.line sc @@ "in";
@@ -207,7 +202,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
   @@ sp "%s decode_pb_options_%s d ="
        (Pb_codegen_util.let_decl_of_and and_)
        er_name;
-  F.line sc (sp "Pbrt_pb_options.unit d \"%s\" \"%s\"" er_name "empty record")
+  F.line sc (sp "Pbrt_options.unit d \"%s\" \"%s\"" er_name "empty record")
 
 (* Generate decode function for a variant type *)
 let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
@@ -241,8 +236,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
        * we still need a loop to iterate over the key/value, even if in 99.99%
        * of the cases it will be a single iteration *)
       F.line sc "let assoc = match pb_options with";
-      F.line sc
-        "  | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc";
+      F.line sc "  | Pbrt_options.Message_literal assoc -> assoc";
       F.line sc "  | _ -> assert(false)";
       (* TODO raise E *)
       F.line sc "in";
@@ -250,7 +244,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
       F.line sc "let rec loop = function";
       F.sub_scope sc (fun sc ->
           (* termination condition *)
-          F.linep sc "| [] -> Pbrt_pb_options.E.malformed_variant \"%s\"" v_name;
+          F.linep sc "| [] -> Pbrt_options.E.malformed_variant \"%s\"" v_name;
 
           List.iter (process_v_constructor sc) v_constructors;
 
@@ -269,11 +263,10 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
       List.iter
         (fun { Ot.cvc_name; cvc_string_value; _ } ->
           F.linep sc
-            "| Ocaml_protoc_compiler_lib.Pb_option.Scalar_value \
-             (Constant_literal \"%s\") -> (%s : %s)"
+            "| Pbrt_options.Scalar_value (Constant_literal \"%s\") -> (%s : %s)"
             cvc_string_value cvc_name cv_name)
         cv_constructors;
-      F.linep sc "| _ -> Pbrt_pb_options.E.malformed_variant \"%s\"" cv_name)
+      F.linep sc "| _ -> Pbrt_options.E.malformed_variant \"%s\"" cv_name)
 
 let gen_struct ?and_ ~mode t sc =
   Pb_codegen_mode.do_decode mode
@@ -303,10 +296,8 @@ let gen_sig ?and_ ~mode t sc =
   let { Ot.spec; _ } = t in
 
   let f type_name =
-    F.linep sc
-      "val decode_pb_options_%s : Ocaml_protoc_compiler_lib.Pb_option.value -> \
-       %s"
-      type_name type_name;
+    F.linep sc "val decode_pb_options_%s : Pbrt_options.value -> %s" type_name
+      type_name;
     F.linep sc
       ("(** [decode_pb_options_%s decoder] decodes a "
      ^^ "[%s] value from [decoder] *)")

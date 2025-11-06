@@ -1,6 +1,0 @@
-(library
- (name pbrt_pb_options)
- (public_name ocaml-protoc.rt-pb-options)
- (wrapped false)
- (libraries
-  (re_export ocaml-protoc.compiler-lib)))
