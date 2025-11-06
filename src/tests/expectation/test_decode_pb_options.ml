@@ -1,3 +1,4 @@
+open Ocaml_protoc_compiler_lib
 module E = Pb_exception
 module Pt = Pb_parsing_parse_tree
 

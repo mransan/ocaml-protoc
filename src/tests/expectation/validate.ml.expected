@@ -1777,14 +1777,14 @@ let make_field_options
 let rec decode_pb_options_message_options d =
   let v = default_message_options () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("disabled", pb_options_value) -> 
-      message_options_set_disabled v (Pbrt_pb_options.bool pb_options_value "message_options" "disabled")
+      message_options_set_disabled v (Pbrt_options.bool pb_options_value "message_options" "disabled")
     | ("ignored", pb_options_value) -> 
-      message_options_set_ignored v (Pbrt_pb_options.bool pb_options_value "message_options" "ignored")
+      message_options_set_ignored v (Pbrt_options.bool pb_options_value "message_options" "ignored")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1793,12 +1793,12 @@ let rec decode_pb_options_message_options d =
 let rec decode_pb_options_oneof_options d =
   let v = default_oneof_options () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("required", pb_options_value) -> 
-      oneof_options_set_required v (Pbrt_pb_options.bool pb_options_value "oneof_options" "required")
+      oneof_options_set_required v (Pbrt_options.bool pb_options_value "oneof_options" "required")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1807,14 +1807,14 @@ let rec decode_pb_options_oneof_options d =
 let rec decode_pb_options_message_rules d =
   let v = default_message_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("skip", pb_options_value) -> 
-      message_rules_set_skip v (Pbrt_pb_options.bool pb_options_value "message_rules" "skip")
+      message_rules_set_skip v (Pbrt_options.bool pb_options_value "message_rules" "skip")
     | ("required", pb_options_value) -> 
-      message_rules_set_required v (Pbrt_pb_options.bool pb_options_value "message_rules" "required")
+      message_rules_set_required v (Pbrt_options.bool pb_options_value "message_rules" "required")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1823,32 +1823,32 @@ let rec decode_pb_options_message_rules d =
 let rec decode_pb_options_float_rules d =
   let v = default_float_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      float_rules_set_const v (Pbrt_pb_options.float pb_options_value "float_rules" "const")
+      float_rules_set_const v (Pbrt_options.float pb_options_value "float_rules" "const")
     | ("lt", pb_options_value) -> 
-      float_rules_set_lt v (Pbrt_pb_options.float pb_options_value "float_rules" "lt")
+      float_rules_set_lt v (Pbrt_options.float pb_options_value "float_rules" "lt")
     | ("lte", pb_options_value) -> 
-      float_rules_set_lte v (Pbrt_pb_options.float pb_options_value "float_rules" "lte")
+      float_rules_set_lte v (Pbrt_options.float pb_options_value "float_rules" "lte")
     | ("gt", pb_options_value) -> 
-      float_rules_set_gt v (Pbrt_pb_options.float pb_options_value "float_rules" "gt")
+      float_rules_set_gt v (Pbrt_options.float pb_options_value "float_rules" "gt")
     | ("gte", pb_options_value) -> 
-      float_rules_set_gte v (Pbrt_pb_options.float pb_options_value "float_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      float_rules_set_gte v (Pbrt_options.float pb_options_value "float_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       float_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.float pb_options_value "float_rules" "in_"
+        | pb_options_value -> Pbrt_options.float pb_options_value "float_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       float_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.float pb_options_value "float_rules" "not_in"
+        | pb_options_value -> Pbrt_options.float pb_options_value "float_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      float_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "float_rules" "ignore_empty")
+      float_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "float_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1857,32 +1857,32 @@ let rec decode_pb_options_float_rules d =
 let rec decode_pb_options_double_rules d =
   let v = default_double_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      double_rules_set_const v (Pbrt_pb_options.float pb_options_value "double_rules" "const")
+      double_rules_set_const v (Pbrt_options.float pb_options_value "double_rules" "const")
     | ("lt", pb_options_value) -> 
-      double_rules_set_lt v (Pbrt_pb_options.float pb_options_value "double_rules" "lt")
+      double_rules_set_lt v (Pbrt_options.float pb_options_value "double_rules" "lt")
     | ("lte", pb_options_value) -> 
-      double_rules_set_lte v (Pbrt_pb_options.float pb_options_value "double_rules" "lte")
+      double_rules_set_lte v (Pbrt_options.float pb_options_value "double_rules" "lte")
     | ("gt", pb_options_value) -> 
-      double_rules_set_gt v (Pbrt_pb_options.float pb_options_value "double_rules" "gt")
+      double_rules_set_gt v (Pbrt_options.float pb_options_value "double_rules" "gt")
     | ("gte", pb_options_value) -> 
-      double_rules_set_gte v (Pbrt_pb_options.float pb_options_value "double_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      double_rules_set_gte v (Pbrt_options.float pb_options_value "double_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       double_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.float pb_options_value "double_rules" "in_"
+        | pb_options_value -> Pbrt_options.float pb_options_value "double_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       double_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.float pb_options_value "double_rules" "not_in"
+        | pb_options_value -> Pbrt_options.float pb_options_value "double_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      double_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "double_rules" "ignore_empty")
+      double_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "double_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1891,32 +1891,32 @@ let rec decode_pb_options_double_rules d =
 let rec decode_pb_options_int32_rules d =
   let v = default_int32_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      int32_rules_set_const v (Pbrt_pb_options.int32 pb_options_value "int32_rules" "const")
+      int32_rules_set_const v (Pbrt_options.int32 pb_options_value "int32_rules" "const")
     | ("lt", pb_options_value) -> 
-      int32_rules_set_lt v (Pbrt_pb_options.int32 pb_options_value "int32_rules" "lt")
+      int32_rules_set_lt v (Pbrt_options.int32 pb_options_value "int32_rules" "lt")
     | ("lte", pb_options_value) -> 
-      int32_rules_set_lte v (Pbrt_pb_options.int32 pb_options_value "int32_rules" "lte")
+      int32_rules_set_lte v (Pbrt_options.int32 pb_options_value "int32_rules" "lte")
     | ("gt", pb_options_value) -> 
-      int32_rules_set_gt v (Pbrt_pb_options.int32 pb_options_value "int32_rules" "gt")
+      int32_rules_set_gt v (Pbrt_options.int32 pb_options_value "int32_rules" "gt")
     | ("gte", pb_options_value) -> 
-      int32_rules_set_gte v (Pbrt_pb_options.int32 pb_options_value "int32_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      int32_rules_set_gte v (Pbrt_options.int32 pb_options_value "int32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       int32_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "int32_rules" "in_"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "int32_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       int32_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "int32_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "int32_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      int32_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "int32_rules" "ignore_empty")
+      int32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "int32_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1925,32 +1925,32 @@ let rec decode_pb_options_int32_rules d =
 let rec decode_pb_options_int64_rules d =
   let v = default_int64_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      int64_rules_set_const v (Pbrt_pb_options.int64 pb_options_value "int64_rules" "const")
+      int64_rules_set_const v (Pbrt_options.int64 pb_options_value "int64_rules" "const")
     | ("lt", pb_options_value) -> 
-      int64_rules_set_lt v (Pbrt_pb_options.int64 pb_options_value "int64_rules" "lt")
+      int64_rules_set_lt v (Pbrt_options.int64 pb_options_value "int64_rules" "lt")
     | ("lte", pb_options_value) -> 
-      int64_rules_set_lte v (Pbrt_pb_options.int64 pb_options_value "int64_rules" "lte")
+      int64_rules_set_lte v (Pbrt_options.int64 pb_options_value "int64_rules" "lte")
     | ("gt", pb_options_value) -> 
-      int64_rules_set_gt v (Pbrt_pb_options.int64 pb_options_value "int64_rules" "gt")
+      int64_rules_set_gt v (Pbrt_options.int64 pb_options_value "int64_rules" "gt")
     | ("gte", pb_options_value) -> 
-      int64_rules_set_gte v (Pbrt_pb_options.int64 pb_options_value "int64_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      int64_rules_set_gte v (Pbrt_options.int64 pb_options_value "int64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       int64_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "int64_rules" "in_"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "int64_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       int64_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "int64_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "int64_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      int64_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "int64_rules" "ignore_empty")
+      int64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "int64_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1959,32 +1959,32 @@ let rec decode_pb_options_int64_rules d =
 let rec decode_pb_options_uint32_rules d =
   let v = default_uint32_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      uint32_rules_set_const v (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "const")
+      uint32_rules_set_const v (Pbrt_options.int32 pb_options_value "uint32_rules" "const")
     | ("lt", pb_options_value) -> 
-      uint32_rules_set_lt v (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "lt")
+      uint32_rules_set_lt v (Pbrt_options.int32 pb_options_value "uint32_rules" "lt")
     | ("lte", pb_options_value) -> 
-      uint32_rules_set_lte v (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "lte")
+      uint32_rules_set_lte v (Pbrt_options.int32 pb_options_value "uint32_rules" "lte")
     | ("gt", pb_options_value) -> 
-      uint32_rules_set_gt v (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "gt")
+      uint32_rules_set_gt v (Pbrt_options.int32 pb_options_value "uint32_rules" "gt")
     | ("gte", pb_options_value) -> 
-      uint32_rules_set_gte v (Pbrt_pb_options.int32 pb_options_value "uint32_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      uint32_rules_set_gte v (Pbrt_options.int32 pb_options_value "uint32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       uint32_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "uint32_rules" "in_"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "uint32_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       uint32_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "uint32_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "uint32_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      uint32_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "uint32_rules" "ignore_empty")
+      uint32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "uint32_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -1993,32 +1993,32 @@ let rec decode_pb_options_uint32_rules d =
 let rec decode_pb_options_uint64_rules d =
   let v = default_uint64_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      uint64_rules_set_const v (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "const")
+      uint64_rules_set_const v (Pbrt_options.int64 pb_options_value "uint64_rules" "const")
     | ("lt", pb_options_value) -> 
-      uint64_rules_set_lt v (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "lt")
+      uint64_rules_set_lt v (Pbrt_options.int64 pb_options_value "uint64_rules" "lt")
     | ("lte", pb_options_value) -> 
-      uint64_rules_set_lte v (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "lte")
+      uint64_rules_set_lte v (Pbrt_options.int64 pb_options_value "uint64_rules" "lte")
     | ("gt", pb_options_value) -> 
-      uint64_rules_set_gt v (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "gt")
+      uint64_rules_set_gt v (Pbrt_options.int64 pb_options_value "uint64_rules" "gt")
     | ("gte", pb_options_value) -> 
-      uint64_rules_set_gte v (Pbrt_pb_options.int64 pb_options_value "uint64_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      uint64_rules_set_gte v (Pbrt_options.int64 pb_options_value "uint64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       uint64_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "uint64_rules" "in_"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "uint64_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       uint64_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "uint64_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "uint64_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      uint64_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "uint64_rules" "ignore_empty")
+      uint64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "uint64_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2027,32 +2027,32 @@ let rec decode_pb_options_uint64_rules d =
 let rec decode_pb_options_sint32_rules d =
   let v = default_sint32_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      sint32_rules_set_const v (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "const")
+      sint32_rules_set_const v (Pbrt_options.int32 pb_options_value "sint32_rules" "const")
     | ("lt", pb_options_value) -> 
-      sint32_rules_set_lt v (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "lt")
+      sint32_rules_set_lt v (Pbrt_options.int32 pb_options_value "sint32_rules" "lt")
     | ("lte", pb_options_value) -> 
-      sint32_rules_set_lte v (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "lte")
+      sint32_rules_set_lte v (Pbrt_options.int32 pb_options_value "sint32_rules" "lte")
     | ("gt", pb_options_value) -> 
-      sint32_rules_set_gt v (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "gt")
+      sint32_rules_set_gt v (Pbrt_options.int32 pb_options_value "sint32_rules" "gt")
     | ("gte", pb_options_value) -> 
-      sint32_rules_set_gte v (Pbrt_pb_options.int32 pb_options_value "sint32_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      sint32_rules_set_gte v (Pbrt_options.int32 pb_options_value "sint32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       sint32_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sint32_rules" "in_"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sint32_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       sint32_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sint32_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sint32_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      sint32_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "sint32_rules" "ignore_empty")
+      sint32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sint32_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2061,32 +2061,32 @@ let rec decode_pb_options_sint32_rules d =
 let rec decode_pb_options_sint64_rules d =
   let v = default_sint64_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      sint64_rules_set_const v (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "const")
+      sint64_rules_set_const v (Pbrt_options.int64 pb_options_value "sint64_rules" "const")
     | ("lt", pb_options_value) -> 
-      sint64_rules_set_lt v (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "lt")
+      sint64_rules_set_lt v (Pbrt_options.int64 pb_options_value "sint64_rules" "lt")
     | ("lte", pb_options_value) -> 
-      sint64_rules_set_lte v (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "lte")
+      sint64_rules_set_lte v (Pbrt_options.int64 pb_options_value "sint64_rules" "lte")
     | ("gt", pb_options_value) -> 
-      sint64_rules_set_gt v (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "gt")
+      sint64_rules_set_gt v (Pbrt_options.int64 pb_options_value "sint64_rules" "gt")
     | ("gte", pb_options_value) -> 
-      sint64_rules_set_gte v (Pbrt_pb_options.int64 pb_options_value "sint64_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      sint64_rules_set_gte v (Pbrt_options.int64 pb_options_value "sint64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       sint64_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sint64_rules" "in_"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sint64_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       sint64_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sint64_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sint64_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      sint64_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "sint64_rules" "ignore_empty")
+      sint64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sint64_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2095,32 +2095,32 @@ let rec decode_pb_options_sint64_rules d =
 let rec decode_pb_options_fixed32_rules d =
   let v = default_fixed32_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      fixed32_rules_set_const v (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "const")
+      fixed32_rules_set_const v (Pbrt_options.int32 pb_options_value "fixed32_rules" "const")
     | ("lt", pb_options_value) -> 
-      fixed32_rules_set_lt v (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "lt")
+      fixed32_rules_set_lt v (Pbrt_options.int32 pb_options_value "fixed32_rules" "lt")
     | ("lte", pb_options_value) -> 
-      fixed32_rules_set_lte v (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "lte")
+      fixed32_rules_set_lte v (Pbrt_options.int32 pb_options_value "fixed32_rules" "lte")
     | ("gt", pb_options_value) -> 
-      fixed32_rules_set_gt v (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "gt")
+      fixed32_rules_set_gt v (Pbrt_options.int32 pb_options_value "fixed32_rules" "gt")
     | ("gte", pb_options_value) -> 
-      fixed32_rules_set_gte v (Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      fixed32_rules_set_gte v (Pbrt_options.int32 pb_options_value "fixed32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       fixed32_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "in_"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "fixed32_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       fixed32_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "fixed32_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "fixed32_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      fixed32_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "fixed32_rules" "ignore_empty")
+      fixed32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "fixed32_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2129,32 +2129,32 @@ let rec decode_pb_options_fixed32_rules d =
 let rec decode_pb_options_fixed64_rules d =
   let v = default_fixed64_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      fixed64_rules_set_const v (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "const")
+      fixed64_rules_set_const v (Pbrt_options.int64 pb_options_value "fixed64_rules" "const")
     | ("lt", pb_options_value) -> 
-      fixed64_rules_set_lt v (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "lt")
+      fixed64_rules_set_lt v (Pbrt_options.int64 pb_options_value "fixed64_rules" "lt")
     | ("lte", pb_options_value) -> 
-      fixed64_rules_set_lte v (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "lte")
+      fixed64_rules_set_lte v (Pbrt_options.int64 pb_options_value "fixed64_rules" "lte")
     | ("gt", pb_options_value) -> 
-      fixed64_rules_set_gt v (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "gt")
+      fixed64_rules_set_gt v (Pbrt_options.int64 pb_options_value "fixed64_rules" "gt")
     | ("gte", pb_options_value) -> 
-      fixed64_rules_set_gte v (Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      fixed64_rules_set_gte v (Pbrt_options.int64 pb_options_value "fixed64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       fixed64_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "in_"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "fixed64_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       fixed64_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "fixed64_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "fixed64_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      fixed64_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "fixed64_rules" "ignore_empty")
+      fixed64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "fixed64_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2163,32 +2163,32 @@ let rec decode_pb_options_fixed64_rules d =
 let rec decode_pb_options_sfixed32_rules d =
   let v = default_sfixed32_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      sfixed32_rules_set_const v (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "const")
+      sfixed32_rules_set_const v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "const")
     | ("lt", pb_options_value) -> 
-      sfixed32_rules_set_lt v (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "lt")
+      sfixed32_rules_set_lt v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "lt")
     | ("lte", pb_options_value) -> 
-      sfixed32_rules_set_lte v (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "lte")
+      sfixed32_rules_set_lte v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "lte")
     | ("gt", pb_options_value) -> 
-      sfixed32_rules_set_gt v (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "gt")
+      sfixed32_rules_set_gt v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "gt")
     | ("gte", pb_options_value) -> 
-      sfixed32_rules_set_gte v (Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      sfixed32_rules_set_gte v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       sfixed32_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "in_"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sfixed32_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       sfixed32_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "sfixed32_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sfixed32_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      sfixed32_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "sfixed32_rules" "ignore_empty")
+      sfixed32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sfixed32_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2197,32 +2197,32 @@ let rec decode_pb_options_sfixed32_rules d =
 let rec decode_pb_options_sfixed64_rules d =
   let v = default_sfixed64_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      sfixed64_rules_set_const v (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "const")
+      sfixed64_rules_set_const v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "const")
     | ("lt", pb_options_value) -> 
-      sfixed64_rules_set_lt v (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "lt")
+      sfixed64_rules_set_lt v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "lt")
     | ("lte", pb_options_value) -> 
-      sfixed64_rules_set_lte v (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "lte")
+      sfixed64_rules_set_lte v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "lte")
     | ("gt", pb_options_value) -> 
-      sfixed64_rules_set_gt v (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "gt")
+      sfixed64_rules_set_gt v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "gt")
     | ("gte", pb_options_value) -> 
-      sfixed64_rules_set_gte v (Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "gte")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      sfixed64_rules_set_gte v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
       sfixed64_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "in_"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sfixed64_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       sfixed64_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int64 pb_options_value "sfixed64_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sfixed64_rules" "not_in"
       ) l;
     end
     | ("ignore_empty", pb_options_value) -> 
-      sfixed64_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "sfixed64_rules" "ignore_empty")
+      sfixed64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sfixed64_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2231,12 +2231,12 @@ let rec decode_pb_options_sfixed64_rules d =
 let rec decode_pb_options_bool_rules d =
   let v = default_bool_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      bool_rules_set_const v (Pbrt_pb_options.bool pb_options_value "bool_rules" "const")
+      bool_rules_set_const v (Pbrt_options.bool pb_options_value "bool_rules" "const")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2244,36 +2244,36 @@ let rec decode_pb_options_bool_rules d =
 
 let rec decode_pb_options_known_regex pb_options =
   match pb_options with
-  | Ocaml_protoc_compiler_lib.Pb_option.Scalar_value (Constant_literal "UNKNOWN") -> (Unknown : known_regex)
-  | Ocaml_protoc_compiler_lib.Pb_option.Scalar_value (Constant_literal "HTTP_HEADER_NAME") -> (Http_header_name : known_regex)
-  | Ocaml_protoc_compiler_lib.Pb_option.Scalar_value (Constant_literal "HTTP_HEADER_VALUE") -> (Http_header_value : known_regex)
-  | _ -> Pbrt_pb_options.E.malformed_variant "known_regex"
+  | Pbrt_options.Scalar_value (Constant_literal "UNKNOWN") -> (Unknown : known_regex)
+  | Pbrt_options.Scalar_value (Constant_literal "HTTP_HEADER_NAME") -> (Http_header_name : known_regex)
+  | Pbrt_options.Scalar_value (Constant_literal "HTTP_HEADER_VALUE") -> (Http_header_value : known_regex)
+  | _ -> Pbrt_options.E.malformed_variant "known_regex"
 
 let rec decode_pb_options_string_rules_well_known pb_options =
   let assoc = match pb_options with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   let rec loop = function
-    | [] -> Pbrt_pb_options.E.malformed_variant "string_rules_well_known"
+    | [] -> Pbrt_options.E.malformed_variant "string_rules_well_known"
     | ("email", pb_options_value)::_ -> 
-      (Email (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Email") : string_rules_well_known)
+      (Email (Pbrt_options.bool pb_options_value "string_rules_well_known" "Email") : string_rules_well_known)
     | ("hostname", pb_options_value)::_ -> 
-      (Hostname (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Hostname") : string_rules_well_known)
+      (Hostname (Pbrt_options.bool pb_options_value "string_rules_well_known" "Hostname") : string_rules_well_known)
     | ("ip", pb_options_value)::_ -> 
-      (Ip (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Ip") : string_rules_well_known)
+      (Ip (Pbrt_options.bool pb_options_value "string_rules_well_known" "Ip") : string_rules_well_known)
     | ("ipv4", pb_options_value)::_ -> 
-      (Ipv4 (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Ipv4") : string_rules_well_known)
+      (Ipv4 (Pbrt_options.bool pb_options_value "string_rules_well_known" "Ipv4") : string_rules_well_known)
     | ("ipv6", pb_options_value)::_ -> 
-      (Ipv6 (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Ipv6") : string_rules_well_known)
+      (Ipv6 (Pbrt_options.bool pb_options_value "string_rules_well_known" "Ipv6") : string_rules_well_known)
     | ("uri", pb_options_value)::_ -> 
-      (Uri (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Uri") : string_rules_well_known)
+      (Uri (Pbrt_options.bool pb_options_value "string_rules_well_known" "Uri") : string_rules_well_known)
     | ("uriRef", pb_options_value)::_ -> 
-      (Uri_ref (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Uri_ref") : string_rules_well_known)
+      (Uri_ref (Pbrt_options.bool pb_options_value "string_rules_well_known" "Uri_ref") : string_rules_well_known)
     | ("address", pb_options_value)::_ -> 
-      (Address (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Address") : string_rules_well_known)
+      (Address (Pbrt_options.bool pb_options_value "string_rules_well_known" "Address") : string_rules_well_known)
     | ("uuid", pb_options_value)::_ -> 
-      (Uuid (Pbrt_pb_options.bool pb_options_value "string_rules_well_known" "Uuid") : string_rules_well_known)
+      (Uuid (Pbrt_options.bool pb_options_value "string_rules_well_known" "Uuid") : string_rules_well_known)
     | ("wellKnownRegex", pb_options_value)::_ -> 
       (Well_known_regex ((decode_pb_options_known_regex pb_options_value)) : string_rules_well_known)
     
@@ -2284,68 +2284,68 @@ let rec decode_pb_options_string_rules_well_known pb_options =
 and decode_pb_options_string_rules d =
   let v = default_string_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      string_rules_set_const v (Pbrt_pb_options.string pb_options_value "string_rules" "const")
+      string_rules_set_const v (Pbrt_options.string pb_options_value "string_rules" "const")
     | ("len", pb_options_value) -> 
-      string_rules_set_len v (Pbrt_pb_options.int64 pb_options_value "string_rules" "len")
+      string_rules_set_len v (Pbrt_options.int64 pb_options_value "string_rules" "len")
     | ("min_len", pb_options_value) -> 
-      string_rules_set_min_len v (Pbrt_pb_options.int64 pb_options_value "string_rules" "min_len")
+      string_rules_set_min_len v (Pbrt_options.int64 pb_options_value "string_rules" "min_len")
     | ("max_len", pb_options_value) -> 
-      string_rules_set_max_len v (Pbrt_pb_options.int64 pb_options_value "string_rules" "max_len")
+      string_rules_set_max_len v (Pbrt_options.int64 pb_options_value "string_rules" "max_len")
     | ("len_bytes", pb_options_value) -> 
-      string_rules_set_len_bytes v (Pbrt_pb_options.int64 pb_options_value "string_rules" "len_bytes")
+      string_rules_set_len_bytes v (Pbrt_options.int64 pb_options_value "string_rules" "len_bytes")
     | ("min_bytes", pb_options_value) -> 
-      string_rules_set_min_bytes v (Pbrt_pb_options.int64 pb_options_value "string_rules" "min_bytes")
+      string_rules_set_min_bytes v (Pbrt_options.int64 pb_options_value "string_rules" "min_bytes")
     | ("max_bytes", pb_options_value) -> 
-      string_rules_set_max_bytes v (Pbrt_pb_options.int64 pb_options_value "string_rules" "max_bytes")
+      string_rules_set_max_bytes v (Pbrt_options.int64 pb_options_value "string_rules" "max_bytes")
     | ("pattern", pb_options_value) -> 
-      string_rules_set_pattern v (Pbrt_pb_options.string pb_options_value "string_rules" "pattern")
+      string_rules_set_pattern v (Pbrt_options.string pb_options_value "string_rules" "pattern")
     | ("prefix", pb_options_value) -> 
-      string_rules_set_prefix v (Pbrt_pb_options.string pb_options_value "string_rules" "prefix")
+      string_rules_set_prefix v (Pbrt_options.string pb_options_value "string_rules" "prefix")
     | ("suffix", pb_options_value) -> 
-      string_rules_set_suffix v (Pbrt_pb_options.string pb_options_value "string_rules" "suffix")
+      string_rules_set_suffix v (Pbrt_options.string pb_options_value "string_rules" "suffix")
     | ("contains", pb_options_value) -> 
-      string_rules_set_contains v (Pbrt_pb_options.string pb_options_value "string_rules" "contains")
+      string_rules_set_contains v (Pbrt_options.string pb_options_value "string_rules" "contains")
     | ("not_contains", pb_options_value) -> 
-      string_rules_set_not_contains v (Pbrt_pb_options.string pb_options_value "string_rules" "not_contains")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      string_rules_set_not_contains v (Pbrt_options.string pb_options_value "string_rules" "not_contains")
+    | ("in", Pbrt_options.List_literal l) -> begin
       string_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.string pb_options_value "string_rules" "in_"
+        | pb_options_value -> Pbrt_options.string pb_options_value "string_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       string_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.string pb_options_value "string_rules" "not_in"
+        | pb_options_value -> Pbrt_options.string pb_options_value "string_rules" "not_in"
       ) l;
     end
     | ("email", pb_options_value) -> 
-      string_rules_set_well_known v (Email (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Email (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("hostname", pb_options_value) -> 
-      string_rules_set_well_known v (Hostname (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Hostname (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("ip", pb_options_value) -> 
-      string_rules_set_well_known v (Ip (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Ip (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("ipv4", pb_options_value) -> 
-      string_rules_set_well_known v (Ipv4 (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Ipv4 (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("ipv6", pb_options_value) -> 
-      string_rules_set_well_known v (Ipv6 (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Ipv6 (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("uri", pb_options_value) -> 
-      string_rules_set_well_known v (Uri (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Uri (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("uriRef", pb_options_value) -> 
-      string_rules_set_well_known v (Uri_ref (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Uri_ref (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("address", pb_options_value) -> 
-      string_rules_set_well_known v (Address (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Address (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("uuid", pb_options_value) -> 
-      string_rules_set_well_known v (Uuid (Pbrt_pb_options.bool pb_options_value "string_rules" "well_known"))
+      string_rules_set_well_known v (Uuid (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
     | ("wellKnownRegex", pb_options_value) -> 
       string_rules_set_well_known v (Well_known_regex ((decode_pb_options_known_regex pb_options_value)))
     | ("strict", pb_options_value) -> 
-      string_rules_set_strict v (Pbrt_pb_options.bool pb_options_value "string_rules" "strict")
+      string_rules_set_strict v (Pbrt_options.bool pb_options_value "string_rules" "strict")
     | ("ignore_empty", pb_options_value) -> 
-      string_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "string_rules" "ignore_empty")
+      string_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "string_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2353,17 +2353,17 @@ and decode_pb_options_string_rules d =
 
 let rec decode_pb_options_bytes_rules_well_known pb_options =
   let assoc = match pb_options with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   let rec loop = function
-    | [] -> Pbrt_pb_options.E.malformed_variant "bytes_rules_well_known"
+    | [] -> Pbrt_options.E.malformed_variant "bytes_rules_well_known"
     | ("ip", pb_options_value)::_ -> 
-      (Ip (Pbrt_pb_options.bool pb_options_value "bytes_rules_well_known" "Ip") : bytes_rules_well_known)
+      (Ip (Pbrt_options.bool pb_options_value "bytes_rules_well_known" "Ip") : bytes_rules_well_known)
     | ("ipv4", pb_options_value)::_ -> 
-      (Ipv4 (Pbrt_pb_options.bool pb_options_value "bytes_rules_well_known" "Ipv4") : bytes_rules_well_known)
+      (Ipv4 (Pbrt_options.bool pb_options_value "bytes_rules_well_known" "Ipv4") : bytes_rules_well_known)
     | ("ipv6", pb_options_value)::_ -> 
-      (Ipv6 (Pbrt_pb_options.bool pb_options_value "bytes_rules_well_known" "Ipv6") : bytes_rules_well_known)
+      (Ipv6 (Pbrt_options.bool pb_options_value "bytes_rules_well_known" "Ipv6") : bytes_rules_well_known)
     
     | _ :: tl -> loop tl
   in
@@ -2372,44 +2372,44 @@ let rec decode_pb_options_bytes_rules_well_known pb_options =
 and decode_pb_options_bytes_rules d =
   let v = default_bytes_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      bytes_rules_set_const v (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "const")
+      bytes_rules_set_const v (Pbrt_options.bytes pb_options_value "bytes_rules" "const")
     | ("len", pb_options_value) -> 
-      bytes_rules_set_len v (Pbrt_pb_options.int64 pb_options_value "bytes_rules" "len")
+      bytes_rules_set_len v (Pbrt_options.int64 pb_options_value "bytes_rules" "len")
     | ("min_len", pb_options_value) -> 
-      bytes_rules_set_min_len v (Pbrt_pb_options.int64 pb_options_value "bytes_rules" "min_len")
+      bytes_rules_set_min_len v (Pbrt_options.int64 pb_options_value "bytes_rules" "min_len")
     | ("max_len", pb_options_value) -> 
-      bytes_rules_set_max_len v (Pbrt_pb_options.int64 pb_options_value "bytes_rules" "max_len")
+      bytes_rules_set_max_len v (Pbrt_options.int64 pb_options_value "bytes_rules" "max_len")
     | ("pattern", pb_options_value) -> 
-      bytes_rules_set_pattern v (Pbrt_pb_options.string pb_options_value "bytes_rules" "pattern")
+      bytes_rules_set_pattern v (Pbrt_options.string pb_options_value "bytes_rules" "pattern")
     | ("prefix", pb_options_value) -> 
-      bytes_rules_set_prefix v (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "prefix")
+      bytes_rules_set_prefix v (Pbrt_options.bytes pb_options_value "bytes_rules" "prefix")
     | ("suffix", pb_options_value) -> 
-      bytes_rules_set_suffix v (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "suffix")
+      bytes_rules_set_suffix v (Pbrt_options.bytes pb_options_value "bytes_rules" "suffix")
     | ("contains", pb_options_value) -> 
-      bytes_rules_set_contains v (Pbrt_pb_options.bytes pb_options_value "bytes_rules" "contains")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      bytes_rules_set_contains v (Pbrt_options.bytes pb_options_value "bytes_rules" "contains")
+    | ("in", Pbrt_options.List_literal l) -> begin
       bytes_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.bytes pb_options_value "bytes_rules" "in_"
+        | pb_options_value -> Pbrt_options.bytes pb_options_value "bytes_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       bytes_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.bytes pb_options_value "bytes_rules" "not_in"
+        | pb_options_value -> Pbrt_options.bytes pb_options_value "bytes_rules" "not_in"
       ) l;
     end
     | ("ip", pb_options_value) -> 
-      bytes_rules_set_well_known v (Ip (Pbrt_pb_options.bool pb_options_value "bytes_rules" "well_known"))
+      bytes_rules_set_well_known v (Ip (Pbrt_options.bool pb_options_value "bytes_rules" "well_known"))
     | ("ipv4", pb_options_value) -> 
-      bytes_rules_set_well_known v (Ipv4 (Pbrt_pb_options.bool pb_options_value "bytes_rules" "well_known"))
+      bytes_rules_set_well_known v (Ipv4 (Pbrt_options.bool pb_options_value "bytes_rules" "well_known"))
     | ("ipv6", pb_options_value) -> 
-      bytes_rules_set_well_known v (Ipv6 (Pbrt_pb_options.bool pb_options_value "bytes_rules" "well_known"))
+      bytes_rules_set_well_known v (Ipv6 (Pbrt_options.bool pb_options_value "bytes_rules" "well_known"))
     | ("ignore_empty", pb_options_value) -> 
-      bytes_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "bytes_rules" "ignore_empty")
+      bytes_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "bytes_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2418,22 +2418,22 @@ and decode_pb_options_bytes_rules d =
 let rec decode_pb_options_enum_rules d =
   let v = default_enum_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("const", pb_options_value) -> 
-      enum_rules_set_const v (Pbrt_pb_options.int32 pb_options_value "enum_rules" "const")
+      enum_rules_set_const v (Pbrt_options.int32 pb_options_value "enum_rules" "const")
     | ("defined_only", pb_options_value) -> 
-      enum_rules_set_defined_only v (Pbrt_pb_options.bool pb_options_value "enum_rules" "defined_only")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      enum_rules_set_defined_only v (Pbrt_options.bool pb_options_value "enum_rules" "defined_only")
+    | ("in", Pbrt_options.List_literal l) -> begin
       enum_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "enum_rules" "in_"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "enum_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       enum_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.int32 pb_options_value "enum_rules" "not_in"
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "enum_rules" "not_in"
       ) l;
     end
     
@@ -2444,20 +2444,20 @@ let rec decode_pb_options_enum_rules d =
 let rec decode_pb_options_any_rules d =
   let v = default_any_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("required", pb_options_value) -> 
-      any_rules_set_required v (Pbrt_pb_options.bool pb_options_value "any_rules" "required")
-    | ("in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+      any_rules_set_required v (Pbrt_options.bool pb_options_value "any_rules" "required")
+    | ("in", Pbrt_options.List_literal l) -> begin
       any_rules_set_in_ v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.string pb_options_value "any_rules" "in_"
+        | pb_options_value -> Pbrt_options.string pb_options_value "any_rules" "in_"
       ) l;
     end
-    | ("not_in", Ocaml_protoc_compiler_lib.Pb_option.List_literal l) -> begin
+    | ("not_in", Pbrt_options.List_literal l) -> begin
       any_rules_set_not_in v @@ List.map (function
-        | pb_options_value -> Pbrt_pb_options.string pb_options_value "any_rules" "not_in"
+        | pb_options_value -> Pbrt_options.string pb_options_value "any_rules" "not_in"
       ) l;
     end
     
@@ -2467,11 +2467,11 @@ let rec decode_pb_options_any_rules d =
 
 let rec decode_pb_options_field_rules_type pb_options =
   let assoc = match pb_options with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   let rec loop = function
-    | [] -> Pbrt_pb_options.E.malformed_variant "field_rules_type"
+    | [] -> Pbrt_options.E.malformed_variant "field_rules_type"
     | ("float", pb_options_value)::_ -> 
       (Float ((decode_pb_options_float_rules pb_options_value)) : field_rules_type)
     | ("double", pb_options_value)::_ -> 
@@ -2518,7 +2518,7 @@ let rec decode_pb_options_field_rules_type pb_options =
 and decode_pb_options_field_rules d =
   let v = default_field_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
@@ -2570,20 +2570,20 @@ and decode_pb_options_field_rules d =
 and decode_pb_options_repeated_rules d =
   let v = default_repeated_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("min_items", pb_options_value) -> 
-      repeated_rules_set_min_items v (Pbrt_pb_options.int64 pb_options_value "repeated_rules" "min_items")
+      repeated_rules_set_min_items v (Pbrt_options.int64 pb_options_value "repeated_rules" "min_items")
     | ("max_items", pb_options_value) -> 
-      repeated_rules_set_max_items v (Pbrt_pb_options.int64 pb_options_value "repeated_rules" "max_items")
+      repeated_rules_set_max_items v (Pbrt_options.int64 pb_options_value "repeated_rules" "max_items")
     | ("unique", pb_options_value) -> 
-      repeated_rules_set_unique v (Pbrt_pb_options.bool pb_options_value "repeated_rules" "unique")
+      repeated_rules_set_unique v (Pbrt_options.bool pb_options_value "repeated_rules" "unique")
     | ("items", pb_options_value) -> 
       repeated_rules_set_items v ((decode_pb_options_field_rules pb_options_value))
     | ("ignore_empty", pb_options_value) -> 
-      repeated_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "repeated_rules" "ignore_empty")
+      repeated_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "repeated_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2592,22 +2592,22 @@ and decode_pb_options_repeated_rules d =
 and decode_pb_options_map_rules d =
   let v = default_map_rules () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
     | ("min_pairs", pb_options_value) -> 
-      map_rules_set_min_pairs v (Pbrt_pb_options.int64 pb_options_value "map_rules" "min_pairs")
+      map_rules_set_min_pairs v (Pbrt_options.int64 pb_options_value "map_rules" "min_pairs")
     | ("max_pairs", pb_options_value) -> 
-      map_rules_set_max_pairs v (Pbrt_pb_options.int64 pb_options_value "map_rules" "max_pairs")
+      map_rules_set_max_pairs v (Pbrt_options.int64 pb_options_value "map_rules" "max_pairs")
     | ("no_sparse", pb_options_value) -> 
-      map_rules_set_no_sparse v (Pbrt_pb_options.bool pb_options_value "map_rules" "no_sparse")
+      map_rules_set_no_sparse v (Pbrt_options.bool pb_options_value "map_rules" "no_sparse")
     | ("keys", pb_options_value) -> 
       map_rules_set_keys v ((decode_pb_options_field_rules pb_options_value))
     | ("values", pb_options_value) -> 
       map_rules_set_values v ((decode_pb_options_field_rules pb_options_value))
     | ("ignore_empty", pb_options_value) -> 
-      map_rules_set_ignore_empty v (Pbrt_pb_options.bool pb_options_value "map_rules" "ignore_empty")
+      map_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "map_rules" "ignore_empty")
     
     | (_, _) -> () (*Unknown fields are ignored*)
   ) assoc;
@@ -2616,7 +2616,7 @@ and decode_pb_options_map_rules d =
 let rec decode_pb_options_field_options d =
   let v = default_field_options () in
   let assoc = match d with
-    | Ocaml_protoc_compiler_lib.Pb_option.Message_literal assoc -> assoc
+    | Pbrt_options.Message_literal assoc -> assoc
     | _ -> assert(false)
   in
   List.iter (function 
