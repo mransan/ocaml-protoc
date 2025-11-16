@@ -1,0 +1,2951 @@
+[@@@ocaml.warning "-23-27-30-39-44"]
+
+type message_options = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
+  mutable disabled : bool;
+  mutable ignored : bool;
+}
+
+type oneof_options = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
+  mutable required : bool;
+}
+
+type message_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
+  mutable skip : bool;
+  mutable required : bool;
+}
+
+type float_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : float;
+  mutable lt : float;
+  mutable lte : float;
+  mutable gt : float;
+  mutable gte : float;
+  mutable in_ : float list;
+  mutable not_in : float list;
+  mutable ignore_empty : bool;
+}
+
+type double_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : float;
+  mutable lt : float;
+  mutable lte : float;
+  mutable gt : float;
+  mutable gte : float;
+  mutable in_ : float list;
+  mutable not_in : float list;
+  mutable ignore_empty : bool;
+}
+
+type int32_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int32;
+  mutable lt : int32;
+  mutable lte : int32;
+  mutable gt : int32;
+  mutable gte : int32;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool;
+}
+
+type int64_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int64;
+  mutable lt : int64;
+  mutable lte : int64;
+  mutable gt : int64;
+  mutable gte : int64;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool;
+}
+
+type uint32_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int32;
+  mutable lt : int32;
+  mutable lte : int32;
+  mutable gt : int32;
+  mutable gte : int32;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool;
+}
+
+type uint64_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int64;
+  mutable lt : int64;
+  mutable lte : int64;
+  mutable gt : int64;
+  mutable gte : int64;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool;
+}
+
+type sint32_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int32;
+  mutable lt : int32;
+  mutable lte : int32;
+  mutable gt : int32;
+  mutable gte : int32;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool;
+}
+
+type sint64_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int64;
+  mutable lt : int64;
+  mutable lte : int64;
+  mutable gt : int64;
+  mutable gte : int64;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool;
+}
+
+type fixed32_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int32;
+  mutable lt : int32;
+  mutable lte : int32;
+  mutable gt : int32;
+  mutable gte : int32;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool;
+}
+
+type fixed64_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int64;
+  mutable lt : int64;
+  mutable lte : int64;
+  mutable gt : int64;
+  mutable gte : int64;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool;
+}
+
+type sfixed32_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int32;
+  mutable lt : int32;
+  mutable lte : int32;
+  mutable gt : int32;
+  mutable gte : int32;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+  mutable ignore_empty : bool;
+}
+
+type sfixed64_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
+  mutable const : int64;
+  mutable lt : int64;
+  mutable lte : int64;
+  mutable gt : int64;
+  mutable gte : int64;
+  mutable in_ : int64 list;
+  mutable not_in : int64 list;
+  mutable ignore_empty : bool;
+}
+
+type bool_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
+  mutable const : bool;
+}
+
+type known_regex =
+  | Unknown 
+  | Http_header_name 
+  | Http_header_value 
+
+type string_rules_well_known =
+  | Email of bool
+  | Hostname of bool
+  | Ip of bool
+  | Ipv4 of bool
+  | Ipv6 of bool
+  | Uri of bool
+  | Uri_ref of bool
+  | Address of bool
+  | Uuid of bool
+  | Well_known_regex of known_regex
+
+and string_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 14 fields *)
+  mutable const : string;
+  mutable len : int64;
+  mutable min_len : int64;
+  mutable max_len : int64;
+  mutable len_bytes : int64;
+  mutable min_bytes : int64;
+  mutable max_bytes : int64;
+  mutable pattern : string;
+  mutable prefix : string;
+  mutable suffix : string;
+  mutable contains : string;
+  mutable not_contains : string;
+  mutable in_ : string list;
+  mutable not_in : string list;
+  mutable well_known : string_rules_well_known option;
+  mutable strict : bool;
+  mutable ignore_empty : bool;
+}
+
+type bytes_rules_well_known =
+  | Ip of bool
+  | Ipv4 of bool
+  | Ipv6 of bool
+
+and bytes_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 9 fields *)
+  mutable const : bytes;
+  mutable len : int64;
+  mutable min_len : int64;
+  mutable max_len : int64;
+  mutable pattern : string;
+  mutable prefix : bytes;
+  mutable suffix : bytes;
+  mutable contains : bytes;
+  mutable in_ : bytes list;
+  mutable not_in : bytes list;
+  mutable well_known : bytes_rules_well_known option;
+  mutable ignore_empty : bool;
+}
+
+type enum_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
+  mutable const : int32;
+  mutable defined_only : bool;
+  mutable in_ : int32 list;
+  mutable not_in : int32 list;
+}
+
+type any_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
+  mutable required : bool;
+  mutable in_ : string list;
+  mutable not_in : string list;
+}
+
+type field_rules_type =
+  | Float of float_rules
+  | Double of double_rules
+  | Int32 of int32_rules
+  | Int64 of int64_rules
+  | Uint32 of uint32_rules
+  | Uint64 of uint64_rules
+  | Sint32 of sint32_rules
+  | Sint64 of sint64_rules
+  | Fixed32 of fixed32_rules
+  | Fixed64 of fixed64_rules
+  | Sfixed32 of sfixed32_rules
+  | Sfixed64 of sfixed64_rules
+  | Bool of bool_rules
+  | String of string_rules
+  | Bytes of bytes_rules
+  | Enum of enum_rules
+  | Repeated of repeated_rules
+  | Map of map_rules
+  | Any of any_rules
+
+and field_rules = {
+  mutable message : message_rules option;
+  mutable type_ : field_rules_type option;
+}
+
+and repeated_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 4 fields *)
+  mutable min_items : int64;
+  mutable max_items : int64;
+  mutable unique : bool;
+  mutable items : field_rules option;
+  mutable ignore_empty : bool;
+}
+
+and map_rules = {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 4 fields *)
+  mutable min_pairs : int64;
+  mutable max_pairs : int64;
+  mutable no_sparse : bool;
+  mutable keys : field_rules option;
+  mutable values : field_rules option;
+  mutable ignore_empty : bool;
+}
+
+type field_options = {
+  mutable rules : field_rules option;
+}
+
+let default_message_options (): message_options =
+{
+  _presence=Pbrt.Bitfield.empty;
+  disabled=false;
+  ignored=false;
+}
+
+let default_oneof_options (): oneof_options =
+{
+  _presence=Pbrt.Bitfield.empty;
+  required=false;
+}
+
+let default_message_rules (): message_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  skip=false;
+  required=false;
+}
+
+let default_float_rules (): float_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0.;
+  lt=0.;
+  lte=0.;
+  gt=0.;
+  gte=0.;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_double_rules (): double_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0.;
+  lt=0.;
+  lte=0.;
+  gt=0.;
+  gte=0.;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_int32_rules (): int32_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0l;
+  lt=0l;
+  lte=0l;
+  gt=0l;
+  gte=0l;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_int64_rules (): int64_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0L;
+  lt=0L;
+  lte=0L;
+  gt=0L;
+  gte=0L;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_uint32_rules (): uint32_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0l;
+  lt=0l;
+  lte=0l;
+  gt=0l;
+  gte=0l;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_uint64_rules (): uint64_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0L;
+  lt=0L;
+  lte=0L;
+  gt=0L;
+  gte=0L;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_sint32_rules (): sint32_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0l;
+  lt=0l;
+  lte=0l;
+  gt=0l;
+  gte=0l;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_sint64_rules (): sint64_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0L;
+  lt=0L;
+  lte=0L;
+  gt=0L;
+  gte=0L;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_fixed32_rules (): fixed32_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0l;
+  lt=0l;
+  lte=0l;
+  gt=0l;
+  gte=0l;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_fixed64_rules (): fixed64_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0L;
+  lt=0L;
+  lte=0L;
+  gt=0L;
+  gte=0L;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_sfixed32_rules (): sfixed32_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0l;
+  lt=0l;
+  lte=0l;
+  gt=0l;
+  gte=0l;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_sfixed64_rules (): sfixed64_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0L;
+  lt=0L;
+  lte=0L;
+  gt=0L;
+  gte=0L;
+  in_=[];
+  not_in=[];
+  ignore_empty=false;
+}
+
+let default_bool_rules (): bool_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=false;
+}
+
+let default_known_regex () = (Unknown:known_regex)
+
+let default_string_rules_well_known (): string_rules_well_known = Email (false)
+
+let default_string_rules (): string_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const="";
+  len=0L;
+  min_len=0L;
+  max_len=0L;
+  len_bytes=0L;
+  min_bytes=0L;
+  max_bytes=0L;
+  pattern="";
+  prefix="";
+  suffix="";
+  contains="";
+  not_contains="";
+  in_=[];
+  not_in=[];
+  well_known=None;
+  strict=false;
+  ignore_empty=false;
+}
+
+let default_bytes_rules_well_known (): bytes_rules_well_known = Ip (false)
+
+let default_bytes_rules (): bytes_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=Bytes.create 0;
+  len=0L;
+  min_len=0L;
+  max_len=0L;
+  pattern="";
+  prefix=Bytes.create 0;
+  suffix=Bytes.create 0;
+  contains=Bytes.create 0;
+  in_=[];
+  not_in=[];
+  well_known=None;
+  ignore_empty=false;
+}
+
+let default_enum_rules (): enum_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  const=0l;
+  defined_only=false;
+  in_=[];
+  not_in=[];
+}
+
+let default_any_rules (): any_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  required=false;
+  in_=[];
+  not_in=[];
+}
+
+let default_field_rules_type (): field_rules_type = Float (default_float_rules ())
+
+let default_field_rules (): field_rules =
+{
+  message=None;
+  type_=None;
+}
+
+let default_repeated_rules (): repeated_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  min_items=0L;
+  max_items=0L;
+  unique=false;
+  items=None;
+  ignore_empty=false;
+}
+
+let default_map_rules (): map_rules =
+{
+  _presence=Pbrt.Bitfield.empty;
+  min_pairs=0L;
+  max_pairs=0L;
+  no_sparse=false;
+  keys=None;
+  values=None;
+  ignore_empty=false;
+}
+
+let default_field_options (): field_options =
+{
+  rules=None;
+}
+
+
+(** {2 Make functions} *)
+
+let[@inline] message_options_has_disabled (self:message_options) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] message_options_has_ignored (self:message_options) : bool = (Pbrt.Bitfield.get self._presence 1)
+
+let[@inline] message_options_set_disabled (self:message_options) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.disabled <- x
+let[@inline] message_options_set_ignored (self:message_options) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.ignored <- x
+
+let copy_message_options (self:message_options) : message_options =
+  { self with disabled = self.disabled }
+
+let make_message_options 
+  ?(disabled:bool option)
+  ?(ignored:bool option)
+  () : message_options  =
+  let _res = default_message_options () in
+  (match disabled with
+  | None -> ()
+  | Some v -> message_options_set_disabled _res v);
+  (match ignored with
+  | None -> ()
+  | Some v -> message_options_set_ignored _res v);
+  _res
+
+let[@inline] oneof_options_has_required (self:oneof_options) : bool = (Pbrt.Bitfield.get self._presence 0)
+
+let[@inline] oneof_options_set_required (self:oneof_options) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.required <- x
+
+let copy_oneof_options (self:oneof_options) : oneof_options =
+  { self with required = self.required }
+
+let make_oneof_options 
+  ?(required:bool option)
+  () : oneof_options  =
+  let _res = default_oneof_options () in
+  (match required with
+  | None -> ()
+  | Some v -> oneof_options_set_required _res v);
+  _res
+
+let[@inline] message_rules_has_skip (self:message_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] message_rules_has_required (self:message_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+
+let[@inline] message_rules_set_skip (self:message_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.skip <- x
+let[@inline] message_rules_set_required (self:message_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.required <- x
+
+let copy_message_rules (self:message_rules) : message_rules =
+  { self with skip = self.skip }
+
+let make_message_rules 
+  ?(skip:bool option)
+  ?(required:bool option)
+  () : message_rules  =
+  let _res = default_message_rules () in
+  (match skip with
+  | None -> ()
+  | Some v -> message_rules_set_skip _res v);
+  (match required with
+  | None -> ()
+  | Some v -> message_rules_set_required _res v);
+  _res
+
+let[@inline] float_rules_has_const (self:float_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] float_rules_has_lt (self:float_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] float_rules_has_lte (self:float_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] float_rules_has_gt (self:float_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] float_rules_has_gte (self:float_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] float_rules_has_ignore_empty (self:float_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] float_rules_set_const (self:float_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] float_rules_set_lt (self:float_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] float_rules_set_lte (self:float_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] float_rules_set_gt (self:float_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] float_rules_set_gte (self:float_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] float_rules_set_in_ (self:float_rules) (x:float list) : unit =
+  self.in_ <- x
+let[@inline] float_rules_set_not_in (self:float_rules) (x:float list) : unit =
+  self.not_in <- x
+let[@inline] float_rules_set_ignore_empty (self:float_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_float_rules (self:float_rules) : float_rules =
+  { self with const = self.const }
+
+let make_float_rules 
+  ?(const:float option)
+  ?(lt:float option)
+  ?(lte:float option)
+  ?(gt:float option)
+  ?(gte:float option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : float_rules  =
+  let _res = default_float_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> float_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> float_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> float_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> float_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> float_rules_set_gte _res v);
+  float_rules_set_in_ _res in_;
+  float_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> float_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] double_rules_has_const (self:double_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] double_rules_has_lt (self:double_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] double_rules_has_lte (self:double_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] double_rules_has_gt (self:double_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] double_rules_has_gte (self:double_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] double_rules_has_ignore_empty (self:double_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] double_rules_set_const (self:double_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] double_rules_set_lt (self:double_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] double_rules_set_lte (self:double_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] double_rules_set_gt (self:double_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] double_rules_set_gte (self:double_rules) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] double_rules_set_in_ (self:double_rules) (x:float list) : unit =
+  self.in_ <- x
+let[@inline] double_rules_set_not_in (self:double_rules) (x:float list) : unit =
+  self.not_in <- x
+let[@inline] double_rules_set_ignore_empty (self:double_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_double_rules (self:double_rules) : double_rules =
+  { self with const = self.const }
+
+let make_double_rules 
+  ?(const:float option)
+  ?(lt:float option)
+  ?(lte:float option)
+  ?(gt:float option)
+  ?(gte:float option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : double_rules  =
+  let _res = default_double_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> double_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> double_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> double_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> double_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> double_rules_set_gte _res v);
+  double_rules_set_in_ _res in_;
+  double_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> double_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] int32_rules_has_const (self:int32_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] int32_rules_has_lt (self:int32_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] int32_rules_has_lte (self:int32_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] int32_rules_has_gt (self:int32_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] int32_rules_has_gte (self:int32_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] int32_rules_has_ignore_empty (self:int32_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] int32_rules_set_const (self:int32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] int32_rules_set_lt (self:int32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] int32_rules_set_lte (self:int32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] int32_rules_set_gt (self:int32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] int32_rules_set_gte (self:int32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] int32_rules_set_in_ (self:int32_rules) (x:int32 list) : unit =
+  self.in_ <- x
+let[@inline] int32_rules_set_not_in (self:int32_rules) (x:int32 list) : unit =
+  self.not_in <- x
+let[@inline] int32_rules_set_ignore_empty (self:int32_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_int32_rules (self:int32_rules) : int32_rules =
+  { self with const = self.const }
+
+let make_int32_rules 
+  ?(const:int32 option)
+  ?(lt:int32 option)
+  ?(lte:int32 option)
+  ?(gt:int32 option)
+  ?(gte:int32 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : int32_rules  =
+  let _res = default_int32_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> int32_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> int32_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> int32_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> int32_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> int32_rules_set_gte _res v);
+  int32_rules_set_in_ _res in_;
+  int32_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> int32_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] int64_rules_has_const (self:int64_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] int64_rules_has_lt (self:int64_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] int64_rules_has_lte (self:int64_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] int64_rules_has_gt (self:int64_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] int64_rules_has_gte (self:int64_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] int64_rules_has_ignore_empty (self:int64_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] int64_rules_set_const (self:int64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] int64_rules_set_lt (self:int64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] int64_rules_set_lte (self:int64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] int64_rules_set_gt (self:int64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] int64_rules_set_gte (self:int64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] int64_rules_set_in_ (self:int64_rules) (x:int64 list) : unit =
+  self.in_ <- x
+let[@inline] int64_rules_set_not_in (self:int64_rules) (x:int64 list) : unit =
+  self.not_in <- x
+let[@inline] int64_rules_set_ignore_empty (self:int64_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_int64_rules (self:int64_rules) : int64_rules =
+  { self with const = self.const }
+
+let make_int64_rules 
+  ?(const:int64 option)
+  ?(lt:int64 option)
+  ?(lte:int64 option)
+  ?(gt:int64 option)
+  ?(gte:int64 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : int64_rules  =
+  let _res = default_int64_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> int64_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> int64_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> int64_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> int64_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> int64_rules_set_gte _res v);
+  int64_rules_set_in_ _res in_;
+  int64_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> int64_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] uint32_rules_has_const (self:uint32_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] uint32_rules_has_lt (self:uint32_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] uint32_rules_has_lte (self:uint32_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] uint32_rules_has_gt (self:uint32_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] uint32_rules_has_gte (self:uint32_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] uint32_rules_has_ignore_empty (self:uint32_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] uint32_rules_set_const (self:uint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] uint32_rules_set_lt (self:uint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] uint32_rules_set_lte (self:uint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] uint32_rules_set_gt (self:uint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] uint32_rules_set_gte (self:uint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] uint32_rules_set_in_ (self:uint32_rules) (x:int32 list) : unit =
+  self.in_ <- x
+let[@inline] uint32_rules_set_not_in (self:uint32_rules) (x:int32 list) : unit =
+  self.not_in <- x
+let[@inline] uint32_rules_set_ignore_empty (self:uint32_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_uint32_rules (self:uint32_rules) : uint32_rules =
+  { self with const = self.const }
+
+let make_uint32_rules 
+  ?(const:int32 option)
+  ?(lt:int32 option)
+  ?(lte:int32 option)
+  ?(gt:int32 option)
+  ?(gte:int32 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : uint32_rules  =
+  let _res = default_uint32_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> uint32_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> uint32_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> uint32_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> uint32_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> uint32_rules_set_gte _res v);
+  uint32_rules_set_in_ _res in_;
+  uint32_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> uint32_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] uint64_rules_has_const (self:uint64_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] uint64_rules_has_lt (self:uint64_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] uint64_rules_has_lte (self:uint64_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] uint64_rules_has_gt (self:uint64_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] uint64_rules_has_gte (self:uint64_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] uint64_rules_has_ignore_empty (self:uint64_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] uint64_rules_set_const (self:uint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] uint64_rules_set_lt (self:uint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] uint64_rules_set_lte (self:uint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] uint64_rules_set_gt (self:uint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] uint64_rules_set_gte (self:uint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] uint64_rules_set_in_ (self:uint64_rules) (x:int64 list) : unit =
+  self.in_ <- x
+let[@inline] uint64_rules_set_not_in (self:uint64_rules) (x:int64 list) : unit =
+  self.not_in <- x
+let[@inline] uint64_rules_set_ignore_empty (self:uint64_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_uint64_rules (self:uint64_rules) : uint64_rules =
+  { self with const = self.const }
+
+let make_uint64_rules 
+  ?(const:int64 option)
+  ?(lt:int64 option)
+  ?(lte:int64 option)
+  ?(gt:int64 option)
+  ?(gte:int64 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : uint64_rules  =
+  let _res = default_uint64_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> uint64_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> uint64_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> uint64_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> uint64_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> uint64_rules_set_gte _res v);
+  uint64_rules_set_in_ _res in_;
+  uint64_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> uint64_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] sint32_rules_has_const (self:sint32_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] sint32_rules_has_lt (self:sint32_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] sint32_rules_has_lte (self:sint32_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] sint32_rules_has_gt (self:sint32_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] sint32_rules_has_gte (self:sint32_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] sint32_rules_has_ignore_empty (self:sint32_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] sint32_rules_set_const (self:sint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] sint32_rules_set_lt (self:sint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] sint32_rules_set_lte (self:sint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] sint32_rules_set_gt (self:sint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] sint32_rules_set_gte (self:sint32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] sint32_rules_set_in_ (self:sint32_rules) (x:int32 list) : unit =
+  self.in_ <- x
+let[@inline] sint32_rules_set_not_in (self:sint32_rules) (x:int32 list) : unit =
+  self.not_in <- x
+let[@inline] sint32_rules_set_ignore_empty (self:sint32_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_sint32_rules (self:sint32_rules) : sint32_rules =
+  { self with const = self.const }
+
+let make_sint32_rules 
+  ?(const:int32 option)
+  ?(lt:int32 option)
+  ?(lte:int32 option)
+  ?(gt:int32 option)
+  ?(gte:int32 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : sint32_rules  =
+  let _res = default_sint32_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> sint32_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> sint32_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> sint32_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> sint32_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> sint32_rules_set_gte _res v);
+  sint32_rules_set_in_ _res in_;
+  sint32_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> sint32_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] sint64_rules_has_const (self:sint64_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] sint64_rules_has_lt (self:sint64_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] sint64_rules_has_lte (self:sint64_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] sint64_rules_has_gt (self:sint64_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] sint64_rules_has_gte (self:sint64_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] sint64_rules_has_ignore_empty (self:sint64_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] sint64_rules_set_const (self:sint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] sint64_rules_set_lt (self:sint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] sint64_rules_set_lte (self:sint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] sint64_rules_set_gt (self:sint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] sint64_rules_set_gte (self:sint64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] sint64_rules_set_in_ (self:sint64_rules) (x:int64 list) : unit =
+  self.in_ <- x
+let[@inline] sint64_rules_set_not_in (self:sint64_rules) (x:int64 list) : unit =
+  self.not_in <- x
+let[@inline] sint64_rules_set_ignore_empty (self:sint64_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_sint64_rules (self:sint64_rules) : sint64_rules =
+  { self with const = self.const }
+
+let make_sint64_rules 
+  ?(const:int64 option)
+  ?(lt:int64 option)
+  ?(lte:int64 option)
+  ?(gt:int64 option)
+  ?(gte:int64 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : sint64_rules  =
+  let _res = default_sint64_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> sint64_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> sint64_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> sint64_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> sint64_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> sint64_rules_set_gte _res v);
+  sint64_rules_set_in_ _res in_;
+  sint64_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> sint64_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] fixed32_rules_has_const (self:fixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] fixed32_rules_has_lt (self:fixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] fixed32_rules_has_lte (self:fixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] fixed32_rules_has_gt (self:fixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] fixed32_rules_has_gte (self:fixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] fixed32_rules_has_ignore_empty (self:fixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] fixed32_rules_set_const (self:fixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] fixed32_rules_set_lt (self:fixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] fixed32_rules_set_lte (self:fixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] fixed32_rules_set_gt (self:fixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] fixed32_rules_set_gte (self:fixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] fixed32_rules_set_in_ (self:fixed32_rules) (x:int32 list) : unit =
+  self.in_ <- x
+let[@inline] fixed32_rules_set_not_in (self:fixed32_rules) (x:int32 list) : unit =
+  self.not_in <- x
+let[@inline] fixed32_rules_set_ignore_empty (self:fixed32_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_fixed32_rules (self:fixed32_rules) : fixed32_rules =
+  { self with const = self.const }
+
+let make_fixed32_rules 
+  ?(const:int32 option)
+  ?(lt:int32 option)
+  ?(lte:int32 option)
+  ?(gt:int32 option)
+  ?(gte:int32 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : fixed32_rules  =
+  let _res = default_fixed32_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> fixed32_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> fixed32_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> fixed32_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> fixed32_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> fixed32_rules_set_gte _res v);
+  fixed32_rules_set_in_ _res in_;
+  fixed32_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> fixed32_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] fixed64_rules_has_const (self:fixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] fixed64_rules_has_lt (self:fixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] fixed64_rules_has_lte (self:fixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] fixed64_rules_has_gt (self:fixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] fixed64_rules_has_gte (self:fixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] fixed64_rules_has_ignore_empty (self:fixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] fixed64_rules_set_const (self:fixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] fixed64_rules_set_lt (self:fixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] fixed64_rules_set_lte (self:fixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] fixed64_rules_set_gt (self:fixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] fixed64_rules_set_gte (self:fixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] fixed64_rules_set_in_ (self:fixed64_rules) (x:int64 list) : unit =
+  self.in_ <- x
+let[@inline] fixed64_rules_set_not_in (self:fixed64_rules) (x:int64 list) : unit =
+  self.not_in <- x
+let[@inline] fixed64_rules_set_ignore_empty (self:fixed64_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_fixed64_rules (self:fixed64_rules) : fixed64_rules =
+  { self with const = self.const }
+
+let make_fixed64_rules 
+  ?(const:int64 option)
+  ?(lt:int64 option)
+  ?(lte:int64 option)
+  ?(gt:int64 option)
+  ?(gte:int64 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : fixed64_rules  =
+  let _res = default_fixed64_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> fixed64_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> fixed64_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> fixed64_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> fixed64_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> fixed64_rules_set_gte _res v);
+  fixed64_rules_set_in_ _res in_;
+  fixed64_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> fixed64_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] sfixed32_rules_has_const (self:sfixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] sfixed32_rules_has_lt (self:sfixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] sfixed32_rules_has_lte (self:sfixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] sfixed32_rules_has_gt (self:sfixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] sfixed32_rules_has_gte (self:sfixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] sfixed32_rules_has_ignore_empty (self:sfixed32_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] sfixed32_rules_set_const (self:sfixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] sfixed32_rules_set_lt (self:sfixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] sfixed32_rules_set_lte (self:sfixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] sfixed32_rules_set_gt (self:sfixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] sfixed32_rules_set_gte (self:sfixed32_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] sfixed32_rules_set_in_ (self:sfixed32_rules) (x:int32 list) : unit =
+  self.in_ <- x
+let[@inline] sfixed32_rules_set_not_in (self:sfixed32_rules) (x:int32 list) : unit =
+  self.not_in <- x
+let[@inline] sfixed32_rules_set_ignore_empty (self:sfixed32_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_sfixed32_rules (self:sfixed32_rules) : sfixed32_rules =
+  { self with const = self.const }
+
+let make_sfixed32_rules 
+  ?(const:int32 option)
+  ?(lt:int32 option)
+  ?(lte:int32 option)
+  ?(gt:int32 option)
+  ?(gte:int32 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : sfixed32_rules  =
+  let _res = default_sfixed32_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> sfixed32_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> sfixed32_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> sfixed32_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> sfixed32_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> sfixed32_rules_set_gte _res v);
+  sfixed32_rules_set_in_ _res in_;
+  sfixed32_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> sfixed32_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] sfixed64_rules_has_const (self:sfixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] sfixed64_rules_has_lt (self:sfixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] sfixed64_rules_has_lte (self:sfixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] sfixed64_rules_has_gt (self:sfixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] sfixed64_rules_has_gte (self:sfixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] sfixed64_rules_has_ignore_empty (self:sfixed64_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+
+let[@inline] sfixed64_rules_set_const (self:sfixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] sfixed64_rules_set_lt (self:sfixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lt <- x
+let[@inline] sfixed64_rules_set_lte (self:sfixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.lte <- x
+let[@inline] sfixed64_rules_set_gt (self:sfixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.gt <- x
+let[@inline] sfixed64_rules_set_gte (self:sfixed64_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.gte <- x
+let[@inline] sfixed64_rules_set_in_ (self:sfixed64_rules) (x:int64 list) : unit =
+  self.in_ <- x
+let[@inline] sfixed64_rules_set_not_in (self:sfixed64_rules) (x:int64 list) : unit =
+  self.not_in <- x
+let[@inline] sfixed64_rules_set_ignore_empty (self:sfixed64_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.ignore_empty <- x
+
+let copy_sfixed64_rules (self:sfixed64_rules) : sfixed64_rules =
+  { self with const = self.const }
+
+let make_sfixed64_rules 
+  ?(const:int64 option)
+  ?(lt:int64 option)
+  ?(lte:int64 option)
+  ?(gt:int64 option)
+  ?(gte:int64 option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(ignore_empty:bool option)
+  () : sfixed64_rules  =
+  let _res = default_sfixed64_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> sfixed64_rules_set_const _res v);
+  (match lt with
+  | None -> ()
+  | Some v -> sfixed64_rules_set_lt _res v);
+  (match lte with
+  | None -> ()
+  | Some v -> sfixed64_rules_set_lte _res v);
+  (match gt with
+  | None -> ()
+  | Some v -> sfixed64_rules_set_gt _res v);
+  (match gte with
+  | None -> ()
+  | Some v -> sfixed64_rules_set_gte _res v);
+  sfixed64_rules_set_in_ _res in_;
+  sfixed64_rules_set_not_in _res not_in;
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> sfixed64_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] bool_rules_has_const (self:bool_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+
+let[@inline] bool_rules_set_const (self:bool_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+
+let copy_bool_rules (self:bool_rules) : bool_rules =
+  { self with const = self.const }
+
+let make_bool_rules 
+  ?(const:bool option)
+  () : bool_rules  =
+  let _res = default_bool_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> bool_rules_set_const _res v);
+  _res
+
+let[@inline] string_rules_has_const (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] string_rules_has_len (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] string_rules_has_min_len (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] string_rules_has_max_len (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] string_rules_has_len_bytes (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] string_rules_has_min_bytes (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+let[@inline] string_rules_has_max_bytes (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 6)
+let[@inline] string_rules_has_pattern (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 7)
+let[@inline] string_rules_has_prefix (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 8)
+let[@inline] string_rules_has_suffix (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 9)
+let[@inline] string_rules_has_contains (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 10)
+let[@inline] string_rules_has_not_contains (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 11)
+let[@inline] string_rules_has_strict (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 12)
+let[@inline] string_rules_has_ignore_empty (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 13)
+
+let[@inline] string_rules_set_const (self:string_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] string_rules_set_len (self:string_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.len <- x
+let[@inline] string_rules_set_min_len (self:string_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.min_len <- x
+let[@inline] string_rules_set_max_len (self:string_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.max_len <- x
+let[@inline] string_rules_set_len_bytes (self:string_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.len_bytes <- x
+let[@inline] string_rules_set_min_bytes (self:string_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.min_bytes <- x
+let[@inline] string_rules_set_max_bytes (self:string_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 6); self.max_bytes <- x
+let[@inline] string_rules_set_pattern (self:string_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 7); self.pattern <- x
+let[@inline] string_rules_set_prefix (self:string_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 8); self.prefix <- x
+let[@inline] string_rules_set_suffix (self:string_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 9); self.suffix <- x
+let[@inline] string_rules_set_contains (self:string_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 10); self.contains <- x
+let[@inline] string_rules_set_not_contains (self:string_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 11); self.not_contains <- x
+let[@inline] string_rules_set_in_ (self:string_rules) (x:string list) : unit =
+  self.in_ <- x
+let[@inline] string_rules_set_not_in (self:string_rules) (x:string list) : unit =
+  self.not_in <- x
+let[@inline] string_rules_set_well_known (self:string_rules) (x:string_rules_well_known) : unit =
+  self.well_known <- Some x
+let[@inline] string_rules_set_strict (self:string_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 12); self.strict <- x
+let[@inline] string_rules_set_ignore_empty (self:string_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 13); self.ignore_empty <- x
+
+let copy_string_rules (self:string_rules) : string_rules =
+  { self with const = self.const }
+
+let make_string_rules 
+  ?(const:string option)
+  ?(len:int64 option)
+  ?(min_len:int64 option)
+  ?(max_len:int64 option)
+  ?(len_bytes:int64 option)
+  ?(min_bytes:int64 option)
+  ?(max_bytes:int64 option)
+  ?(pattern:string option)
+  ?(prefix:string option)
+  ?(suffix:string option)
+  ?(contains:string option)
+  ?(not_contains:string option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(well_known:string_rules_well_known option)
+  ?(strict:bool option)
+  ?(ignore_empty:bool option)
+  () : string_rules  =
+  let _res = default_string_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> string_rules_set_const _res v);
+  (match len with
+  | None -> ()
+  | Some v -> string_rules_set_len _res v);
+  (match min_len with
+  | None -> ()
+  | Some v -> string_rules_set_min_len _res v);
+  (match max_len with
+  | None -> ()
+  | Some v -> string_rules_set_max_len _res v);
+  (match len_bytes with
+  | None -> ()
+  | Some v -> string_rules_set_len_bytes _res v);
+  (match min_bytes with
+  | None -> ()
+  | Some v -> string_rules_set_min_bytes _res v);
+  (match max_bytes with
+  | None -> ()
+  | Some v -> string_rules_set_max_bytes _res v);
+  (match pattern with
+  | None -> ()
+  | Some v -> string_rules_set_pattern _res v);
+  (match prefix with
+  | None -> ()
+  | Some v -> string_rules_set_prefix _res v);
+  (match suffix with
+  | None -> ()
+  | Some v -> string_rules_set_suffix _res v);
+  (match contains with
+  | None -> ()
+  | Some v -> string_rules_set_contains _res v);
+  (match not_contains with
+  | None -> ()
+  | Some v -> string_rules_set_not_contains _res v);
+  string_rules_set_in_ _res in_;
+  string_rules_set_not_in _res not_in;
+  (match well_known with
+  | None -> ()
+  | Some v -> string_rules_set_well_known _res v);
+  (match strict with
+  | None -> ()
+  | Some v -> string_rules_set_strict _res v);
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> string_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] bytes_rules_has_const (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] bytes_rules_has_len (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] bytes_rules_has_min_len (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] bytes_rules_has_max_len (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+let[@inline] bytes_rules_has_pattern (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 4)
+let[@inline] bytes_rules_has_prefix (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
+let[@inline] bytes_rules_has_suffix (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 6)
+let[@inline] bytes_rules_has_contains (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 7)
+let[@inline] bytes_rules_has_ignore_empty (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 8)
+
+let[@inline] bytes_rules_set_const (self:bytes_rules) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] bytes_rules_set_len (self:bytes_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.len <- x
+let[@inline] bytes_rules_set_min_len (self:bytes_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.min_len <- x
+let[@inline] bytes_rules_set_max_len (self:bytes_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.max_len <- x
+let[@inline] bytes_rules_set_pattern (self:bytes_rules) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 4); self.pattern <- x
+let[@inline] bytes_rules_set_prefix (self:bytes_rules) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 5); self.prefix <- x
+let[@inline] bytes_rules_set_suffix (self:bytes_rules) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 6); self.suffix <- x
+let[@inline] bytes_rules_set_contains (self:bytes_rules) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 7); self.contains <- x
+let[@inline] bytes_rules_set_in_ (self:bytes_rules) (x:bytes list) : unit =
+  self.in_ <- x
+let[@inline] bytes_rules_set_not_in (self:bytes_rules) (x:bytes list) : unit =
+  self.not_in <- x
+let[@inline] bytes_rules_set_well_known (self:bytes_rules) (x:bytes_rules_well_known) : unit =
+  self.well_known <- Some x
+let[@inline] bytes_rules_set_ignore_empty (self:bytes_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 8); self.ignore_empty <- x
+
+let copy_bytes_rules (self:bytes_rules) : bytes_rules =
+  { self with const = self.const }
+
+let make_bytes_rules 
+  ?(const:bytes option)
+  ?(len:int64 option)
+  ?(min_len:int64 option)
+  ?(max_len:int64 option)
+  ?(pattern:string option)
+  ?(prefix:bytes option)
+  ?(suffix:bytes option)
+  ?(contains:bytes option)
+  ?(in_=[])
+  ?(not_in=[])
+  ?(well_known:bytes_rules_well_known option)
+  ?(ignore_empty:bool option)
+  () : bytes_rules  =
+  let _res = default_bytes_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> bytes_rules_set_const _res v);
+  (match len with
+  | None -> ()
+  | Some v -> bytes_rules_set_len _res v);
+  (match min_len with
+  | None -> ()
+  | Some v -> bytes_rules_set_min_len _res v);
+  (match max_len with
+  | None -> ()
+  | Some v -> bytes_rules_set_max_len _res v);
+  (match pattern with
+  | None -> ()
+  | Some v -> bytes_rules_set_pattern _res v);
+  (match prefix with
+  | None -> ()
+  | Some v -> bytes_rules_set_prefix _res v);
+  (match suffix with
+  | None -> ()
+  | Some v -> bytes_rules_set_suffix _res v);
+  (match contains with
+  | None -> ()
+  | Some v -> bytes_rules_set_contains _res v);
+  bytes_rules_set_in_ _res in_;
+  bytes_rules_set_not_in _res not_in;
+  (match well_known with
+  | None -> ()
+  | Some v -> bytes_rules_set_well_known _res v);
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> bytes_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] enum_rules_has_const (self:enum_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] enum_rules_has_defined_only (self:enum_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+
+let[@inline] enum_rules_set_const (self:enum_rules) (x:int32) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.const <- x
+let[@inline] enum_rules_set_defined_only (self:enum_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.defined_only <- x
+let[@inline] enum_rules_set_in_ (self:enum_rules) (x:int32 list) : unit =
+  self.in_ <- x
+let[@inline] enum_rules_set_not_in (self:enum_rules) (x:int32 list) : unit =
+  self.not_in <- x
+
+let copy_enum_rules (self:enum_rules) : enum_rules =
+  { self with const = self.const }
+
+let make_enum_rules 
+  ?(const:int32 option)
+  ?(defined_only:bool option)
+  ?(in_=[])
+  ?(not_in=[])
+  () : enum_rules  =
+  let _res = default_enum_rules () in
+  (match const with
+  | None -> ()
+  | Some v -> enum_rules_set_const _res v);
+  (match defined_only with
+  | None -> ()
+  | Some v -> enum_rules_set_defined_only _res v);
+  enum_rules_set_in_ _res in_;
+  enum_rules_set_not_in _res not_in;
+  _res
+
+let[@inline] any_rules_has_required (self:any_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+
+let[@inline] any_rules_set_required (self:any_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.required <- x
+let[@inline] any_rules_set_in_ (self:any_rules) (x:string list) : unit =
+  self.in_ <- x
+let[@inline] any_rules_set_not_in (self:any_rules) (x:string list) : unit =
+  self.not_in <- x
+
+let copy_any_rules (self:any_rules) : any_rules =
+  { self with required = self.required }
+
+let make_any_rules 
+  ?(required:bool option)
+  ?(in_=[])
+  ?(not_in=[])
+  () : any_rules  =
+  let _res = default_any_rules () in
+  (match required with
+  | None -> ()
+  | Some v -> any_rules_set_required _res v);
+  any_rules_set_in_ _res in_;
+  any_rules_set_not_in _res not_in;
+  _res
+
+
+let[@inline] field_rules_set_message (self:field_rules) (x:message_rules) : unit =
+  self.message <- Some x
+let[@inline] field_rules_set_type_ (self:field_rules) (x:field_rules_type) : unit =
+  self.type_ <- Some x
+
+let copy_field_rules (self:field_rules) : field_rules =
+  { self with message = self.message }
+
+let make_field_rules 
+  ?(message:message_rules option)
+  ?(type_:field_rules_type option)
+  () : field_rules  =
+  let _res = default_field_rules () in
+  (match message with
+  | None -> ()
+  | Some v -> field_rules_set_message _res v);
+  (match type_ with
+  | None -> ()
+  | Some v -> field_rules_set_type_ _res v);
+  _res
+
+let[@inline] repeated_rules_has_min_items (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] repeated_rules_has_max_items (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] repeated_rules_has_unique (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] repeated_rules_has_ignore_empty (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+
+let[@inline] repeated_rules_set_min_items (self:repeated_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.min_items <- x
+let[@inline] repeated_rules_set_max_items (self:repeated_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.max_items <- x
+let[@inline] repeated_rules_set_unique (self:repeated_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.unique <- x
+let[@inline] repeated_rules_set_items (self:repeated_rules) (x:field_rules) : unit =
+  self.items <- Some x
+let[@inline] repeated_rules_set_ignore_empty (self:repeated_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.ignore_empty <- x
+
+let copy_repeated_rules (self:repeated_rules) : repeated_rules =
+  { self with min_items = self.min_items }
+
+let make_repeated_rules 
+  ?(min_items:int64 option)
+  ?(max_items:int64 option)
+  ?(unique:bool option)
+  ?(items:field_rules option)
+  ?(ignore_empty:bool option)
+  () : repeated_rules  =
+  let _res = default_repeated_rules () in
+  (match min_items with
+  | None -> ()
+  | Some v -> repeated_rules_set_min_items _res v);
+  (match max_items with
+  | None -> ()
+  | Some v -> repeated_rules_set_max_items _res v);
+  (match unique with
+  | None -> ()
+  | Some v -> repeated_rules_set_unique _res v);
+  (match items with
+  | None -> ()
+  | Some v -> repeated_rules_set_items _res v);
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> repeated_rules_set_ignore_empty _res v);
+  _res
+
+let[@inline] map_rules_has_min_pairs (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] map_rules_has_max_pairs (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] map_rules_has_no_sparse (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] map_rules_has_ignore_empty (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
+
+let[@inline] map_rules_set_min_pairs (self:map_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.min_pairs <- x
+let[@inline] map_rules_set_max_pairs (self:map_rules) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.max_pairs <- x
+let[@inline] map_rules_set_no_sparse (self:map_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.no_sparse <- x
+let[@inline] map_rules_set_keys (self:map_rules) (x:field_rules) : unit =
+  self.keys <- Some x
+let[@inline] map_rules_set_values (self:map_rules) (x:field_rules) : unit =
+  self.values <- Some x
+let[@inline] map_rules_set_ignore_empty (self:map_rules) (x:bool) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.ignore_empty <- x
+
+let copy_map_rules (self:map_rules) : map_rules =
+  { self with min_pairs = self.min_pairs }
+
+let make_map_rules 
+  ?(min_pairs:int64 option)
+  ?(max_pairs:int64 option)
+  ?(no_sparse:bool option)
+  ?(keys:field_rules option)
+  ?(values:field_rules option)
+  ?(ignore_empty:bool option)
+  () : map_rules  =
+  let _res = default_map_rules () in
+  (match min_pairs with
+  | None -> ()
+  | Some v -> map_rules_set_min_pairs _res v);
+  (match max_pairs with
+  | None -> ()
+  | Some v -> map_rules_set_max_pairs _res v);
+  (match no_sparse with
+  | None -> ()
+  | Some v -> map_rules_set_no_sparse _res v);
+  (match keys with
+  | None -> ()
+  | Some v -> map_rules_set_keys _res v);
+  (match values with
+  | None -> ()
+  | Some v -> map_rules_set_values _res v);
+  (match ignore_empty with
+  | None -> ()
+  | Some v -> map_rules_set_ignore_empty _res v);
+  _res
+
+
+let[@inline] field_options_set_rules (self:field_options) (x:field_rules) : unit =
+  self.rules <- Some x
+
+let copy_field_options (self:field_options) : field_options =
+  { self with rules = self.rules }
+
+let make_field_options 
+  ?(rules:field_rules option)
+  () : field_options  =
+  let _res = default_field_options () in
+  (match rules with
+  | None -> ()
+  | Some v -> field_options_set_rules _res v);
+  _res
+
+[@@@ocaml.warning "-23-27-30-39"]
+
+(** {2 Pb_option.set Decoding} *)
+
+let rec decode_pb_options_message_options d =
+  let v = default_message_options () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("disabled", pb_options_value) -> 
+      message_options_set_disabled v (Pbrt_options.bool pb_options_value "message_options" "disabled")
+    | ("ignored", pb_options_value) -> 
+      message_options_set_ignored v (Pbrt_options.bool pb_options_value "message_options" "ignored")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : message_options)
+
+let rec decode_pb_options_oneof_options d =
+  let v = default_oneof_options () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("required", pb_options_value) -> 
+      oneof_options_set_required v (Pbrt_options.bool pb_options_value "oneof_options" "required")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : oneof_options)
+
+let rec decode_pb_options_message_rules d =
+  let v = default_message_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("skip", pb_options_value) -> 
+      message_rules_set_skip v (Pbrt_options.bool pb_options_value "message_rules" "skip")
+    | ("required", pb_options_value) -> 
+      message_rules_set_required v (Pbrt_options.bool pb_options_value "message_rules" "required")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : message_rules)
+
+let rec decode_pb_options_float_rules d =
+  let v = default_float_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      float_rules_set_const v (Pbrt_options.float pb_options_value "float_rules" "const")
+    | ("lt", pb_options_value) -> 
+      float_rules_set_lt v (Pbrt_options.float pb_options_value "float_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      float_rules_set_lte v (Pbrt_options.float pb_options_value "float_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      float_rules_set_gt v (Pbrt_options.float pb_options_value "float_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      float_rules_set_gte v (Pbrt_options.float pb_options_value "float_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      float_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.float pb_options_value "float_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      float_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.float pb_options_value "float_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      float_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "float_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : float_rules)
+
+let rec decode_pb_options_double_rules d =
+  let v = default_double_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      double_rules_set_const v (Pbrt_options.float pb_options_value "double_rules" "const")
+    | ("lt", pb_options_value) -> 
+      double_rules_set_lt v (Pbrt_options.float pb_options_value "double_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      double_rules_set_lte v (Pbrt_options.float pb_options_value "double_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      double_rules_set_gt v (Pbrt_options.float pb_options_value "double_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      double_rules_set_gte v (Pbrt_options.float pb_options_value "double_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      double_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.float pb_options_value "double_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      double_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.float pb_options_value "double_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      double_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "double_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : double_rules)
+
+let rec decode_pb_options_int32_rules d =
+  let v = default_int32_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      int32_rules_set_const v (Pbrt_options.int32 pb_options_value "int32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      int32_rules_set_lt v (Pbrt_options.int32 pb_options_value "int32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      int32_rules_set_lte v (Pbrt_options.int32 pb_options_value "int32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      int32_rules_set_gt v (Pbrt_options.int32 pb_options_value "int32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      int32_rules_set_gte v (Pbrt_options.int32 pb_options_value "int32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      int32_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "int32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      int32_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "int32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      int32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "int32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : int32_rules)
+
+let rec decode_pb_options_int64_rules d =
+  let v = default_int64_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      int64_rules_set_const v (Pbrt_options.int64 pb_options_value "int64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      int64_rules_set_lt v (Pbrt_options.int64 pb_options_value "int64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      int64_rules_set_lte v (Pbrt_options.int64 pb_options_value "int64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      int64_rules_set_gt v (Pbrt_options.int64 pb_options_value "int64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      int64_rules_set_gte v (Pbrt_options.int64 pb_options_value "int64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      int64_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "int64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      int64_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "int64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      int64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "int64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : int64_rules)
+
+let rec decode_pb_options_uint32_rules d =
+  let v = default_uint32_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      uint32_rules_set_const v (Pbrt_options.int32 pb_options_value "uint32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      uint32_rules_set_lt v (Pbrt_options.int32 pb_options_value "uint32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      uint32_rules_set_lte v (Pbrt_options.int32 pb_options_value "uint32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      uint32_rules_set_gt v (Pbrt_options.int32 pb_options_value "uint32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      uint32_rules_set_gte v (Pbrt_options.int32 pb_options_value "uint32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      uint32_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "uint32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      uint32_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "uint32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      uint32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "uint32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : uint32_rules)
+
+let rec decode_pb_options_uint64_rules d =
+  let v = default_uint64_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      uint64_rules_set_const v (Pbrt_options.int64 pb_options_value "uint64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      uint64_rules_set_lt v (Pbrt_options.int64 pb_options_value "uint64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      uint64_rules_set_lte v (Pbrt_options.int64 pb_options_value "uint64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      uint64_rules_set_gt v (Pbrt_options.int64 pb_options_value "uint64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      uint64_rules_set_gte v (Pbrt_options.int64 pb_options_value "uint64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      uint64_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "uint64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      uint64_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "uint64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      uint64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "uint64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : uint64_rules)
+
+let rec decode_pb_options_sint32_rules d =
+  let v = default_sint32_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      sint32_rules_set_const v (Pbrt_options.int32 pb_options_value "sint32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      sint32_rules_set_lt v (Pbrt_options.int32 pb_options_value "sint32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      sint32_rules_set_lte v (Pbrt_options.int32 pb_options_value "sint32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      sint32_rules_set_gt v (Pbrt_options.int32 pb_options_value "sint32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      sint32_rules_set_gte v (Pbrt_options.int32 pb_options_value "sint32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      sint32_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sint32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      sint32_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sint32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      sint32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sint32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : sint32_rules)
+
+let rec decode_pb_options_sint64_rules d =
+  let v = default_sint64_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      sint64_rules_set_const v (Pbrt_options.int64 pb_options_value "sint64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      sint64_rules_set_lt v (Pbrt_options.int64 pb_options_value "sint64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      sint64_rules_set_lte v (Pbrt_options.int64 pb_options_value "sint64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      sint64_rules_set_gt v (Pbrt_options.int64 pb_options_value "sint64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      sint64_rules_set_gte v (Pbrt_options.int64 pb_options_value "sint64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      sint64_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sint64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      sint64_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sint64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      sint64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sint64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : sint64_rules)
+
+let rec decode_pb_options_fixed32_rules d =
+  let v = default_fixed32_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      fixed32_rules_set_const v (Pbrt_options.int32 pb_options_value "fixed32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      fixed32_rules_set_lt v (Pbrt_options.int32 pb_options_value "fixed32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      fixed32_rules_set_lte v (Pbrt_options.int32 pb_options_value "fixed32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      fixed32_rules_set_gt v (Pbrt_options.int32 pb_options_value "fixed32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      fixed32_rules_set_gte v (Pbrt_options.int32 pb_options_value "fixed32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      fixed32_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "fixed32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      fixed32_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "fixed32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      fixed32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "fixed32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : fixed32_rules)
+
+let rec decode_pb_options_fixed64_rules d =
+  let v = default_fixed64_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      fixed64_rules_set_const v (Pbrt_options.int64 pb_options_value "fixed64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      fixed64_rules_set_lt v (Pbrt_options.int64 pb_options_value "fixed64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      fixed64_rules_set_lte v (Pbrt_options.int64 pb_options_value "fixed64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      fixed64_rules_set_gt v (Pbrt_options.int64 pb_options_value "fixed64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      fixed64_rules_set_gte v (Pbrt_options.int64 pb_options_value "fixed64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      fixed64_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "fixed64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      fixed64_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "fixed64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      fixed64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "fixed64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : fixed64_rules)
+
+let rec decode_pb_options_sfixed32_rules d =
+  let v = default_sfixed32_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      sfixed32_rules_set_const v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "const")
+    | ("lt", pb_options_value) -> 
+      sfixed32_rules_set_lt v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      sfixed32_rules_set_lte v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      sfixed32_rules_set_gt v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      sfixed32_rules_set_gte v (Pbrt_options.int32 pb_options_value "sfixed32_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      sfixed32_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sfixed32_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      sfixed32_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "sfixed32_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      sfixed32_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sfixed32_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : sfixed32_rules)
+
+let rec decode_pb_options_sfixed64_rules d =
+  let v = default_sfixed64_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      sfixed64_rules_set_const v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "const")
+    | ("lt", pb_options_value) -> 
+      sfixed64_rules_set_lt v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "lt")
+    | ("lte", pb_options_value) -> 
+      sfixed64_rules_set_lte v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "lte")
+    | ("gt", pb_options_value) -> 
+      sfixed64_rules_set_gt v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "gt")
+    | ("gte", pb_options_value) -> 
+      sfixed64_rules_set_gte v (Pbrt_options.int64 pb_options_value "sfixed64_rules" "gte")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      sfixed64_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sfixed64_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      sfixed64_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int64 pb_options_value "sfixed64_rules" "not_in"
+      ) l;
+    end
+    | ("ignore_empty", pb_options_value) -> 
+      sfixed64_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "sfixed64_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : sfixed64_rules)
+
+let rec decode_pb_options_bool_rules d =
+  let v = default_bool_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      bool_rules_set_const v (Pbrt_options.bool pb_options_value "bool_rules" "const")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : bool_rules)
+
+let rec decode_pb_options_known_regex pb_options =
+  match pb_options with
+  | Pbrt_options.Scalar_value (Constant_literal "UNKNOWN") -> (Unknown : known_regex)
+  | Pbrt_options.Scalar_value (Constant_literal "HTTP_HEADER_NAME") -> (Http_header_name : known_regex)
+  | Pbrt_options.Scalar_value (Constant_literal "HTTP_HEADER_VALUE") -> (Http_header_value : known_regex)
+  | _ -> Pbrt_options.E.malformed_variant "known_regex"
+
+let rec decode_pb_options_string_rules_well_known pb_options =
+  let assoc = match pb_options with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_options.E.malformed_variant "string_rules_well_known"
+    | ("email", pb_options_value)::_ -> 
+      (Email (Pbrt_options.bool pb_options_value "string_rules_well_known" "Email") : string_rules_well_known)
+    | ("hostname", pb_options_value)::_ -> 
+      (Hostname (Pbrt_options.bool pb_options_value "string_rules_well_known" "Hostname") : string_rules_well_known)
+    | ("ip", pb_options_value)::_ -> 
+      (Ip (Pbrt_options.bool pb_options_value "string_rules_well_known" "Ip") : string_rules_well_known)
+    | ("ipv4", pb_options_value)::_ -> 
+      (Ipv4 (Pbrt_options.bool pb_options_value "string_rules_well_known" "Ipv4") : string_rules_well_known)
+    | ("ipv6", pb_options_value)::_ -> 
+      (Ipv6 (Pbrt_options.bool pb_options_value "string_rules_well_known" "Ipv6") : string_rules_well_known)
+    | ("uri", pb_options_value)::_ -> 
+      (Uri (Pbrt_options.bool pb_options_value "string_rules_well_known" "Uri") : string_rules_well_known)
+    | ("uriRef", pb_options_value)::_ -> 
+      (Uri_ref (Pbrt_options.bool pb_options_value "string_rules_well_known" "Uri_ref") : string_rules_well_known)
+    | ("address", pb_options_value)::_ -> 
+      (Address (Pbrt_options.bool pb_options_value "string_rules_well_known" "Address") : string_rules_well_known)
+    | ("uuid", pb_options_value)::_ -> 
+      (Uuid (Pbrt_options.bool pb_options_value "string_rules_well_known" "Uuid") : string_rules_well_known)
+    | ("wellKnownRegex", pb_options_value)::_ -> 
+      (Well_known_regex ((decode_pb_options_known_regex pb_options_value)) : string_rules_well_known)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_string_rules d =
+  let v = default_string_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      string_rules_set_const v (Pbrt_options.string pb_options_value "string_rules" "const")
+    | ("len", pb_options_value) -> 
+      string_rules_set_len v (Pbrt_options.int64 pb_options_value "string_rules" "len")
+    | ("min_len", pb_options_value) -> 
+      string_rules_set_min_len v (Pbrt_options.int64 pb_options_value "string_rules" "min_len")
+    | ("max_len", pb_options_value) -> 
+      string_rules_set_max_len v (Pbrt_options.int64 pb_options_value "string_rules" "max_len")
+    | ("len_bytes", pb_options_value) -> 
+      string_rules_set_len_bytes v (Pbrt_options.int64 pb_options_value "string_rules" "len_bytes")
+    | ("min_bytes", pb_options_value) -> 
+      string_rules_set_min_bytes v (Pbrt_options.int64 pb_options_value "string_rules" "min_bytes")
+    | ("max_bytes", pb_options_value) -> 
+      string_rules_set_max_bytes v (Pbrt_options.int64 pb_options_value "string_rules" "max_bytes")
+    | ("pattern", pb_options_value) -> 
+      string_rules_set_pattern v (Pbrt_options.string pb_options_value "string_rules" "pattern")
+    | ("prefix", pb_options_value) -> 
+      string_rules_set_prefix v (Pbrt_options.string pb_options_value "string_rules" "prefix")
+    | ("suffix", pb_options_value) -> 
+      string_rules_set_suffix v (Pbrt_options.string pb_options_value "string_rules" "suffix")
+    | ("contains", pb_options_value) -> 
+      string_rules_set_contains v (Pbrt_options.string pb_options_value "string_rules" "contains")
+    | ("not_contains", pb_options_value) -> 
+      string_rules_set_not_contains v (Pbrt_options.string pb_options_value "string_rules" "not_contains")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      string_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.string pb_options_value "string_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      string_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.string pb_options_value "string_rules" "not_in"
+      ) l;
+    end
+    | ("email", pb_options_value) -> 
+      string_rules_set_well_known v (Email (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("hostname", pb_options_value) -> 
+      string_rules_set_well_known v (Hostname (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("ip", pb_options_value) -> 
+      string_rules_set_well_known v (Ip (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("ipv4", pb_options_value) -> 
+      string_rules_set_well_known v (Ipv4 (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("ipv6", pb_options_value) -> 
+      string_rules_set_well_known v (Ipv6 (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("uri", pb_options_value) -> 
+      string_rules_set_well_known v (Uri (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("uriRef", pb_options_value) -> 
+      string_rules_set_well_known v (Uri_ref (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("address", pb_options_value) -> 
+      string_rules_set_well_known v (Address (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("uuid", pb_options_value) -> 
+      string_rules_set_well_known v (Uuid (Pbrt_options.bool pb_options_value "string_rules" "well_known"))
+    | ("wellKnownRegex", pb_options_value) -> 
+      string_rules_set_well_known v (Well_known_regex ((decode_pb_options_known_regex pb_options_value)))
+    | ("strict", pb_options_value) -> 
+      string_rules_set_strict v (Pbrt_options.bool pb_options_value "string_rules" "strict")
+    | ("ignore_empty", pb_options_value) -> 
+      string_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "string_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : string_rules)
+
+let rec decode_pb_options_bytes_rules_well_known pb_options =
+  let assoc = match pb_options with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_options.E.malformed_variant "bytes_rules_well_known"
+    | ("ip", pb_options_value)::_ -> 
+      (Ip (Pbrt_options.bool pb_options_value "bytes_rules_well_known" "Ip") : bytes_rules_well_known)
+    | ("ipv4", pb_options_value)::_ -> 
+      (Ipv4 (Pbrt_options.bool pb_options_value "bytes_rules_well_known" "Ipv4") : bytes_rules_well_known)
+    | ("ipv6", pb_options_value)::_ -> 
+      (Ipv6 (Pbrt_options.bool pb_options_value "bytes_rules_well_known" "Ipv6") : bytes_rules_well_known)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_bytes_rules d =
+  let v = default_bytes_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      bytes_rules_set_const v (Pbrt_options.bytes pb_options_value "bytes_rules" "const")
+    | ("len", pb_options_value) -> 
+      bytes_rules_set_len v (Pbrt_options.int64 pb_options_value "bytes_rules" "len")
+    | ("min_len", pb_options_value) -> 
+      bytes_rules_set_min_len v (Pbrt_options.int64 pb_options_value "bytes_rules" "min_len")
+    | ("max_len", pb_options_value) -> 
+      bytes_rules_set_max_len v (Pbrt_options.int64 pb_options_value "bytes_rules" "max_len")
+    | ("pattern", pb_options_value) -> 
+      bytes_rules_set_pattern v (Pbrt_options.string pb_options_value "bytes_rules" "pattern")
+    | ("prefix", pb_options_value) -> 
+      bytes_rules_set_prefix v (Pbrt_options.bytes pb_options_value "bytes_rules" "prefix")
+    | ("suffix", pb_options_value) -> 
+      bytes_rules_set_suffix v (Pbrt_options.bytes pb_options_value "bytes_rules" "suffix")
+    | ("contains", pb_options_value) -> 
+      bytes_rules_set_contains v (Pbrt_options.bytes pb_options_value "bytes_rules" "contains")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      bytes_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.bytes pb_options_value "bytes_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      bytes_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.bytes pb_options_value "bytes_rules" "not_in"
+      ) l;
+    end
+    | ("ip", pb_options_value) -> 
+      bytes_rules_set_well_known v (Ip (Pbrt_options.bool pb_options_value "bytes_rules" "well_known"))
+    | ("ipv4", pb_options_value) -> 
+      bytes_rules_set_well_known v (Ipv4 (Pbrt_options.bool pb_options_value "bytes_rules" "well_known"))
+    | ("ipv6", pb_options_value) -> 
+      bytes_rules_set_well_known v (Ipv6 (Pbrt_options.bool pb_options_value "bytes_rules" "well_known"))
+    | ("ignore_empty", pb_options_value) -> 
+      bytes_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "bytes_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : bytes_rules)
+
+let rec decode_pb_options_enum_rules d =
+  let v = default_enum_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("const", pb_options_value) -> 
+      enum_rules_set_const v (Pbrt_options.int32 pb_options_value "enum_rules" "const")
+    | ("defined_only", pb_options_value) -> 
+      enum_rules_set_defined_only v (Pbrt_options.bool pb_options_value "enum_rules" "defined_only")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      enum_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "enum_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      enum_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.int32 pb_options_value "enum_rules" "not_in"
+      ) l;
+    end
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : enum_rules)
+
+let rec decode_pb_options_any_rules d =
+  let v = default_any_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("required", pb_options_value) -> 
+      any_rules_set_required v (Pbrt_options.bool pb_options_value "any_rules" "required")
+    | ("in", Pbrt_options.List_literal l) -> begin
+      any_rules_set_in_ v @@ List.map (function
+        | pb_options_value -> Pbrt_options.string pb_options_value "any_rules" "in_"
+      ) l;
+    end
+    | ("not_in", Pbrt_options.List_literal l) -> begin
+      any_rules_set_not_in v @@ List.map (function
+        | pb_options_value -> Pbrt_options.string pb_options_value "any_rules" "not_in"
+      ) l;
+    end
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : any_rules)
+
+let rec decode_pb_options_field_rules_type pb_options =
+  let assoc = match pb_options with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_options.E.malformed_variant "field_rules_type"
+    | ("float", pb_options_value)::_ -> 
+      (Float ((decode_pb_options_float_rules pb_options_value)) : field_rules_type)
+    | ("double", pb_options_value)::_ -> 
+      (Double ((decode_pb_options_double_rules pb_options_value)) : field_rules_type)
+    | ("int32", pb_options_value)::_ -> 
+      (Int32 ((decode_pb_options_int32_rules pb_options_value)) : field_rules_type)
+    | ("int64", pb_options_value)::_ -> 
+      (Int64 ((decode_pb_options_int64_rules pb_options_value)) : field_rules_type)
+    | ("uint32", pb_options_value)::_ -> 
+      (Uint32 ((decode_pb_options_uint32_rules pb_options_value)) : field_rules_type)
+    | ("uint64", pb_options_value)::_ -> 
+      (Uint64 ((decode_pb_options_uint64_rules pb_options_value)) : field_rules_type)
+    | ("sint32", pb_options_value)::_ -> 
+      (Sint32 ((decode_pb_options_sint32_rules pb_options_value)) : field_rules_type)
+    | ("sint64", pb_options_value)::_ -> 
+      (Sint64 ((decode_pb_options_sint64_rules pb_options_value)) : field_rules_type)
+    | ("fixed32", pb_options_value)::_ -> 
+      (Fixed32 ((decode_pb_options_fixed32_rules pb_options_value)) : field_rules_type)
+    | ("fixed64", pb_options_value)::_ -> 
+      (Fixed64 ((decode_pb_options_fixed64_rules pb_options_value)) : field_rules_type)
+    | ("sfixed32", pb_options_value)::_ -> 
+      (Sfixed32 ((decode_pb_options_sfixed32_rules pb_options_value)) : field_rules_type)
+    | ("sfixed64", pb_options_value)::_ -> 
+      (Sfixed64 ((decode_pb_options_sfixed64_rules pb_options_value)) : field_rules_type)
+    | ("bool", pb_options_value)::_ -> 
+      (Bool ((decode_pb_options_bool_rules pb_options_value)) : field_rules_type)
+    | ("string", pb_options_value)::_ -> 
+      (String ((decode_pb_options_string_rules pb_options_value)) : field_rules_type)
+    | ("bytes", pb_options_value)::_ -> 
+      (Bytes ((decode_pb_options_bytes_rules pb_options_value)) : field_rules_type)
+    | ("enum", pb_options_value)::_ -> 
+      (Enum ((decode_pb_options_enum_rules pb_options_value)) : field_rules_type)
+    | ("repeated", pb_options_value)::_ -> 
+      (Repeated ((decode_pb_options_repeated_rules pb_options_value)) : field_rules_type)
+    | ("map", pb_options_value)::_ -> 
+      (Map ((decode_pb_options_map_rules pb_options_value)) : field_rules_type)
+    | ("any", pb_options_value)::_ -> 
+      (Any ((decode_pb_options_any_rules pb_options_value)) : field_rules_type)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_field_rules d =
+  let v = default_field_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("message", pb_options_value) -> 
+      field_rules_set_message v ((decode_pb_options_message_rules pb_options_value))
+    | ("float", pb_options_value) -> 
+      field_rules_set_type_ v (Float ((decode_pb_options_float_rules pb_options_value)))
+    | ("double", pb_options_value) -> 
+      field_rules_set_type_ v (Double ((decode_pb_options_double_rules pb_options_value)))
+    | ("int32", pb_options_value) -> 
+      field_rules_set_type_ v (Int32 ((decode_pb_options_int32_rules pb_options_value)))
+    | ("int64", pb_options_value) -> 
+      field_rules_set_type_ v (Int64 ((decode_pb_options_int64_rules pb_options_value)))
+    | ("uint32", pb_options_value) -> 
+      field_rules_set_type_ v (Uint32 ((decode_pb_options_uint32_rules pb_options_value)))
+    | ("uint64", pb_options_value) -> 
+      field_rules_set_type_ v (Uint64 ((decode_pb_options_uint64_rules pb_options_value)))
+    | ("sint32", pb_options_value) -> 
+      field_rules_set_type_ v (Sint32 ((decode_pb_options_sint32_rules pb_options_value)))
+    | ("sint64", pb_options_value) -> 
+      field_rules_set_type_ v (Sint64 ((decode_pb_options_sint64_rules pb_options_value)))
+    | ("fixed32", pb_options_value) -> 
+      field_rules_set_type_ v (Fixed32 ((decode_pb_options_fixed32_rules pb_options_value)))
+    | ("fixed64", pb_options_value) -> 
+      field_rules_set_type_ v (Fixed64 ((decode_pb_options_fixed64_rules pb_options_value)))
+    | ("sfixed32", pb_options_value) -> 
+      field_rules_set_type_ v (Sfixed32 ((decode_pb_options_sfixed32_rules pb_options_value)))
+    | ("sfixed64", pb_options_value) -> 
+      field_rules_set_type_ v (Sfixed64 ((decode_pb_options_sfixed64_rules pb_options_value)))
+    | ("bool", pb_options_value) -> 
+      field_rules_set_type_ v (Bool ((decode_pb_options_bool_rules pb_options_value)))
+    | ("string", pb_options_value) -> 
+      field_rules_set_type_ v (String ((decode_pb_options_string_rules pb_options_value)))
+    | ("bytes", pb_options_value) -> 
+      field_rules_set_type_ v (Bytes ((decode_pb_options_bytes_rules pb_options_value)))
+    | ("enum", pb_options_value) -> 
+      field_rules_set_type_ v (Enum ((decode_pb_options_enum_rules pb_options_value)))
+    | ("repeated", pb_options_value) -> 
+      field_rules_set_type_ v (Repeated ((decode_pb_options_repeated_rules pb_options_value)))
+    | ("map", pb_options_value) -> 
+      field_rules_set_type_ v (Map ((decode_pb_options_map_rules pb_options_value)))
+    | ("any", pb_options_value) -> 
+      field_rules_set_type_ v (Any ((decode_pb_options_any_rules pb_options_value)))
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : field_rules)
+
+and decode_pb_options_repeated_rules d =
+  let v = default_repeated_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("min_items", pb_options_value) -> 
+      repeated_rules_set_min_items v (Pbrt_options.int64 pb_options_value "repeated_rules" "min_items")
+    | ("max_items", pb_options_value) -> 
+      repeated_rules_set_max_items v (Pbrt_options.int64 pb_options_value "repeated_rules" "max_items")
+    | ("unique", pb_options_value) -> 
+      repeated_rules_set_unique v (Pbrt_options.bool pb_options_value "repeated_rules" "unique")
+    | ("items", pb_options_value) -> 
+      repeated_rules_set_items v ((decode_pb_options_field_rules pb_options_value))
+    | ("ignore_empty", pb_options_value) -> 
+      repeated_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "repeated_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : repeated_rules)
+
+and decode_pb_options_map_rules d =
+  let v = default_map_rules () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("min_pairs", pb_options_value) -> 
+      map_rules_set_min_pairs v (Pbrt_options.int64 pb_options_value "map_rules" "min_pairs")
+    | ("max_pairs", pb_options_value) -> 
+      map_rules_set_max_pairs v (Pbrt_options.int64 pb_options_value "map_rules" "max_pairs")
+    | ("no_sparse", pb_options_value) -> 
+      map_rules_set_no_sparse v (Pbrt_options.bool pb_options_value "map_rules" "no_sparse")
+    | ("keys", pb_options_value) -> 
+      map_rules_set_keys v ((decode_pb_options_field_rules pb_options_value))
+    | ("values", pb_options_value) -> 
+      map_rules_set_values v ((decode_pb_options_field_rules pb_options_value))
+    | ("ignore_empty", pb_options_value) -> 
+      map_rules_set_ignore_empty v (Pbrt_options.bool pb_options_value "map_rules" "ignore_empty")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : map_rules)
+
+let rec decode_pb_options_field_options d =
+  let v = default_field_options () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("rules", pb_options_value) -> 
+      field_options_set_rules v ((decode_pb_options_field_rules pb_options_value))
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : field_options)
+
+[@@@ocaml.warning "-23-27-30-39"]
+
+(** {2 Formatters} *)
+
+let rec pp_message_options fmt (v:message_options) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (message_options_has_disabled v)) ~first:true "disabled" Pbrt.Pp.pp_bool fmt v.disabled;
+    Pbrt.Pp.pp_record_field ~absent:(not (message_options_has_ignored v)) ~first:false "ignored" Pbrt.Pp.pp_bool fmt v.ignored;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_oneof_options fmt (v:oneof_options) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (oneof_options_has_required v)) ~first:true "required" Pbrt.Pp.pp_bool fmt v.required;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_message_rules fmt (v:message_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (message_rules_has_skip v)) ~first:true "skip" Pbrt.Pp.pp_bool fmt v.skip;
+    Pbrt.Pp.pp_record_field ~absent:(not (message_rules_has_required v)) ~first:false "required" Pbrt.Pp.pp_bool fmt v.required;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_float_rules fmt (v:float_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (float_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_float fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (float_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_float fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (float_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_float fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (float_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_float fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (float_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_float fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (float_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_double_rules fmt (v:double_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (double_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_float fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (double_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_float fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (double_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_float fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (double_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_float fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (double_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_float fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_float) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (double_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_int32_rules fmt (v:int32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (int32_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int32 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (int32_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int32 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (int32_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int32 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (int32_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int32 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (int32_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int32 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (int32_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_int64_rules fmt (v:int64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (int64_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int64 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (int64_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int64 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (int64_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int64 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (int64_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int64 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (int64_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int64 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (int64_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_uint32_rules fmt (v:uint32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (uint32_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int32 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint32_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int32 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint32_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int32 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint32_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int32 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint32_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int32 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint32_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_uint64_rules fmt (v:uint64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (uint64_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int64 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint64_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int64 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint64_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int64 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint64_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int64 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint64_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int64 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (uint64_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sint32_rules fmt (v:sint32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (sint32_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int32 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint32_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int32 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint32_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int32 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint32_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int32 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint32_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int32 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint32_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sint64_rules fmt (v:sint64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (sint64_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int64 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint64_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int64 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint64_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int64 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint64_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int64 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint64_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int64 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (sint64_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_fixed32_rules fmt (v:fixed32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed32_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int32 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed32_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int32 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed32_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int32 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed32_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int32 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed32_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int32 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed32_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_fixed64_rules fmt (v:fixed64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed64_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int64 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed64_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int64 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed64_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int64 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed64_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int64 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed64_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int64 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (fixed64_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sfixed32_rules fmt (v:sfixed32_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed32_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int32 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed32_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int32 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed32_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int32 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed32_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int32 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed32_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int32 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed32_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_sfixed64_rules fmt (v:sfixed64_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed64_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int64 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed64_rules_has_lt v)) ~first:false "lt" Pbrt.Pp.pp_int64 fmt v.lt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed64_rules_has_lte v)) ~first:false "lte" Pbrt.Pp.pp_int64 fmt v.lte;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed64_rules_has_gt v)) ~first:false "gt" Pbrt.Pp.pp_int64 fmt v.gt;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed64_rules_has_gte v)) ~first:false "gte" Pbrt.Pp.pp_int64 fmt v.gte;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int64) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~absent:(not (sfixed64_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_bool_rules fmt (v:bool_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (bool_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_bool fmt v.const;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_known_regex fmt (v:known_regex) =
+  match v with
+  | Unknown -> Format.fprintf fmt "Unknown"
+  | Http_header_name -> Format.fprintf fmt "Http_header_name"
+  | Http_header_value -> Format.fprintf fmt "Http_header_value"
+
+let rec pp_string_rules_well_known fmt (v:string_rules_well_known) =
+  match v with
+  | Email x -> Format.fprintf fmt "@[<hv2>Email(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Hostname x -> Format.fprintf fmt "@[<hv2>Hostname(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ip x -> Format.fprintf fmt "@[<hv2>Ip(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv4 x -> Format.fprintf fmt "@[<hv2>Ipv4(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv6 x -> Format.fprintf fmt "@[<hv2>Ipv6(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Uri x -> Format.fprintf fmt "@[<hv2>Uri(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Uri_ref x -> Format.fprintf fmt "@[<hv2>Uri_ref(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Address x -> Format.fprintf fmt "@[<hv2>Address(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Uuid x -> Format.fprintf fmt "@[<hv2>Uuid(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Well_known_regex x -> Format.fprintf fmt "@[<hv2>Well_known_regex(@,%a)@]" pp_known_regex x
+
+and pp_string_rules fmt (v:string_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_string fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_len v)) ~first:false "len" Pbrt.Pp.pp_int64 fmt v.len;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_min_len v)) ~first:false "min_len" Pbrt.Pp.pp_int64 fmt v.min_len;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_max_len v)) ~first:false "max_len" Pbrt.Pp.pp_int64 fmt v.max_len;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_len_bytes v)) ~first:false "len_bytes" Pbrt.Pp.pp_int64 fmt v.len_bytes;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_min_bytes v)) ~first:false "min_bytes" Pbrt.Pp.pp_int64 fmt v.min_bytes;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_max_bytes v)) ~first:false "max_bytes" Pbrt.Pp.pp_int64 fmt v.max_bytes;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_pattern v)) ~first:false "pattern" Pbrt.Pp.pp_string fmt v.pattern;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_prefix v)) ~first:false "prefix" Pbrt.Pp.pp_string fmt v.prefix;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_suffix v)) ~first:false "suffix" Pbrt.Pp.pp_string fmt v.suffix;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_contains v)) ~first:false "contains" Pbrt.Pp.pp_string fmt v.contains;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_not_contains v)) ~first:false "not_contains" Pbrt.Pp.pp_string fmt v.not_contains;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "well_known" (Pbrt.Pp.pp_option pp_string_rules_well_known) fmt v.well_known;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_strict v)) ~first:false "strict" Pbrt.Pp.pp_bool fmt v.strict;
+    Pbrt.Pp.pp_record_field ~absent:(not (string_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_bytes_rules_well_known fmt (v:bytes_rules_well_known) =
+  match v with
+  | Ip x -> Format.fprintf fmt "@[<hv2>Ip(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv4 x -> Format.fprintf fmt "@[<hv2>Ipv4(@,%a)@]" Pbrt.Pp.pp_bool x
+  | Ipv6 x -> Format.fprintf fmt "@[<hv2>Ipv6(@,%a)@]" Pbrt.Pp.pp_bool x
+
+and pp_bytes_rules fmt (v:bytes_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_bytes fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_len v)) ~first:false "len" Pbrt.Pp.pp_int64 fmt v.len;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_min_len v)) ~first:false "min_len" Pbrt.Pp.pp_int64 fmt v.min_len;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_max_len v)) ~first:false "max_len" Pbrt.Pp.pp_int64 fmt v.max_len;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_pattern v)) ~first:false "pattern" Pbrt.Pp.pp_string fmt v.pattern;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_prefix v)) ~first:false "prefix" Pbrt.Pp.pp_bytes fmt v.prefix;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_suffix v)) ~first:false "suffix" Pbrt.Pp.pp_bytes fmt v.suffix;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_contains v)) ~first:false "contains" Pbrt.Pp.pp_bytes fmt v.contains;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_bytes) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_bytes) fmt v.not_in;
+    Pbrt.Pp.pp_record_field ~first:false "well_known" (Pbrt.Pp.pp_option pp_bytes_rules_well_known) fmt v.well_known;
+    Pbrt.Pp.pp_record_field ~absent:(not (bytes_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_enum_rules fmt (v:enum_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (enum_rules_has_const v)) ~first:true "const" Pbrt.Pp.pp_int32 fmt v.const;
+    Pbrt.Pp.pp_record_field ~absent:(not (enum_rules_has_defined_only v)) ~first:false "defined_only" Pbrt.Pp.pp_bool fmt v.defined_only;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_int32) fmt v.not_in;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_any_rules fmt (v:any_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (any_rules_has_required v)) ~first:true "required" Pbrt.Pp.pp_bool fmt v.required;
+    Pbrt.Pp.pp_record_field ~first:false "in_" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.in_;
+    Pbrt.Pp.pp_record_field ~first:false "not_in" (Pbrt.Pp.pp_list Pbrt.Pp.pp_string) fmt v.not_in;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_field_rules_type fmt (v:field_rules_type) =
+  match v with
+  | Float x -> Format.fprintf fmt "@[<hv2>Float(@,%a)@]" pp_float_rules x
+  | Double x -> Format.fprintf fmt "@[<hv2>Double(@,%a)@]" pp_double_rules x
+  | Int32 x -> Format.fprintf fmt "@[<hv2>Int32(@,%a)@]" pp_int32_rules x
+  | Int64 x -> Format.fprintf fmt "@[<hv2>Int64(@,%a)@]" pp_int64_rules x
+  | Uint32 x -> Format.fprintf fmt "@[<hv2>Uint32(@,%a)@]" pp_uint32_rules x
+  | Uint64 x -> Format.fprintf fmt "@[<hv2>Uint64(@,%a)@]" pp_uint64_rules x
+  | Sint32 x -> Format.fprintf fmt "@[<hv2>Sint32(@,%a)@]" pp_sint32_rules x
+  | Sint64 x -> Format.fprintf fmt "@[<hv2>Sint64(@,%a)@]" pp_sint64_rules x
+  | Fixed32 x -> Format.fprintf fmt "@[<hv2>Fixed32(@,%a)@]" pp_fixed32_rules x
+  | Fixed64 x -> Format.fprintf fmt "@[<hv2>Fixed64(@,%a)@]" pp_fixed64_rules x
+  | Sfixed32 x -> Format.fprintf fmt "@[<hv2>Sfixed32(@,%a)@]" pp_sfixed32_rules x
+  | Sfixed64 x -> Format.fprintf fmt "@[<hv2>Sfixed64(@,%a)@]" pp_sfixed64_rules x
+  | Bool x -> Format.fprintf fmt "@[<hv2>Bool(@,%a)@]" pp_bool_rules x
+  | String x -> Format.fprintf fmt "@[<hv2>String(@,%a)@]" pp_string_rules x
+  | Bytes x -> Format.fprintf fmt "@[<hv2>Bytes(@,%a)@]" pp_bytes_rules x
+  | Enum x -> Format.fprintf fmt "@[<hv2>Enum(@,%a)@]" pp_enum_rules x
+  | Repeated x -> Format.fprintf fmt "@[<hv2>Repeated(@,%a)@]" pp_repeated_rules x
+  | Map x -> Format.fprintf fmt "@[<hv2>Map(@,%a)@]" pp_map_rules x
+  | Any x -> Format.fprintf fmt "@[<hv2>Any(@,%a)@]" pp_any_rules x
+
+and pp_field_rules fmt (v:field_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "message" (Pbrt.Pp.pp_option pp_message_rules) fmt v.message;
+    Pbrt.Pp.pp_record_field ~first:false "type_" (Pbrt.Pp.pp_option pp_field_rules_type) fmt v.type_;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_repeated_rules fmt (v:repeated_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (repeated_rules_has_min_items v)) ~first:true "min_items" Pbrt.Pp.pp_int64 fmt v.min_items;
+    Pbrt.Pp.pp_record_field ~absent:(not (repeated_rules_has_max_items v)) ~first:false "max_items" Pbrt.Pp.pp_int64 fmt v.max_items;
+    Pbrt.Pp.pp_record_field ~absent:(not (repeated_rules_has_unique v)) ~first:false "unique" Pbrt.Pp.pp_bool fmt v.unique;
+    Pbrt.Pp.pp_record_field ~first:false "items" (Pbrt.Pp.pp_option pp_field_rules) fmt v.items;
+    Pbrt.Pp.pp_record_field ~absent:(not (repeated_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_map_rules fmt (v:map_rules) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~absent:(not (map_rules_has_min_pairs v)) ~first:true "min_pairs" Pbrt.Pp.pp_int64 fmt v.min_pairs;
+    Pbrt.Pp.pp_record_field ~absent:(not (map_rules_has_max_pairs v)) ~first:false "max_pairs" Pbrt.Pp.pp_int64 fmt v.max_pairs;
+    Pbrt.Pp.pp_record_field ~absent:(not (map_rules_has_no_sparse v)) ~first:false "no_sparse" Pbrt.Pp.pp_bool fmt v.no_sparse;
+    Pbrt.Pp.pp_record_field ~first:false "keys" (Pbrt.Pp.pp_option pp_field_rules) fmt v.keys;
+    Pbrt.Pp.pp_record_field ~first:false "values" (Pbrt.Pp.pp_option pp_field_rules) fmt v.values;
+    Pbrt.Pp.pp_record_field ~absent:(not (map_rules_has_ignore_empty v)) ~first:false "ignore_empty" Pbrt.Pp.pp_bool fmt v.ignore_empty;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_field_options fmt (v:field_options) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "rules" (Pbrt.Pp.pp_option pp_field_rules) fmt v.rules;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()

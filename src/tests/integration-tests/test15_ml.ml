@@ -14,11 +14,13 @@ let fill_0_to_n n =
   loop (-n)
 
 let decode_pb_ref_data () =
-  T.
-    {
-      m1_l =
-        [ { f = 123l; l = fill_0_to_n 100 }; { f = 456l; l = fill_0_to_n 5 } ];
-    }
+  T.make_m2
+    ~m1_l:
+      [
+        T.make_m1 ~f:123l ~l:(fill_0_to_n 100) ();
+        T.make_m1 ~f:456l ~l:(fill_0_to_n 5) ();
+      ]
+    ()
 
 let mode = Test_util.parse_args ()
 

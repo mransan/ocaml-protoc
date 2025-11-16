@@ -32,39 +32,44 @@ tests:
 
 # location of where the Google protoc compiler is installed
 PB_INSTALL ?= /usr/
-PB_HINC    = $(PB_INSTALL)/include
-PB_LINC    = $(PB_INSTALL)/lib
+PB_HINC    ?= $(PB_INSTALL)/include
+PB_LINC    ?= $(PB_INSTALL)/lib
 PROTOC     = $(PB_INSTALL)/bin/protoc
+
+PB_HINC_I = $(addprefix -I, $(PB_HINC))
+PB_LINC_L = $(addprefix -L, $(PB_LINC))
 
 export LD_LIBRARY_PATH=$(PB_LINC)
 
+build-test-data: build-test-data-yojson
+
 $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc: $(OCAMLOPTIONS_HINC)/ocamloptions.proto
 	cd $(OCAMLOPTIONS_HINC) && \
-		$(PROTOC) --cpp_out ./ -I ./ -I $(abspath $(PB_HINC)) ocamloptions.proto
+		$(PROTOC) --cpp_out ./ -I ./ $(PB_HINC_I) ocamloptions.proto
 
 %_cpp.tsk: %_cpp.cpp %.pb.cc $(OCAMLOPTIONS_HINC)/ocamloptions.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
-		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
-		-L $(PB_LINC) -l protobuf \
+		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) $(PB_HINC_L) \
+		$(PB_LINC_L) $(PB_HINC_I) \
 		$? \
-		-o $@
+		-o $@ -l protobuf
 
 $(INTEGRATION_TESTS_DIR)/test10_cpp.tsk: \
 	$(INTEGRATION_TESTS_DIR)/test10_cpp.cpp \
 	$(INTEGRATION_TESTS_DIR)/test10.pb.cc \
 	$(INTEGRATION_TESTS_DIR)/test09.pb.cc
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) \
-		-I ./ -I $(INTEGRATION_TESTS_DIR)  -I $(PB_HINC) \
-		-L $(PB_LINC) -l protobuf \
+		-I ./ -I $(INTEGRATION_TESTS_DIR)  \
+		$(PB_LINC_L) $(PB_HINC_I) \
 		$? \
-		-o $@
+		-o $@ -l protobuf
 
 .SECONDARY:
 
 %.pb.cc: %.proto
 	$(PROTOC) \
 		--cpp_out $(INTEGRATION_TESTS_DIR) \
-		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) \
+		$(PB_HINC_I) -I $(OCAMLOPTIONS_HINC) -I $(INTEGRATION_TESTS_DIR) \
 		$<
 
 
@@ -87,23 +92,24 @@ integration: test01 test02 test05 test06 test07 test08 test09 test10 \
 
 YOJSON_DIR=src/tests/yojson
 OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
-yojson:
-	./ocaml-protoc -yojson -ml_out $(YOJSON_DIR) $(YOJSON_DIR)/yojson_unittest.proto
+build-test-data-yojson:
+	echo "building yojson test data"
 	$(PROTOC) \
 		--cpp_out $(YOJSON_DIR) \
 		-I $(PB_HINC) -I $(OCAMLOPTIONS_HINC) -I $(YOJSON_DIR) \
 		$(YOJSON_DIR)/yojson_unittest.proto
-	$(OCB) $(OCB_YOJSON) -I $(YOJSON_DIR) yojson_unittest_ml.byte
 	$(CXX) \
 		$(CPPFLAGS) $(LDFLAGS) \
 		-I ./ -I $(INTEGRATION_TESTS_DIR) -I $(OCAMLOPTIONS_HINC) -I $(PB_HINC) \
 		$(YOJSON_DIR)/yojson_unittest_cpp.cpp $(YOJSON_DIR)/yojson_unittest.pb.cc \
 		-L $(PB_LINC) \
-		-l protobuf \
-		-o $@
-	@# Rename cpp executable to something clearer (ie yojson-cpp)
-	./yojson
-	export OCAMLRUNPARAM="b" && ./yojson_unittest_ml.byte
+		-o $(YOJSON_DIR)/yojson.exe -l protobuf
+	cd $(YOJSON_DIR) && ./yojson.exe
 
-.PHONY: all-tests
-all-tests: tests yojson integration
+YOJSON_DIR=src/tests/yojson
+OCB_YOJSON=-pkgs yojson,ocaml-protoc-yojson
+test-yojson: build-test-data-yojson
+	dune runtest $(YOJSON_DIR)
+
+.PHONY: all-tests build-test-data-yojson
+all-tests: build-test-data tests test-yojson integration

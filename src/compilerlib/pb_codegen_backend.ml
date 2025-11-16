@@ -192,7 +192,7 @@ let encoding_info_of_field_type ~all_types field_type : Ot.payload_kind =
 let encoding_of_field ~all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
     =
   let packed =
-    match Typing_util.field_option field "packed" with
+    match Typing_util.field_option field (Pb_option.Simple_name "packed") with
     | Some Pb_option.(Scalar_value (Constant_bool x)) -> x
     | Some _ -> E.invalid_packed_option (Typing_util.field_name field)
     | None -> false
@@ -206,34 +206,34 @@ let encoding_of_field ~all_types (field : (Pb_field_type.resolved, 'a) Tt.field)
 let compile_field_type ~unsigned_tag ~(all_types : _ Tt.proto_type list)
     file_options field_options file_name field_type : Ot.field_type =
   let ocaml_type =
-    match Pb_option.get field_options "ocaml_type" with
+    match Pb_option.get_ext field_options "ocaml_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) -> `Int_t
     | _ -> `None
   in
 
   let int32_type =
-    match Pb_option.get file_options "int32_type" with
+    match Pb_option.get_ext file_options "int32_type" with
     | Some Pb_option.(Scalar_value (Pb_option.Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int32)
   in
 
   let uint32_type =
-    match Pb_option.get file_options "int32_type" with
+    match Pb_option.get_ext file_options "int32_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint32)
   in
 
   let int64_type =
-    match Pb_option.get file_options "int64_type" with
+    match Pb_option.get_ext file_options "int64_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_int64)
   in
 
   let uint64_type =
-    match Pb_option.get file_options "int64_type" with
+    match Pb_option.get_ext file_options "int64_type" with
     | Some Pb_option.(Scalar_value (Constant_literal "int_t")) ->
       Ot.(Ft_basic_type Bt_int)
     | _ -> Ot.(Ft_basic_type Bt_uint64)
@@ -286,13 +286,13 @@ let compile_field_type ~unsigned_tag ~(all_types : _ Tt.proto_type list)
   | `User_defined id, _ -> user_defined_type_of_id ~all_types ~file_name id
 
 let is_mutable ?field_name field_options =
-  match Pb_option.get field_options "ocaml_mutable" with
+  match Pb_option.get_ext field_options "ocaml_mutable" with
   | Some Pb_option.(Scalar_value (Constant_bool v)) -> v
   | Some _ -> Pb_exception.invalid_mutable_option ?field_name ()
   | None -> false
 
 let ocaml_container field_options =
-  match Pb_option.get field_options "ocaml_container" with
+  match Pb_option.get_ext field_options "ocaml_container" with
   | None -> None
   | Some Pb_option.(Scalar_value (Constant_literal container_name)) ->
     Some container_name
@@ -300,6 +300,9 @@ let ocaml_container field_options =
 
 let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
     ~all_types file_options file_name oneof_field : Ot.variant =
+  (* OCaml has a limit of 244 non constant constructors *)
+  let v_use_polyvariant = List.length oneof_field.Tt.oneof_fields >= 244 in
+
   let v_constructors =
     List.map
       (fun field ->
@@ -315,6 +318,12 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
         in
 
         let vc_constructor = constructor_name (Typing_util.field_name field) in
+        let vc_constructor =
+          if v_use_polyvariant then
+            "`" ^ vc_constructor
+          else
+            vc_constructor
+        in
 
         Ot.
           {
@@ -335,7 +344,7 @@ let variant_of_oneof ?include_oneof_name ~outer_message_names ~unsigned_tag
     | None -> type_name outer_message_names ""
     | Some () -> type_name outer_message_names oneof_field.Tt.oneof_name
   in
-  Ot.{ v_name; v_constructors }
+  Ot.{ v_name; v_constructors; v_use_polyvariant }
 
 (*
    Notes on type level PPX extension handling.
@@ -367,7 +376,7 @@ let process_all_types_ppx_extension file_name file_options
   match type_level_ppx_extension with
   | Some x -> Some x
   | None ->
-    Pb_option.get file_options "ocaml_all_types_ppx"
+    Pb_option.get_ext file_options "ocaml_all_types_ppx"
     |> string_of_string_option file_name
 
 let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
@@ -384,7 +393,8 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
   let { Tt.message_names; _ } = scope in
 
   let type_level_ppx_extension =
-    Typing_util.message_option message "ocaml_type_ppx"
+    Typing_util.message_option message
+      (Pb_option.Extension_name "ocaml_type_ppx")
     |> string_of_string_option message_name
     |> process_all_types_ppx_extension file_name file_options
   in
@@ -425,6 +435,18 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
     ]
   | _ ->
     let variants, fields =
+      let presence_idx = ref 0 in
+
+      let generate_bitfield_or_fallback_on_optional () =
+        let n = !presence_idx in
+        if n >= Pbrt.Bitfield.max_bits then
+          Ot.Rfp_wrapped_option
+        else (
+          incr presence_idx;
+          Ot.Rfp_bitfield n
+        )
+      in
+
       List.fold_left
         (fun (variants, fields) -> function
           | Tt.Message_field field ->
@@ -447,6 +469,14 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
 
             let mutable_ = is_mutable ~field_name field_options in
 
+            let is_message =
+              match ocaml_field_type with
+              | Ot.Ft_user_defined_type { Ot.udt_type = `Message; _ }
+              | Ot.Ft_wrapper_type _ ->
+                true
+              | _ -> false
+            in
+
             let record_field_type =
               match Typing_util.field_label field with
               | `Nolabel ->
@@ -462,22 +492,25 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                    we always make such a field an OCaml option. It's the
                    responsability of the application to check for [None] and
                    perform any error handling if required. *)
-                let is_message =
-                  match ocaml_field_type with
-                  | Ot.Ft_user_defined_type { Ot.udt_type = `Message; _ } ->
-                    true
-                  | _ -> false
-                in
                 if is_message then
                   Ot.Rft_optional (ocaml_field_type, encoding_number, pk, None)
                 else
                   Ot.Rft_nolabel (ocaml_field_type, encoding_number, pk)
               | `Required ->
-                Ot.Rft_required
-                  (ocaml_field_type, encoding_number, pk, field_default)
+                if is_message then
+                  (* still wrap in option to avoid cycles, etc. Yep,
+                     can't really have a non-optional required message. *)
+                  Ot.Rft_optional (ocaml_field_type, encoding_number, pk, None)
+                else
+                  Ot.Rft_required
+                    (ocaml_field_type, encoding_number, pk, field_default)
               | `Optional ->
-                Ot.Rft_optional
-                  (ocaml_field_type, encoding_number, pk, field_default)
+                if is_message then
+                  Ot.Rft_optional
+                    (ocaml_field_type, encoding_number, pk, field_default)
+                else
+                  Ot.Rft_nolabel (ocaml_field_type, encoding_number, pk)
+                (* use the bitfield! *)
               | `Repeated ->
                 let repeated_type =
                   match ocaml_container field_options with
@@ -489,6 +522,28 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   (repeated_type, ocaml_field_type, encoding_number, pk, packed)
             in
 
+            let rf_presence =
+              (* NOTE: we are still not going to be fully compliant with
+                 implicit presence in proto3, because we track presence even
+                 for non-optional nonlabelled fields. Oh well. *)
+              match record_field_type with
+              | Ot.Rft_nolabel _ when is_message ->
+                (* always wrap other messages/variants in option *)
+                Ot.Rfp_wrapped_option
+              | Ot.Rft_nolabel _ ->
+                (* proto3 non labelled field, or proto2 optional with immediate type *)
+                generate_bitfield_or_fallback_on_optional ()
+              | Ot.Rft_required _ -> Ot.Rfp_always
+              | Ot.Rft_optional (field_type, _, _, _) ->
+                (match field_type with
+                | Ot.Ft_unit | Ot.Ft_basic_type _ ->
+                  (* we have a bitfield, we can avoid the option *)
+                  generate_bitfield_or_fallback_on_optional ()
+                | Ot.Ft_user_defined_type _ | Ot.Ft_wrapper_type _ ->
+                  Ot.Rfp_wrapped_option)
+              | Ot.Rft_variant _ -> generate_bitfield_or_fallback_on_optional ()
+              | Ot.Rft_associative _ | Ot.Rft_repeated _ -> Ot.Rfp_repeated
+            in
             let record_field =
               Ot.
                 {
@@ -496,6 +551,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = mutable_;
                   rf_options = field.field_options;
+                  rf_presence;
                 }
             in
 
@@ -519,6 +575,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                    *)
                   rf_field_type = Rft_variant variant;
                   rf_options = field.oneof_options;
+                  rf_presence = Ot.Rfp_wrapped_option;
                 }
             in
 
@@ -595,6 +652,7 @@ let compile_message ~(unsigned_tag : bool) (file_options : Pb_option.set)
                   rf_field_type = record_field_type;
                   rf_mutable = is_mutable ~field_name:map_name map_options;
                   rf_options = map_options;
+                  rf_presence = Ot.Rfp_repeated;
                 }
             in
 
@@ -641,7 +699,7 @@ let compile_enum file_options file_name scope enum =
   in
 
   let type_level_ppx_extension =
-    Typing_util.enum_option enum "ocaml_enum_ppx"
+    Typing_util.enum_option enum (Pb_option.Extension_name "ocaml_enum_ppx")
     |> string_of_string_option enum_name
     |> process_all_types_ppx_extension file_name file_options
   in

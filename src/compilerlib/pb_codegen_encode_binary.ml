@@ -98,13 +98,13 @@ let gen_rft_repeated sc var_name repeated_field =
 
   match rt, is_packed with
   | Ot.Rt_list, false ->
-    F.line sc "Pbrt.List_util.rev_iter_with (fun x encoder -> ";
+    F.line sc "Pbrt.List_util.rev_iter_with (fun x encoder ->";
     F.sub_scope sc (fun sc ->
         gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
     F.linep sc ") %s encoder;" var_name
   | Ot.Rt_repeated_field, false ->
-    F.line sc "Pbrt.Repeated_field.rev_iter_with (fun x encoder -> ";
+    F.line sc "Pbrt.Repeated_field.rev_iter_with (fun x encoder ->";
     F.sub_scope sc (fun sc ->
         gen_encode_field_type ~with_key:true sc "x" encoding_number pk is_packed
           field_type);
@@ -112,7 +112,7 @@ let gen_rft_repeated sc var_name repeated_field =
   | Ot.Rt_list, true ->
     F.line sc "Pbrt.Encoder.nested (fun lst encoder ->";
     F.sub_scope sc (fun sc ->
-        F.line sc "Pbrt.List_util.rev_iter_with (fun x encoder -> ";
+        F.line sc "Pbrt.List_util.rev_iter_with (fun x encoder ->";
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
         F.linep sc ") lst encoder;");
@@ -122,7 +122,7 @@ let gen_rft_repeated sc var_name repeated_field =
   | Ot.Rt_repeated_field, true ->
     F.line sc "Pbrt.Encoder.nested (fun lst encoder ->";
     F.sub_scope sc (fun sc ->
-        F.line sc "Pbrt.Repeated_field.rev_iter_with (fun x encoder -> ";
+        F.line sc "Pbrt.Repeated_field.rev_iter_with (fun x encoder ->";
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc "x" encoding_number pk is_packed field_type);
         F.linep sc ") lst encoder;");
@@ -132,6 +132,7 @@ let gen_rft_repeated sc var_name repeated_field =
 
 let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
   F.linep sc "begin match %s with" var_name;
+  F.line sc "| None -> ()";
   List.iter
     (fun constructor ->
       let {
@@ -146,12 +147,12 @@ let gen_rft_variant sc var_name { Ot.v_constructors; _ } =
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| %s ->" vc_constructor;
+        F.linep sc "| Some %s ->" vc_constructor;
         F.sub_scope sc (fun sc ->
             F.line sc "Pbrt.Encoder.empty_nested encoder;";
             gen_encode_field_key sc vc_encoding_number vc_payload_kind false)
       | Ot.Vct_non_nullary_constructor field_type ->
-        F.linep sc "| %s x ->" vc_constructor;
+        F.linep sc "| Some (%s x) ->" vc_constructor;
         F.sub_scope sc (fun sc ->
             gen_encode_field_type sc ~with_key:true "x" vc_encoding_number
               vc_payload_kind false field_type))
@@ -200,16 +201,27 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
   F.sub_scope sc (fun sc ->
       List.iter
         (fun record_field ->
-          let { Ot.rf_label; rf_field_type; _ } = record_field in
+          let { Ot.rf_label; rf_field_type; rf_presence; _ } = record_field in
 
-          let var_name = sp "v.%s" rf_label in
-          match rf_field_type with
-          | Ot.Rft_nolabel x -> gen_rft_nolabel sc var_name x
-          | Ot.Rft_required x -> gen_rft_required sc var_name x
-          | Ot.Rft_optional x -> gen_rft_optional sc var_name x
-          | Ot.Rft_repeated x -> gen_rft_repeated sc var_name x
-          | Ot.Rft_variant x -> gen_rft_variant sc var_name x
-          | Ot.Rft_associative x -> gen_rft_associative sc var_name x)
+          let in_bitfield =
+            match rf_presence with
+            | Ot.Rfp_bitfield _idx ->
+              F.linep sc "if %s_has_%s v then (" r_name rf_label;
+              true
+            | _ -> false
+          in
+
+          F.sub_scope_if in_bitfield sc (fun sc ->
+              let var_name = sp "v.%s" rf_label in
+              match rf_field_type with
+              | Ot.Rft_nolabel x -> gen_rft_nolabel sc var_name x
+              | Ot.Rft_required x -> gen_rft_required sc var_name x
+              | Ot.Rft_optional x -> gen_rft_optional sc var_name x
+              | Ot.Rft_repeated x -> gen_rft_repeated sc var_name x
+              | Ot.Rft_variant x -> gen_rft_variant sc var_name x
+              | Ot.Rft_associative x -> gen_rft_associative sc var_name x);
+
+          if in_bitfield then F.line sc ");")
         r_fields (* List.iter *);
       F.line sc "()")
 (* encode function *)
@@ -222,7 +234,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
   F.line sc "()"
 
 let gen_variant ?and_ variant sc =
-  let { Ot.v_name; Ot.v_constructors } = variant in
+  let { Ot.v_name; Ot.v_constructors; v_use_polyvariant = _ } = variant in
   let vn = v_name in
   F.linep sc "%s encode_pb_%s (v:%s) encoder = "
     (Pb_codegen_util.let_decl_of_and and_)
@@ -273,7 +285,9 @@ let gen_const_variant ?and_ cv sc =
                  cvc_binary_value))
         cv_constructors)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let { Ot.spec; _ } = t in
   let has_encoded =
     match spec with
@@ -292,7 +306,9 @@ let gen_struct ?and_ t sc =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =
@@ -320,13 +336,11 @@ let gen_sig ?and_ t sc =
   has_encoded
 
 let ocamldoc_title = "Protobuf Encoding"
-let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

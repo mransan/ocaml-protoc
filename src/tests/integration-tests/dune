@@ -43,7 +43,10 @@
 
 (rule
  (targets test05.ml test05.mli)
- (deps test05.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (deps
+  test05.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google/))
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ ./ test05.proto)))
 
@@ -159,7 +162,10 @@
 
 (rule
  (targets test15.ml test15.mli)
- (deps test15.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (deps
+  test15.proto
+  ../../include/ocaml-protoc/ocamloptions.proto
+  (source_tree google/))
  (action
   (run ocaml-protoc -I ../../include/ocaml-protoc -I
     %{env:INCLUDE=/usr/include/} --binary --pp --ml_out ./ ./ test15.proto)))
@@ -305,7 +311,7 @@
  (targets test27.ml test27.mli)
  (deps test27.proto ../../include/ocaml-protoc/ocamloptions.proto)
  (action
-  (run ocaml-protoc --binary --pp --ml_out ./ test27.proto)))
+  (run ocaml-protoc --binary --make --pp --ml_out ./ test27.proto)))
 
 (executable
  (name test27_ml)
@@ -337,3 +343,17 @@
  (name test_make)
  (libraries pbrt)
  (modules test_make))
+
+(executable
+ (name perfetto_trace_ml)
+ (modules perfetto_trace_ml perfetto_trace)
+ (flags :standard \ -bin-annot -annot)
+ (libraries test_util unix))
+
+(rule
+ (targets perfetto_trace.ml perfetto_trace.mli)
+ (deps
+  (:proto perfetto_trace.proto)
+  ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc --binary --pp --ml_out ./ %{proto})))

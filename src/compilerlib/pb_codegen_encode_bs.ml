@@ -202,7 +202,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
         r_fields (* List.iter *);
       F.line sc "json")
 
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   let process_v_constructor sc v_constructor =
     let { Ot.vc_constructor; Ot.vc_field_type; Ot.vc_payload_kind; _ } =
       v_constructor
@@ -248,7 +248,9 @@ let gen_unit ?and_ { Ot.er_name } sc =
     rn rn;
   F.line sc "Js.Json.null"
 
-let gen_struct ?and_ t sc : bool =
+let gen_struct ?and_ ~mode t sc : bool =
+  Pb_codegen_mode.do_encode mode
+  &&
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -268,7 +270,9 @@ let gen_struct ?and_ t sc : bool =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =
@@ -294,13 +298,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "Protobuf JSON Encoding"
-let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

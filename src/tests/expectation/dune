@@ -1,16 +1,47 @@
 (test
- (name tests)
+ (name test_option_parsing)
+ (modules Test_option_parsing)
  (libraries pbrt ocaml-protoc.compiler-lib)
  (package ocaml-protoc)
  (flags :standard -open Ocaml_protoc_compiler_lib))
+
+(test
+ (name test_option_compilation)
+ (modules Test_option_compilation)
+ (libraries pbrt ocaml-protoc.compiler-lib)
+ (package ocaml-protoc)
+ (flags :standard -open Ocaml_protoc_compiler_lib))
+
+(test
+ (name option_processing_compiles)
+ (modules Option_processing_compiles Option_processing)
+ (libraries pbrt ocaml-protoc.compiler-lib)
+ (package ocaml-protoc))
+
+(test
+ (name test_decode_pb_options)
+ (libraries pbrt pbrt.options ocaml-protoc.compiler-lib)
+ (package ocaml-protoc)
+ (modules Test_decode_pb_options Validate))
 
 (rule
  (targets option_processing.ml option_processing.mli)
  (deps option_processing.proto)
  (action
-  (run ocaml-protoc --dump_type_repr --ml_out ./ %{deps})))
+  (run ocaml-protoc --dump_type_repr --pb_options --make --ml_out ./ %{deps})))
 
 (rule
  (alias runtest)
  (action
   (diff option_processing.ml.expected option_processing.ml)))
+
+(rule
+ (targets validate.ml validate.mli)
+ (deps validate.proto)
+ (action
+  (run ocaml-protoc --pb_options --pp --ml_out ./ %{deps})))
+
+(rule
+ (alias runtest)
+ (action
+  (diff validate.ml.expected validate.ml)))

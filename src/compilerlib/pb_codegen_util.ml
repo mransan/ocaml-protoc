@@ -48,11 +48,15 @@ let string_of_associative_type = function
   | Ot.At_list -> "list"
   | Ot.At_hashtable -> "Hashtbl.t"
 
-let string_of_record_field_type ?module_prefix = function
+let string_of_record_field_type ~with_option ?module_prefix = function
   | Ot.Rft_nolabel (field_type, _, _) | Ot.Rft_required (field_type, _, _, _) ->
     string_of_field_type ?module_prefix field_type
   | Ot.Rft_optional (field_type, _, _, _) ->
-    string_of_field_type ?module_prefix field_type ^ " option"
+    let ty = string_of_field_type ?module_prefix field_type in
+    if with_option then
+      ty ^ " option"
+    else
+      ty
   | Ot.Rft_repeated (rt, field_type, _, _, _) ->
     string_of_field_type ?module_prefix field_type
     ^ " " ^ string_of_repeated_type rt
@@ -67,9 +71,15 @@ let string_of_record_field_type ?module_prefix = function
       (string_of_field_type ?module_prefix value_type)
       (string_of_associative_type Ot.At_hashtable)
   | Ot.Rft_variant { Ot.v_name; _ } ->
-    (match module_prefix with
-    | None -> v_name
-    | Some module_prefix -> module_prefix ^ "." ^ v_name)
+    let ty =
+      match module_prefix with
+      | None -> v_name
+      | Some module_prefix -> module_prefix ^ "." ^ v_name
+    in
+    if with_option then
+      Printf.sprintf "%s option" ty
+    else
+      ty
 
 (** [function_name_of_user_defined prefix user_defined] returns the function
     name of the form `(module'.'?)prefix_(type_name)`.
@@ -104,8 +114,6 @@ let caml_file_name_of_proto_file_name ~proto_file_name =
     failwith "Proto file has no valid extension"
   else
     String.concat "_" @@ List.rev @@ List.tl splitted
-
-let mutable_record_name s = s ^ "_mutable"
 
 let string_of_payload_kind ?capitalize payload_kind packed =
   let s =
@@ -186,3 +194,9 @@ let collect_modules_of_types ocaml_types =
 (*let module_of_context module_prefix file_suffix = function
   | `Single_file -> ""
   | `Multi_file -> Printf.sprintf "%s_%s." module_prefix file_suffix *)
+
+let presence_set ~bv ~idx () : string =
+  Printf.sprintf "(Pbrt.Bitfield.set %s %d)" bv idx
+
+let presence_get ~bv ~idx () : string =
+  Printf.sprintf "(Pbrt.Bitfield.get %s %d)" bv idx

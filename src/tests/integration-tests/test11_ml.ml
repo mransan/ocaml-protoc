@@ -5,36 +5,27 @@ let create_ref_data n =
     | 0 -> l
     | n ->
       let couple =
-        {
-          T.p1 =
-            {
-              T.first_name = "John";
-              T.last_name = "Doe";
-              T.date_of_birth = Int32.of_int n;
-              T.tel_number = None;
-              T.employment = T.Employed_by "Google";
-              T.marital_status = None;
-            };
-          T.p2 =
-            {
-              T.first_name = "Marie";
-              T.last_name = "Dupont";
-              T.date_of_birth = 19820306l;
-              T.tel_number = Some { T.area_code = 917l; T.number = 1111111l };
-              T.employment = T.Employed_by "INRIA";
-              T.marital_status = None;
-            };
-          T.contact_numbers =
+        T.make_couple
+          ~p1:
+            (T.make_person ~first_name:"John" ~last_name:"Doe"
+               ~date_of_birth:(Int32.of_int n)
+               ~employment:(Employed_by "Google") ())
+          ~p2:
+            (T.make_person ~first_name:"Marie" ~last_name:"Dupont"
+               ~date_of_birth:19820306l
+               ~tel_number:
+                 (T.make_person_tel_number ~area_code:917l ~number:1111111l ())
+               ~employment:(Employed_by "INRIA") ())
+          ~contact_numbers:
             [
-              { T.area_code = 917l; T.number = 123450l };
-              { T.area_code = 917l; T.number = 123451l };
-            ];
-          T.number_of_children = None;
-        }
+              T.make_person_tel_number ~area_code:917l ~number:123450l ();
+              T.make_person_tel_number ~area_code:917l ~number:123451l ();
+            ]
+          ()
       in
       loop (couple :: l) (n - 1)
   in
-  { T.all = loop [] n }
+  T.make_couples ~all:(loop [] n) ()
 
 let () =
   let mode = Test_util.parse_args () in

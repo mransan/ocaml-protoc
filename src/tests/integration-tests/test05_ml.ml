@@ -12,7 +12,7 @@ let decode_ref_data () =
     | i when i < max_int - (2l * inc) -> loop (i :: l) (i + inc)
     | _ -> l
   in
-  { T.l = List.rev @@ loop [] min_int }
+  T.make_int_list ~l:(List.rev @@ loop [] min_int) ()
 
 let () =
   let mode = Test_util.parse_args () in

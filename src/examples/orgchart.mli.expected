@@ -7,48 +7,105 @@
 
 (** {2 Types} *)
 
-type person = {
-  name : string;
-  age : int64;
+type person = private {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
+  mutable name : string;
+  mutable age : int64;
 }
 
-type store = {
-  address : string;
-  employees : person list;
-  clients : person list;
+type store = private {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
+  mutable address : string;
+  mutable employees : person list;
+  mutable clients : person list;
 }
 
-type company = {
-  name : string;
-  stores : store list;
-  subsidiaries : company list;
+type company = private {
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
+  mutable name : string;
+  mutable stores : store list;
+  mutable subsidiaries : company list;
 }
 
 
 (** {2 Basic values} *)
 
-val default_person : 
+val default_person : unit -> person 
+(** [default_person ()] is a new empty value for type [person] *)
+
+val default_store : unit -> store 
+(** [default_store ()] is a new empty value for type [store] *)
+
+val default_company : unit -> company 
+(** [default_company ()] is a new empty value for type [company] *)
+
+
+(** {2 Make functions} *)
+
+val make_person : 
   ?name:string ->
   ?age:int64 ->
   unit ->
   person
-(** [default_person ()] is the default value for type [person] *)
+(** [make_person … ()] is a builder for type [person] *)
 
-val default_store : 
+val copy_person : person -> person
+
+val person_has_name : person -> bool
+  (** presence of field "name" in [person] *)
+
+val person_set_name : person -> string -> unit
+  (** set field name in person *)
+
+val person_has_age : person -> bool
+  (** presence of field "age" in [person] *)
+
+val person_set_age : person -> int64 -> unit
+  (** set field age in person *)
+
+val make_store : 
   ?address:string ->
   ?employees:person list ->
   ?clients:person list ->
   unit ->
   store
-(** [default_store ()] is the default value for type [store] *)
+(** [make_store … ()] is a builder for type [store] *)
 
-val default_company : 
+val copy_store : store -> store
+
+val store_has_address : store -> bool
+  (** presence of field "address" in [store] *)
+
+val store_set_address : store -> string -> unit
+  (** set field address in store *)
+
+val store_set_employees : store -> person list -> unit
+  (** set field employees in store *)
+
+val store_set_clients : store -> person list -> unit
+  (** set field clients in store *)
+
+val make_company : 
   ?name:string ->
   ?stores:store list ->
   ?subsidiaries:company list ->
   unit ->
   company
-(** [default_company ()] is the default value for type [company] *)
+(** [make_company … ()] is a builder for type [company] *)
+
+val copy_company : company -> company
+
+val company_has_name : company -> bool
+  (** presence of field "name" in [company] *)
+
+val company_set_name : company -> string -> unit
+  (** set field name in company *)
+
+val company_set_stores : company -> store list -> unit
+  (** set field stores in company *)
+
+val company_set_subsidiaries : company -> company list -> unit
+  (** set field subsidiaries in company *)
 
 
 (** {2 Formatters} *)

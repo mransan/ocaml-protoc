@@ -83,6 +83,10 @@ module Decoder : sig
   (** [unexpected_payload field_name pk] raises the exception
       [Protobuf.Decoder.Failure (Unexpected_payload (field_name, pk))] *)
 
+  val unexpected_payload_message : string -> int -> payload_kind -> 'a
+  (** Helper specifically for messages, wrapping around {!unexpected_payload}.
+      @since NEXT_RELEASE *)
+
   val missing_field : string -> 'a
   (** [missing_field field_name] raises the exception
       [Protobuf.Decoder.Failure (Missing_field field_name)] *)
@@ -212,6 +216,17 @@ module Decoder : sig
   val wrapper_bytes_value : t -> bytes option
 end
 (* Decoder *)
+
+(** Bitfield used for presence *)
+module Bitfield : sig
+  type t = private int
+
+  val max_bits : int
+  val empty : t
+  val get : t -> int -> bool
+  val set : t -> int -> t
+  val pp : Format.formatter -> t -> unit
+end
 
 (** Encoding protobufs. *)
 module Encoder : sig
@@ -475,6 +490,7 @@ module Pp : sig
     unit
 
   val pp_record_field :
+    ?absent:bool ->
     ?first:bool ->
     string ->
     (formatter -> 'a -> unit) ->
@@ -482,7 +498,9 @@ module Pp : sig
     'a ->
     unit
   (** [pp_record_field label_name fmt field_value] formats a record
-      [field_value] with [label_name] *)
+      [field_value] with [label_name]
+      @param absent
+        if true, a comment ["(* absent *)"] is emitted. since NEXT_RELEASE *)
 
   val pp_brk : (formatter -> 'a -> unit) -> formatter -> 'a -> unit
   (** [pp_brk fmt r] formats record value [r] with curly brakets. *)

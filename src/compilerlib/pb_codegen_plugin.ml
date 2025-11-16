@@ -5,6 +5,7 @@
 
 type codegen_f =
   ?and_:unit ->
+  mode:Pb_codegen_mode.t ->
   Pb_codegen_ocaml_type.type_ ->
   Pb_codegen_formatting.scope ->
   bool
@@ -19,12 +20,7 @@ module type S = sig
 
   val ocamldoc_title : string
   (** OCamldoc title *)
-
-  val requires_mutable_records : bool
-  (** Does this record depend on mutable records being defined? *)
 end
 
 type t = (module S)
 (** A plugin is a code-generator respecting the signature {!S}. *)
-
-let requires_mutable_records (module P : S) = P.requires_mutable_records

@@ -5,14 +5,8 @@ let () =
   Hashtbl.add details "blah" "blah";
 
   let person =
-    Example05.
-      {
-        name = "John Doe";
-        id = 1234l;
-        email = Some "jdoe@example.com";
-        phone = [ "123-456-7890" ];
-        details;
-      }
+    Example05.make_person ~name:"John Doe" ~id:1234l ~email:"jdoe@example.com"
+      ~phone:[ "123-456-7890" ] ~details ()
   in
 
   (* Create a Protobuf encoder and encode value *)

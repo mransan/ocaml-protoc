@@ -104,12 +104,10 @@ let gen_rft_variant sc ~r_name ~rf_label { Ot.v_constructors; _ } =
 
 (* Generate decode function for a record *)
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
-  let mutable_record_name = Pb_codegen_util.mutable_record_name r_name in
-
   F.linep sc "%s decode_%s json =" (Pb_codegen_util.let_decl_of_and and_) r_name;
 
   F.sub_scope sc (fun sc ->
-      F.linep sc "let v = default_%s () in" mutable_record_name;
+      F.linep sc "let v = default_%s () in" r_name;
       F.line sc "let keys = Js.Dict.keys json in";
       F.line sc "let last_key_index = Array.length keys - 1 in";
 
@@ -152,7 +150,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       F.linep sc "} : %s)" r_name)
 
 (* Generate decode function for a variant type *)
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   (* helper function for each constructor case *)
   let process_v_constructor sc { Ot.vc_constructor; vc_field_type; _ } =
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in
@@ -220,7 +218,9 @@ let gen_unit ?and_ { Ot.er_name } sc =
   @@ sp "%s decode_%s d =" (Pb_codegen_util.let_decl_of_and and_) er_name;
   F.line sc (sp "failwith \"support for empty messages not implemented\"")
 
-let gen_struct ?and_ t sc : bool =
+let gen_struct ?and_ ~mode t sc : bool =
+  Pb_codegen_mode.do_decode mode
+  &&
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -240,7 +240,9 @@ let gen_struct ?and_ t sc : bool =
   in
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_decode mode
+  &&
   let _ = and_ in
 
   let { Ot.spec; _ } = t in
@@ -269,13 +271,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "BS Decoding"
-let requires_mutable_records = true
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

@@ -1,6 +1,9 @@
 // This example demonstrate the ability 
 // to define recursive message and compile them to 
-// OCaml 
+// OCaml.
+//
+// NOTE: this is kind of dirty as it uses `required`
+// and relies on the order of constructors to get a default value
 
 message IntList {
     message Nil  {  }

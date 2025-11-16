@@ -4,33 +4,29 @@ let spf = Printf.sprintf
 
 (* company, with [n] stores and [2^depth] subsidiaries *)
 let rec mk_company ~n ~depth : company =
-  {
-    name = "bigcorp";
-    subsidiaries =
+  make_company ~name:"bigcorp"
+    ~subsidiaries:
       (if depth = 0 then
          []
        else (
          let c = mk_company ~n ~depth:(depth - 1) in
          [ c; c ]
-       ));
-    stores =
-      List.init n (fun i ->
-          {
-            address = spf "%d foobar street" i;
-            clients =
-              List.init 2 (fun j ->
-                  {
-                    name = spf "client_%d_%d" i j;
-                    age = Int64.of_int ((j mod 30) + 15);
-                  });
-            employees =
-              List.init 2 (fun j ->
-                  {
-                    name = spf "employee_%d_%d" i j;
-                    age = Int64.of_int ((j mod 30) + 18);
-                  });
-          });
-  }
+       ))
+    ~stores:
+      (List.init n (fun i ->
+           make_store ~address:(spf "%d foobar street" i)
+             ~clients:
+               (List.init 2 (fun j ->
+                    make_person ~name:(spf "client_%d_%d" i j)
+                      ~age:(Int64.of_int ((j mod 30) + 15))
+                      ()))
+             ~employees:
+               (List.init 2 (fun j ->
+                    make_person ~name:(spf "employee_%d_%d" i j)
+                      ~age:(Int64.of_int ((j mod 30) + 18))
+                      ()))
+             ()))
+    ()
 
 let comp = mk_company ~n:3 ~depth:2
 

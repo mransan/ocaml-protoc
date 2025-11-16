@@ -101,6 +101,17 @@ type record_field_type =
       * (field_type * payload_kind))
   | Rft_variant of variant
 
+(** How do we wrap the field in the generated code? *)
+and record_field_presence =
+  | Rfp_always
+  | Rfp_bitfield of int
+      (** A field with a bitfield slot for presence (argument is the bitfield
+          offset) *)
+  | Rfp_wrapped_option  (** A field wrapped in option *)
+  | Rfp_repeated
+      (** Repeated field or map, no need to track presence but also we have a
+          good default *)
+
 and variant_constructor = {
   vc_constructor: string;
   vc_field_type: variant_constructor_type;
@@ -116,12 +127,16 @@ and variant_constructor_type =
 and variant = {
   v_name: string;
   v_constructors: variant_constructor list;
+  v_use_polyvariant: bool;
+      (** We use a polymorphic variant, eg for large sum types *)
 }
 
 and record_field = {
   rf_label: string;
   rf_field_type: record_field_type;
   rf_mutable: bool;
+  rf_presence: record_field_presence;
+      (** Do we need to track the presence of this field using a bitfield? *)
   rf_options: Pb_option.set;
 }
 
@@ -185,3 +200,9 @@ type proto = {
   proto_services: service list;
 }
 (** A proto file is composed of a list of types and a list of services. *)
+
+let rfp_requires_bitfield = function
+  | Rfp_bitfield _ -> true
+  | Rfp_always | Rfp_wrapped_option | Rfp_repeated -> false
+
+let record_field_requires_bitfield r = rfp_requires_bitfield r.rf_presence

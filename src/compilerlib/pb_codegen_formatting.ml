@@ -39,6 +39,12 @@ let sub_scope scope f : unit =
   f sub_scope;
   scope.items <- Scope sub_scope :: scope.items
 
+let sub_scope_if b scope f =
+  if b then
+    sub_scope scope f
+  else
+    f scope
+
 let to_string (scope : scope) : string =
   let rec loop acc i = function
     | Line s :: tl -> loop ((Pb_util.indentation_prefix i ^ s) :: acc) i tl

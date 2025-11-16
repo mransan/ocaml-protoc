@@ -192,13 +192,14 @@ Online documentation [here](https://mransan.github.io/ocaml-protoc/dev/pbrt/Pbrt
 
 | Command line switch | Description | Runtime |
 | ------------- | ------------- | ----------|
-| | Type definition along with a `default` constructor function to conveniently create values of that type | |
-| --make | `make` constructor functions |  |
-| --binary  | Binary encodings | `pbrt` |
-| --yojson | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | `pbrt_yojson` |
-| --bs | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] |
-| --pp | pretty printing functions based on the Format module. | `pbrt` |
-| --services | RPC definitions. | `pbrt_services` |
+| | Type definition along with a `default` constructor function to conveniently create values of that type | n/a |
+| `--make` | `make` constructor functions | n/a |
+| `--binary`  | Binary encodings | `pbrt` |
+| `--yojson` | JSON encoding using the widely popular [yojson](https://github.com/mjambon/yojson) library | `pbrt_yojson` |
+| `--bs` | BuckleScript encoding using the BuckleScript core binding to JS json library | [bs-ocaml-protoc-json][3] |
+| `--pp` | pretty printing functions based on the Format module. | `pbrt` |
+| `--pp_options` | Option validation. | `pbrt.options` |
+| `--services` | RPC definitions. | `pbrt_services` |
 
 [3]:https://www.npmjs.com/package/bs-ocaml-protoc-json
 

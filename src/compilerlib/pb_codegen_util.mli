@@ -8,7 +8,14 @@ val let_decl_of_and : 'a option -> string
     is [None]), ["and"] otherwise. *)
 
 val string_of_record_field_type :
-  ?module_prefix:string -> Pb_codegen_ocaml_type.record_field_type -> string
+  with_option:bool ->
+  ?module_prefix:string ->
+  Pb_codegen_ocaml_type.record_field_type ->
+  string
+(** Type of the field.
+    @param with_option
+      if true, wrap optional fields with [_ option], otherwise return the
+      underlying type *)
 
 val string_of_basic_type :
   ?for_pp:bool -> Pb_codegen_ocaml_type.basic_type -> string
@@ -41,11 +48,6 @@ val caml_file_name_of_proto_file_name : proto_file_name:string -> string
 (** [caml_file_name_of_proto_file_name filename] returns the OCaml file name
     from the protobuf file name *)
 
-val mutable_record_name : string -> string
-(** [mutable_record_name record_name] returns the type name of the `mutable`
-    type name. We use mutable types when decoding for better performance, this
-    function encapsulate the nameing convention for this additional type. *)
-
 val string_of_payload_kind :
   ?capitalize:unit -> Pb_codegen_ocaml_type.payload_kind -> bool -> string
 (** [string_of_payload_kind ~capitalize:() payload_kind packed] will return the
@@ -62,3 +64,9 @@ val camel_case_of_constructor : string -> string
 val collect_modules_of_types : Pb_codegen_ocaml_type.type_ list -> string list
 (** [collect_modules_of_types ocaml_types] return the list of all the modules
     that the [ocaml_types] depends on *)
+
+val presence_set : bv:string -> idx:int -> unit -> string
+(** Emit code for [record._presence[idx] <- true] *)
+
+val presence_get : bv:string -> idx:int -> unit -> string
+(** Emit code for [bv[idx]] *)

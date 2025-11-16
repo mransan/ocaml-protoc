@@ -1,4 +1,4 @@
-[@@@ocaml.warning "-27-30-39-44"]
+[@@@ocaml.warning "-23-27-30-39-44"]
 
 type payment_system =
   | Cash 
@@ -7,53 +7,130 @@ type payment_system =
   | App 
 
 type person_location = {
-  lat : float;
-  lng : float;
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
+  mutable lat : float;
+  mutable lng : float;
 }
 
-type person_id =
+type person_xyz =
   | X of string
   | Y of int32
   | Z of float
 
 and person = {
-  id : int64;
-  email : string;
-  name : string;
-  home : person_location option;
-  picture : bytes;
-  id : person_id;
+  mutable _presence: Pbrt.Bitfield.t; (** presence for 4 fields *)
+  mutable id : int64;
+  mutable email : string;
+  mutable name : string;
+  mutable home : person_location option;
+  mutable picture : bytes;
+  mutable xyz : person_xyz option;
 }
 
-let rec default_payment_system () = (Cash:payment_system)
+type destructured_options = unit
 
-let rec default_person_location 
-  ?lat:((lat:float) = 0.)
-  ?lng:((lng:float) = 0.)
-  () : person_location  = {
-  lat;
-  lng;
+let default_payment_system () = (Cash:payment_system)
+
+let default_person_location (): person_location =
+{
+  _presence=Pbrt.Bitfield.empty;
+  lat=0.;
+  lng=0.;
 }
 
-let rec default_person_id () : person_id = X ("")
+let default_person_xyz (): person_xyz = X ("")
 
-and default_person 
-  ?id:((id:int64) = 0L)
-  ?email:((email:string) = "")
-  ?name:((name:string) = "")
-  ?home:((home:person_location option) = None)
-  ?picture:((picture:bytes) = Bytes.create 0)
-  ?id:((id:person_id) = X (""))
-  () : person  = {
-  id;
-  email;
-  name;
-  home;
-  picture;
-  id;
+let default_person (): person =
+{
+  _presence=Pbrt.Bitfield.empty;
+  id=0L;
+  email="";
+  name="";
+  home=None;
+  picture=Bytes.create 0;
+  xyz=None;
 }
 
-[@@@ocaml.warning "-27-30-39"]
+let default_destructured_options : destructured_options = ()
+
+
+(** {2 Make functions} *)
+
+let[@inline] person_location_has_lat (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] person_location_has_lng (self:person_location) : bool = (Pbrt.Bitfield.get self._presence 1)
+
+let[@inline] person_location_set_lat (self:person_location) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.lat <- x
+let[@inline] person_location_set_lng (self:person_location) (x:float) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.lng <- x
+
+let copy_person_location (self:person_location) : person_location =
+  { self with lat = self.lat }
+
+let make_person_location 
+  ?(lat:float option)
+  ?(lng:float option)
+  () : person_location  =
+  let _res = default_person_location () in
+  (match lat with
+  | None -> ()
+  | Some v -> person_location_set_lat _res v);
+  (match lng with
+  | None -> ()
+  | Some v -> person_location_set_lng _res v);
+  _res
+
+let[@inline] person_has_id (self:person) : bool = (Pbrt.Bitfield.get self._presence 0)
+let[@inline] person_has_email (self:person) : bool = (Pbrt.Bitfield.get self._presence 1)
+let[@inline] person_has_name (self:person) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] person_has_picture (self:person) : bool = (Pbrt.Bitfield.get self._presence 3)
+
+let[@inline] person_set_id (self:person) (x:int64) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 0); self.id <- x
+let[@inline] person_set_email (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 1); self.email <- x
+let[@inline] person_set_name (self:person) (x:string) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 2); self.name <- x
+let[@inline] person_set_home (self:person) (x:person_location) : unit =
+  self.home <- Some x
+let[@inline] person_set_picture (self:person) (x:bytes) : unit =
+  self._presence <- (Pbrt.Bitfield.set self._presence 3); self.picture <- x
+let[@inline] person_set_xyz (self:person) (x:person_xyz) : unit =
+  self.xyz <- Some x
+
+let copy_person (self:person) : person =
+  { self with id = self.id }
+
+let make_person 
+  ?(id:int64 option)
+  ?(email:string option)
+  ?(name:string option)
+  ?(home:person_location option)
+  ?(picture:bytes option)
+  ?(xyz:person_xyz option)
+  () : person  =
+  let _res = default_person () in
+  (match id with
+  | None -> ()
+  | Some v -> person_set_id _res v);
+  (match email with
+  | None -> ()
+  | Some v -> person_set_email _res v);
+  (match name with
+  | None -> ()
+  | Some v -> person_set_name _res v);
+  (match home with
+  | None -> ()
+  | Some v -> person_set_home _res v);
+  (match picture with
+  | None -> ()
+  | Some v -> person_set_picture _res v);
+  (match xyz with
+  | None -> ()
+  | Some v -> person_set_xyz _res v);
+  _res
+
+[@@@ocaml.warning "-23-27-30-39"]
 
 (** {2 Dump of internal representation for generated OCaml types} *)
 
@@ -63,17 +140,27 @@ and default_person
   Const Variant: payment_system
     Constructor: Cash
       Binary Value: 0, String Value: CASH
-      Options: {"label": Constant_string "Cash"}
+      Options: [{
+   "(label)": "Cash"
+   }]
     Constructor: Credit_card
       Binary Value: 1, String Value: CREDIT_CARD
-      Options: {"label": Constant_string "Credit Card"}
+      Options: [{
+   "(label)": "Credit Card"
+   }]
     Constructor: Debit_card
       Binary Value: 2, String Value: DEBIT_CARD
-      Options: {"label": Constant_string "Debit Card"}
+      Options: [{
+   "(label)": "Debit Card"
+   }]
     Constructor: App
       Binary Value: 3, String Value: APP
-      Options: {"label": Constant_string "Mobile App"}
-  Options: {"label": Constant_string "Payment method"}
+      Options: [{
+   "(label)": "Mobile App"
+   }]
+  Options: [{
+   "(label)": "Payment method"
+   }]
 *)
 
 (* ----------------------------------------------------- *)
@@ -82,33 +169,43 @@ and default_person
   Record: person_location
   - Field: lat
     Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 1, Payload Kind: Pk_bits64)
-    Field options: {"validate.rules.double": {"gte": Constant_int -90, "lte": Constant_int 90}}
+    Field options: [{
+   "(validate.rules)": {"double": {"gte": -90,
+                                   "lte": 90}}
+   }]
   - Field: lng
     Rft_nolabel (Field Type: Ft_basic_type: Bt_float, Encoding: 2, Payload Kind: Pk_bits64)
-    Field options: {"validate.rules.double": {"gte": Constant_int -180, "lte": Constant_int 180}}
-  Options: {"validate.disabled": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"double": {"gte": -180,
+                                   "lte": 180}}
+   }]
+  Options: []
 *)
 
 (* ----------------------------------------------------- *)
 (*
   Module Prefix: Option_processing
-  Variant: person_id
+  Variant: person_xyz
     Constructor: X
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_string
 
       Encoding Number: 6, Payload Kind: Pk_bytes
-      Options: {"validate.rules.string.prefix": Constant_string "foo"}
+      Options: [{
+   "(validate.rules)": {"string": {"prefix": "foo"}}
+   }]
     Constructor: Y
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_int32
 
       Encoding Number: 7, Payload Kind: Pk_varint (zigzag: false)
-      Options: {"validate.rules.int32.gt": Constant_int 0}
+      Options: [{
+   "(validate.rules)": {"int32": {"gt": 0}}
+   }]
     Constructor: Z
       Field Type: Vct_non_nullary_constructor: Ft_basic_type: Bt_float
 
       Encoding Number: 8, Payload Kind: Pk_bits32
-      Options: {}
-  Options: {}
+      Options: []
+  Options: []
 *)
 
 (*
@@ -116,21 +213,128 @@ and default_person
   Record: person
   - Field: id
     Rft_nolabel (Field Type: Ft_basic_type: Bt_int64, Encoding: 1, Payload Kind: Pk_varint (zigzag: false))
-    Field options: {"validate.rules.uint64.gt": Constant_int 999}
+    Field options: [{
+   "(validate.rules)": {"uint64": {"gt": 999}}
+   }]
   - Field: email
     Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 2, Payload Kind: Pk_bytes)
-    Field options: {"validate.rules.string.email": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"string": {"email": true}}
+   }]
   - Field: name
     Rft_nolabel (Field Type: Ft_basic_type: Bt_string, Encoding: 3, Payload Kind: Pk_bytes)
-    Field options: {"validate.rules.string": {"pattern": Constant_string "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$", "max_bytes": Constant_int 256}}
+    Field options: [{
+   "(validate.rules)": {"string": {"pattern": "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+                                   "max_bytes": 256}}
+   }]
   - Field: home
     Rft_optional (Field Type: Ft_user_defined_type: person_location, Encoding: 4, Payload Kind: Pk_bytes, Default Value: None)
-    Field options: {"validate.rules.message.required": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"message": {"required": true}}
+   }]
   - Field: picture
     Rft_nolabel (Field Type: Ft_basic_type: Bt_bytes, Encoding: 5, Payload Kind: Pk_bytes)
-    Field options: {"validate.rules.bytes": {"not_in": [Constant_string "foo", Constant_string "bar", Constant_string "baz"]}}
-  - Field: id
-    Rft_variant: person_id
-    Field options: {"validate.required": Constant_bool true}
-  Options: {"validate.disabled": Constant_bool true}
+    Field options: [{
+   "(validate.rules)": {"bytes": {"not_in": ["foo",
+                                             "bar",
+                                             "baz"]}}
+   }]
+  - Field: xyz
+    Rft_variant: person_xyz
+    Field options: [{
+   "(validate.required)": true
+   }]
+  Options: [{
+   "(validate.disabled)": true
+   }]
 *)
+
+(* ----------------------------------------------------- *)
+(*
+  Module Prefix: Option_processing
+  Empty Record: destructured_options
+  Options: [{
+   "(google.api.http)": {"custom": {"path": "/foo/bar/baz/{id}",
+                                    "kind": "FETCH"},
+                         "additional_bindings": [{"post": "/foo/bar/baz/",
+                                                  "body": "*"},
+                                                 {"get": "/foo/bar/baz/{id}"}]}
+   }]
+*)
+
+[@@@ocaml.warning "-23-27-30-39"]
+
+(** {2 Pb_option.set Decoding} *)
+
+let rec decode_pb_options_payment_system pb_options =
+  match pb_options with
+  | Pbrt_options.Scalar_value (Constant_literal "CASH") -> (Cash : payment_system)
+  | Pbrt_options.Scalar_value (Constant_literal "CREDIT_CARD") -> (Credit_card : payment_system)
+  | Pbrt_options.Scalar_value (Constant_literal "DEBIT_CARD") -> (Debit_card : payment_system)
+  | Pbrt_options.Scalar_value (Constant_literal "APP") -> (App : payment_system)
+  | _ -> Pbrt_options.E.malformed_variant "payment_system"
+
+let rec decode_pb_options_person_location d =
+  let v = default_person_location () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("lat", pb_options_value) -> 
+      person_location_set_lat v (Pbrt_options.float pb_options_value "person_location" "lat")
+    | ("lng", pb_options_value) -> 
+      person_location_set_lng v (Pbrt_options.float pb_options_value "person_location" "lng")
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : person_location)
+
+let rec decode_pb_options_person_xyz pb_options =
+  let assoc = match pb_options with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  let rec loop = function
+    | [] -> Pbrt_options.E.malformed_variant "person_xyz"
+    | ("x", pb_options_value)::_ -> 
+      (X (Pbrt_options.string pb_options_value "person_xyz" "X") : person_xyz)
+    | ("y", pb_options_value)::_ -> 
+      (Y (Pbrt_options.int32 pb_options_value "person_xyz" "Y") : person_xyz)
+    | ("z", pb_options_value)::_ -> 
+      (Z (Pbrt_options.float pb_options_value "person_xyz" "Z") : person_xyz)
+    
+    | _ :: tl -> loop tl
+  in
+  loop assoc
+
+and decode_pb_options_person d =
+  let v = default_person () in
+  let assoc = match d with
+    | Pbrt_options.Message_literal assoc -> assoc
+    | _ -> assert(false)
+  in
+  List.iter (function 
+    | ("id", pb_options_value) -> 
+      person_set_id v (Pbrt_options.int64 pb_options_value "person" "id")
+    | ("email", pb_options_value) -> 
+      person_set_email v (Pbrt_options.string pb_options_value "person" "email")
+    | ("name", pb_options_value) -> 
+      person_set_name v (Pbrt_options.string pb_options_value "person" "name")
+    | ("home", pb_options_value) -> 
+      person_set_home v ((decode_pb_options_person_location pb_options_value))
+    | ("picture", pb_options_value) -> 
+      person_set_picture v (Pbrt_options.bytes pb_options_value "person" "picture")
+    | ("x", pb_options_value) -> 
+      person_set_xyz v (X (Pbrt_options.string pb_options_value "person" "xyz"))
+    | ("y", pb_options_value) -> 
+      person_set_xyz v (Y (Pbrt_options.int32 pb_options_value "person" "xyz"))
+    | ("z", pb_options_value) -> 
+      person_set_xyz v (Z (Pbrt_options.float pb_options_value "person" "xyz"))
+    
+    | (_, _) -> () (*Unknown fields are ignored*)
+  ) assoc;
+  (v : person)
+
+let rec decode_pb_options_destructured_options d =
+Pbrt_options.unit d "destructured_options" "empty record"

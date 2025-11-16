@@ -60,6 +60,10 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
            [ Pb_codegen_ocaml_type_dump.plugin ]
          else
            []);
+        (if !(cmdline.Cmdline.pb_options) then
+           [ Pb_codegen_decode_pb_options.plugin ]
+         else
+           []);
         (if !(cmdline.Cmdline.pp) then
            [ Pb_codegen_pp.plugin ]
          else
@@ -81,10 +85,18 @@ let generate_code ocaml_types ~proto_file_options cmdline : unit =
 
   let services = !(cmdline.Cmdline.services) in
 
+  let mode =
+    if !(cmdline.encode_only) then
+      `Encode_only
+    else if !(cmdline.decode_only) then
+      `Decode_only
+    else
+      `Normal
+  in
+
   let ocaml_mod : CG_all.ocaml_mod =
-    CG_all.codegen ocaml_types ~generate_make:!(cmdline.make)
-      ~proto_file_options ~proto_file_name:cmdline.proto_file_name ~services
-      plugins
+    CG_all.codegen ocaml_types ~mode ~proto_file_options
+      ~proto_file_name:cmdline.proto_file_name ~services plugins
   in
 
   (* now write the files *)

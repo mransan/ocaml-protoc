@@ -17,7 +17,9 @@ module Int32List = struct
 
   let make difficulty =
     let difficulty_size = difficulty_size_of_difficulty difficulty in
-    ( Benchmark.{ int32_list = make_impl [] (Int32.of_int difficulty_size) },
+    ( Benchmark.make_int32_list
+        ~int32_list:(make_impl [] (Int32.of_int difficulty_size))
+        (),
       difficulty_size )
 
   let difficulty_size { Benchmark.int32_list } = List.length int32_list
@@ -34,7 +36,8 @@ module IntList = struct
 
   let make difficulty =
     let difficulty_size = difficulty_size_of_difficulty difficulty in
-    Benchmark.{ int_list = make_impl [] difficulty_size }, difficulty_size
+    ( Benchmark.make_int_list ~int_list:(make_impl [] difficulty_size) (),
+      difficulty_size )
 
   let difficulty_size { Benchmark.int_list } = List.length int_list
   let encode = Benchmark.encode_pb_int_list
@@ -56,7 +59,8 @@ module IntRepeated = struct
 
   let make difficulty =
     let difficulty_size = difficulty_size_of_difficulty difficulty in
-    Benchmark.{ int_repeated = make_impl difficulty_size }, difficulty_size
+    ( Benchmark.make_int_repeated ~int_repeated:(make_impl difficulty_size) (),
+      difficulty_size )
 
   let difficulty_size { Benchmark.int_repeated } =
     Pbrt.Repeated_field.length int_repeated
@@ -80,7 +84,11 @@ module IntPackedRepeated = struct
 
   let make difficulty =
     let difficulty_size = difficulty_size_of_difficulty difficulty in
-    let v = Benchmark.{ int_packed_repeated = make_impl difficulty_size } in
+    let v =
+      Benchmark.make_int_packed_repeated
+        ~int_packed_repeated:(make_impl difficulty_size)
+        ()
+    in
     v, difficulty_size
 
   let difficulty_size { Benchmark.int_packed_repeated = l } =

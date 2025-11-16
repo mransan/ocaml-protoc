@@ -28,13 +28,27 @@ jobs:
         ocaml-compiler: ${{ matrix.ocaml-compiler }}
         allow-prerelease-opam: true
         dune-cache: true
-          #- run: sudo apt install protobuf-compiler libprotobuf-dev
+    - run: sudo apt install protobuf-compiler libprotobuf-dev
     - run: opam pin -n .
     - run: opam depext -yt ocaml-protoc
     - run: opam install -t . --deps-only
     - run: opam exec -- dune build @install
-    - run: opam exec -- dune runtest
-      #- run: opam exec -- make integration
+
+    - name: tests
+      run: opam exec -- make all-tests PB_LINC=/usr/lib/x86_64-linux-gnu/
+
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ocaml/setup-ocaml@v3
+      with:
+        ocaml-compiler: '5.03'
+        allow-prerelease-opam: true
+        dune-cache: true
+          #- run: sudo apt install protobuf-compiler libprotobuf-dev
+    - run: opam pin -n .
+    - run: opam depext -yt ocaml-protoc
     - run: opam install ocamlformat.0.27.0
-    - run: opam exec -- dune build @fmt --auto-promote
-    - run: git diff -q
+    - run: opam exec -- dune build @fmt

@@ -9,9 +9,9 @@
 
 type int_list_nil = unit
 
-type int_list_cons = {
-  value : int;
-  next : int_list;
+type int_list_cons = private {
+  mutable value : int;
+  mutable next : int_list option;
 }
 
 and int_list =
@@ -22,17 +22,31 @@ and int_list =
 (** {2 Basic values} *)
 
 val default_int_list_nil : unit
-(** [default_int_list_nil ()] is the default value for type [int_list_nil] *)
+(** [default_int_list_nil] is the default value for type [int_list_nil] *)
 
-val default_int_list_cons : 
-  ?value:int ->
+val default_int_list_cons : unit -> int_list_cons 
+(** [default_int_list_cons ()] is a new empty value for type [int_list_cons] *)
+
+val default_int_list : unit -> int_list
+(** [default_int_list ()] is a new empty value for type [int_list] *)
+
+
+(** {2 Make functions} *)
+
+val make_int_list_cons : 
+  value:int ->
   ?next:int_list ->
   unit ->
   int_list_cons
-(** [default_int_list_cons ()] is the default value for type [int_list_cons] *)
+(** [make_int_list_cons … ()] is a builder for type [int_list_cons] *)
 
-val default_int_list : unit -> int_list
-(** [default_int_list ()] is the default value for type [int_list] *)
+val copy_int_list_cons : int_list_cons -> int_list_cons
+
+val int_list_cons_set_value : int_list_cons -> int -> unit
+  (** set field value in int_list_cons *)
+
+val int_list_cons_set_next : int_list_cons -> int_list -> unit
+  (** set field next in int_list_cons *)
 
 
 (** {2 Formatters} *)

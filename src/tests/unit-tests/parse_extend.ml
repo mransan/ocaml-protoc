@@ -20,7 +20,7 @@ let () =
     assert (field_name = "i");
     assert (field_number = 1);
     assert (field_type = `Int32);
-    assert (field_options = Pb_option.empty);
+    assert (field_options = Pb_raw_option.empty);
     assert (`Optional = field_label);
     ()
   | _ -> (assert false : unit));
@@ -39,7 +39,7 @@ let () =
     assert (field_name = "i");
     assert (field_number = 1);
     assert (field_type = `Int32);
-    assert (field_options = Pb_option.empty);
+    assert (field_options = Pb_raw_option.empty);
     assert (`Optional = field_label);
     let {
       Pbpt.field_name;
@@ -53,7 +53,7 @@ let () =
     assert (field_name = "j");
     assert (field_number = 2);
     assert (field_type = `Double);
-    assert (field_options = Pb_option.empty);
+    assert (field_options = Pb_raw_option.empty);
     assert (`Required = field_label);
     ()
   | _ -> (assert false : unit));

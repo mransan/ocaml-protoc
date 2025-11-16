@@ -11,4 +11,4 @@
  (targets foo.ml foo.mli)
  (deps foo.proto)
  (action
-  (run ocaml-protoc %{deps} --binary --pp --ml_out .)))
+  (run ocaml-protoc %{deps} --binary --make --pp --ml_out .)))

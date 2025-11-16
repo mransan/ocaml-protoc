@@ -22,24 +22,33 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
           List.iteri
             (fun i record_field ->
               let first = i = 0 in
-              let { Ot.rf_label; rf_field_type; _ } = record_field in
+              let { Ot.rf_label; rf_field_type; rf_presence; _ } =
+                record_field
+              in
+
+              let absent =
+                match rf_presence with
+                | Rfp_bitfield _ ->
+                  Printf.sprintf "~absent:(not (%s_has_%s v)) " r_name rf_label
+                | _ -> ""
+              in
 
               let var_name = sp "v.%s" rf_label in
-              match rf_field_type with
+              (match rf_field_type with
               | Ot.Rft_nolabel (field_type, _, _)
               | Ot.Rft_required (field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
                 F.line sc
-                @@ sp "Pbrt.Pp.pp_record_field ~first:%b \"%s\" %s fmt %s;"
-                     first rf_label field_string_of var_name
+                @@ sp "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" %s fmt %s;"
+                     absent first rf_label field_string_of var_name
                 (* Rft_required *)
               | Ot.Rft_optional (field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
                 F.line sc
                 @@ sp
-                     "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                       (Pbrt.Pp.pp_option %s) fmt %s;"
-                     first rf_label field_string_of var_name
+                     absent first rf_label field_string_of var_name
                 (* Rft_optional *)
               | Ot.Rft_repeated (rt, field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
@@ -47,18 +56,18 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 | Ot.Rt_list ->
                   F.line sc
                   @@ sp
-                       "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                       "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                         (Pbrt.Pp.pp_list %s) fmt %s;"
-                       first rf_label field_string_of var_name
+                       absent first rf_label field_string_of var_name
                 | Ot.Rt_repeated_field ->
                   F.line sc
                   @@ sp
-                       "Pbrt.Pp.pp_record_field ~first:%b \"%s\" \
+                       "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
                         (Pbrt.Pp.pp_list %s) fmt (Pbrt.Repeated_field.to_list \
                         %s);"
-                       first rf_label field_string_of var_name)
+                       absent first rf_label field_string_of var_name)
                 (* Rft_repeated_field *)
-              | Ot.Rft_variant { Ot.v_name; v_constructors = _ } ->
+              | Ot.Rft_variant { Ot.v_name; _ } ->
                 (* constructors are ignored because the pretty printing is completely
                  * delegated to the pretty print function associated with that variant.
                  * This is indeed different from the [decode]/[encode] functions which
@@ -66,8 +75,10 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                  * requirement is indeed comming from the imposed Protobuf format)
                  *)
                 F.line sc
-                @@ sp "Pbrt.Pp.pp_record_field ~first:%b \"%s\" %s fmt %s;"
-                     first rf_label ("pp_" ^ v_name) var_name
+                @@ sp
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
+                      (Pbrt.Pp.pp_option %s) fmt %s;"
+                     absent first rf_label ("pp_" ^ v_name) var_name
                 (* Rft_variant_field *)
               | Ot.Rft_associative (at, _, (key_type, _), (value_type, _)) ->
                 let pp_runtime_function =
@@ -79,10 +90,13 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 let pp_value = gen_field value_type in
                 F.line sc
                 @@ sp
-                     "Pbrt.Pp.pp_record_field ~first:%b \"%s\" (Pbrt.Pp.%s %s \
-                      %s) fmt %s;"
-                     first rf_label pp_runtime_function pp_key pp_value var_name
-              (* Associative_list *))
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" (Pbrt.Pp.%s \
+                      %s %s) fmt %s;"
+                     absent first rf_label pp_runtime_function pp_key pp_value
+                     var_name
+                (* Associative_list *));
+
+              ())
             r_fields);
       F.line sc "in";
       F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
@@ -96,7 +110,8 @@ let gen_unit ?and_ { Ot.er_name } sc : unit =
       F.line sc "in";
       F.line sc "Pbrt.Pp.pp_brk pp_i fmt ()")
 
-let gen_variant ?and_ { Ot.v_name; Ot.v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; Ot.v_constructors; v_use_polyvariant = _ } sc
+    =
   F.line sc @@ sp "%s pp_%s fmt (v:%s) =" (let_decl_of_and and_) v_name v_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match v with";
@@ -123,7 +138,7 @@ let gen_const_variant ?and_ { Ot.cv_name; cv_constructors } sc =
           F.line sc @@ sp "| %s -> Format.fprintf fmt \"%s\"" cvc_name cvc_name)
         cv_constructors)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode:_ t sc =
   let { Ot.spec; _ } = t in
   (match spec with
   | Ot.Record r -> gen_record ?and_ r sc
@@ -132,7 +147,7 @@ let gen_struct ?and_ t sc =
   | Ot.Unit u -> gen_unit ?and_ u sc);
   true
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode:_ t sc =
   let _ = and_ in
   let { Ot.spec; _ } = t in
   let f type_name =
@@ -148,13 +163,11 @@ let gen_sig ?and_ t sc =
   true
 
 let ocamldoc_title = "Formatters"
-let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

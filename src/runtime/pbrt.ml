@@ -33,6 +33,20 @@ let min_int_as_int32, max_int_as_int32 =
 let min_int_as_int64, max_int_as_int64 =
   Int64.of_int min_int, Int64.of_int max_int
 
+module Bitfield = struct
+  type t = int
+
+  let max_bits = Sys.int_size - 1
+  let empty : t = 0
+  let pp out (self : t) = Format.fprintf out "<bitfield 0x%x>" self
+
+  let[@inline] set self idx : t =
+    assert (idx < max_bits);
+    self lor (1 lsl idx)
+
+  let[@inline] get self idx : bool = self land (1 lsl idx) <> 0
+end
+
 module Decoder = struct
   type error =
     | Incomplete
@@ -95,6 +109,11 @@ module Decoder = struct
 
   let unexpected_payload field_name pk =
     raise (Failure (Unexpected_payload (field_name, pk)))
+
+  let[@inline never] unexpected_payload_message rectype field_idx pk =
+    unexpected_payload
+      (Printf.sprintf "Message(%s), field(%d)" rectype field_idx)
+      pk
 
   let[@inline never] missing_field field_name =
     raise (Failure (Missing_field field_name))
@@ -828,9 +847,16 @@ module Pp = struct
     let l = Hashtbl.fold (fun a b l -> (a, b) :: l) h [] in
     pp_associative_list pp_key pp_value fmt l
 
-  let pp_record_field ?(first = false) field_name pp_val fmt val_ =
+  let pp_record_field ?(absent = false) ?(first = false) field_name pp_val fmt
+      val_ =
     if not first then F.fprintf fmt "@ ";
-    F.fprintf fmt "@[<hv2>%s =@ %a;@]" field_name pp_val val_
+    let comment =
+      if absent then
+        " (* absent *)"
+      else
+        ""
+    in
+    F.fprintf fmt "@[<hv2>%s =@ %a%s;@]" field_name pp_val val_ comment
 
   let pp_brk pp_record (fmt : F.formatter) r : unit =
     F.fprintf fmt "@[<hv2>{ %a@;<1 -2>@]}" pp_record r

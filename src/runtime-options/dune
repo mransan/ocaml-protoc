@@ -1,0 +1,4 @@
+(library
+ (name pbrt_options)
+ (public_name pbrt.options)
+ (wrapped false))

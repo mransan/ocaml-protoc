@@ -74,7 +74,7 @@ module File_options = struct
     ]
 
   (** Converts the command line values to Parse Tree file options *)
-  let to_file_options t : Pb_option.set =
+  let to_file_options t : Pb_raw_option.set =
     let { int32_type; int64_type; ocaml_file_ppx; ocaml_all_types_ppx } = t in
 
     let map x f options =
@@ -82,17 +82,19 @@ module File_options = struct
       | None -> options
       | Some x ->
         let option_name, option_value = f x in
-        Pb_option.add options option_name option_value
+        Pb_raw_option.add options option_name option_value
     in
-    Pb_option.empty
+    let open Pb_raw_option in
+    empty
     |> map int32_type (fun s ->
-           "int32_type", Pb_option.(Scalar_value (Constant_literal s)))
+           [ Extension_name "int32_type" ], Scalar_value (Constant_literal s))
     |> map int64_type (fun s ->
-           "int64_type", Pb_option.(Scalar_value (Constant_literal s)))
+           [ Extension_name "int64_type" ], Scalar_value (Constant_literal s))
     |> map ocaml_file_ppx (fun s ->
-           "ocaml_file_ppx", Pb_option.(Scalar_value (Constant_string s)))
+           [ Extension_name "ocaml_file_ppx" ], Scalar_value (Constant_string s))
     |> map ocaml_all_types_ppx (fun s ->
-           "ocaml_all_types_ppx", Pb_option.(Scalar_value (Constant_string s)))
+           ( [ Extension_name "ocaml_all_types_ppx" ],
+             Scalar_value (Constant_string s) ))
 end
 
 (** Command line argument for the ocaml-protoc *)
@@ -109,8 +111,14 @@ module Cmdline = struct
     pp: bool ref;  (** whether pretty printing is enabled *)
     dump_type_repr: bool ref;
         (** whether comments with debug ocaml type representation are added *)
+    pb_options: bool ref;
+        (** generate decoding for protobuf options (protobuf text format) *)
     services: bool ref;  (** whether services code generation is enabled *)
-    make: bool ref;  (** whether to generate "make" functions *)
+    encode_only: bool ref;  (** If true, skip decoders *)
+    decode_only: bool ref;  (** If true, skip encoders *)
+    make: bool ref;
+        (** whether to generate "make" functions. DEPRECATED this is not used
+            anymore *)
     mutable cmd_line_file_options: File_options.t;
         (** file options override from the cmd line *)
     unsigned_tag: bool ref;
@@ -128,7 +136,10 @@ module Cmdline = struct
       yojson = ref false;
       bs = ref false;
       pp = ref false;
+      encode_only = ref false;
+      decode_only = ref false;
       dump_type_repr = ref false;
+      pb_options = ref false;
       services = ref false;
       make = ref false;
       cmd_line_file_options = File_options.make ();
@@ -145,12 +156,21 @@ module Cmdline = struct
         Arg.Set t.dump_type_repr,
         " generate comments with internal representation on generated OCaml \
          types (useful for debugging ocaml-protoc itself)" );
+      ( "--pb_options",
+        Arg.Set t.pb_options,
+        " generate decoders for protobuf options (proto text format)" );
       ( "--services",
         Arg.Set t.services,
         " generate code for services (requires json+binary)" );
       ( "-I",
         Arg.String (fun s -> t.include_dirs <- s :: t.include_dirs),
         " include directories" );
+      ( "--encode-only",
+        Arg.Set t.encode_only,
+        " only generate encoders, not decoders" );
+      ( "--decode-only",
+        Arg.Set t.decode_only,
+        " only generate decoders, not encoders" );
       "--ml_out", Arg.String (fun s -> t.ml_out <- s), " output directory";
       ( "--debug",
         Arg.Unit (fun () -> Pb_logger.setup_from_out_channel stderr),
@@ -178,6 +198,9 @@ module Cmdline = struct
       t.binary := true;
       t.yojson := true
     );
+
+    if !(t.encode_only) && !(t.decode_only) then
+      failwith "only one of --encode-only/--decode-only, make up your mind!";
 
     if t.proto_file_name = "" then
       failwith "Missing proto file name from command line argument";

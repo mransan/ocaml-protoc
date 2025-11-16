@@ -1,35 +1,24 @@
 let test =
   let open Yojson_unittest in
   let all_basic_types =
-    {
-      field01 = 1.2000001;
-      field02 = 1.2;
-      field03 = 0xEFFFFFFFl;
-      field04 = 0xEBABABABABABABABL;
-      field05 = 0x7FFFFFFFl;
-      field06 = 0x7BABABABABABABABL;
-      field07 = 0xEFFFFFFFl;
-      field08 = 0xEBABABABABABABABL;
-      field09 = 0xEFFFFFFFl;
-      field10 = 0xEBABABABABABABABL;
-      field13 = true;
-      field14 = "This is a test \"string\"";
-      repeated01 = [ 1.2000001 ];
-      repeated02 = [ 1.2 ];
-      repeated03 = [ 0xEFFFFFFFl ];
-      repeated04 = [ 0xEBABABABABABABABL ];
-      repeated05 = [ 0x7FFFFFFFl ];
-      repeated06 = [ 0x7BABABABABABABABL ];
-      repeated07 = [ 0xEFFFFFFFl ];
-      repeated08 = [ 0xEBABABABABABABABL ];
-      repeated09 = [ 0xEFFFFFFFl ];
-      repeated10 = [ 0xEBABABABABABABABL ];
-      repeated13 = [ true ];
-      repeated14 = [ "This is a test \"string\"" ];
-    }
+    make_all_basic_types ~field01:1.2000001 ~field02:1.2 ~field03:0xEFFFFFFFl
+      ~field04:0xEBABABABABABABABL ~field05:0x7FFFFFFFl
+      ~field06:0x7BABABABABABABABL ~field07:0xEFFFFFFFl
+      ~field08:0xEBABABABABABABABL ~field09:0xEFFFFFFFl
+      ~field10:0xEBABABABABABABABL ~field13:true
+      ~field14:"This is a test \"string\"" ~repeated01:[ 1.2000001 ]
+      ~repeated02:[ 1.2 ] ~repeated03:[ 0xEFFFFFFFl ]
+      ~repeated04:[ 0xEBABABABABABABABL ] ~repeated05:[ 0x7FFFFFFFl ]
+      ~repeated06:[ 0x7BABABABABABABABL ] ~repeated07:[ 0xEFFFFFFFl ]
+      ~repeated08:[ 0xEBABABABABABABABL ] ~repeated09:[ 0xEFFFFFFFl ]
+      ~repeated10:[ 0xEBABABABABABABABL ] ~repeated13:[ true ]
+      ~repeated14:[ "This is a test \"string\"" ]
+      ()
   in
 
-  let small_message = { sm_string = "This \"IS\" a small string" } in
+  let small_message =
+    make_small_message ~sm_string:"This \"IS\" a small string" ()
+  in
 
   let test_enum0 = Value0 in
   let test_enum1 = Value1 in
@@ -51,21 +40,13 @@ let test =
     Recursive_value single_one_of_small_message
   in
 
-  let basic0 : abasic_message = { name = "basic0" } in
+  let basic0 : abasic_message = make_abasic_message ~name:"basic0" () in
 
-  {
-    all_basic_types = Some all_basic_types;
-    test_enum0;
-    test_enum1;
-    test_enum2;
-    single_one_of_string = Some single_one_of_string;
-    single_one_of_int = Some single_one_of_int;
-    single_one_of_enum = Some single_one_of_enum;
-    single_one_of_small_message = Some single_one_of_small_message;
-    single_one_of_recursive = Some single_one_of_recursive;
-    repeated_enum = [ test_enum0; test_enum1; test_enum2 ];
-    basic = [ basic0 ];
-  }
+  make_test ~all_basic_types ~test_enum0 ~test_enum1 ~test_enum2
+    ~single_one_of_string ~single_one_of_int ~single_one_of_enum
+    ~single_one_of_small_message ~single_one_of_recursive
+    ~repeated_enum:[ test_enum0; test_enum1; test_enum2 ]
+    ~basic:[ basic0 ] ()
 
 let () =
   let json_str =

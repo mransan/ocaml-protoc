@@ -73,17 +73,16 @@ let gen_rft_nolabel sc rf_label (field_type, _, pk) =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
   match gen_field var_name json_label field_type pk with
   | None -> ()
-  | Some exp -> F.linep sc "let assoc = %s :: assoc in" exp
+  | Some exp -> F.linep sc "assoc := %s :: !assoc;" exp
 
 let gen_rft_optional sc rf_label (field_type, _, pk, _) =
-  F.linep sc "let assoc = match v.%s with" rf_label;
+  F.linep sc "assoc := (match v.%s with" rf_label;
   F.sub_scope sc (fun sc ->
-      F.line sc "| None -> assoc";
+      F.line sc "| None -> !assoc";
       let json_label = Pb_codegen_util.camel_case_of_label rf_label in
       match gen_field "v" json_label field_type pk with
-      | None -> F.line sc "| Some v -> assoc"
-      | Some exp -> F.linep sc "| Some v -> %s :: assoc" exp);
-  F.line sc "in"
+      | None -> F.line sc "| Some v -> !assoc"
+      | Some exp -> F.linep sc "| Some v -> %s :: !assoc);" exp)
 
 let gen_rft_repeated sc rf_label repeated_field =
   let repeated_type, field_type, _, pk, _ = repeated_field in
@@ -96,7 +95,7 @@ let gen_rft_repeated sc rf_label repeated_field =
   let var_name = sp "v.%s" rf_label in
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
 
-  F.line sc "let assoc =";
+  F.line sc "assoc := (";
   F.sub_scope sc (fun sc ->
       (match field_type, pk with
       | Ot.Ft_unit, _ -> unsupported json_label
@@ -120,13 +119,14 @@ let gen_rft_repeated sc rf_label repeated_field =
         in
         F.linep sc "let l = %s |> List.map %s in" var_name f_name
       | _ -> unsupported json_label);
-      F.linep sc "(\"%s\", `List l) :: assoc " json_label);
-  F.line sc "in"
+      F.linep sc "(\"%s\", `List l) :: !assoc " json_label);
+  F.line sc ");"
 
 let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
-  F.linep sc "let assoc = match v.%s with" rf_label;
+  F.linep sc "assoc := (match v.%s with" rf_label;
 
   F.sub_scope sc (fun sc ->
+      F.line sc "  | None -> !assoc";
       List.iter
         (fun { Ot.vc_constructor; vc_field_type; vc_payload_kind; _ } ->
           let var_name = "v" in
@@ -136,20 +136,20 @@ let gen_rft_variant sc rf_label { Ot.v_constructors; _ } =
           F.sub_scope sc (fun sc ->
               match vc_field_type with
               | Ot.Vct_nullary ->
-                F.linep sc "| %s -> (\"%s\", `Null) :: assoc" vc_constructor
-                  json_label
+                F.linep sc "| Some %s -> (\"%s\", `Null) :: !assoc"
+                  vc_constructor json_label
               | Ot.Vct_non_nullary_constructor field_type ->
                 (match
                    gen_field var_name json_label field_type vc_payload_kind
                  with
                 | None ->
-                  F.linep sc "| %s -> (\"%s\", `Null) :: assoc" vc_constructor
-                    json_label
+                  F.linep sc "| Some %s -> (\"%s\", `Null) :: !assoc"
+                    vc_constructor json_label
                 | Some exp ->
-                  F.linep sc "| %s v -> %s :: assoc" vc_constructor exp)))
+                  F.linep sc "| Some (%s v) -> %s :: !assoc" vc_constructor exp)))
         v_constructors);
 
-  F.linep sc "in (* match v.%s *)" rf_label
+  F.linep sc "); (* match v.%s *)" rf_label
 
 let gen_rft_assoc sc ~rf_label ~assoc_type ~key_type
     ~value_field:(value_type, value_pk) =
@@ -182,7 +182,7 @@ let gen_rft_assoc sc ~rf_label ~assoc_type ~key_type
           key_exp fn);
     F.line sc "in"
   in
-  F.line sc "let assoc =";
+  F.line sc "assoc :=";
   F.sub_scope sc (fun sc ->
       (match value_type with
       | Ot.Ft_unit -> unsupported json_label
@@ -207,8 +207,7 @@ let gen_rft_assoc sc ~rf_label ~assoc_type ~key_type
         in
         write_assoc_field ~fn ~var_name
       | _ -> unsupported json_label);
-      F.linep sc "(\"%s\", `Assoc assoc_field) :: assoc " json_label);
-  F.line sc "in"
+      F.linep sc "(\"%s\", `Assoc assoc_field) :: !assoc);" json_label)
 
 let gen_record ?and_ { Ot.r_name; r_fields } sc =
   let rn = r_name in
@@ -216,27 +215,39 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
     (Pb_codegen_util.let_decl_of_and and_)
     rn rn;
   F.sub_scope sc (fun sc ->
-      F.line sc "let assoc = [] in ";
+      F.line sc "let assoc = ref [] in";
       List.iter
         (fun record_field ->
-          let { Ot.rf_label; rf_field_type; _ } = record_field in
+          let { Ot.rf_label; rf_field_type; rf_presence; _ } = record_field in
 
-          match rf_field_type with
-          | Ot.Rft_nolabel nolabel_field ->
-            gen_rft_nolabel sc rf_label nolabel_field
-          | Ot.Rft_repeated repeated_field ->
-            gen_rft_repeated sc rf_label repeated_field
-          | Ot.Rft_variant variant_field ->
-            gen_rft_variant sc rf_label variant_field
-          | Ot.Rft_optional optional_field ->
-            gen_rft_optional sc rf_label optional_field
-          | Ot.Rft_required _ ->
-            Printf.eprintf "Only proto3 syntax supported in JSON encoding";
-            exit 1
-          | Ot.Rft_associative (assoc_type, _, (key_type, _), value_field) ->
-            gen_rft_assoc sc ~rf_label ~assoc_type ~key_type ~value_field)
+          let in_bitfield =
+            match rf_presence with
+            | Ot.Rfp_bitfield _ ->
+              F.linep sc "if %s_has_%s v then (" r_name rf_label;
+              true
+            | _ -> false
+          in
+
+          F.sub_scope_if in_bitfield sc (fun sc ->
+              match rf_field_type with
+              | Ot.Rft_nolabel nolabel_field ->
+                gen_rft_nolabel sc rf_label nolabel_field
+              | Ot.Rft_repeated repeated_field ->
+                gen_rft_repeated sc rf_label repeated_field
+              | Ot.Rft_variant variant_field ->
+                gen_rft_variant sc rf_label variant_field
+              | Ot.Rft_optional optional_field ->
+                gen_rft_optional sc rf_label optional_field
+              | Ot.Rft_required _ ->
+                Printf.eprintf "Only proto3 syntax supported in JSON encoding";
+                exit 1
+              | Ot.Rft_associative (assoc_type, _, (key_type, _), value_field)
+                ->
+                gen_rft_assoc sc ~rf_label ~assoc_type ~key_type ~value_field);
+
+          if in_bitfield then F.line sc ");")
         r_fields (* List.iter *);
-      F.line sc "`Assoc assoc")
+      F.line sc "`Assoc !assoc")
 
 let gen_unit ?and_ { Ot.er_name } sc =
   let rn = er_name in
@@ -245,7 +256,7 @@ let gen_unit ?and_ { Ot.er_name } sc =
     rn rn;
   F.line sc (sp "Pbrt_yojson.%s %s" "make_unit" "v")
 
-let gen_variant ?and_ { Ot.v_name; v_constructors } sc =
+let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   let process_v_constructor sc v_constructor =
     let { Ot.vc_constructor; Ot.vc_field_type; Ot.vc_payload_kind; _ } =
       v_constructor
@@ -282,7 +293,9 @@ let gen_const_variant ?and_ { Ot.cv_name; Ot.cv_constructors } sc =
           F.linep sc "| %s -> `String \"%s\"" cvc_name cvc_string_value)
         cv_constructors)
 
-let gen_struct ?and_ t sc =
+let gen_struct ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let { Ot.spec; _ } = t in
 
   let has_encoded =
@@ -303,7 +316,9 @@ let gen_struct ?and_ t sc =
 
   has_encoded
 
-let gen_sig ?and_ t sc =
+let gen_sig ?and_ ~mode t sc =
+  Pb_codegen_mode.do_encode mode
+  &&
   let _ = and_ in
   let f type_name =
     F.linep sc "val encode_json_%s : %s -> Yojson.Basic.t" type_name type_name;
@@ -326,13 +341,11 @@ let gen_sig ?and_ t sc =
     true
 
 let ocamldoc_title = "Protobuf YoJson Encoding"
-let requires_mutable_records = false
 
 let plugin : Pb_codegen_plugin.t =
   let module P = struct
     let gen_sig = gen_sig
     let gen_struct = gen_struct
     let ocamldoc_title = ocamldoc_title
-    let requires_mutable_records = requires_mutable_records
   end in
   (module P)

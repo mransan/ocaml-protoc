@@ -1,12 +1,15 @@
 (test
- (name yojson_unittest)
+ (name yojson_unittest_ml)
  (package ocaml-protoc)
+ (deps
+  (:json yojson.data))
  (libraries pbrt pbrt_yojson))
 
 (rule
  (targets yojson_unittest.ml yojson_unittest.mli)
  (deps
-  (:file yojson_unittest.proto))
+  (:file yojson_unittest.proto)
+  (:json yojson.data))
  (action
   (run %{project_root}/src/ocaml-protoc/ocaml_protoc.exe %{file} --yojson
-    --pp --ml_out=.)))
+    --dump_type_repr --pp --ml_out=.)))

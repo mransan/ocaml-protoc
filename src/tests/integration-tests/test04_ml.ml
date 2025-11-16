@@ -1,6 +1,6 @@
 module T = Test04
 
-let decode_ref_data () = { T.j = 456l }
+let decode_ref_data () = T.make_test ~j:456l ()
 
 let () =
   let mode = Test_util.parse_args () in
