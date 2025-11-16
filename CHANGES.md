@@ -1,4 +1,21 @@
 
+## 4.0
+
+- better parsing of protobuf options
+- generation of validation code with `--pp_options`
+- feat: add `--encode-only` and `--decode-only` features
+- take presence semantics in account, to be closer to compliance
+    with the official protobuf docs and implementation
+  * use a bitfield to track presence for scalar fields
+  * use options in more places
+  * do not serialize non-present fields, to save space
+  * always generate `make` builders, setters, presence checks
+- merge mutable and immutable types, only generate a single record per
+    message type
+- feat codegen: use polyvariants for very large sum types
+- fix parser: handle `reserved` in enums
+- improved tests
+
 ## 3.1.1
 
 - fix error in codegen for nested `oneof` in yojson
