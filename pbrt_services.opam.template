@@ -1,5 +1,5 @@
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -11,4 +11,4 @@ build: [
     # "@runtest" {with-test} # no tests
     "@doc" {with-doc}
   ]
-]
+]x-maintenance-intent: ["(latest)"]

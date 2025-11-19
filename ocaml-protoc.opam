@@ -17,8 +17,9 @@ depends: [
   "ppx_deriving" {with-test}
   "ocaml" {>= "4.08"}
 ]
+dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -27,8 +28,9 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
+    "@src/examples/runtest" {with-test}
+    "@src/tests/expectation/runtest" {with-test}
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"
+x-maintenance-intent: ["(latest)"]

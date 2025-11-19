@@ -17,7 +17,7 @@ depends: [
 dev-repo: "git+https://github.com/mransan/ocaml-protoc.git"
 available: arch != "arm32" & arch != "x86_32" & arch != "ppc32" & arch != "ppc64"
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -30,3 +30,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+x-maintenance-intent: ["(latest)"]

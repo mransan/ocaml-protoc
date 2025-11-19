@@ -1,4 +1,3 @@
-available: arch != "arm32" & arch != "x86_32" & arch != "ppc32" & arch != "ppc64"
 build: [
   ["dune" "subst"] {dev}
   [
@@ -9,7 +8,8 @@ build: [
     "-j"
     jobs
     "@install"
-    "@src/tests/unit-tests/pbrt/runtest" {with-test}  # custom path
+    "@src/examples/runtest" {with-test}
+    "@src/tests/expectation/runtest" {with-test}
     "@doc" {with-doc}
   ]
 ]
