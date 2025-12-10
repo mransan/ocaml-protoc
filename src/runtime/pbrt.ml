@@ -622,18 +622,22 @@ module List_util = struct
       | [] -> ()
       | x :: tl ->
         f x st;
-        iter_ f tl st
+        (iter_ [@tailcall]) f tl st
     in
-    let rec direct i f l st =
+
+    (* fast but non tailrec version *)
+    let rec pbrt_rev_iter_ i f l st =
       match l with
       | [] -> ()
       | [ x ] -> f x st
       | [ x; y ] ->
         f y st;
         f x st
-      | _ when i = 0 -> iter_ f (List.rev l) st
+      | _ when i = 0 ->
+        (* fallback: safe, but allocates to reverse the list *)
+        iter_ f (List.rev l) st
       | x :: y :: tl ->
-        direct (i - 1) f tl st;
+        pbrt_rev_iter_ (i - 1) f tl st;
         f y st;
         f x st
     in
@@ -645,7 +649,7 @@ module List_util = struct
       f y st;
       f x st
     | x :: y :: tl ->
-      direct 200 f tl st;
+      pbrt_rev_iter_ 200 f tl st;
       f y st;
       f x st
 end
