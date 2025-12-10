@@ -1,6 +1,6 @@
 ## Protobuf <-> OCaml Mapping
 
-This page describes how the mapping between protobuf type system and OCaml is done. 
+This page describes how the mapping between protobuf type system and OCaml is done.
 
 * [Basic Types](#basic-types)
 * [Oneof fields](#oneof-fields)
@@ -8,19 +8,19 @@ This page describes how the mapping between protobuf type system and OCaml is do
 * [Default values](#default-values)
 * [Message](#message)
 * [Enumerations](#enumerations)
-* [File name](#file-name) 
-* [Package](#package) 
+* [File name](#file-name)
+* [Package](#package)
 * [Extensions](#extensions)
 * [Nested Types](#nested-types)
 * [Maps](#maps)
 * [Groups Services](#maps-groups-services)
- 
+
 ##### [Basic Types](https://developers.google.com/protocol-buffers/docs/proto#scalar)
 
 | .proto type  | OCaml Type  | [Extensions](ocaml_extensions.md) | Notes |
 |--------------|-------------|------------|-------|
 | double       | float       |            |       |
-| float        | float       |            |       | 
+| float        | float       |            |       |
 | int32        | int32       |  int       |       |
 | int64        | int64       |  int       |       |
 | uint32       | int32       |  int       |       |
@@ -37,7 +37,7 @@ This page describes how the mapping between protobuf type system and OCaml is do
 
 ##### [Oneof fields](https://developers.google.com/protocol-buffers/docs/proto#oneof)
 
-`oneof` fields are encoded as OCaml `variant`. The variant name is the concatenation of the enclosing message name 
+`oneof` fields are encoded as OCaml `variant`. The variant name is the concatenation of the enclosing message name
 and the `oneof` field name.
 
 *Note that since it's not possible to encode the variant type without being part of a message, no encoding/decoding
@@ -45,23 +45,23 @@ functions are generated.*
 
 ##### [Field rules](https://developers.google.com/protocol-buffers/docs/proto#specifying-field-rules)
 
-`optional` field will generate `option` type in OCaml, while `repeated` field will generate OCaml `list`.
+`optional` field will generate `option` type in OCaml, or use a bitfield, while `repeated` field will generate OCaml `list`.
 
 ##### [Default values](https://developers.google.com/protocol-buffers/docs/proto#optional)
 
 `ocaml-protoc` supports the majority of the default values that can be specified in a `.proto` file:
-* double/float: Decimal notation (ie 12.345) is supported while scientific notation [is not](https://github.com/mransan/ocaml-protoc/issues/41) (ie 2E8 or -8e2). `nan` and `inf` [are not supported](https://github.com/mransan/ocaml-protoc/issues/45).  
-* int types: Decimal notation (ie 123) is supported while [hexadecimal is not](https://github.com/mransan/ocaml-protoc/issues/42) (ie 0xFF) 
+* double/float: Decimal notation (ie 12.345) is supported while scientific notation [is not](https://github.com/mransan/ocaml-protoc/issues/41) (ie 2E8 or -8e2). `nan` and `inf` [are not supported](https://github.com/mransan/ocaml-protoc/issues/45). 
+* int types: Decimal notation (ie 123) is supported while [hexadecimal is not](https://github.com/mransan/ocaml-protoc/issues/42) (ie 0xFF)
 * string: default ASCII strings are supported but not [escaped byte notation](https://github.com/mransan/ocaml-protoc/issues/43) (ie \001\002)
-* bytes: [not supported](https://github.com/mransan/ocaml-protoc/issues/44) 
+* bytes: [not supported](https://github.com/mransan/ocaml-protoc/issues/44)
 
-##### [Message](https://developers.google.com/protocol-buffers/docs/proto#simple) 
+##### [Message](https://developers.google.com/protocol-buffers/docs/proto#simple)
 
 Message are compiled to OCaml `records` with all fields immutable, while `oneof` fields are compiled to OCaml variant.
 
 **Oneof optimization**
 
-Note that if the protobuf message only contains a single `oneof` field then a single `variant` will be generated. 
+Note that if the protobuf message only contains a single `oneof` field then a single `variant` will be generated.
 This simplify greatly the generated code; for instance:
 
 ```Javascript
@@ -110,12 +110,12 @@ Recursive message are supported and compiled to recursive type in OCaml. For ins
 message IntList {
     message Nil  {  }
     message Cons {
-        required int32   value = 1 [(ocaml_type) = int_t] ; 
+        required int32   value = 1 [(ocaml_type) = int_t] ;
         required IntList next  = 2;
     }
     oneof t {
         Cons cons = 1;
-        Nil  nil  = 2; 
+        Nil  nil  = 2;
     }
 }
 ```
@@ -154,24 +154,24 @@ Will generate:
 
 ```OCaml
 type corpus =
-  | Universal 
-  | Web 
-  | Images 
-  | Local 
-  | News 
-  | Products 
-  | Video 
+  | Universal
+  | Web
+  | Images
+  | Local
+  | News
+  | Products
+  | Video
 ```
 
-##### File name 
+##### File name
 
 `ocaml-protoc` generate one OCaml file (module) for each protobuf file following a similar convention as protoc:
-* &lt;file name&gt;_pb.mli 
-* &lt;file name&gt;_pb.ml 
+* `<file name>_pb.mli`
+* `<file name>_pb.ml`
 
-##### [Package](https://developers.google.com/protocol-buffers/docs/proto#packages) 
+##### [Package](https://developers.google.com/protocol-buffers/docs/proto#packages)
 
-While `ocaml-protoc` honors the package [compilation rules](https://developers.google.com/protocol-buffers/docs/proto#packages-and-name-resolution) it does not use the package name for the generated OCaml code. Therefore any package semantic or convention is lost in the OCaml code.  
+While `ocaml-protoc` honors the package [compilation rules](https://developers.google.com/protocol-buffers/docs/proto#packages-and-name-resolution) it does not use the package name for the generated OCaml code. Therefore any package semantic or convention is lost in the OCaml code. 
 
 ##### [Extensions](https://developers.google.com/protocol-buffers/docs/proto#extensions)
 
@@ -179,13 +179,13 @@ Extensions are parsed by `ocaml-protoc` however they are **ignored**. The main r
 
 ##### [Nested Types](https://developers.google.com/protocol-buffers/docs/proto#nested)
 
-Nested types are fully supported and generate records which name is the concatenation of the inner and outer messages. 
+Nested types are fully supported and generate records which name is the concatenation of the inner and outer messages.
 
 For example:
 ```Javascript
 message ma {
   message mb {
-    required int32 bfield = 1; 
+    required int32 bfield = 1;
   }
   required mb bfield = 1;
 }
@@ -207,9 +207,9 @@ type ma = {
 
 ##### [Maps](https://developers.google.com/protocol-buffers/docs/proto#maps)
 
-Maps is fully supported in `ocaml-protoc` and the OCaml type to represent an associative container can be configurable with a field option. 
+Maps is fully supported in `ocaml-protoc` and the OCaml type to represent an associative container can be configurable with a field option.
 
-By default a `map<a, b> = 1` Protobuf field will generate an OCaml list: `('a * 'b) list`. When setting the `(ocaml_container) = hashtbl` in the `.proto` file then it will generate `('a, 'b) Hashtbl.t`. 
+By default a `map<a, b> = 1` Protobuf field will generate an OCaml list: `('a * 'b) list`. When setting the `(ocaml_container) = hashtbl` in the `.proto` file then it will generate `('a, 'b) Hashtbl.t`.
 
 **example 1 (default):**
 ```Javascript
@@ -217,7 +217,7 @@ message M {
   map<string, string> s2s = 1;
 }
 ```
-will generate 
+will generate
 ```OCaml
 type m = {
   s2s : (string * string) list;
@@ -229,7 +229,7 @@ message M {
   map<string, string> s2s = 1 [(ocaml_container) = hashtbl];
 }
 ```
-will generate 
+will generate
 ```OCaml
 type m = {
   s2s : (string, string) Hashtbl.t;
@@ -240,8 +240,8 @@ type m = {
 
 ##### Groups and  Services
 
-[Groups](https://developers.google.com/protocol-buffers/docs/proto#groups) and 
-[Services](https://developers.google.com/protocol-buffers/docs/proto#services) are currently **NOT** supported. 
+[Groups](https://developers.google.com/protocol-buffers/docs/proto#groups) and
+[Services](https://developers.google.com/protocol-buffers/docs/proto#services) are currently **NOT** supported.
 
-While groups are most likely never going be supported since they are being deprecated, maps should be relatively easy to add. 
+While groups are most likely never going be supported since they are being deprecated, maps should be relatively easy to add.
 Services requires a lot more work though, but I think generating an [Mirage Cohttp server](https://github.com/mirage/ocaml-cohttp) would be pretty awesome.

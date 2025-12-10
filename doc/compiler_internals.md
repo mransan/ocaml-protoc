@@ -4,58 +4,58 @@
 * [Runtime](#rutime)
 * [Code Structure](#code-structure)
 
-##### Overview 
+##### Overview
 
 `ocaml-protoc` follows the classic compiler pipeline as described below:
 
 ```
-            .proto file 
+            .proto file
                 |
                 |  Lexing (lexer.mll) and Parsing (parser.mly)
                 |
                 V
-          Parsed Tree (pbpt.mli) 
+          Parsed Tree (pbpt.mli)
                 |
-                |  Type resolution (pbtt_util.{mli|ml}) 
-                |  and mutally recursive type analysis (graph.{mli|ml}) 
+                |  Type resolution (pbtt_util.{mli|ml})
+                |  and mutally recursive type analysis (graph.{mli|ml})
                 |
                 V
             Typed Tree (pbtt.mli)
                 |
                 |  OCaml compilation (backend_ocaml.{mli|ml})
-                | 
+                |
                 V
        Simplified OCaml AST (ocaml_type.mli)
                 |
-                | Printing (ocaml/codegen_{encode|decode|default|pp}.{mli|ml}) 
+                | Printing (ocaml/codegen_{encode|decode|default|pp}.{mli|ml})
                 |
                 V
         OCaml code (.mli + .ml)
 ```
 
-##### Runtime 
+##### Runtime
 
-The generated code relies a [runtime library](src/runtime/pbrt.mli) called `pbrt`. 
+The generated code relies a [runtime library](src/runtime/pbrt.mli) called `pbrt`.
 This runtime is mostly based on previous work by [whitequark](https://github.com/whitequark/).
 
-#### Code structure 
+#### Code structure
 
-| file                     | Description | 
+| file                     | Description |
 |--------------------------|-------------|
 |lexer.mll                 | Ocamllex lexing rules|
 |parser.mly                | Ocamlyacc parsing rules|
 |pbpt.ml                   | Protobuf parse tree AST|
 |pbpt_util.mli             | Protobuf parse tree creator functions|
 |pbtt.ml                   | Protobuf typed tree AST|
-|pbtt_util.mli             | Protobuf typed tree utilities and type checking routines| 
+|pbtt_util.mli             | Protobuf typed tree utilities and type checking routines|
 |graph.mli                 | graph algorithm with Strongly Connected Component algo for deducing mutually recursive types|
 |encoding_util.mli         | Small type to keep track in the OCaml AST of the rules for protobuf encoding|
 |exception.mli             | All compiler exceptions |
 |logger.mli                | Small logging utily|
-|util.mli                  | Classic missing standard library functions| 
+|util.mli                  | Classic missing standard library functions|
 |fmt.mli                   | Simplify formatting utilities to generate code|
 |ocaml/ocaml_types.ml      | OCaml type AST|
-|ocaml/ocaml_backend.mli   | Compilation of the typed tree to the OCaml AST| 
+|ocaml/ocaml_backend.mli   | Compilation of the typed tree to the OCaml AST|
 |ocaml/codegen_encode.mli  | Printing of the OCaml code|
 |ocaml/codegen_decode.mli  | Printing of the OCaml code|
 |ocaml/codegen_pp.mli      | Printing of the OCaml code|

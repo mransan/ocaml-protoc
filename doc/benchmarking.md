@@ -1,6 +1,6 @@
-## Benchmarking 
+## Benchmarking
 
-#### Test Case 01 - Int list and OCaml extensions  
+#### Test Case 01 - Int list and OCaml extensions
 
 In this benchmark we analyze the various way design the `.proto` message to encode an
 list of 32 bit integer:
@@ -14,7 +14,7 @@ repeated int32 l = 1;
 
 **ocaml_type = int_t extension**
 
-Using the `int` and `list` OCaml type: 
+Using the `int` and `list` OCaml type:
 ```Javascript
 repeated int32 l = 1 [(ocaml_type)=int_t];
 ```
@@ -57,7 +57,7 @@ Results:
 The results above are completely expected and can be explained:
 
 * Using `int` is more efficient than `int32` in OCaml. This is because int32 is boxed.
-* Using the Runtime `Pbrt.Repeated_field` container improves performance over list. This data imperative data structure is optimzed for push back operation.
+* Using the Runtime `Pbrt.Repeated_field` container improves performance over list. This data imperative data structure is optimized for push back operation.
 * Using `packed` encoding improve performance: As explained by the protobuffer documentation, this encoding is more efficient.
 
 
