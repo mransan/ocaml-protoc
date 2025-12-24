@@ -10,6 +10,7 @@ val let_decl_of_and : 'a option -> string
 val string_of_record_field_type :
   with_option:bool ->
   ?module_prefix:string ->
+  Pb_codegen_ocaml_type.record_field_presence ->
   Pb_codegen_ocaml_type.record_field_type ->
   string
 (** Type of the field.

@@ -53,12 +53,12 @@ type default_info = {
 (** This function returns [(field_name, field_default_value, field_type)] for a
     record field. *)
 let record_field_default_info (record_field : Ot.record_field) : default_info =
-  let { Ot.rf_label; Ot.rf_field_type; _ } = record_field in
+  let { Ot.rf_label; Ot.rf_field_type; Ot.rf_presence; _ } = record_field in
   let type_string =
-    Pb_codegen_util.string_of_record_field_type ~with_option:true rf_field_type
+    Pb_codegen_util.string_of_record_field_type ~with_option:true rf_presence rf_field_type
   in
   let type_string_underlying =
-    Pb_codegen_util.string_of_record_field_type ~with_option:false rf_field_type
+    Pb_codegen_util.string_of_record_field_type ~with_option:false rf_presence rf_field_type
   in
   let field_name = rf_label in
 
@@ -97,7 +97,11 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
 
   let default_value, optional =
     match record_field.rf_presence with
-    | Ot.Rfp_wrapped_option -> "None", true
+    | Ot.Rfp_wrapped_option ->
+        (match rf_field_type with
+        | Ot.Rft_nolabel _ ->
+            "Some (" ^ default_value_of_field_type rf_field_type ^ ")", true
+        | _ -> "None", true)
     | Ot.Rfp_bitfield _ -> default_value_of_field_type rf_field_type, true
     | Ot.Rfp_always -> default_value_of_field_type rf_field_type, false
     | Ot.Rfp_repeated -> default_value_of_field_type rf_field_type, false

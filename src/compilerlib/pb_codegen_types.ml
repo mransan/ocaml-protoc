@@ -25,10 +25,10 @@ let gen_record ?and_ ~as_private { Ot.r_name; r_fields } sc =
           "mutable _presence: Pbrt.Bitfield.t; (** presence for %d fields *)"
           len_bitfield;
       List.iter
-        (fun { Ot.rf_label; rf_field_type; _ } ->
+        (fun { Ot.rf_label; rf_field_type; rf_presence; _ } ->
           let type_ =
             Pb_codegen_util.string_of_record_field_type ~with_option:true
-              rf_field_type
+              rf_presence rf_field_type
           in
           F.linep sc "mutable %s : %s;" rf_label type_)
         r_fields);

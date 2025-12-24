@@ -203,16 +203,22 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
         (fun record_field ->
           let { Ot.rf_label; rf_field_type; rf_presence; _ } = record_field in
 
-          let in_bitfield =
+          let in_bitfield, in_wrapped =
             match rf_presence with
             | Ot.Rfp_bitfield _idx ->
               F.linep sc "if %s_has_%s v then (" r_name rf_label;
-              true
-            | _ -> false
+              true, false
+            | Ot.Rfp_wrapped_option ->
+                (match rf_field_type with
+                 | Ot.Rft_nolabel _ | Ot.Rft_required _ ->
+                     F.linep sc "(match v.%s with Some v ->" rf_label;
+                     false, true
+                 | _ -> false, false)
+            | _ -> false, false
           in
 
-          F.sub_scope_if in_bitfield sc (fun sc ->
-              let var_name = sp "v.%s" rf_label in
+          F.sub_scope_if (in_bitfield || in_wrapped) sc (fun sc ->
+              let var_name = if in_wrapped then "v" else sp "v.%s" rf_label in
               match rf_field_type with
               | Ot.Rft_nolabel x -> gen_rft_nolabel sc var_name x
               | Ot.Rft_required x -> gen_rft_required sc var_name x
@@ -221,6 +227,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
               | Ot.Rft_variant x -> gen_rft_variant sc var_name x
               | Ot.Rft_associative x -> gen_rft_associative sc var_name x);
 
+          if in_wrapped then F.line sc "| None -> ());";
           if in_bitfield then F.line sc ");")
         r_fields (* List.iter *);
       F.line sc "()")
