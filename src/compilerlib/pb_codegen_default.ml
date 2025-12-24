@@ -97,11 +97,7 @@ let record_field_default_info (record_field : Ot.record_field) : default_info =
 
   let default_value, optional =
     match record_field.rf_presence with
-    | Ot.Rfp_wrapped_option ->
-        (match rf_field_type with
-        | Ot.Rft_nolabel _ ->
-            "Some (" ^ default_value_of_field_type rf_field_type ^ ")", true
-        | _ -> "None", true)
+    | Ot.Rfp_wrapped_option -> "None", true
     | Ot.Rfp_bitfield _ -> default_value_of_field_type rf_field_type, true
     | Ot.Rfp_always -> default_value_of_field_type rf_field_type, false
     | Ot.Rfp_repeated -> default_value_of_field_type rf_field_type, false
