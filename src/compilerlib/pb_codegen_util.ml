@@ -48,9 +48,13 @@ let string_of_associative_type = function
   | Ot.At_list -> "list"
   | Ot.At_hashtable -> "Hashtbl.t"
 
-let string_of_record_field_type ~with_option ?module_prefix = function
+let string_of_record_field_type ~with_option ?module_prefix presence = function
   | Ot.Rft_nolabel (field_type, _, _) | Ot.Rft_required (field_type, _, _, _) ->
-    string_of_field_type ?module_prefix field_type
+    let ty = string_of_field_type ?module_prefix field_type in
+    if with_option && presence = Ot.Rfp_wrapped_option then
+      ty ^ " option"
+    else
+      ty
   | Ot.Rft_optional (field_type, _, _, _) ->
     let ty = string_of_field_type ?module_prefix field_type in
     if with_option then

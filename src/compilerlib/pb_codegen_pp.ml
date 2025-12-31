@@ -36,6 +36,15 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
               let var_name = sp "v.%s" rf_label in
               (match rf_field_type with
               | Ot.Rft_nolabel (field_type, _, _)
+              | Ot.Rft_required (field_type, _, _, _)
+                when rf_presence = Ot.Rfp_wrapped_option ->
+                let field_string_of = gen_field field_type in
+                F.line sc
+                @@ sp
+                     "Pbrt.Pp.pp_record_field %s~first:%b \"%s\" \
+                      (Pbrt.Pp.pp_option %s) fmt %s;"
+                     absent first rf_label field_string_of var_name
+              | Ot.Rft_nolabel (field_type, _, _)
               | Ot.Rft_required (field_type, _, _, _) ->
                 let field_string_of = gen_field field_type in
                 F.line sc

@@ -319,6 +319,17 @@
  (libraries test_util unix))
 
 (rule
+ (targets test28.ml test28.mli)
+ (deps test28.proto ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc --binary --make --pp --ml_out ./ test28.proto)))
+
+(executable
+ (name test28_ml)
+ (modules test28_ml test28)
+ (libraries test_util unix))
+
+(rule
  (targets test_proto3_optional.ml test_proto3_optional.mli)
  (deps
   (:proto test_proto3_optional.proto)
