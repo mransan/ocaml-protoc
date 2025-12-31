@@ -123,7 +123,7 @@ let gen_sig_record sc ({ Ot.r_name; _ } as r) =
   List.iter
     (fun (d : default_info) ->
       (match d.rfp with
-      | Rfp_bitfield _ ->
+      | Rfp_bitfield _ | Rfp_wrapped_option ->
         F.line sc "";
         F.linep sc "val %s_has_%s : %s -> bool" r_name d.fname r_name;
         F.linep sc "  (** presence of field %S in [%s] *)" d.fname r_name
