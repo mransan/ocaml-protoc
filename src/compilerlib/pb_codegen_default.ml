@@ -55,10 +55,12 @@ type default_info = {
 let record_field_default_info (record_field : Ot.record_field) : default_info =
   let { Ot.rf_label; Ot.rf_field_type; Ot.rf_presence; _ } = record_field in
   let type_string =
-    Pb_codegen_util.string_of_record_field_type ~with_option:true rf_presence rf_field_type
+    Pb_codegen_util.string_of_record_field_type ~with_option:true rf_presence
+      rf_field_type
   in
   let type_string_underlying =
-    Pb_codegen_util.string_of_record_field_type ~with_option:false rf_presence rf_field_type
+    Pb_codegen_util.string_of_record_field_type ~with_option:false rf_presence
+      rf_field_type
   in
   let field_name = rf_label in
 
