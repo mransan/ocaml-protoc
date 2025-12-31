@@ -1384,6 +1384,7 @@ let[@inline] string_rules_has_prefix (self:string_rules) : bool = (Pbrt.Bitfield
 let[@inline] string_rules_has_suffix (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 9)
 let[@inline] string_rules_has_contains (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 10)
 let[@inline] string_rules_has_not_contains (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 11)
+let[@inline] string_rules_has_well_known (self:string_rules) : bool = self.well_known != None
 let[@inline] string_rules_has_strict (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 12)
 let[@inline] string_rules_has_ignore_empty (self:string_rules) : bool = (Pbrt.Bitfield.get self._presence 13)
 
@@ -1502,6 +1503,7 @@ let[@inline] bytes_rules_has_pattern (self:bytes_rules) : bool = (Pbrt.Bitfield.
 let[@inline] bytes_rules_has_prefix (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 5)
 let[@inline] bytes_rules_has_suffix (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 6)
 let[@inline] bytes_rules_has_contains (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 7)
+let[@inline] bytes_rules_has_well_known (self:bytes_rules) : bool = self.well_known != None
 let[@inline] bytes_rules_has_ignore_empty (self:bytes_rules) : bool = (Pbrt.Bitfield.get self._presence 8)
 
 let[@inline] bytes_rules_set_const (self:bytes_rules) (x:bytes) : unit =
@@ -1638,6 +1640,8 @@ let make_any_rules
   any_rules_set_not_in _res not_in;
   _res
 
+let[@inline] field_rules_has_message (self:field_rules) : bool = self.message != None
+let[@inline] field_rules_has_type_ (self:field_rules) : bool = self.type_ != None
 
 let[@inline] field_rules_set_message (self:field_rules) (x:message_rules) : unit =
   self.message <- Some x
@@ -1663,6 +1667,7 @@ let make_field_rules
 let[@inline] repeated_rules_has_min_items (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] repeated_rules_has_max_items (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
 let[@inline] repeated_rules_has_unique (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] repeated_rules_has_items (self:repeated_rules) : bool = self.items != None
 let[@inline] repeated_rules_has_ignore_empty (self:repeated_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
 
 let[@inline] repeated_rules_set_min_items (self:repeated_rules) (x:int64) : unit =
@@ -1707,6 +1712,8 @@ let make_repeated_rules
 let[@inline] map_rules_has_min_pairs (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 0)
 let[@inline] map_rules_has_max_pairs (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 1)
 let[@inline] map_rules_has_no_sparse (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 2)
+let[@inline] map_rules_has_keys (self:map_rules) : bool = self.keys != None
+let[@inline] map_rules_has_values (self:map_rules) : bool = self.values != None
 let[@inline] map_rules_has_ignore_empty (self:map_rules) : bool = (Pbrt.Bitfield.get self._presence 3)
 
 let[@inline] map_rules_set_min_pairs (self:map_rules) (x:int64) : unit =
@@ -1754,6 +1761,7 @@ let make_map_rules
   | Some v -> map_rules_set_ignore_empty _res v);
   _res
 
+let[@inline] field_options_has_rules (self:field_options) : bool = self.rules != None
 
 let[@inline] field_options_set_rules (self:field_options) (x:field_rules) : unit =
   self.rules <- Some x
