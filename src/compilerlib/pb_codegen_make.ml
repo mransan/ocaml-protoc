@@ -31,6 +31,9 @@ let gen_record ({ Ot.r_name; _ } as r) sc : unit =
           r_name
           (Pb_codegen_util.presence_get ~bv:"self._presence" ~idx:d.bitfield_idx
              ())
+      | Rfp_wrapped_option ->
+        F.linep sc "let[@inline] %s_has_%s (self:%s) : bool = self.%s != None"
+          r_name d.fname r_name d.fname
       | _ -> ())
     fields;
   F.line sc "";
