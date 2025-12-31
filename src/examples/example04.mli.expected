@@ -45,6 +45,9 @@ val copy_int_list_cons : int_list_cons -> int_list_cons
 val int_list_cons_set_value : int_list_cons -> int -> unit
   (** set field value in int_list_cons *)
 
+val int_list_cons_has_next : int_list_cons -> bool
+  (** presence of field "next" in [int_list_cons] *)
+
 val int_list_cons_set_next : int_list_cons -> int_list -> unit
   (** set field next in int_list_cons *)
 
