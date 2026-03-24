@@ -57,7 +57,12 @@ let find_imported_file include_dirs file_name =
     | Some file_name -> file_name
   )
 
-let compile cmdline cmd_line_files_options : Ot.proto * _ =
+type descriptor_info = {
+  all_types: Pb_field_type.resolved Tt.proto_type list;
+  typed_proto: Pb_field_type.resolved Tt.proto;
+}
+
+let compile cmdline cmd_line_files_options : Ot.proto * _ * descriptor_info =
   let { Cmdline.include_dirs; proto_file_name; unsigned_tag; _ } = cmdline in
 
   (* parsing *)
@@ -113,4 +118,4 @@ let compile cmdline cmd_line_files_options : Ot.proto * _ =
     BO.compile ~unsigned_tag:!unsigned_tag ~all_types:all_typed_protos
       typed_proto
   in
-  ocaml_proto, proto_file_options
+  ocaml_proto, proto_file_options, { all_types = all_typed_protos; typed_proto }

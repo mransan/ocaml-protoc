@@ -125,6 +125,8 @@ module Cmdline = struct
         (** if true, unsigned int32/64s will be generated with a polymorphic
             variant [`unsigned int32/64], otherwise will be emitted as immediate
             [int32/int64]. *)
+    mutable descriptor_set_out: string option;
+        (** if set, write a FileDescriptorSet JSON to this file path *)
   }
 
   let make () =
@@ -144,6 +146,7 @@ module Cmdline = struct
       make = ref false;
       cmd_line_file_options = File_options.make ();
       unsigned_tag = ref false;
+      descriptor_set_out = None;
     }
 
   let cmd_line_args t =
@@ -179,6 +182,9 @@ module Cmdline = struct
         Arg.Set t.unsigned_tag,
         " tag uint32 and uint64 types with `unsigned" );
       "--make", Arg.Set t.make, " generate `make` functions";
+      ( "--descriptor_set_out",
+        Arg.String (fun s -> t.descriptor_set_out <- Some s),
+        " write a FileDescriptorSet JSON to this file" );
     ]
     @ File_options.cmd_line_args t.cmd_line_file_options
 

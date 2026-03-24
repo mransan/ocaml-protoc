@@ -42,12 +42,12 @@ type field_options_jstype =
   | Js_string 
   | Js_number 
 
-type uninterpreted_option_name_part = private {
+type uninterpreted_option_name_part = {
   mutable name_part : string;
   mutable is_extension : bool;
 }
 
-type uninterpreted_option = private {
+type uninterpreted_option = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 6 fields *)
   mutable name : uninterpreted_option_name_part list;
   mutable identifier_value : string;
@@ -58,7 +58,7 @@ type uninterpreted_option = private {
   mutable aggregate_value : string;
 }
 
-type field_options = private {
+type field_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 7 fields *)
   mutable ctype : field_options_ctype;
   mutable packed : bool;
@@ -70,7 +70,7 @@ type field_options = private {
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type field_descriptor_proto = private {
+type field_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 10 fields *)
   mutable name : string;
   mutable number : int32;
@@ -85,33 +85,33 @@ type field_descriptor_proto = private {
   mutable proto3_optional : bool;
 }
 
-type enum_value_options = private {
+type enum_value_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable deprecated : bool;
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type enum_value_descriptor_proto = private {
+type enum_value_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable name : string;
   mutable number : int32;
   mutable options : enum_value_options option;
 }
 
-type enum_options = private {
+type enum_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable allow_alias : bool;
   mutable deprecated : bool;
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type enum_descriptor_proto_enum_reserved_range = private {
+type enum_descriptor_proto_enum_reserved_range = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable start : int32;
   mutable end_ : int32;
 }
 
-type enum_descriptor_proto = private {
+type enum_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable value : enum_value_descriptor_proto list;
@@ -120,28 +120,28 @@ type enum_descriptor_proto = private {
   mutable reserved_name : string list;
 }
 
-type extension_range_options = private {
+type extension_range_options = {
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type descriptor_proto_extension_range = private {
+type descriptor_proto_extension_range = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable start : int32;
   mutable end_ : int32;
   mutable options : extension_range_options option;
 }
 
-type oneof_options = private {
+type oneof_options = {
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type oneof_descriptor_proto = private {
+type oneof_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable options : oneof_options option;
 }
 
-type message_options = private {
+type message_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 4 fields *)
   mutable message_set_wire_format : bool;
   mutable no_standard_descriptor_accessor : bool;
@@ -150,13 +150,13 @@ type message_options = private {
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type descriptor_proto_reserved_range = private {
+type descriptor_proto_reserved_range = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable start : int32;
   mutable end_ : int32;
 }
 
-type descriptor_proto = private {
+type descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable field : field_descriptor_proto list;
@@ -175,14 +175,14 @@ type method_options_idempotency_level =
   | No_side_effects 
   | Idempotent 
 
-type method_options = private {
+type method_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable deprecated : bool;
   mutable idempotency_level : method_options_idempotency_level;
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type method_descriptor_proto = private {
+type method_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 5 fields *)
   mutable name : string;
   mutable input_type : string;
@@ -192,13 +192,13 @@ type method_descriptor_proto = private {
   mutable server_streaming : bool;
 }
 
-type service_options = private {
+type service_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable deprecated : bool;
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type service_descriptor_proto = private {
+type service_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 1 fields *)
   mutable name : string;
   mutable method_ : method_descriptor_proto list;
@@ -210,7 +210,7 @@ type file_options_optimize_mode =
   | Code_size 
   | Lite_runtime 
 
-type file_options = private {
+type file_options = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 20 fields *)
   mutable java_package : string;
   mutable java_outer_classname : string;
@@ -235,7 +235,7 @@ type file_options = private {
   mutable uninterpreted_option : uninterpreted_option list;
 }
 
-type source_code_info_location = private {
+type source_code_info_location = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 2 fields *)
   mutable path : int32 list;
   mutable span : int32 list;
@@ -244,11 +244,11 @@ type source_code_info_location = private {
   mutable leading_detached_comments : string list;
 }
 
-type source_code_info = private {
+type source_code_info = {
   mutable location : source_code_info_location list;
 }
 
-type file_descriptor_proto = private {
+type file_descriptor_proto = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 3 fields *)
   mutable name : string;
   mutable package : string;
@@ -264,11 +264,11 @@ type file_descriptor_proto = private {
   mutable syntax : string;
 }
 
-type file_descriptor_set = private {
+type file_descriptor_set = {
   mutable file : file_descriptor_proto list;
 }
 
-type generated_code_info_annotation = private {
+type generated_code_info_annotation = {
   mutable _presence: Pbrt.Bitfield.t; (** presence for 3 fields *)
   mutable path : int32 list;
   mutable source_file : string;
@@ -276,7 +276,7 @@ type generated_code_info_annotation = private {
   mutable end_ : int32;
 }
 
-type generated_code_info = private {
+type generated_code_info = {
   mutable annotation : generated_code_info_annotation list;
 }
 

@@ -46,11 +46,19 @@ let () =
       File_options.to_file_options cmdline.Cmdline.cmd_line_file_options
     in
 
-    let ocaml_proto, proto_file_options =
+    let ocaml_proto, proto_file_options, descriptor_info =
       Compilation.compile cmdline cmd_line_file_options
     in
 
-    Generation.generate_code ocaml_proto ~proto_file_options cmdline
+    Generation.generate_code ocaml_proto ~proto_file_options cmdline;
+
+    (match cmdline.Cmdline.descriptor_set_out with
+    | None -> ()
+    | Some out_file ->
+      Ocaml_protoc_descriptor.write_json ~out_file
+        ~all_types:descriptor_info.Compilation.all_types
+        ~proto_file_name:cmdline.Cmdline.proto_file_name
+        ~typed_proto:descriptor_info.Compilation.typed_proto)
   with exn ->
     Printf.eprintf "%s\n" (Printexc.to_string exn);
     exit 1
