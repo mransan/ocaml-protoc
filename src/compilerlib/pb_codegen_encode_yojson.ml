@@ -238,9 +238,8 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
                 gen_rft_variant sc rf_label variant_field
               | Ot.Rft_optional optional_field ->
                 gen_rft_optional sc rf_label optional_field
-              | Ot.Rft_required _ ->
-                Printf.eprintf "Only proto3 syntax supported in JSON encoding";
-                exit 1
+              | Ot.Rft_required (ft, enc, pk, _) ->
+                gen_rft_nolabel sc rf_label (ft, enc, pk)
               | Ot.Rft_associative (assoc_type, _, (key_type, _), value_field)
                 ->
                 gen_rft_assoc sc ~rf_label ~assoc_type ~key_type ~value_field);

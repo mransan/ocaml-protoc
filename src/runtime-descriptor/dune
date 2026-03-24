@@ -1,0 +1,5 @@
+(library
+ (name pbrt_descriptor)
+ (public_name pbrt.descriptor)
+ (wrapped false)
+ (libraries pbrt pbrt_yojson))
