@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package myapp.v1;
+
+enum Status {
+  STATUS_UNKNOWN = 0;
+  STATUS_OK = 1;
+  STATUS_ERROR = 2;
+}
+
+message Item {
+  string name = 1;
+  int32 count = 2;
+  Status status = 3;
+}
+
+message ListRequest {
+  int32 page = 1;
+}
+
+message ListResponse {
+  repeated Item items = 1;
+}
+
+service ItemService {
+  rpc List(ListRequest) returns (ListResponse);
+}

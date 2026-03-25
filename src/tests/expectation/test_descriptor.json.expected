@@ -1,0 +1,112 @@
+{
+  "file": [
+    {
+      "syntax": "proto3",
+      "extension": [],
+      "service": [
+        {
+          "method": [
+            {
+              "outputType": ".myapp.v1.ListResponse",
+              "inputType": ".myapp.v1.ListRequest",
+              "name": "List"
+            }
+          ],
+          "name": "ItemService"
+        }
+      ],
+      "enumType": [
+        {
+          "reservedName": [],
+          "reservedRange": [],
+          "value": [
+            { "number": 0, "name": "STATUS_UNKNOWN" },
+            { "number": 1, "name": "STATUS_OK" },
+            { "number": 2, "name": "STATUS_ERROR" }
+          ],
+          "name": "Status"
+        }
+      ],
+      "messageType": [
+        {
+          "reservedName": [],
+          "reservedRange": [],
+          "oneofDecl": [],
+          "extensionRange": [],
+          "enumType": [],
+          "nestedType": [],
+          "extension": [],
+          "field": [
+            {
+              "jsonName": "name",
+              "type": "TYPE_STRING",
+              "label": "LABEL_OPTIONAL",
+              "number": 1,
+              "name": "name"
+            },
+            {
+              "jsonName": "count",
+              "type": "TYPE_INT32",
+              "label": "LABEL_OPTIONAL",
+              "number": 2,
+              "name": "count"
+            },
+            {
+              "jsonName": "status",
+              "typeName": ".myapp.v1.Status",
+              "type": "TYPE_ENUM",
+              "label": "LABEL_OPTIONAL",
+              "number": 3,
+              "name": "status"
+            }
+          ],
+          "name": "Item"
+        },
+        {
+          "reservedName": [],
+          "reservedRange": [],
+          "oneofDecl": [],
+          "extensionRange": [],
+          "enumType": [],
+          "nestedType": [],
+          "extension": [],
+          "field": [
+            {
+              "jsonName": "page",
+              "type": "TYPE_INT32",
+              "label": "LABEL_OPTIONAL",
+              "number": 1,
+              "name": "page"
+            }
+          ],
+          "name": "ListRequest"
+        },
+        {
+          "reservedName": [],
+          "reservedRange": [],
+          "oneofDecl": [],
+          "extensionRange": [],
+          "enumType": [],
+          "nestedType": [],
+          "extension": [],
+          "field": [
+            {
+              "jsonName": "items",
+              "typeName": ".myapp.v1.Item",
+              "type": "TYPE_MESSAGE",
+              "label": "LABEL_REPEATED",
+              "number": 1,
+              "name": "items"
+            }
+          ],
+          "name": "ListResponse"
+        }
+      ],
+      "weakDependency": [],
+      "publicDependency": [],
+      "dependency": [],
+      "package": "myapp.v1",
+      "name": "test_descriptor.proto"
+    }
+  ]
+}

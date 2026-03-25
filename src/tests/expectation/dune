@@ -45,3 +45,15 @@
  (alias runtest)
  (action
   (diff validate.ml.expected validate.ml)))
+
+(rule
+ (targets test_descriptor.ml test_descriptor.mli test_descriptor.json)
+ (deps test_descriptor.proto)
+ (action
+  (run ocaml-protoc --binary --services --descriptor_set_out
+    test_descriptor.json --ml_out ./ %{deps})))
+
+(rule
+ (alias runtest)
+ (action
+  (diff test_descriptor.json.expected test_descriptor.json)))

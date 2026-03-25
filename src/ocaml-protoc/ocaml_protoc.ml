@@ -52,13 +52,13 @@ let () =
 
     Generation.generate_code ocaml_proto ~proto_file_options cmdline;
 
-    (match cmdline.Cmdline.descriptor_set_out with
+    match cmdline.Cmdline.descriptor_set_out with
     | None -> ()
     | Some out_file ->
       Ocaml_protoc_descriptor.write_json ~out_file
         ~all_types:descriptor_info.Compilation.all_types
         ~proto_file_name:cmdline.Cmdline.proto_file_name
-        ~typed_proto:descriptor_info.Compilation.typed_proto)
+        ~typed_proto:descriptor_info.Compilation.typed_proto
   with exn ->
     Printf.eprintf "%s\n" (Printexc.to_string exn);
     exit 1
