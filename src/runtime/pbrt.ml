@@ -168,7 +168,7 @@ module Decoder = struct
 
   let zigzag d : int64 =
     let v = (varint [@inlined]) d in
-    Int64.(logxor (shift_right v 1) (neg (logand v Int64.one)))
+    Int64.(logxor (shift_right_logical v 1) (neg (logand v Int64.one)))
 
   let[@inline] bits32 d =
     if d.offset + 4 > d.limit then incomplete ();

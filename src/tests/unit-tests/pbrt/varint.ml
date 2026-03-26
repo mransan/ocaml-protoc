@@ -55,3 +55,21 @@ let () =
   let s = encvarint 178282982111149L in
   assert (str_to_il s = [ 173; 239; 197; 238; 219; 196; 40 ]);
   assert (decvarint s = 178282982111149L)
+
+(* zigzag round-trip tests — regression for shift_right vs shift_right_logical bug *)
+let roundtrip_zigzag v =
+  let enc = E.create () in
+  E.int64_as_zigzag v enc;
+  let dec = D.of_bytes (E.to_bytes enc) in
+  let got = D.int64_as_zigzag dec in
+  assert (Int64.equal v got)
+
+let () =
+  roundtrip_zigzag 0L;
+  roundtrip_zigzag 1L;
+  roundtrip_zigzag (-1L);
+  roundtrip_zigzag (-2L);
+  roundtrip_zigzag 0x4000000000000000L;
+  roundtrip_zigzag Int64.max_int;
+  (* was decoded as -1L before fix *)
+  roundtrip_zigzag Int64.min_int
