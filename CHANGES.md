@@ -1,4 +1,12 @@
 
+## 4.1
+
+- bugfix for large signed int64 in pbrt
+- fix misunderstanding about defaults
+- fix `Rfp_wrapped_option` (when number of optionals > `max_bits` in very large messages)
+
+- codegen: generate `message_has_field` for fields that are wrapped in option
+
 ## 4.0
 
 - better parsing of protobuf options
