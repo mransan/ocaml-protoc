@@ -82,6 +82,12 @@ let make_int v = `Int v
 let make_float v = `Float v
 let make_string v = `String v
 
+let encode_float v =
+  if Float.is_nan v then `String "NaN"
+  else if Float.is_infinite v && v > 0. then `String "Infinity"
+  else if Float.is_infinite v then `String "-Infinity"
+  else `Float v
+
 let make_bytes s =
   make_string (s |> Bytes.to_string |> Base64.encode_exn ~pad:true)
 

@@ -33,6 +33,11 @@ val make_bool : bool -> Yojson.Basic.t
 val make_int : int -> Yojson.Basic.t
 val make_float : float -> Yojson.Basic.t
 val make_string : string -> Yojson.Basic.t
+val encode_float : float -> Yojson.Basic.t
+(** [encode_float v] encodes [v] as a JSON value. NaN, Infinity, and
+    -Infinity are encoded as the JSON strings ["NaN"], ["Infinity"],
+    ["-Infinity"] per the ProtoJSON spec. *)
+
 val make_bytes : bytes -> Yojson.Basic.t
 val make_unit : unit -> Yojson.Basic.t
 val make_list : Yojson.Basic.t list -> Yojson.Basic.t

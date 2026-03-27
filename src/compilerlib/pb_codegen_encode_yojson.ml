@@ -11,8 +11,8 @@ let runtime_function_for_basic_type json_label basic_type pk =
   (* String *)
   | Ot.Bt_string, _ -> "make_string", None
   (* Float *)
-  | Ot.Bt_float, Ot.Pk_bits32 -> "make_float", None
-  | Ot.Bt_float, Ot.Pk_bits64 -> "make_string", Some "string_of_float"
+  | Ot.Bt_float, Ot.Pk_bits32 -> "encode_float", None
+  | Ot.Bt_float, Ot.Pk_bits64 -> "encode_float", None
   (* Int32 *)
   | Ot.Bt_int32, Ot.Pk_varint _ | Ot.Bt_int32, Ot.Pk_bits32 ->
     "make_int", Some "Int32.to_int"
