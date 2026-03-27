@@ -3,6 +3,12 @@ module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
 
+(* Emit a field name pattern that matches both the camelCase json_name and the
+   original proto field name (snake_case), as required by the ProtoJSON spec. *)
+let field_name_pattern json_label proto_label =
+  if json_label = proto_label then sp "\"%s\"" json_label
+  else sp "(\"%s\" | \"%s\")" json_label proto_label
+
 (** Function which returns all the possible pattern match for reading a JSON
     value into an OCaml value. The protobuf JSON encoding rules are defined
     here: https://developers.google.com/protocol-buffers/docs/proto3#json *)
@@ -41,11 +47,12 @@ let field_pattern_match ~r_name ~rf_label field_type =
 (* Generate all the pattern matches for a record field *)
 let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
+  let name_pat = field_name_pattern json_label rf_label in
 
   let match_variable_name, exp =
     field_pattern_match ~r_name ~rf_label field_type
   in
-  F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
+  F.linep sc "| (%s, %s) -> " name_pat match_variable_name;
   F.linep sc "  %s_set_%s v (%s)" r_name rf_label exp
 
 (* Generate all the pattern matches for a repeated field *)
@@ -53,8 +60,9 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
   let _, field_type, _, _, _ = repeated_field in
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
+  let name_pat = field_name_pattern json_label rf_label in
 
-  F.linep sc "| (\"%s\", `List l) -> begin" json_label;
+  F.linep sc "| (%s, `List l) -> begin" name_pat;
 
   F.sub_scope sc (fun sc ->
       F.linep sc "%s_set_%s v @@ List.map (function" r_name rf_label;
@@ -70,12 +78,13 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
   let field_type, _, _, _ = optional_field in
 
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
+  let name_pat = field_name_pattern json_label rf_label in
 
   let match_variable_name, exp =
     field_pattern_match ~r_name ~rf_label field_type
   in
 
-  F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
+  F.linep sc "| (%s, %s) -> " name_pat match_variable_name;
   F.linep sc "  %s_set_%s v %s" r_name rf_label exp
 
 (* Generate pattern match for a variant field *)
@@ -85,22 +94,25 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
       let json_label =
         Pb_codegen_util.camel_case_of_constructor vc_constructor
       in
+      let proto_label = String.lowercase_ascii vc_constructor in
+      let name_pat = field_name_pattern json_label proto_label in
 
       match vc_field_type with
       | Ot.Vct_nullary ->
-        F.linep sc "| (\"%s\", _) -> %s_set_%s v %s" json_label r_name rf_label
+        F.linep sc "| (%s, _) -> %s_set_%s v %s" name_pat r_name rf_label
           vc_constructor
       | Ot.Vct_non_nullary_constructor field_type ->
         let match_variable_name, exp =
           field_pattern_match ~r_name ~rf_label field_type
         in
-        F.linep sc "| (\"%s\", %s) -> " json_label match_variable_name;
+        F.linep sc "| (%s, %s) -> " name_pat match_variable_name;
         F.linep sc "  %s_set_%s v (%s (%s))" r_name rf_label vc_constructor exp)
     v_constructors
 
 let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
   let json_label = Pb_codegen_util.camel_case_of_label rf_label in
-  F.linep sc "| (\"%s\", `Assoc assoc) ->" json_label;
+  let name_pat = field_name_pattern json_label rf_label in
+  F.linep sc "| (%s, `Assoc assoc) ->" name_pat;
   F.sub_scope sc (fun sc ->
       let value_name, value_exp =
         field_pattern_match ~r_name ~rf_label value_type
@@ -148,8 +160,7 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       F.linep sc "let v = default_%s () in" r_name;
       F.line sc @@ "let assoc = match d with";
       F.line sc @@ "  | `Assoc assoc -> assoc";
-      F.line sc @@ "  | _ -> assert(false)";
-      (* TODO raise E *)
+      F.linep sc "  | _ -> Pbrt_yojson.E.unexpected_json_type \"%s\" __MODULE__" r_name;
       F.line sc @@ "in";
 
       F.line sc "List.iter (function ";
@@ -207,17 +218,19 @@ let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   (* helper function for each constructor case *)
   let process_v_constructor sc { Ot.vc_constructor; vc_field_type; _ } =
     let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in
+    let proto_label = String.lowercase_ascii vc_constructor in
+    let name_pat = field_name_pattern json_label proto_label in
 
     match vc_field_type with
     | Ot.Vct_nullary ->
-      F.linep sc "| (\"%s\", _)::_-> (%s : %s)" json_label vc_constructor v_name
+      F.linep sc "| (%s, _)::_-> (%s : %s)" name_pat vc_constructor v_name
     | Ot.Vct_non_nullary_constructor field_type ->
       let match_, exp =
         let r_name = v_name and rf_label = vc_constructor in
         field_pattern_match ~r_name ~rf_label field_type
       in
 
-      F.linep sc "| (\"%s\", %s)::_ -> " json_label match_;
+      F.linep sc "| (%s, %s)::_ -> " name_pat match_;
       F.linep sc "  (%s (%s) : %s)" vc_constructor exp v_name
   in
 
@@ -232,8 +245,7 @@ let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
        * of the cases it will be a single iteration *)
       F.line sc "let assoc = match json with";
       F.line sc "  | `Assoc assoc -> assoc";
-      F.line sc "  | _ -> assert(false)";
-      (* TODO raise E *)
+      F.linep sc "  | _ -> Pbrt_yojson.E.unexpected_json_type \"%s\" __MODULE__" v_name;
       F.line sc "in";
 
       F.line sc "let rec loop = function";
