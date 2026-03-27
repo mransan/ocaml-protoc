@@ -329,7 +329,7 @@ let rec decode_json_file_chunk d =
   let v = default_file_chunk () in
   let assoc = match d with
     | `Assoc assoc -> assoc
-    | _ -> assert(false)
+    | _ -> Pbrt_yojson.E.unexpected_json_type "file_chunk" __MODULE__
   in
   List.iter (function 
     | ("path", json_value) -> 
@@ -352,7 +352,7 @@ let rec decode_json_file_path d =
   let v = default_file_path () in
   let assoc = match d with
     | `Assoc assoc -> assoc
-    | _ -> assert(false)
+    | _ -> Pbrt_yojson.E.unexpected_json_type "file_path" __MODULE__
   in
   List.iter (function 
     | ("path", json_value) -> 
@@ -369,7 +369,7 @@ let rec decode_json_file_crc d =
   let v = default_file_crc () in
   let assoc = match d with
     | `Assoc assoc -> assoc
-    | _ -> assert(false)
+    | _ -> Pbrt_yojson.E.unexpected_json_type "file_crc" __MODULE__
   in
   List.iter (function 
     | ("crc", json_value) -> 

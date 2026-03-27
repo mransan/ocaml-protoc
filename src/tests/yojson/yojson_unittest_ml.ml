@@ -97,3 +97,54 @@ let () =
   print_endline "\nConformance tests ... Ok";
 
   ()
+
+let () =
+  let open Yojson_unittest in
+  let get_field key json =
+    match json with
+    | `Assoc fields -> List.assoc key fields
+    | _ -> failwith "expected assoc"
+  in
+  (* double (field01) special values: must encode as JSON strings "NaN", "Infinity", "-Infinity" *)
+  let check_double v expected_token =
+    let t = make_all_basic_types ~field01:v () in
+    let json = encode_json_all_basic_types t in
+    assert (get_field "field01" json = expected_token);
+    decode_json_all_basic_types json
+  in
+  let t' = check_double Float.nan (`String "NaN") in
+  assert (Float.is_nan t'.field01);
+  let t' = check_double Float.infinity (`String "Infinity") in
+  assert (t'.field01 = Float.infinity);
+  let t' = check_double Float.neg_infinity (`String "-Infinity") in
+  assert (t'.field01 = Float.neg_infinity);
+
+  (* float (field02, Pk_bits32) special values *)
+  let check_float v expected_token =
+    let t = make_all_basic_types ~field02:v () in
+    let json = encode_json_all_basic_types t in
+    assert (get_field "field02" json = expected_token);
+    decode_json_all_basic_types json
+  in
+  let t' = check_float Float.nan (`String "NaN") in
+  assert (Float.is_nan t'.field02);
+  let t' = check_float Float.infinity (`String "Infinity") in
+  assert (t'.field02 = Float.infinity);
+  let t' = check_float Float.neg_infinity (`String "-Infinity") in
+  assert (t'.field02 = Float.neg_infinity);
+
+  print_endline "\nFloat special values ... Ok"
+
+let () =
+  let open Yojson_unittest in
+  (* Decoder must accept proto field names (snake_case) alongside camelCase *)
+  let json = `Assoc [ ("sm_string", `String "hello proto name") ] in
+  let msg = decode_json_small_message json in
+  assert (msg.sm_string = "hello proto name");
+
+  (* Also verify camelCase still works *)
+  let json2 = `Assoc [ ("smString", `String "hello camel case") ] in
+  let msg2 = decode_json_small_message json2 in
+  assert (msg2.sm_string = "hello camel case");
+
+  print_endline "\nProto field name decode ... Ok"
