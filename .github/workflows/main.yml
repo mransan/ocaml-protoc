@@ -14,7 +14,7 @@ jobs:
             #- macos-latest
             #- windows-latest
         ocaml-compiler:
-          - '4.08'
+          - '4.11'
           - '4.14'
           - '5.01'
           - '5.03'
