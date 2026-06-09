@@ -6,8 +6,10 @@ let sp = Pb_codegen_util.sp
 (* Emit a field name pattern that matches both the camelCase json_name and the
    original proto field name (snake_case), as required by the ProtoJSON spec. *)
 let field_name_pattern json_label proto_label =
-  if json_label = proto_label then sp "\"%s\"" json_label
-  else sp "(\"%s\" | \"%s\")" json_label proto_label
+  if json_label = proto_label then
+    sp "\"%s\"" json_label
+  else
+    sp "(\"%s\" | \"%s\")" json_label proto_label
 
 (** Function which returns all the possible pattern match for reading a JSON
     value into an OCaml value. The protobuf JSON encoding rules are defined
@@ -160,7 +162,8 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       F.linep sc "let v = default_%s () in" r_name;
       F.line sc @@ "let assoc = match d with";
       F.line sc @@ "  | `Assoc assoc -> assoc";
-      F.linep sc "  | _ -> Pbrt_yojson.E.unexpected_json_type \"%s\" __MODULE__" r_name;
+      F.linep sc "  | _ -> Pbrt_yojson.E.unexpected_json_type \"%s\" __MODULE__"
+        r_name;
       F.line sc @@ "in";
 
       F.line sc "List.iter (function ";
@@ -245,7 +248,8 @@ let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
        * of the cases it will be a single iteration *)
       F.line sc "let assoc = match json with";
       F.line sc "  | `Assoc assoc -> assoc";
-      F.linep sc "  | _ -> Pbrt_yojson.E.unexpected_json_type \"%s\" __MODULE__" v_name;
+      F.linep sc "  | _ -> Pbrt_yojson.E.unexpected_json_type \"%s\" __MODULE__"
+        v_name;
       F.line sc "in";
 
       F.line sc "let rec loop = function";

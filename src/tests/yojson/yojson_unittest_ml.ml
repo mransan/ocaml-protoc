@@ -138,12 +138,12 @@ let () =
 let () =
   let open Yojson_unittest in
   (* Decoder must accept proto field names (snake_case) alongside camelCase *)
-  let json = `Assoc [ ("sm_string", `String "hello proto name") ] in
+  let json = `Assoc [ "sm_string", `String "hello proto name" ] in
   let msg = decode_json_small_message json in
   assert (msg.sm_string = "hello proto name");
 
   (* Also verify camelCase still works *)
-  let json2 = `Assoc [ ("smString", `String "hello camel case") ] in
+  let json2 = `Assoc [ "smString", `String "hello camel case" ] in
   let msg2 = decode_json_small_message json2 in
   assert (msg2.sm_string = "hello camel case");
 
