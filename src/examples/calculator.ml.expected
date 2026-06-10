@@ -288,7 +288,7 @@ let rec decode_json_i32 d =
   let v = default_i32 () in
   let assoc = match d with
     | `Assoc assoc -> assoc
-    | _ -> assert(false)
+    | _ -> Pbrt_yojson.E.unexpected_json_type "i32" __MODULE__
   in
   List.iter (function 
     | ("value", json_value) -> 
@@ -305,7 +305,7 @@ let rec decode_json_add_req d =
   let v = default_add_req () in
   let assoc = match d with
     | `Assoc assoc -> assoc
-    | _ -> assert(false)
+    | _ -> Pbrt_yojson.E.unexpected_json_type "add_req" __MODULE__
   in
   List.iter (function 
     | ("a", json_value) -> 
@@ -325,7 +325,7 @@ let rec decode_json_add_all_req d =
   let v = default_add_all_req () in
   let assoc = match d with
     | `Assoc assoc -> assoc
-    | _ -> assert(false)
+    | _ -> Pbrt_yojson.E.unexpected_json_type "add_all_req" __MODULE__
   in
   List.iter (function 
     | ("ints", `List l) -> begin

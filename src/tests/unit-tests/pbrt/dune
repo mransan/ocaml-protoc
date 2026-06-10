@@ -1,5 +1,5 @@
 (tests
  (package pbrt)
- (names pbrt_array wrapper_encoding varint)
+ (names pbrt_array wrapper_encoding varint decoder_offset)
  (libraries pbrt)
  (flags :standard))

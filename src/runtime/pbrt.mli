@@ -58,6 +58,13 @@ module Decoder : sig
   (** See {!of_subbytes}.
       @since 3.0 *)
 
+  val offset : t -> int
+  (** [offset d] returns the current read offset position in the underlying
+      buffer. This is useful when decoding multiple messages over a fixed-length
+      buffer: you can check how many bytes were consumed and reset the decoder
+      with the remaining data.
+      @since NEXT_RELEASE *)
+
   (** {2 Errors} *)
 
   type error =

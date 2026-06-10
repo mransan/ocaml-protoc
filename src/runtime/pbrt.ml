@@ -88,14 +88,16 @@ module Decoder = struct
     source: bytes;
     limit: int;
     mutable offset: int;
+    initial_offset: int;
   }
 
-  let of_bytes source = { source; offset = 0; limit = Bytes.length source }
+  let of_bytes source =
+    { source; offset = 0; limit = Bytes.length source; initial_offset = 0 }
 
   let of_subbytes source offset len =
     if offset + len > Bytes.length source then
       invalid_arg "Pbrt.Decoder.of_subbypes";
-    { source; offset; limit = offset + len }
+    { source; offset; limit = offset + len; initial_offset = offset }
 
   let of_string source =
     (* safe: we won't modify the bytes *)
@@ -103,6 +105,8 @@ module Decoder = struct
 
   let of_substring source offset len =
     of_subbytes (Bytes.unsafe_of_string source) offset len
+
+  let offset d = d.offset - d.initial_offset
 
   let malformed_variant variant_name =
     raise (Failure (Malformed_variant variant_name))
@@ -196,7 +200,7 @@ module Decoder = struct
     (* strings are always shorter than range of int *)
     let len = int_as_varint d in
     if d.offset + len > d.limit then raise (Failure Incomplete);
-    let d' = { d with limit = d.offset + len } in
+    let d' = { d with limit = d.offset + len; initial_offset = d.offset } in
     d.offset <- d.offset + len;
     d'
 
