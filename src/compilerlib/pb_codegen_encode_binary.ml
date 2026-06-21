@@ -268,8 +268,8 @@ let gen_variant ?and_ variant sc =
           | Ot.Vct_nullary ->
             F.linep sc "| %s ->" vc_constructor;
             F.sub_scope sc (fun sc ->
-                gen_encode_field_key sc vc_encoding_number vc_payload_kind false;
-                F.line sc "Pbrt.Encoder.empty_nested encoder")
+                F.line sc "Pbrt.Encoder.empty_nested encoder;";
+                gen_encode_field_key sc vc_encoding_number vc_payload_kind false)
           | Ot.Vct_non_nullary_constructor field_type ->
             F.linep sc "| %s x ->" vc_constructor;
             F.sub_scope sc (fun sc ->
