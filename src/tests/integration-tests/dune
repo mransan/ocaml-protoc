@@ -368,3 +368,16 @@
   ../../include/ocaml-protoc/ocamloptions.proto)
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ %{proto})))
+
+(rule
+ (targets test29.ml test29.mli)
+ (deps
+  (:proto test29.proto)
+  ../../include/ocaml-protoc/ocamloptions.proto)
+ (action
+  (run ocaml-protoc --binary --pp --ml_out ./ %{proto})))
+
+(executable
+ (name test29_ml)
+ (libraries pbrt)
+ (modules test29_ml test29))

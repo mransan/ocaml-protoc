@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+message Empty {}
+
+message Outer {
+    oneof inner {
+        uint32 num  = 1;
+        Empty  empty = 2;
+    }
+}
