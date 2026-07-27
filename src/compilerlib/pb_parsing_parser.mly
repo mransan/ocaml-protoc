@@ -59,10 +59,12 @@
 %token T_semi
 %token T_colon
 %token T_comma
+%token T_dot
 %token <string> T_string
 %token <int>    T_int
 %token <float>  T_float
 %token <Pb_location.t * string> T_ident
+%token <Pb_location.t * string> T_dot_ident
 %token T_eof
 
 /*Entry points*/
@@ -153,7 +155,7 @@ import:
   | T_import T_ident T_string semicolon   { Pb_exception.invalid_import_qualifier $1 } /*HT*/
 
 package_declaration :
-  | T_package T_ident semicolon {snd $2}
+  | T_package qualified_ident semicolon {$2}
 
 message :
   | T_message T_ident T_lbrace message_body_content_list rbrace {
@@ -178,11 +180,11 @@ message_body_content :
   | option       { Pb_parsing_util.message_body_option $1 }
 
 extend :
-  | T_extend T_ident T_lbrace normal_field_list rbrace {
-    Pb_parsing_util.extend (snd $2) $4
+  | T_extend qualified_ident T_lbrace normal_field_list rbrace {
+    Pb_parsing_util.extend $2 $4
   }
-  | T_extend T_ident T_lbrace rbrace {
-    Pb_parsing_util.extend (snd $2) []
+  | T_extend qualified_ident T_lbrace rbrace {
+    Pb_parsing_util.extend $2 []
   }
 
 normal_field_list :
@@ -212,9 +214,35 @@ service_body_content :
   | rpc          { Pb_parsing_util.service_body_rpc $1 }
   | option       { Pb_parsing_util.service_body_option $1 }
 
+/* (* A type or package name, possibly dotted and possibly rooted with a
+    * leading dot. protobuf treats whitespace and comments as insignificant
+    * between the pieces of such a name, so "a.b.C", "a.b .C" and "a . b . C"
+    * all name the same type, as do ".a.b.C" and ". a.b.C". A leading dot is
+    * NOT redundant: it roots the name at the top level scope, which
+    * Pb_field_type records as [from_root], so ".a.b.C" and "a.b.C" are
+    * different names.
+    *
+    * The lexer emits one token per unbroken dotted run, so a name split by
+    * whitespace or a comment arrives as several tokens; concatenating their
+    * lexemes rebuilds the dotted string the rest of the compiler expects,
+    * leading dot included.
+    *
+    * Only the first segment may be a bare identifier: a continuation has to
+    * start with a dot, which is what keeps "T_ident field_name" (a type
+    * followed by a field name) unambiguous. *) */
+qualified_ident :
+  | T_ident qualified_ident_tail        { snd $1 ^ $2 }
+  | T_dot_ident qualified_ident_tail    { snd $1 ^ $2 }
+  | T_dot field_name qualified_ident_tail { "." ^ $2 ^ $3 }
+
+qualified_ident_tail :
+  |                                     { "" }
+  | T_dot_ident qualified_ident_tail    { snd $1 ^ $2 }
+  | T_dot field_name qualified_ident_tail { "." ^ $2 ^ $3 }
+
 message_type :
-  | T_stream T_ident { (true, snd $2) }
-  | T_ident { (false, snd $1) }
+  | T_stream qualified_ident { (true, $2) }
+  | qualified_ident { (false, $1) }
 
 rpc :
   | T_rpc T_ident T_lparen message_type T_rparen T_returns T_lparen message_type T_rparen semicolon {
@@ -284,37 +312,37 @@ oneof_field_list :
   | oneof_field oneof_field_list        { $1::$2 }
 
 oneof_field :
-  | T_ident field_name T_equal T_int field_options semicolon {
-    Pb_parsing_util.oneof_field ~type_:(snd $1) ~number:$4 ~options:$5 $2
+  | qualified_ident field_name T_equal T_int field_options semicolon {
+    Pb_parsing_util.oneof_field ~type_:$1 ~number:$4 ~options:$5 $2
   }
-  | T_ident field_name T_equal T_int semicolon {
-    Pb_parsing_util.oneof_field ~type_:(snd $1) ~number:$4 $2
+  | qualified_ident field_name T_equal T_int semicolon {
+    Pb_parsing_util.oneof_field ~type_:$1 ~number:$4 $2
   }
   | option     { Pb_parsing_util.oneof_option $1 }
 
 map :
-  | T_map T_less T_ident T_comma T_ident T_greater field_name T_equal T_int semicolon {
+  | T_map T_less qualified_ident T_comma qualified_ident T_greater field_name T_equal T_int semicolon {
     Pb_parsing_util.map_field
-        ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+        ~key_type:$3 ~value_type:$5 ~number:$9 $7
   }
-  | T_map T_less T_ident T_comma T_ident T_greater field_name T_equal T_int field_options semicolon {
+  | T_map T_less qualified_ident T_comma qualified_ident T_greater field_name T_equal T_int field_options semicolon {
     Pb_parsing_util.map_field
-        ~options:$10 ~key_type:(snd $3) ~value_type:(snd $5) ~number:$9 $7
+        ~options:$10 ~key_type:$3 ~value_type:$5 ~number:$9 $7
   }
 
 normal_field :
-  | label T_ident field_name T_equal T_int field_options semicolon {
-    Pb_parsing_util.field ~label:$1 ~type_:(snd $2) ~number:$5 ~options:$6 $3
+  | label qualified_ident field_name T_equal T_int field_options semicolon {
+    Pb_parsing_util.field ~label:$1 ~type_:$2 ~number:$5 ~options:$6 $3
   }
-  | label T_ident field_name T_equal T_int semicolon {
-    Pb_parsing_util.field ~label:$1 ~type_:(snd $2) ~number:$5 $3
+  | label qualified_ident field_name T_equal T_int semicolon {
+    Pb_parsing_util.field ~label:$1 ~type_:$2 ~number:$5 $3
   }
-  | T_ident field_name T_equal T_int field_options semicolon {
+  | qualified_ident field_name T_equal T_int field_options semicolon {
     Pb_parsing_util.field
-        ~label:`Nolabel ~type_:(snd $1) ~number:$4 ~options:$5 $2
+        ~label:`Nolabel ~type_:$1 ~number:$4 ~options:$5 $2
   }
-  | T_ident field_name T_equal T_int semicolon {
-    Pb_parsing_util.field ~label:`Nolabel ~type_:(snd $1) ~number:$4 $2
+  | qualified_ident field_name T_equal T_int semicolon {
+    Pb_parsing_util.field ~label:`Nolabel ~type_:$1 ~number:$4 $2
   }
 
 field_name :
@@ -331,6 +359,7 @@ field_name :
   | T_extensions{"extensions"}
   | T_extend    {"extend"}
   | T_reserved  {"reserved"}
+  | T_returns   {"returns"}
   | T_syntax    {"syntax"}
   | T_message   {"message"}
   | T_service   {"service"}
@@ -363,7 +392,8 @@ field_option :
 
 option_identifier_item :
   | T_ident                       {snd $1 |> Pb_parsing_util.option_name_of_ident}
-  | T_lparen T_ident T_rparen     {snd $2 |> Pb_parsing_util.option_name_extension}
+  | T_dot_ident                   {snd $1 |> Pb_parsing_util.option_name_of_ident}
+  | T_lparen qualified_ident T_rparen {$2 |> Pb_parsing_util.option_name_extension}
 
 option_identifier :
   | option_identifier_item    {$1}

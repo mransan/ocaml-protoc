@@ -63,10 +63,12 @@ let string_of_token =
   | T_semi -> ";"
   | T_colon -> ":"
   | T_comma -> ","
+  | T_dot -> "."
   | T_string s -> Printf.sprintf "%S" s
   | T_int i -> string_of_int i
   | T_float f -> string_of_float f
   | T_ident (_, s) -> s
+  | T_dot_ident (_, s) -> s
   | T_eof -> "<EOF>"
 
 (* Custom lexer that buffers tokens *)
