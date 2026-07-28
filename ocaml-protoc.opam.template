@@ -10,6 +10,7 @@ build: [
     "@install"
     "@src/examples/runtest" {with-test}
     "@src/tests/expectation/runtest" {with-test}
+    "@src/tests/integration-tests/runtest" {with-test}
     "@doc" {with-doc}
   ]
 ]

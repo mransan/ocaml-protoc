@@ -265,21 +265,24 @@ let rec decode_pb_file_crc d =
 
 let rec decode_pb_empty d =
   match Pbrt.Decoder.key d with
-  | None -> ();
-  | Some (_, pk) -> 
-    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
+  | None -> ()
+  | Some (_, pk) ->
+    Pbrt.Decoder.skip d pk;
+    decode_pb_empty d
 
 let rec decode_pb_ping d =
   match Pbrt.Decoder.key d with
-  | None -> ();
-  | Some (_, pk) -> 
-    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(ping)" pk
+  | None -> ()
+  | Some (_, pk) ->
+    Pbrt.Decoder.skip d pk;
+    decode_pb_ping d
 
 let rec decode_pb_pong d =
   match Pbrt.Decoder.key d with
-  | None -> ();
-  | Some (_, pk) -> 
-    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(pong)" pk
+  | None -> ()
+  | Some (_, pk) ->
+    Pbrt.Decoder.skip d pk;
+    decode_pb_pong d
 
 [@@@ocaml.warning "-23-27-30-39"]
 

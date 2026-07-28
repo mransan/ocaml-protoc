@@ -224,7 +224,7 @@ module Decoder = struct
 
   let skip d kind =
     let skip_len n =
-      if d.offset + n > d.limit then
+      if n < 0 || n > d.limit - d.offset then
         raise (Failure Incomplete)
       else
         d.offset <- d.offset + n
@@ -269,10 +269,10 @@ module Decoder = struct
 
   let empty_nested d =
     let len = int_as_varint d in
-    if len <> 0 then
+    if len < 0 || len > d.limit - d.offset then
       raise (Failure Incomplete)
     else
-      ()
+      d.offset <- d.offset + len
 
   let packed_fold f e0 d =
     let d' = nested d in
