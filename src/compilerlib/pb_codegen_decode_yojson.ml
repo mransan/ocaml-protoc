@@ -3,8 +3,11 @@ module F = Pb_codegen_formatting
 
 let sp = Pb_codegen_util.sp
 
-(* Emit a field name pattern that matches both the camelCase json_name and the
-   original proto field name (snake_case), as required by the ProtoJSON spec. *)
+(* Emit a field name pattern that matches both the JSON name of the field and
+   its original proto field name (snake_case), as required by the ProtoJSON
+   spec. The JSON name is the [json_name] option when the .proto file sets one,
+   and the camelCased proto name otherwise; in the former case the camelCased
+   name is deliberately NOT accepted, since json_name replaces it. *)
 let field_name_pattern json_label proto_label =
   if json_label = proto_label then
     sp "\"%s\"" json_label
@@ -47,8 +50,7 @@ let field_pattern_match ~r_name ~rf_label field_type =
   | _ -> assert false
 
 (* Generate all the pattern matches for a record field *)
-let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
-  let json_label = Pb_codegen_util.camel_case_of_label rf_label in
+let gen_rft_nolabel sc ~r_name ~json_label ~rf_label (field_type, _, _) =
   let name_pat = field_name_pattern json_label rf_label in
 
   let match_variable_name, exp =
@@ -58,10 +60,9 @@ let gen_rft_nolabel sc ~r_name ~rf_label (field_type, _, _) =
   F.linep sc "  %s_set_%s v (%s)" r_name rf_label exp
 
 (* Generate all the pattern matches for a repeated field *)
-let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
+let gen_rft_repeated_field sc ~r_name ~json_label ~rf_label repeated_field =
   let _, field_type, _, _, _ = repeated_field in
 
-  let json_label = Pb_codegen_util.camel_case_of_label rf_label in
   let name_pat = field_name_pattern json_label rf_label in
 
   F.linep sc "| (%s, `List l) -> begin" name_pat;
@@ -76,10 +77,9 @@ let gen_rft_repeated_field sc ~r_name ~rf_label repeated_field =
 
   F.line sc "end"
 
-let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
+let gen_rft_optional_field sc ~r_name ~json_label ~rf_label optional_field =
   let field_type, _, _, _ = optional_field in
 
-  let json_label = Pb_codegen_util.camel_case_of_label rf_label in
   let name_pat = field_name_pattern json_label rf_label in
 
   let match_variable_name, exp =
@@ -92,9 +92,9 @@ let gen_rft_optional_field sc ~r_name ~rf_label optional_field =
 (* Generate pattern match for a variant field *)
 let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
   List.iter
-    (fun { Ot.vc_constructor; vc_field_type; _ } ->
+    (fun { Ot.vc_constructor; vc_field_type; vc_options; _ } ->
       let json_label =
-        Pb_codegen_util.camel_case_of_constructor vc_constructor
+        Pb_codegen_util.json_label_of_constructor vc_options vc_constructor
       in
       let proto_label = String.lowercase_ascii vc_constructor in
       let name_pat = field_name_pattern json_label proto_label in
@@ -111,8 +111,8 @@ let gen_rft_variant_field sc ~r_name ~rf_label { Ot.v_constructors; _ } =
         F.linep sc "  %s_set_%s v (%s (%s))" r_name rf_label vc_constructor exp)
     v_constructors
 
-let gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type ~value_type =
-  let json_label = Pb_codegen_util.camel_case_of_label rf_label in
+let gen_rft_assoc_field sc ~r_name ~json_label ~rf_label ~assoc_type ~key_type
+    ~value_type =
   let name_pat = field_name_pattern json_label rf_label in
   F.linep sc "| (%s, `Assoc assoc) ->" name_pat;
   F.sub_scope sc (fun sc ->
@@ -170,23 +170,28 @@ let gen_record ?and_ { Ot.r_name; r_fields } sc =
       F.sub_scope sc (fun sc ->
           (* Generate pattern match for all the possible message field *)
           List.iter
-            (fun { Ot.rf_label; rf_field_type; _ } ->
+            (fun { Ot.rf_label; rf_field_type; rf_options; _ } ->
+              let json_label =
+                Pb_codegen_util.json_label_of_label rf_options rf_label
+              in
               match rf_field_type with
               | Ot.Rft_nolabel nolabel_field ->
-                gen_rft_nolabel sc ~r_name ~rf_label nolabel_field
+                gen_rft_nolabel sc ~r_name ~json_label ~rf_label nolabel_field
               | Ot.Rft_repeated repeated_field ->
-                gen_rft_repeated_field sc ~r_name ~rf_label repeated_field
+                gen_rft_repeated_field sc ~r_name ~json_label ~rf_label
+                  repeated_field
               | Ot.Rft_variant variant_field ->
                 gen_rft_variant_field sc ~r_name ~rf_label variant_field
               | Ot.Rft_optional optional_field ->
-                gen_rft_optional_field sc ~r_name ~rf_label optional_field
+                gen_rft_optional_field sc ~r_name ~json_label ~rf_label
+                  optional_field
               | Ot.Rft_required _ ->
                 Printf.eprintf "Only proto3 syntax supported in JSON encoding";
                 exit 1
               | Ot.Rft_associative
                   (assoc_type, _, (key_type, _), (value_type, _)) ->
-                gen_rft_assoc_field sc ~r_name ~rf_label ~assoc_type ~key_type
-                  ~value_type)
+                gen_rft_assoc_field sc ~r_name ~json_label ~rf_label ~assoc_type
+                  ~key_type ~value_type)
             r_fields;
 
           (* Unknown fields are simply ignored *)
@@ -219,8 +224,11 @@ let gen_unit ?and_ { Ot.er_name } sc =
 (* Generate decode function for a variant type *)
 let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   (* helper function for each constructor case *)
-  let process_v_constructor sc { Ot.vc_constructor; vc_field_type; _ } =
-    let json_label = Pb_codegen_util.camel_case_of_constructor vc_constructor in
+  let process_v_constructor sc
+      { Ot.vc_constructor; vc_field_type; vc_options; _ } =
+    let json_label =
+      Pb_codegen_util.json_label_of_constructor vc_options vc_constructor
+    in
     let proto_label = String.lowercase_ascii vc_constructor in
     let name_pat = field_name_pattern json_label proto_label in
 

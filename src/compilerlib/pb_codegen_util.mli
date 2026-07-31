@@ -62,6 +62,22 @@ val camel_case_of_constructor : string -> string
 (** this function transform an OCaml constructuror `Like_this` into a 'likeThis'
     case *)
 
+val json_label_of_label : Pb_option.set -> string -> string
+(** [json_label_of_label options label] returns the JSON name of the field named
+    [label] in the .proto file. This is the value of the field's [json_name]
+    option when it is set to a string, and [camel_case_of_label label]
+    otherwise, as specified by
+    {{:https://protobuf.dev/programming-guides/json/} ProtoJSON}.
+
+    A [json_name] whose value is not a string constant is ignored rather than
+    rejected, matching how the rest of the compiler treats options it does not
+    recognise. *)
+
+val json_label_of_constructor : Pb_option.set -> string -> string
+(** [json_label_of_constructor options constructor] is
+    [json_label_of_label options] applied to the .proto name of the [oneof] case
+    whose OCaml constructor is [constructor]. *)
+
 val collect_modules_of_types : Pb_codegen_ocaml_type.type_ list -> string list
 (** [collect_modules_of_types ocaml_types] return the list of all the modules
     that the [ocaml_types] depends on *)

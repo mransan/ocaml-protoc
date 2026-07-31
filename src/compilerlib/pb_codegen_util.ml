@@ -155,6 +155,33 @@ let camel_case_of_label s =
 
 let camel_case_of_constructor s = camel_case_of_label (String.lowercase_ascii s)
 
+(* The .proto [json_name] option, when it is set to a string constant. protoc
+   keeps this on the descriptor rather than in the option set, but this compiler
+   parses .proto files itself and stores every option verbatim, so it surfaces
+   here as a plain (non extension) option name.
+
+   Any other shape of value is ignored rather than rejected, the way the rest of
+   the compiler treats options it does not recognise. *)
+let json_name_of_options options =
+  Pb_option.get options (Pb_option.Simple_name "json_name")
+  |> Option.map (function
+       | Pb_option.Scalar_value (Pb_option.Constant_string s) -> Some s
+       | Pb_option.Scalar_value (Pb_option.Constant_bool _)
+       | Pb_option.Scalar_value (Pb_option.Constant_int _)
+       | Pb_option.Scalar_value (Pb_option.Constant_float _)
+       | Pb_option.Scalar_value (Pb_option.Constant_literal _)
+       | Pb_option.Message_literal _ | Pb_option.List_literal _ ->
+         None)
+  |> Option.join
+
+let json_label_of_label options label =
+  json_name_of_options options
+  |> Option.value ~default:(camel_case_of_label label)
+
+let json_label_of_constructor options constructor =
+  json_name_of_options options
+  |> Option.value ~default:(camel_case_of_constructor constructor)
+
 let collect_modules_of_field_type modules = function
   | Ot.Ft_user_defined_type { Ot.udt_module_prefix = Some m; _ } -> m :: modules
   | _ -> modules
