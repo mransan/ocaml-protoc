@@ -244,18 +244,34 @@ rpc_option :
 
 option_value :
   | constant { Pb_option.Scalar_value $1 }
-  | T_lbrace T_rbrace { Pb_parsing_util.option_map [] }
-  | T_lbrace option_content_map T_rbrace { Pb_parsing_util.option_map $2 }
+  | option_message_value { $1 }
   | T_lbracket T_rbracket { Pb_parsing_util.option_list [] }
   | T_lbracket option_content_list T_rbracket { Pb_parsing_util.option_list $2 }
 
+(* A message literal: the aggregate form of an option value. *)
+option_message_value :
+  | T_lbrace T_rbrace                    { Pb_parsing_util.option_map [] }
+  | T_lbrace option_content_map T_rbrace { Pb_parsing_util.option_map $2 }
+
 option_content_map :
-  | option_content_map_item  { [$1] }
-  | option_content_map_item T_comma  { [$1] }
-  | option_content_map_item T_comma option_content_map { $1::$3 }
+  | option_content_map_item                                     { [$1] }
+  | option_content_map_item option_separator                    { [$1] }
+  | option_content_map_item option_content_map                  { $1::$2 }
+  | option_content_map_item option_separator option_content_map { $1::$3 }
+
+(* Entries of a message literal are separated by whitespace. A comma or a semicolon
+   may appear between them but neither is required. Requiring a comma is what made a
+   multi-entry option such as `{ post: "..." body: "*" }` fail to parse, since
+   Google's protos separate those entries with a newline alone. *)
+option_separator :
+  | T_comma { () }
+  | T_semi  { () }
 
 option_content_map_item :
-  | T_ident T_colon option_value { snd $1, $3 }
+  (* The colon is mandatory before a scalar value and optional before a message
+     value, exactly as protoc requires: `post: "x"` but `http { get: "y" }`. *)
+  | field_name T_colon option_value { $1, $3 }
+  | field_name option_message_value { $1, $2 }
 
 option_content_list :
   | option_value  { [$1] }
@@ -381,7 +397,16 @@ constant :
     | "false"  -> Pb_option.Constant_bool false
     | str -> Pb_option.Constant_literal str
   }
-  | T_string     { Pb_option.Constant_string $1 };
+  | string_literal { Pb_option.Constant_string $1 };
+
+(* Adjacent string literals are concatenated, as in C. googleapis relies on this to
+   wrap a long option value across lines:
+     option (google.api.oauth_scopes) =
+         "https://www.googleapis.com/auth/cloud-platform,"
+         "https://www.googleapis.com/auth/pubsub";  *)
+string_literal :
+  | T_string                { $1 }
+  | string_literal T_string { $1 ^ $2 }
 
 enum:
   | T_enum T_ident T_lbrace enum_values rbrace { Pb_parsing_util.enum ~enum_body:$4 (snd $2) }
