@@ -55,7 +55,8 @@ let new_ocaml_mod ~proto_file_options ~proto_file_name () : ocaml_mod =
 
   F.linep self.mli "(** Code for %s *)" (Filename.basename proto_file_name);
   F.empty_line self.mli;
-  F.linep self.mli "(* generated from %S, do not edit *)" proto_file_name;
+  F.linep self.mli "(* generated from %S, do not edit *)"
+    (Filename.basename proto_file_name);
   F.empty_line self.mli;
   print_ppx self.mli;
   F.empty_line self.mli;
