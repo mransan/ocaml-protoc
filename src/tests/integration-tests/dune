@@ -377,7 +377,8 @@
  (action
   (run ocaml-protoc --binary --pp --ml_out ./ %{proto})))
 
-(executable
+(test
  (name test29_ml)
+ (package ocaml-protoc)
  (libraries pbrt)
  (modules test29_ml test29))

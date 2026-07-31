@@ -177,9 +177,10 @@ let rec encode_pb_empty (v:empty) encoder =
 
 let rec decode_pb_div_by_zero d =
   match Pbrt.Decoder.key d with
-  | None -> ();
-  | Some (_, pk) -> 
-    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(div_by_zero)" pk
+  | None -> ()
+  | Some (_, pk) ->
+    Pbrt.Decoder.skip d pk;
+    decode_pb_div_by_zero d
 
 let rec decode_pb_i32 d =
   let v = default_i32 () in
@@ -238,9 +239,10 @@ let rec decode_pb_add_all_req d =
 
 let rec decode_pb_empty d =
   match Pbrt.Decoder.key d with
-  | None -> ();
-  | Some (_, pk) -> 
-    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
+  | None -> ()
+  | Some (_, pk) ->
+    Pbrt.Decoder.skip d pk;
+    decode_pb_empty d
 
 [@@@ocaml.warning "-23-27-30-39"]
 

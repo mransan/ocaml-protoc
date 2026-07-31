@@ -87,9 +87,10 @@ let rec decode_pb_file_path d =
 
 let rec decode_pb_empty d =
   match Pbrt.Decoder.key d with
-  | None -> ();
-  | Some (_, pk) -> 
-    Pbrt.Decoder.unexpected_payload "Unexpected fields in empty message(empty)" pk
+  | None -> ()
+  | Some (_, pk) ->
+    Pbrt.Decoder.skip d pk;
+    decode_pb_empty d
 
 [@@@ocaml.warning "-23-27-30-39"]
 

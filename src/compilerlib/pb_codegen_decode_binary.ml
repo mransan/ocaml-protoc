@@ -267,10 +267,10 @@ let gen_unit ?and_ { Ot.er_name } sc =
     er_name;
   F.sub_scope sc (fun sc ->
       F.line sc "match Pbrt.Decoder.key d with";
-      F.line sc "| None -> ();";
-      F.line sc "| Some (_, pk) -> ";
-      F.linep sc "  Pbrt.Decoder.unexpected_payload \"%s\" pk"
-        (sp "Unexpected fields in empty message(%s)" er_name))
+      F.line sc "| None -> ()";
+      F.line sc "| Some (_, pk) ->";
+      F.line sc "  Pbrt.Decoder.skip d pk;";
+      F.linep sc "  decode_pb_%s d" er_name)
 
 let gen_variant ?and_ { Ot.v_name; v_constructors; v_use_polyvariant = _ } sc =
   let process_ctor sc variant_constructor =
