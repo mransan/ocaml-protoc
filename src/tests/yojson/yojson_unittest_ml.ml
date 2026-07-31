@@ -148,3 +148,73 @@ let () =
   assert (msg2.sm_string = "hello camel case");
 
   print_endline "\nProto field name decode ... Ok"
+
+(* [json_name] REPLACES the camelCased JSON key rather than adding to it, so the
+   accepted spellings of a renamed field are the json_name and the original
+   proto field name, and NOT the camelCase the field would otherwise have had.
+   Cross-checked against protoc 23.2 and the protobuf 7.35.1 Python runtime. *)
+let () =
+  let open Yojson_unittest in
+  let failures = ref [] in
+  let check name passed = if not passed then failures := name :: !failures in
+
+  let assoc_of_json = function
+    | `Assoc assoc -> assoc
+    | `Null | `Bool _ | `Int _ | `Float _ | `String _ | `List _ -> []
+  in
+  let key assoc k = List.assoc_opt k assoc in
+
+  (* encoding uses the json_name, and the camelCased name for every other
+     field *)
+  let encoded =
+    make_json_name ~renamed_field:"r" ~plain_field:"p"
+      ~choice:(Renamed_case "c") ()
+    |> encode_json_json_name |> assoc_of_json
+  in
+  check "encode uses json_name"
+    (key encoded "custom_JSON_name" = Some (`String "r"));
+  check "encode camelCases an un-renamed field"
+    (key encoded "plainField" = Some (`String "p"));
+  check "encode uses json_name for a oneof case"
+    (key encoded "customCase" = Some (`String "c"));
+  check "encode does not also emit the camelCased name"
+    (key encoded "renamedField" = None);
+
+  let decode json = decode_json_json_name json in
+
+  (* decoding accepts the json_name and the original proto field name *)
+  check "decode accepts json_name"
+    ((decode (`Assoc [ "custom_JSON_name", `String "x" ])).renamed_field = "x");
+  check "decode accepts the proto field name"
+    ((decode (`Assoc [ "renamed_field", `String "x" ])).renamed_field = "x");
+  (* but not the camelCase the field would have had without the option: that is
+     an unknown field, and unknown fields are ignored *)
+  check "decode rejects the superseded camelCase name"
+    ((decode (`Assoc [ "renamedField", `String "x" ])).renamed_field = "");
+
+  (* a field carrying no json_name is unaffected *)
+  check "decode still accepts camelCase"
+    ((decode (`Assoc [ "plainField", `String "x" ])).plain_field = "x");
+  check "decode still accepts snake_case"
+    ((decode (`Assoc [ "plain_field", `String "x" ])).plain_field = "x");
+
+  (* the same rules apply to the cases of a oneof *)
+  check "oneof decode accepts json_name"
+    ((decode (`Assoc [ "customCase", `String "c" ])).choice
+   = Some (Renamed_case "c"));
+  check "oneof decode accepts the proto field name"
+    ((decode (`Assoc [ "renamed_case", `String "c" ])).choice
+   = Some (Renamed_case "c"));
+  check "oneof decode rejects the superseded camelCase name"
+    ((decode (`Assoc [ "renamedCase", `String "c" ])).choice = None);
+  check "oneof decode is unaffected without json_name"
+    ((decode (`Assoc [ "plainCase", `String "p" ])).choice
+   = Some (Plain_case "p"));
+
+  match !failures with
+  | [] -> print_endline "\njson_name option ... Ok"
+  | failed ->
+    List.iter
+      (Printf.eprintf "json_name option ... FAILED: %s\n")
+      (List.rev failed);
+    exit 1

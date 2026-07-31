@@ -1,6 +1,11 @@
 
 ## 4.1
 
+- json: honor the `json_name` field option in the yojson and bs backends. The
+  encoders emit it in place of the camelCased field name, and the decoders
+  accept it alongside the original proto field name (#158)
+- json: the bs decoder now accepts the original proto field name (snake_case)
+  as well as the camelCase one, as the yojson decoder already did
 - bugfix for large signed int64 in pbrt
 - fix misunderstanding about defaults
 - fix `Rfp_wrapped_option` (when number of optionals > `max_bits` in very large messages)

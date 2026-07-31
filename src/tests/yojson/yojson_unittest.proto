@@ -85,3 +85,15 @@ message NestedUnit {
 
   string other = 3;
 }
+
+// The [json_name] option replaces the camelCased JSON key of a field, both
+// when encoding and when decoding. See https://protobuf.dev/programming-guides/json/
+message JsonName {
+  string renamed_field = 1 [json_name = "custom_JSON_name"];
+  string plain_field = 2;
+
+  oneof choice {
+    string renamed_case = 3 [json_name = "customCase"];
+    string plain_case = 4;
+  }
+}
