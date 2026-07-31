@@ -117,10 +117,10 @@ module Decoder : sig
   val map_entry : t -> decode_key:(t -> 'a) -> decode_value:(t -> 'b) -> 'a * 'b
 
   val empty_nested : t -> unit
-  (** [empty_nested d] reads the length prefix of a nested message and skips
-      the payload bytes, ignoring any content. A message the current schema
-      knows as empty may carry fields written by a newer schema; protobuf
-      unknown-field semantics require them to be ignored (issue #250). Raises
+  (** [empty_nested d] reads the length prefix of a nested message and skips the
+      payload bytes, ignoring any content. A message the current schema knows as
+      empty may carry fields written by a newer schema; protobuf unknown-field
+      semantics require them to be ignored (issue #250). Raises
       [Failure Incomplete] if the length prefix cannot be read, or if the
       declared length is negative or exceeds the remaining input, and
       [Failure Overlong_varint] on a malformed length prefix. *)

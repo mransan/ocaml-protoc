@@ -68,9 +68,7 @@ let test_outer_oneof_empty_maxint_len () =
    * decodes to exactly max_int: an addition-form bound check would wrap
    * negative and silently accept this malformed message (pre-fix PoC
    * returned Empty); the subtraction-form guard must raise Incomplete *)
-  let dec =
-    Pbrt.Decoder.of_string "\x12\xff\xff\xff\xff\xff\xff\xff\xff\x3f"
-  in
+  let dec = Pbrt.Decoder.of_string "\x12\xff\xff\xff\xff\xff\xff\xff\xff\x3f" in
   check "outer oneof empty max_int length raises Incomplete"
     (raises_incomplete (fun () -> ignore (T.decode_pb_outer dec)))
 
