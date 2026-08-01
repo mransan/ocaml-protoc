@@ -62,12 +62,12 @@ let () =
   let s = "reserved 1,2,3 to 10, 11 to max;" in
   let ev = parse_reserved s in
   (match ev with
-  | [ ev1; ev2; ev3; ev4 ] ->
+  | Pt.Reserved_ranges [ ev1; ev2; ev3; ev4 ] ->
     assert (Pt.Extension_single_number 1 = ev1);
     assert (Pt.Extension_single_number 2 = ev2);
     assert (Pt.Extension_range (3, Pt.To_number 10) = ev3);
     assert (Pt.Extension_range (11, Pt.To_max) = ev4)
-  | _ -> (assert false : unit));
+  | Pt.Reserved_ranges _ | Pt.Reserved_names _ -> (assert false : unit));
   ()
 
 let test_failure f =
@@ -84,6 +84,30 @@ let () =
 let () =
   let s = "1 to min" in
   test_failure (fun () -> parse s);
+  ()
+
+(* protoc rejects mixing reserved numbers and reserved names in a single
+   statement, in either order; so must we. *)
+let () =
+  let s = "reserved 2, \"foo\";" in
+  test_failure (fun () -> parse_reserved s);
+  ()
+
+let () =
+  let s = "reserved \"foo\", 2;" in
+  test_failure (fun () -> parse_reserved s);
+  ()
+
+(* protoc rejects a trailing comma in a reserved name list. *)
+let () =
+  let s = "reserved \"foo\", \"bar\",;" in
+  test_failure (fun () -> parse_reserved s);
+  ()
+
+(* protoc rejects an operand-less reserved statement. *)
+let () =
+  let s = "reserved;" in
+  test_failure (fun () -> parse_reserved s);
   ()
 
 let () = print_endline "Parse Extension Range... Ok"
