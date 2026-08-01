@@ -102,9 +102,9 @@ let message_body_enum enum = Pt.Message_enum enum
 let message_body_extension extension_ranges =
   Pt.Message_extension extension_ranges
 
-let message_body_reserved extension_ranges =
-  Pt.Message_extension extension_ranges
-
+let reserved_of_ranges extension_ranges = Pt.Reserved_ranges extension_ranges
+let reserved_of_names names = Pt.Reserved_names names
+let message_body_reserved reserved = Pt.Message_reserved reserved
 let message_body_option option_ = Pt.Message_option option_
 
 let message ~content message_name =

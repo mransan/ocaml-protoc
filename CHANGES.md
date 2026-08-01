@@ -1,4 +1,20 @@
 
+## 4.2
+
+- fix parser: handle `reserved "name", ...;` (reserved field names) in message
+    and enum bodies, alongside the existing numeric form. As with reserved
+    numbers before it, the enum form parses but is not retained in the parse
+    tree
+- fix parser: a `reserved` statement in a message body is now recorded as
+    `Pt.Message_reserved`; it was being recorded as `Pt.Message_extension`
+
+breaking:
+
+- `ocaml-protoc.compiler-lib`: `Pb_parsing_util.message_body_reserved` now takes
+    the new `Pt.reserved` sum type (`Reserved_ranges` / `Reserved_names`) instead
+    of `Pt.extension_range list`, and `Pt.Message_reserved`'s payload changes
+    with it
+
 ## 4.1
 
 - bugfix for large signed int64 in pbrt

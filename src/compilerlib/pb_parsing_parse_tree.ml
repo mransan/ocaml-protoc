@@ -99,6 +99,12 @@ type extension_range =
   | Extension_single_number of int
   | Extension_range of extension_range_from * extension_range_to
 
+(** A [reserved] statement reserves either field numbers/ranges or field names;
+    the two forms are mutually exclusive within a single statement. *)
+type reserved =
+  | Reserved_ranges of extension_range list
+  | Reserved_names of string list
+
 (** Body content defines all the possible consituant of a message. *)
 type message_body_content =
   | Message_field of message_field
@@ -107,7 +113,7 @@ type message_body_content =
   | Message_sub of message
   | Message_enum of enum
   | Message_extension of extension_range list
-  | Message_reserved of extension_range list
+  | Message_reserved of reserved
   | Message_option of Pb_raw_option.t
 
 and message = {
@@ -252,6 +258,21 @@ let pp_extension_range ppf ext_range =
   | Extension_range (from, to_) ->
     fprintf ppf "(Extension_range (%d, %a))" from pp_extension_range_to to_
 
+let pp_reserved ppf reserved =
+  match reserved with
+  | Reserved_ranges ranges ->
+    fprintf ppf "Reserved_ranges [@[<v>%a@]]"
+      (pp_print_list
+         ~pp_sep:(fun ppf () -> fprintf ppf ";@,")
+         pp_extension_range)
+      ranges
+  | Reserved_names names ->
+    fprintf ppf "Reserved_names [@[<v>%a@]]"
+      (pp_print_list
+         ~pp_sep:(fun ppf () -> fprintf ppf ";@,")
+         (fun ppf s -> fprintf ppf "%S" s))
+      names
+
 let rec pp_message_body_content ppf msg_body_content =
   match msg_body_content with
   | Message_field field -> pp_message_field ppf field
@@ -265,12 +286,8 @@ let rec pp_message_body_content ppf msg_body_content =
          ~pp_sep:(fun ppf () -> fprintf ppf ";@,")
          pp_extension_range)
       ext_ranges
-  | Message_reserved res_ranges ->
-    fprintf ppf "Message_reserved [@[<v>%a@]]"
-      (pp_print_list
-         ~pp_sep:(fun ppf () -> fprintf ppf ";@,")
-         pp_extension_range)
-      res_ranges
+  | Message_reserved reserved ->
+    fprintf ppf "Message_reserved %a" pp_reserved reserved
   | Message_option option -> Pb_raw_option.pp_t ppf option
 
 and pp_message ppf message =

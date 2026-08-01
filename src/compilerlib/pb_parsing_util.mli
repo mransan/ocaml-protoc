@@ -74,7 +74,9 @@ val extension_range_range :
 val message_body_sub : Pt.message -> Pt.message_body_content
 val message_body_enum : Pt.enum -> Pt.message_body_content
 val message_body_extension : Pt.extension_range list -> Pt.message_body_content
-val message_body_reserved : Pt.extension_range list -> Pt.message_body_content
+val reserved_of_ranges : Pt.extension_range list -> Pt.reserved
+val reserved_of_names : string list -> Pt.reserved
+val message_body_reserved : Pt.reserved -> Pt.message_body_content
 val message_body_option : Pb_raw_option.t -> Pt.message_body_content
 val message : content:Pt.message_body_content list -> string -> Pt.message
 
