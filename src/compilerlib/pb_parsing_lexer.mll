@@ -90,9 +90,13 @@ let update_loc lexbuf =
 let start_letter  = ['a'-'z' 'A'-'Z' '_']
 let identchar     = ['A'-'Z' 'a'-'z' '_' '0'-'9']
 let ident         = start_letter identchar *
-let full_ident    = '.' ? ident ("." * ident) *
-(* let message_type  = '.' ? (ident '.') ident
- *)
+(* A dotted name with no internal whitespace, lexed as a single token so that a
+ * keyword appearing as an inner segment (a.map.C) stays part of the name and an
+ * underscore segment (a._b) is not mangled. Whitespace or comments around a dot
+ * split the name into several tokens, which [qualified_ident] rejoins.
+ **)
+let ident_path     = ident ("." ident) *
+let dot_ident_path = '.' ident ("." ident) *
 let int_litteral  = ['+' '-']? ['0'-'9']+
 let hex_litteral = ['+' '-']? "0x" ['0'-'9' 'a'-'f' 'A'-'F']+
 let inf_litteral  = ['+' '-']? "inf"
@@ -120,6 +124,11 @@ rule lexer = parse
   | ";"         { T_semi }
   | ":"         { T_colon }
   | ","         { T_comma }
+  (* Must precede [float_literal], which also matches a lone "." since all of
+   * its parts are optional; on an equal-length match ocamllex prefers the rule
+   * defined first.
+   **)
+  | "."         { T_dot }
   | "//"        { match comment [] lexbuf with
     | Comment_eof     -> T_eof
     | Comment_value _ -> lexer lexbuf
@@ -138,7 +147,8 @@ rule lexer = parse
   | inf_litteral  { T_float nan }
   | newline       { update_loc lexbuf; lexer lexbuf }
   | blank         { lexer lexbuf }
-  | full_ident    { resolve_identifier (Loc.from_lexbuf lexbuf) (Lexing.lexeme lexbuf) }
+  | ident_path    { resolve_identifier (Loc.from_lexbuf lexbuf) (Lexing.lexeme lexbuf) }
+  | dot_ident_path { T_dot_ident (Loc.from_lexbuf lexbuf, Lexing.lexeme lexbuf) }
   | eof           { T_eof }
   | _             { failwith @@ Printf.sprintf "Unknown character found %s" @@
   Lexing.lexeme lexbuf}
